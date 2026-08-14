@@ -10,7 +10,7 @@
 
 **High-Performance Vectorized Software Defined Radio (SDR) & Number Theoretic Transform (NTT) Acceleration Engine on AMD Ryzen AI Phoenix Silicon (XDNA1 / AIE2)**
 
-[Architecture](#1-system--hardware-architecture) â€¢ [Directory Structure](#2-repository-structure) â€¢ [Silicon Milestones](#3-validated-silicon-milestones) â€¢ [Engineering Issues & Fixes](#4-engineering-challenges--technical-solutions) â€¢ [Quickstart](#5-quickstart--silicon-verification) â€¢ [References](#6-references--upstream-projects) â€¢ [Credits](#7-credits--acknowledgments)
+[Architecture](#1-system--hardware-architecture) • [Directory Structure](#2-repository-structure) • [Silicon Milestones](#3-validated-silicon-milestones) • [Engineering Issues & Fixes](#4-engineering-challenges--technical-solutions) • [Quickstart](#5-quickstart--silicon-verification) • [References](#6-references--upstream-projects) • [Credits](#7-credits--acknowledgments)
 
 </div>
 
@@ -20,7 +20,7 @@
 
 The **Phoenix SDR-DSP** framework provides native Windows 11 acceleration for real-time SDR processing and finite-field lattice cryptography on AMD Ryzen 7040/8040 series processors.
 
-- **Target APU:** AMD Ryzen 9 7940HS (8 Cores / 16 Threads @ 4.0â€“5.2 GHz)
+- **Target APU:** AMD Ryzen 9 7940HS (8 Cores / 16 Threads @ 4.0–5.2 GHz)
 - **NPU Silicon:** AMD XDNA1 / 1st Gen Ryzen AI (`npu1`)
   - **Tile Array:** 4 Columns $\times$ 5 Rows of AI Engine 2 (AIE2) tiles
   - **Vector Architecture:** 512-bit SIMD registers supporting 64-lane `bfloat16`, 32-lane `int16`, and 16-lane `cint16`
@@ -35,30 +35,30 @@ The **Phoenix SDR-DSP** framework provides native Windows 11 acceleration for re
 
 ```text
 phoenix-sdr-dsp/
-â”œâ”€â”€ include/
-â”‚   â””â”€â”€ sdr_dsp/
-â”‚       â”œâ”€â”€ sdr_dsp_common.hpp      # Vector types, lane constants, Q15 definitions
-â”‚       â”œâ”€â”€ fir_filter.hpp           # 64-lane vectorized FIR filtering
-â”‚       â”œâ”€â”€ complex_mixer.hpp        # Complex NCO & I/Q frequency shifter
-â”‚       â”œâ”€â”€ power_detector.hpp       # I^2 + Q^2 energy / RSSI detector
-â”‚       â”œâ”€â”€ modular_arithmetic.hpp   # Barrett & Montgomery modular reduction mod q=3329
-â”‚       â””â”€â”€ ntt_butterfly.hpp        # Cooley-Tukey & Gentleman-Sande butterflies
-â”œâ”€â”€ tests/
-â”‚   â”œâ”€â”€ m5_fir/                      # Milestone 5: 8-Tap Vectorized Low-Pass FIR Filter
-â”‚   â”œâ”€â”€ m6_mixer/                    # Milestone 6: Complex Mixer / NCO Frequency Downconverter
-â”‚   â”œâ”€â”€ m7_power/                    # Milestone 7: Power / RSSI Energy Detector
-â”‚   â”œâ”€â”€ m8_pipeline/                 # Milestone 8: Streaming Multi-Stage Fused Demodulator Pipeline
-â”‚   â”œâ”€â”€ m9_parallel/                 # Milestone 9: 4-Column Parallel FIR Filter (Hardware Scaling)
-â”‚   â”œâ”€â”€ m10_modular/                 # Milestone 10: Modular Arithmetic & Barrett Reduction
-â”‚   â”œâ”€â”€ m11_butterfly/               # Milestone 11: Radix-2 NTT Butterfly Kernel
-â”‚   â”œâ”€â”€ m12_ntt_ref/                 # Milestone 12: CPU NTT/INTT Reference & Constant Generator
-â”‚   â”œâ”€â”€ m13_ntt16/                   # Milestone 13: 16-Point Vectorized NPU NTT (64 Batches)
-â”‚   â”œâ”€â”€ m14_ntt256/                  # Milestone 14: 256-Point Vectorized NPU NTT (4 Batches)
-â”‚   â””â”€â”€ m15_polymul/                 # Milestone 15: NPU INTT & Cyclic Polynomial Multiplication
-â”œâ”€â”€ run_all_silicon_tests.py         # Automated Master Regression Suite
-â”œâ”€â”€ LICENSE                          # MIT License
-â”œâ”€â”€ CONTRIBUTING.md                  # Contribution Guidelines
-â””â”€â”€ README.md                        # Master Project Documentation
+├── include/
+│   └── sdr_dsp/
+│       ├── sdr_dsp_common.hpp      # Vector types, lane constants, Q15 definitions
+│       ├── fir_filter.hpp           # 64-lane vectorized FIR filtering
+│       ├── complex_mixer.hpp        # Complex NCO & I/Q frequency shifter
+│       ├── power_detector.hpp       # I^2 + Q^2 energy / RSSI detector
+│       ├── modular_arithmetic.hpp   # Barrett & Montgomery modular reduction mod q=3329
+│       └── ntt_butterfly.hpp        # Cooley-Tukey & Gentleman-Sande butterflies
+├── tests/
+│   ├── m5_fir/                      # Milestone 5: 8-Tap Vectorized Low-Pass FIR Filter
+│   ├── m6_mixer/                    # Milestone 6: Complex Mixer / NCO Frequency Downconverter
+│   ├── m7_power/                    # Milestone 7: Power / RSSI Energy Detector
+│   ├── m8_pipeline/                 # Milestone 8: Streaming Multi-Stage Fused Demodulator Pipeline
+│   ├── m9_parallel/                 # Milestone 9: 4-Column Parallel FIR Filter (Hardware Scaling)
+│   ├── m10_modular/                 # Milestone 10: Modular Arithmetic & Barrett Reduction
+│   ├── m11_butterfly/               # Milestone 11: Radix-2 NTT Butterfly Kernel
+│   ├── m12_ntt_ref/                 # Milestone 12: CPU NTT/INTT Reference & Constant Generator
+│   ├── m13_ntt16/                   # Milestone 13: 16-Point Vectorized NPU NTT (64 Batches)
+│   ├── m14_ntt256/                  # Milestone 14: 256-Point Vectorized NPU NTT (4 Batches)
+│   └── m15_polymul/                 # Milestone 15: NPU INTT & Cyclic Polynomial Multiplication
+├── run_all_silicon_tests.py         # Automated Master Regression Suite
+├── LICENSE                          # MIT License
+├── CONTRIBUTING.md                  # Contribution Guidelines
+└── README.md                        # Master Project Documentation
 ```
 
 ---
@@ -166,4 +166,4 @@ Expected output:
 
 - **Lead Architect & Maintainer:** Midhat ([@midhatn](https://github.com/midhatn))
 - **AI Architecture & Engineering Partner:** Perplexity AI (Senior AMD XDNA / AIE & DSP Copilot)
-- **License:** MIT License â€” See [LICENSE](LICENSE) for details.
+- **License:** MIT License — See [LICENSE](LICENSE) for details.
