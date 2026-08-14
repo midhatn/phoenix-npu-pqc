@@ -46,7 +46,7 @@ The native-Windows execution path is used because MLIR-AIE and Peano have first-
 | M7-ext | Power / RSSI energy detector | ✅ | `tests/m7_power/`. Not in §16 sequence; useful for spectrum monitoring, squelch, and correlation-based preamble detection. |
 | M8-ext | Fused DSP pipeline (mixer + FIR + power) | ✅ | `tests/m8_pipeline/`. Multi-stage kernel fusion pattern, no SDR yet. |
 | M9-ext | 4-column parallel FIR | ✅ | `tests/m9_parallel/`. Multi-column parallelization exercises the XDNA1 4×5 tile grid geometry ([Linux amdxdna docs](https://docs.kernel.org/accel/amdxdna/amdnpu.html)); pattern reusable for future kernels. |
-| M10-ext | 4-column parallel multi-stage demodulator pipeline | 🧪 | `tests/m10_benchmark/`. Present in tree, not in regression runner. To be integrated as an M9-ext companion. |
+| M10-ext | 4-column parallel multi-stage demodulator pipeline | 🧪 | `tests/m9b_parallel_pipeline/`. Present in tree, not in regression runner. To be integrated as an M9-ext companion. |
 
 ### Modular arithmetic & NTT track (canonical §16 M10–M15)
 
@@ -60,7 +60,7 @@ The NTT track implements the Number-Theoretic Transform, a finite-field analogue
 | M13 | 16-point NPU NTT | ✅ | `tests/m13_ntt16/` |
 | M14 | 256-point vectorized NPU NTT | ✅ | `tests/m14_ntt256/`. Matches Kyber `N = 256`. |
 | M15 | NPU INTT + cyclic polynomial multiplication | ✅ | `tests/m15_polymul/` |
-| M15+ | Negacyclic polynomial multiplication (`Z_q[x]/(x^N + 1)`) | ✅ | `tests/m16_negacyclic/`. Repo currently labels this M16; canonically an extension of M15. The negacyclic ring `Z_q[x]/(x^N + 1)` is the Kyber ring, per [Isabelle/AFP CRYSTALS-Kyber formalization](https://isa-afp.org/browser_info/current/AFP/CRYSTALS-Kyber/outline.pdf). To be renumbered to avoid collision with §16 M16 (CPU FFT reference). |
+| M15+ | Negacyclic polynomial multiplication (`Z_q[x]/(x^N + 1)`) | ✅ | `tests/m15b_negacyclic/`. Repo currently labels this M16; canonically an extension of M15. The negacyclic ring `Z_q[x]/(x^N + 1)` is the Kyber ring, per [Isabelle/AFP CRYSTALS-Kyber formalization](https://isa-afp.org/browser_info/current/AFP/CRYSTALS-Kyber/outline.pdf). To be renumbered to avoid collision with §16 M16 (CPU FFT reference). |
 
 ### FFT track (canonical §16 M16–M18)
 
@@ -69,8 +69,8 @@ The Fast Fourier Transform in radix-2 form is the [Cooley–Tukey algorithm (196
 | M# | Focus | Status | Notes |
 |---|---|---|---|
 | M16 | CPU DFT/FFT reference | 🚧 | **Next up.** Pure Python/NumPy reference following [Cooley & Tukey 1965](https://garfield.library.upenn.edu/classics1993/A1993MJ84400001.pdf). Currently the CPU reference is inlined in the M17-candidate FFT test; needs to be extracted as a standalone documented reference module. No hardware dependency. |
-| M17 | NPU FFT/IFFT | 🧪 | Shipped as 64-point direct DFT in bfloat16 (`tests/m11_fft/`). Silicon-validated against NumPy with `atol=0.1`. **Honest caveat**: implementation is a direct O(N²) DFT, not the radix-2/radix-4 O(N log N) butterfly implementation ([Cooley-Tukey 1965](https://garfield.library.upenn.edu/classics1993/A1993MJ84400001.pdf)) that §16 implies. The direct DFT is easier to vectorize on AIE2's 512-bit vector datapath ([AI Engine Wikipedia summary](https://en.wikipedia.org/wiki/AI_engine)) but does not scale beyond small N. Radix-butterfly version tracked as M17-butterfly. To be renumbered and integrated into regression runner. |
-| M17-parallel | 4-column parallel NPU FFT | 🧪 | `tests/m12_fft_parallel/`. Parallel channelizer variant of M17 using multiple AIE2 tile columns. |
+| M17 | NPU FFT/IFFT | 🧪 | Shipped as 64-point direct DFT in bfloat16 (`tests/m17_fft_dft/`). Silicon-validated against NumPy with `atol=0.1`. **Honest caveat**: implementation is a direct O(N²) DFT, not the radix-2/radix-4 O(N log N) butterfly implementation ([Cooley-Tukey 1965](https://garfield.library.upenn.edu/classics1993/A1993MJ84400001.pdf)) that §16 implies. The direct DFT is easier to vectorize on AIE2's 512-bit vector datapath ([AI Engine Wikipedia summary](https://en.wikipedia.org/wiki/AI_engine)) but does not scale beyond small N. Radix-butterfly version tracked as M17-butterfly. To be renumbered and integrated into regression runner. |
+| M17-parallel | 4-column parallel NPU FFT | 🧪 | `tests/m17p_fft_parallel/`. Parallel channelizer variant of M17 using multiple AIE2 tile columns. |
 | M17-butterfly | NPU FFT via radix-2/radix-4 Cooley-Tukey butterflies | 🚧 | Follow-up to M16/M17 to align implementation with §16 intent and achieve O(N log N) complexity. Reuses the modular-arithmetic butterfly pattern from `tests/m11_butterfly/` adapted to complex bfloat16 twiddle factors. |
 | M18 | Streaming FFT spectrum analyzer connected to SDR | 🔒 | Requires SDR hardware. |
 
@@ -82,7 +82,7 @@ The Fast Fourier Transform in radix-2 form is the [Cooley–Tukey algorithm (196
 | M20 | Polyphase decimation & interpolation | 🚧 | No hardware dependency. Post-M17-butterfly. |
 | M21 | Digital downconverter (DDC) | 🚧 | Builds on M6 mixer + M19 complex FIR + M20 polyphase. |
 | M22 | Digital upconverter (DUC) | 🚧 | Symmetric with M21. |
-| M23 | Channelizer & filter bank | 🚧 | Uses M17 FFT + M19 FIR. `m12_fft_parallel` is a partial prototype. |
+| M23 | Channelizer & filter bank | 🚧 | Uses M17 FFT + M19 FIR. `m17p_fft_parallel` is a partial prototype. |
 
 ### Modulation & synchronization (canonical §16 M24–M27, partially SDR-blocked)
 
@@ -121,7 +121,7 @@ All milestones below require a working SDR device. Deferred until hardware is av
 Ordered by dependency:
 
 1. **v0.2.1 polish** (in progress): dependabot, CI badge in README, delete duplicate `LICENSE.md`, publish v0.2 release tag.
-2. **Directory renumbering pass**: rename `tests/m16_negacyclic/` → `tests/m15b_negacyclic/`, rename `tests/m11_fft/` → `tests/m17_fft_dft/`, rename `tests/m12_fft_parallel/` → `tests/m17p_fft_parallel/`, rename `tests/m10_benchmark/` → `tests/m9b_parallel_pipeline/`. Update `run_all_silicon_tests.py` to include the previously-orphaned tests. Update `docs/MILESTONES_AND_MATHEMATICS.md` mapping.
+2. **Directory renumbering pass** — *completed in v0.2.1*. The Scheme B directories have been renamed to align with §16 canonical: `tests/m10_benchmark/` → `tests/m9b_parallel_pipeline/`, `tests/m11_fft/` → `tests/m17_fft_dft/`, `tests/m12_fft_parallel/` → `tests/m17p_fft_parallel/`, `tests/m16_negacyclic/` → `tests/m15b_negacyclic/`. Blob SHAs preserved so `git log --follow` still tracks each file's history. Integration into `run_all_silicon_tests.py` (currently only wires Scheme A milestones M3–M15) is tracked separately.
 3. **M16 CPU FFT reference**: extract the currently-inlined NumPy DFT reference into a standalone `references/fft_reference.py` implementing the radix-2 Cooley-Tukey algorithm per [Cooley & Tukey 1965](https://garfield.library.upenn.edu/classics1993/A1993MJ84400001.pdf), with documented complexity, error bounds, and test coverage across power-of-2 sizes.
 4. **M17-butterfly**: implement radix-2 (and optionally radix-4) FFT via the shipped M11 NTT-butterfly pattern adapted to complex bfloat16 twiddles, replacing the direct DFT with an O(N log N) implementation.
 5. **M19 complex FIR**: extend the shipped real-valued FIR to complex-valued taps and complex I/Q input.
