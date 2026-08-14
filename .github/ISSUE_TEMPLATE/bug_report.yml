@@ -1,0 +1,36 @@
+﻿name: Bug report
+description: A build, install, script, or docs bug — anything not directly about a silicon milestone
+title: "[bug] "
+labels: ["bug"]
+body:
+  - type: textarea
+    id: description
+    attributes:
+      label: Describe the bug
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Steps to reproduce
+      render: shell
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+
+  - type: input
+    id: environment
+    attributes:
+      label: Host OS + Python
+      placeholder: "e.g., Windows 11 Pro 26200, Python 3.13.15"
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevant logs / stack trace
+      render: text

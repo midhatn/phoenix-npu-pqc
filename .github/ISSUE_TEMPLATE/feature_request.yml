@@ -1,0 +1,35 @@
+﻿name: Feature request
+description: Propose a new milestone, kernel, DSP primitive, or infrastructure improvement
+title: "[feature] "
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem does this solve?
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed solution
+      description: Describe the API, kernel design, or milestone specification.
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+
+  - type: dropdown
+    id: scope
+    attributes:
+      label: Scope
+      options:
+        - New DSP kernel / milestone
+        - Kernel optimization
+        - Toolchain / build / CI
+        - Documentation
+        - Other

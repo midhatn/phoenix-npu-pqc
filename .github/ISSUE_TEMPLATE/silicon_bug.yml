@@ -1,0 +1,120 @@
+﻿name: Silicon regression / milestone failure
+description: A milestone regressed or produced incorrect results on NPU hardware
+title: "[M?? silicon] "
+labels: ["silicon", "bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use this template when one of the M3–M15 milestones fails to run,
+        crashes XRT, or produces numerically incorrect output on physical
+        Phoenix NPU silicon.
+
+        For non-silicon issues (build, install, docs), please use one of the
+        other templates.
+
+  - type: dropdown
+    id: milestone
+    attributes:
+      label: Which milestone
+      options:
+        - M3  — Single-Core SAXPY
+        - M5  — 8-Tap Vectorized FIR
+        - M6  — Complex Mixer / NCO
+        - M7  — Power / RSSI Detector
+        - M8  — Fused Demodulator Pipeline
+        - M9  — 4-Column Parallel FIR
+        - M10 — Modular Arithmetic (Barrett)
+        - M11 — Radix-2 NTT Butterfly
+        - M12 — CPU NTT/INTT Reference
+        - M13 — 16-Point NPU NTT
+        - M14 — 256-Point NPU NTT
+        - M15 — NPU INTT & Poly Multiplication
+    validations:
+      required: true
+
+  - type: dropdown
+    id: failure_type
+    attributes:
+      label: Failure type
+      options:
+        - Numerical mismatch (bit-exact/L_inf violation)
+        - Compilation error (Peano / mlir-aie)
+        - XRT runtime error (kernel launch, DMA, hang)
+        - Environment / import error
+        - Other
+    validations:
+      required: true
+
+  - type: input
+    id: driver
+    attributes:
+      label: AMD NPU driver version
+      placeholder: "e.g., 32.0.20102.3930 (see xrt-smi examine)"
+    validations:
+      required: true
+
+  - type: input
+    id: firmware
+    attributes:
+      label: NPU firmware version
+      placeholder: "e.g., 1.5.5.391"
+
+  - type: input
+    id: xrt
+    attributes:
+      label: XRT version
+      placeholder: "e.g., 2.21.0 (see xrt-smi examine)"
+
+  - type: input
+    id: peano
+    attributes:
+      label: llvm-aie (Peano) version
+      placeholder: "e.g., 21.0.0.2026080301+c9c5ecb7"
+
+  - type: input
+    id: mlir_aie
+    attributes:
+      label: mlir-aie version
+      placeholder: "e.g., 1.3.4"
+
+  - type: input
+    id: os
+    attributes:
+      label: Host OS build
+      placeholder: "e.g., Windows 11 Pro 26200"
+
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Steps to reproduce
+      description: Exact commands starting from an activated ironenv.
+      placeholder: |
+        1. Activate ironenv:  & "...\ironenv\Scripts\Activate.ps1"
+        2. cd tests\m??_...
+        3. python test_...py
+      render: shell
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected output
+      description: What the reference / previous run produced (sample values or the PASS line).
+      render: text
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual output
+      description: Full stderr + stdout. Redact anything sensitive.
+      render: text
+    validations:
+      required: true
+
+  - type: textarea
+    id: xrt_smi
+    attributes:
+      label: Output of `xrt-smi examine`
+      render: text

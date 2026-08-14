@@ -1,0 +1,14 @@
+﻿{
+  "ignorePatterns": [
+    { "pattern": "^http://localhost" },
+    { "pattern": "^#" },
+    { "pattern": "^C:\\\\" }
+  ],
+  "replacementPatterns": [],
+  "httpHeaders": [],
+  "timeout": "10s",
+  "retryOn429": true,
+  "retryCount": 3,
+  "fallbackRetryDelay": "5s",
+  "aliveStatusCodes": [200, 206, 429]
+}

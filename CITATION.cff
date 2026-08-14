@@ -1,0 +1,37 @@
+﻿cff-version: 1.2.0
+message: "If you use this software, please cite it using the metadata below."
+title: "Phoenix SDR-DSP: Vectorized SDR & NTT DSP Acceleration Framework for AMD Phoenix NPU (XDNA1/AIE2)"
+abstract: "High-performance native Windows 11 acceleration framework for real-time Software Defined Radio (SDR) processing and Number Theoretic Transform (NTT) finite-field lattice cryptography on AMD Ryzen AI Phoenix silicon (XDNA1 / AIE2). Provides 12 silicon-verified milestones covering vectorized FIR filtering, complex mixing, power detection, multi-stage streaming demodulation, 4-column parallel scaling, modular arithmetic (Barrett reduction), Radix-2 NTT butterflies, and 16/256-point NTT/INTT with cyclic polynomial multiplication mod q=3329."
+type: software
+authors:
+  - family-names: "Nashar"
+    given-names: "Midhat"
+    alias: "midhatn"
+repository-code: "https://github.com/midhatn/phoenix-sdr-dsp"
+url: "https://github.com/midhatn/phoenix-sdr-dsp"
+license: MIT
+keywords:
+  - "amd-ryzen-ai"
+  - "npu"
+  - "xdna"
+  - "aie2"
+  - "phoenix-npu"
+  - "software-defined-radio"
+  - "sdr"
+  - "dsp"
+  - "number-theoretic-transform"
+  - "ntt"
+  - "mlir-aie"
+  - "peano"
+  - "xrt"
+  - "windows-11"
+  - "lattice-cryptography"
+  - "vectorization"
+preferred-citation:
+  type: software
+  title: "Phoenix SDR-DSP: Vectorized SDR & NTT DSP Acceleration Framework for AMD Phoenix NPU"
+  authors:
+    - family-names: "Nashar"
+      given-names: "Midhat"
+  year: 2026
+  url: "https://github.com/midhatn/phoenix-sdr-dsp"

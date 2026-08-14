@@ -1,0 +1,57 @@
+﻿# Normalize line endings across contributors and CI.
+# Defaults: text files get LF in the repo; git converts on checkout per OS.
+* text=auto eol=lf
+
+# --- Windows shell scripts: keep CRLF checked out on all OSes ---
+*.ps1   text eol=crlf
+*.psm1  text eol=crlf
+*.psd1  text eol=crlf
+*.bat   text eol=crlf
+*.cmd   text eol=crlf
+
+# --- Source / config: force LF everywhere for reproducibility ---
+*.py    text eol=lf
+*.sh    text eol=lf
+*.md    text eol=lf
+*.yml   text eol=lf
+*.yaml  text eol=lf
+*.json  text eol=lf
+*.toml  text eol=lf
+*.cff   text eol=lf
+*.hpp   text eol=lf
+*.h     text eol=lf
+*.cpp   text eol=lf
+*.c     text eol=lf
+*.mlir  text eol=lf
+*.tcl   text eol=lf
+*.cfg   text eol=lf
+*.ini   text eol=lf
+*.txt   text eol=lf
+Makefile text eol=lf
+
+# --- Binary blobs: never diff or line-normalize ---
+*.xclbin binary
+*.pdi    binary
+*.elf    binary
+*.o      binary
+*.a      binary
+*.lib    binary
+*.dll    binary
+*.exe    binary
+*.pyd    binary
+*.pdb    binary
+*.zip    binary
+*.tar    binary
+*.tar.gz binary
+*.tgz    binary
+*.bin    binary
+*.png    binary
+*.jpg    binary
+*.jpeg   binary
+*.gif    binary
+*.pdf    binary
+
+# --- Linguist hints for GitHub's language stats ---
+# Treat vendored third-party code as "not our code" for language %.
+third_party/**  linguist-vendored
+docs/**         linguist-documentation

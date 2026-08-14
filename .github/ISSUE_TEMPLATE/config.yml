@@ -1,0 +1,14 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Security vulnerability (private)
+    url: https://github.com/midhatn/phoenix-sdr-dsp/security/advisories/new
+    about: Report a security issue privately via GitHub's Private Vulnerability Reporting.
+  - name: Upstream - AMD XDNA driver
+    url: https://github.com/amd/xdna-driver/issues
+    about: Bugs in the kernel driver belong upstream.
+  - name: Upstream - MLIR-AIE / IRON
+    url: https://github.com/Xilinx/mlir-aie/issues
+    about: Bugs in the AIE Python eDSL / MLIR passes belong upstream.
+  - name: Upstream - LLVM Peano (llvm-aie)
+    url: https://github.com/Xilinx/llvm-aie/issues
+    about: Bugs in the AIE2 clang++ compiler belong upstream.

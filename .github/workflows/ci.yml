@@ -1,0 +1,114 @@
+﻿name: CI
+
+"on":
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+# Cancel in-progress runs on the same branch when a new commit lands.
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  # -------------------------------------------------------------------------
+  lint-python:
+    name: Lint Python
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install ruff
+        run: python -m pip install --upgrade ruff
+      - name: Lint
+        run: |
+          ruff check --output-format=github .
+      - name: Format check
+        run: |
+          ruff format --check .
+        continue-on-error: true   # advisory during initial adoption
+
+  # -------------------------------------------------------------------------
+  validate-metadata:
+    name: Validate CITATION.cff and toolchain.yaml
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install validators
+        run: |
+          python -m pip install --upgrade cffconvert pyyaml
+
+      - name: Validate CITATION.cff
+        run: |
+          cffconvert --validate
+
+      - name: Parse toolchain.yaml
+        run: |
+          python - <<'PY'
+          import sys, yaml
+          with open("toolchain.yaml", "r", encoding="utf-8") as f:
+              d = yaml.safe_load(f)
+          required_top = {"schema_version", "project", "target", "host",
+                          "drivers", "toolchain", "verification", "bootstrap"}
+          missing = required_top - set(d.keys())
+          assert not missing, f"toolchain.yaml missing top-level keys: {missing}"
+          for k in ("mlir_aie", "llvm_aie_peano", "xrt"):
+              assert k in d["toolchain"], f"toolchain.{k} missing"
+              assert "verified_version" in d["toolchain"][k], \
+                  f"toolchain.{k}.verified_version missing"
+          print("toolchain.yaml OK")
+          print("  mlir-aie :", d["toolchain"]["mlir_aie"]["verified_version"])
+          print("  llvm-aie :", d["toolchain"]["llvm_aie_peano"]["verified_version"])
+          print("  xrt      :", d["toolchain"]["xrt"]["verified_version"])
+          PY
+
+  # -------------------------------------------------------------------------
+  cpu-reference-tests:
+    name: CPU reference tests (M12 NTT/INTT)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install runtime deps
+        run: |
+          python -m pip install --upgrade numpy
+
+      - name: Run Milestone 12 (CPU NTT/INTT reference)
+        run: |
+          if [ -f tests/m12_ntt_ref/test_ntt_ref_m12.py ]; then
+            python tests/m12_ntt_ref/test_ntt_ref_m12.py
+          else
+            # Fallback: find any m12 python entry point
+            f=$(find tests/m12_ntt_ref -maxdepth 2 -name "*.py" | head -n1)
+            echo "Running $f"
+            python "$f"
+          fi
+
+  # -------------------------------------------------------------------------
+  markdown-links:
+    name: Check Markdown links
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Link check
+        uses: gaurav-nelson/github-action-markdown-link-check@v1
+        with:
+          use-quiet-mode: "yes"
+          use-verbose-mode: "yes"
+          config-file: ".github/mlc_config.json"
+        continue-on-error: true
+
