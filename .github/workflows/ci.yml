@@ -75,7 +75,7 @@ jobs:
 
   # -------------------------------------------------------------------------
   cpu-reference-tests:
-    name: CPU reference tests (M12 NTT/INTT)
+    name: CPU reference tests (M12 NTT, M16 FFT)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -97,6 +97,10 @@ jobs:
             echo "Running $f"
             python "$f"
           fi
+
+      - name: Run Milestone 16 (CPU FFT/IFFT reference)
+        run: |
+          python tests/m16_fft_ref/test_fft_reference_m16.py
 
   # -------------------------------------------------------------------------
   markdown-links:
