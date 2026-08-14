@@ -59,10 +59,9 @@
 # For complex128 (eps ≈ 2.22e-16) and N ≤ 1024, the expected relative
 # error against a direct DFT is on the order of 1e-13.
 
-import cmath
 import math
-import numpy as np
 
+import numpy as np
 
 # ============================================================================
 # Reference implementations
@@ -316,7 +315,7 @@ def _run_size(N, rng, verbose=True):
     assert err_itr < tol, f"Iterative FFT vs direct DFT: rel err {err_itr:.2e} exceeds {tol}"
     assert err_np < tol, f"NumPy FFT vs direct DFT: rel err {err_np:.2e} exceeds {tol}"
     if verbose:
-        print(f"  [PASS] Random complex vector cross-check")
+        print("  [PASS] Random complex vector cross-check")
         print(f"           recursive-vs-direct   rel err = {err_rec:.2e}")
         print(f"           iterative-vs-direct   rel err = {err_itr:.2e}")
         print(f"           numpy-vs-direct       rel err = {err_np:.2e}")
