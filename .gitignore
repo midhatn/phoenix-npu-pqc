@@ -1,4 +1,4 @@
-﻿# Python
+# Python
 __pycache__/
 *.pyc
 *.pyo
@@ -47,3 +47,6 @@ third_party/
 
 # Backup files
 *.bak
+
+# Local sync helper (not tracked)
+sync.ps1
