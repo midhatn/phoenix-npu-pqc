@@ -63,14 +63,17 @@ def fft_64point(
         core_body, fn_args=[of_in.cons(), of_tw.cons(), of_out.prod(), fft_func]
     )
 
-    rt = Runtime()
-    with rt.sequence(in_ty, in_ty, out_ty) as (a_in, a_tw, c_out):
-        rt.start(worker)
-        rt.fill(of_in.prod(), a_in)
-        rt.fill(of_tw.prod(), a_tw)
-        rt.drain(of_out.cons(), c_out, wait=True)
+    def sequence(a_in, a_tw, c_out, in_h, tw_h, out_h):
+        in_h.fill(a_in)
+        tw_h.fill(a_tw)
+        out_h.drain(c_out, wait=True)
 
-    my_program = Program(iron.get_current_device(), rt)
+    rt = Runtime(
+        sequence,
+        [in_ty, in_ty, out_ty, of_in.prod(), of_tw.prod(), of_out.cons()],
+    )
+
+    my_program = Program(iron.get_current_device(), rt, workers=[worker])
     return my_program.resolve_program()
 
 
