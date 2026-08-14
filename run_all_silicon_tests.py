@@ -1,7 +1,16 @@
 # Purpose: Master Silicon Regression Test Suite for all SDR and Finite-Field DSP Milestones.
 # Target operating system: Windows 11 Pro 25H2.
 # Target architecture: AMD Phoenix NPU1 / XDNA1 / AIE2 (4-Column Array).
-# Verification: End-to-end automated execution and reporting of Milestones 3, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15.
+# Verification: End-to-end automated execution and reporting of Milestones 3, 5, 6, 7, 8, 9, 9b,
+#               10, 11, 12, 13, 14, 15, 15b, 17, 17p.
+#
+# History:
+# - v0.2.0: Initial 12-milestone suite (M3, M5–M15).
+# - v0.3.0: Extended to 16 milestones after tests/RENUMBERING.md alignment
+#           (v0.2.1). Adds M9b (parallel pipeline), M15b (negacyclic polymul),
+#           M17 (direct-DFT NPU FFT), M17p (4-column parallel NPU FFT). The four
+#           additions had been silicon-validated independently and now run under
+#           the same regression harness.
 
 import subprocess
 import sys
@@ -14,7 +23,7 @@ def run_test(name, path, script):
     print(f" Running: {name}")
     print(f" Directory: {path}")
     print("=======================================================")
-    
+
     start_t = time.perf_counter()
     p = subprocess.run(
         [sys.executable, script],
@@ -24,10 +33,10 @@ def run_test(name, path, script):
         text=True,
     )
     elapsed = time.perf_counter() - start_t
-    
+
     output = p.stdout.strip()
     errors = p.stderr.strip()
-    
+
     print(output)
     if errors:
         print(f"\n[STDERR]:\n{errors}")
@@ -75,6 +84,11 @@ def main():
             "test_parallel_m9.py"
         ),
         (
+            "Milestone 9b: 4-Column Parallel Multi-Stage Demodulator Pipeline",
+            Path(r"C:\phoenix-sdr-dsp\tests\m9b_parallel_pipeline"),
+            "test_parallel_pipeline_m10.py"
+        ),
+        (
             "Milestone 10: Modular Arithmetic & Barrett Reduction (mod 3329)",
             Path(r"C:\phoenix-sdr-dsp\tests\m10_modular"),
             "test_modular_m10.py"
@@ -104,6 +118,21 @@ def main():
             Path(r"C:\phoenix-sdr-dsp\tests\m15_polymul"),
             "test_polymul_m15.py"
         ),
+        (
+            "Milestone 15b: NPU Negacyclic Polynomial Multiplication (Kyber ring)",
+            Path(r"C:\phoenix-sdr-dsp\tests\m15b_negacyclic"),
+            "test_negacyclic_m16.py"
+        ),
+        (
+            "Milestone 17: 64-Point Direct DFT NPU Kernel (bfloat16)",
+            Path(r"C:\phoenix-sdr-dsp\tests\m17_fft_dft"),
+            "test_fft_m11.py"
+        ),
+        (
+            "Milestone 17p: 4-Column Parallel 64-Point FFT Channelizer",
+            Path(r"C:\phoenix-sdr-dsp\tests\m17p_fft_parallel"),
+            "test_parallel_fft_m12.py"
+        ),
     ]
 
     results = []
@@ -123,16 +152,17 @@ def main():
         status_tag = "[ PASS ]" if passed else "[ FAIL ]"
         if not passed:
             all_passed = False
-        print(f" {status_tag} {name:<65} ({elapsed:.2f}s)")
+        print(f" {status_tag} {name:<70} ({elapsed:.2f}s)")
 
     print("----------------------------------------------------------------------")
     print(f" Total Tests Run: {len(results)} | Passed: {sum(1 for _, p, _ in results if p)} | Failed: {sum(1 for _, p, _ in results if not p)}")
     print(f" Total Elapsed Time: {total_elapsed:.2f} seconds")
-    
+
     if all_passed:
         print("\n *** ALL SILICON DSP & NTT REGRESSION TESTS PASSED BIT-ACCURATELY! ***\n")
     else:
         print("\n *** SOME REGRESSION TESTS FAILED. PLEASE REVIEW LOGS. ***\n")
+        sys.exit(1)
 
 if __name__ == "__main__":
     main()
