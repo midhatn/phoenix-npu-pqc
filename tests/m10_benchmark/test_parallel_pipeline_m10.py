@@ -5,8 +5,9 @@
 
 import time
 from pathlib import Path
-import aie.iron as iron
+
 import numpy as np
+from aie import iron
 from aie.helpers.taplib.tap import TensorAccessPattern
 from aie.iron import (
     CompileTime,
@@ -144,7 +145,7 @@ def main():
     out_tensor = XRTTensor(np_out_power, dtype=element_type)
 
     print("Compiling 4-Column Parallel Pipeline with Peano and dispatching to Phoenix NPU...")
-    res = parallel_sdr_pipeline(
+    parallel_sdr_pipeline(
         in_tensor,
         lo_tensor,
         out_tensor,
@@ -167,7 +168,7 @@ def main():
     # Sync back from NPU to host memory
     out_tensor.to("cpu")
 
-    print(f"\n--- Silicon Benchmark Metrics ---")
+    print("\n--- Silicon Benchmark Metrics ---")
     print(f"Average Execution Latency: {avg_latency_us:.2f} µs per 2048 I/Q burst")
     print(f"SDR Processing Throughput:  {msps:.2f} MSamples/sec ({msps * 2 * 2:.2f} MB/s I/Q stream)")
 

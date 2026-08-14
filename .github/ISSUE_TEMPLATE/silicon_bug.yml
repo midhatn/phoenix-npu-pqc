@@ -1,4 +1,4 @@
-﻿name: Silicon regression / milestone failure
+name: Silicon regression / milestone failure
 description: A milestone regressed or produced incorrect results on NPU hardware
 title: "[M?? silicon] "
 labels: ["silicon", "bug"]

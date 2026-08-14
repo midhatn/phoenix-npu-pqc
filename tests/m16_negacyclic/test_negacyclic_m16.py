@@ -3,22 +3,22 @@
 # Target architecture: AMD Ryzen 9 7940HS Phoenix NPU1 (XDNA1 / AIE2 / Win11 Pro)
 
 import sys
+
 import numpy as np
-import aie.iron as iron
 from aie.dialects.aie import (
     AIEDevice,
-    tile,
-    object_fifo,
+    ObjectFifoPort,
     core,
     device,
-    ObjectFifoPort,
+    object_fifo,
+    tile,
 )
 from aie.dialects.aiex import (
-    runtime_sequence,
     npu_dma_memcpy_nd,
     npu_sync,
+    runtime_sequence,
 )
-from aie.ir import Context, Location, IntegerType
+from aie.ir import Context, IntegerType, Location
 from aie.iron import Kernel
 from aie.utils.hostruntime.xrtruntime.hostruntime import XRTTensor
 

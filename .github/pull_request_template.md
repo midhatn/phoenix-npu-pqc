@@ -1,4 +1,4 @@
-﻿## Summary
+## Summary
 
 <!-- What does this PR change and why? Link related issues (e.g., Closes #12). -->
 

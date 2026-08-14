@@ -1,4 +1,4 @@
-﻿name: Feature request
+name: Feature request
 description: Propose a new milestone, kernel, DSP primitive, or infrastructure improvement
 title: "[feature] "
 labels: ["enhancement"]

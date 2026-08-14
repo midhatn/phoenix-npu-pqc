@@ -1,4 +1,4 @@
-﻿name: Bug report
+name: Bug report
 description: A build, install, script, or docs bug — anything not directly about a silicon milestone
 title: "[bug] "
 labels: ["bug"]

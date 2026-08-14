@@ -9,8 +9,9 @@
 # Error handling: Bit-accurate tolerance check against reference FIR.
 
 from pathlib import Path
-import aie.iron as iron
+
 import numpy as np
+from aie import iron
 from aie.iron import (
     CompileTime,
     ExternalFunction,

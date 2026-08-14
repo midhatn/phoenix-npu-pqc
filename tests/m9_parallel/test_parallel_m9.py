@@ -5,8 +5,9 @@
 # Verification: Bit-accurate match across all 4 columns against NumPy reference.
 
 from pathlib import Path
-import aie.iron as iron
+
 import numpy as np
+from aie import iron
 from aie.helpers.taplib.tap import TensorAccessPattern
 from aie.iron import (
     CompileTime,

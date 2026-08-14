@@ -4,9 +4,8 @@
 # Input types: Verification suite across all M4 kernels.
 # Output types: Success verification report.
 
-import os
-import subprocess
 from pathlib import Path
+
 
 def main():
     print("=== Phoenix SDR-DSP Milestone 4: Header Library Verification ===")

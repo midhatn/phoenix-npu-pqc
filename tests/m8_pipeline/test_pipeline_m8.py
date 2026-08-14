@@ -5,8 +5,9 @@
 # Verification: Bit-accurate end-to-end match with streaming receiver reference model.
 
 from pathlib import Path
-import aie.iron as iron
+
 import numpy as np
+from aie import iron
 from aie.iron import (
     CompileTime,
     ExternalFunction,
@@ -80,7 +81,7 @@ def main():
     out_size = 2048  # 2048 Power samples
     element_type = bfloat16
     print(f"Target Device: {iron.get_current_device()}")
-    print(f"Pipeline: [Input I/Q (4096)] -> [Complex NCO Downconversion] -> [Dual-Channel FIR] -> [Power Detection (2048)]")
+    print("Pipeline: [Input I/Q (4096)] -> [Complex NCO Downconversion] -> [Dual-Channel FIR] -> [Power Detection (2048)]")
 
     # Generate synthetic SDR modulated RF signal at f_rf = 25 Hz
     num_complex = out_size

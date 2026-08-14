@@ -4,8 +4,9 @@
 # Arithmetic: Cooley-Tukey Radix-2 Butterfly mod q = 3329.
 
 from pathlib import Path
-import aie.iron as iron
+
 import numpy as np
+from aie import iron
 from aie.iron import (
     CompileTime,
     ExternalFunction,
@@ -18,7 +19,6 @@ from aie.iron import (
 )
 from aie.utils.config import cxx_header_path
 from aie.utils.hostruntime.xrtruntime.tensor import XRTTensor
-from aie.utils.verify import assert_pass
 
 MOD_Q = 3329
 BARRETT_FACTOR = 20158

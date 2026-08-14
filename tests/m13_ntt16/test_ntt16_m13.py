@@ -4,8 +4,9 @@
 # Parameters: N = 16, Prime Modulus q = 3329, omega = 2699.
 
 from pathlib import Path
-import aie.iron as iron
+
 import numpy as np
+from aie import iron
 from aie.iron import (
     CompileTime,
     ExternalFunction,
@@ -18,7 +19,6 @@ from aie.iron import (
 )
 from aie.utils.config import cxx_header_path
 from aie.utils.hostruntime.xrtruntime.tensor import XRTTensor
-from aie.utils.verify import assert_pass
 
 MOD_Q = 3329
 N_TRANSFORM = 16

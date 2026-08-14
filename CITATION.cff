@@ -1,4 +1,4 @@
-﻿cff-version: 1.2.0
+cff-version: 1.2.0
 message: "If you use this software, please cite it using the metadata below."
 title: "Phoenix SDR-DSP: Vectorized SDR & NTT DSP Acceleration Framework for AMD Phoenix NPU (XDNA1/AIE2)"
 abstract: "High-performance native Windows 11 acceleration framework for real-time Software Defined Radio (SDR) processing and Number Theoretic Transform (NTT) finite-field lattice cryptography on AMD Ryzen AI Phoenix silicon (XDNA1 / AIE2). Provides 12 silicon-verified milestones covering vectorized FIR filtering, complex mixing, power detection, multi-stage streaming demodulation, 4-column parallel scaling, modular arithmetic (Barrett reduction), Radix-2 NTT butterflies, and 16/256-point NTT/INTT with cyclic polynomial multiplication mod q=3329."

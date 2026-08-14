@@ -1,4 +1,4 @@
-﻿# Normalize line endings across contributors and CI.
+# Normalize line endings across contributors and CI.
 # Defaults: text files get LF in the repo; git converts on checkout per OS.
 * text=auto eol=lf
 

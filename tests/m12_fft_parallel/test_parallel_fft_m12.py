@@ -5,8 +5,9 @@
 
 import time
 from pathlib import Path
-import aie.iron as iron
+
 import numpy as np
+from aie import iron
 from aie.helpers.taplib.tap import TensorAccessPattern
 from aie.iron import (
     CompileTime,
@@ -20,7 +21,6 @@ from aie.iron import (
 )
 from aie.utils.config import cxx_header_path
 from aie.utils.hostruntime.xrtruntime.tensor import XRTTensor
-from aie.utils.verify import assert_pass
 from ml_dtypes import bfloat16
 
 
@@ -124,7 +124,7 @@ def main():
     out_tensor = XRTTensor(np_out_spec, dtype=element_type)
 
     print("Compiling 4-Column Parallel FFT Channelizer with Peano and dispatching to Phoenix NPU...")
-    res = parallel_fft_channelizer(
+    parallel_fft_channelizer(
         in_tensor,
         out_tensor,
         N_TOTAL=total_elements,
@@ -151,7 +151,7 @@ def main():
     # Sync back from NPU to host memory
     out_tensor.to("cpu")
 
-    print(f"\n--- Silicon FFT Channelizer Benchmark Metrics ---")
+    print("\n--- Silicon FFT Channelizer Benchmark Metrics ---")
     print(f"Batch Execution Latency: {avg_latency_us:.2f} µs per 64 FFT batch ({total_complex} complex samples)")
     print(f"FFT Transformation Rate: {ffts_per_sec:,.0f} FFTs/sec")
     print(f"Spectral Throughput:     {msps:.2f} MSamples/sec ({msps * 4:.2f} MB/s I/Q stream)")

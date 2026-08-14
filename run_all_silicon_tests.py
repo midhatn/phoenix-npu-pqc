@@ -8,15 +8,17 @@ import sys
 import time
 from pathlib import Path
 
+
 def run_test(name, path, script):
-    print(f"\n=======================================================")
+    print("\n=======================================================")
     print(f" Running: {name}")
     print(f" Directory: {path}")
-    print(f"=======================================================")
+    print("=======================================================")
     
     start_t = time.perf_counter()
     p = subprocess.run(
         [sys.executable, script],
+        check=False,
         cwd=str(path),
         capture_output=True,
         text=True,

@@ -4,7 +4,6 @@
 # Prime Modulus: q = 3329.
 # Transform Lengths: N = 16 and N = 256.
 
-import sys
 import numpy as np
 
 MOD_Q = 3329
@@ -180,8 +179,8 @@ def main():
 
         assert np.array_equal(radix_rand, dft_rand), f"Radix-2 vs Direct DFT mismatch for N={N}"
         assert np.array_equal(intt_rand, rand_vec), f"Round-trip INTT failed for random vector N={N}"
-        print(f"    [PASS] Random Vector: Bit-exact match between Direct DFT and Radix-2 Cooley-Tukey!")
-        print(f"    [PASS] Complete Round-Trip (x == INTT(NTT(x))) verified bit-exact!")
+        print("    [PASS] Random Vector: Bit-exact match between Direct DFT and Radix-2 Cooley-Tukey!")
+        print("    [PASS] Complete Round-Trip (x == INTT(NTT(x))) verified bit-exact!")
 
     print("\n" + "=" * 70)
     print("PASS!")
