@@ -1,0 +1,43 @@
+﻿# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+ironenv/
+
+# MLIR-AIE / Peano / XRT Build Artifacts
+*.elf
+*.xclbin
+*.bin
+*.o
+*.obj
+*.so
+*.dylib
+*.dll
+*.exe
+*.mlir
+*.btr
+*.json
+*.insts.txt
+aiecc_failure_*
+aiecc_repeater_*
+.npu/
+
+# Visual Studio & Windows
+.vs/
+*.sln.docstates
+*.user
+Debug/
+Release/
+x64/
+x86/
+build/
+dist/
+audit/
+captures/
+results/
+.DS_Store
+Thumbs.db
