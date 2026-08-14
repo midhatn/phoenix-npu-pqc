@@ -41,3 +41,9 @@ captures/
 results/
 .DS_Store
 Thumbs.db
+
+# Locally cloned external toolchains
+third_party/
+
+# Backup files
+*.bak
