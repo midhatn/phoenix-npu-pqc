@@ -1,21 +1,142 @@
 # Contributing to Phoenix SDR-DSP
 
-Contributions from the Software Defined Radio, AI Engine, and finite-field cryptography communities are welcome.
+Thanks for your interest in improving this project. This is a research-quality
+NPU acceleration framework that runs directly on AMD Ryzen AI Phoenix silicon
+(XDNA1 / AIE2), so contributions need to preserve the bit-accurate silicon
+verification guarantees of the master regression suite.
+
+By participating you agree to the [Code of Conduct](CODE_OF_CONDUCT.md).
+Security issues should go through [SECURITY.md](SECURITY.md), not the public
+issue tracker.
 
 ---
 
-## 1. Development Workflow
+## 1. Prerequisites
 
-1. **Fork the Repository:** Create your own branch (`git checkout -b feature/MyAwesomeDSPKernel`).
-2. **Setup Toolchain:** Ensure you have the AMD IRON environment and LLVM Peano compiler configured under Windows 11 / WSL2.
-3. **Verify Bit-Exactness:** Every deterministic DSP and NTT kernel MUST include an independent CPU reference test that verifies $0$ numerical error or documented fixed-point error bounds.
-4. **Run Master Regression:** Run `python run_all_silicon_tests.py` and ensure 100% of tests pass on silicon before opening a PR.
-5. **Open a Pull Request:** Describe your kernel implementation, tile allocation, and hardware benchmark metrics.
+You need an AMD Ryzen AI Phoenix or Hawk Point laptop (Ryzen 7040 or 8040
+series with XDNA1 / AIE2 NPU) running Windows 11 Pro build 22H2 or newer.
+The full toolchain is captured in [`toolchain.yaml`](toolchain.yaml):
+
+| Component        | Verified version                     |
+| ---------------- | ------------------------------------ |
+| Windows          | 11 Pro 26200 (25H2)                  |
+| AMD NPU driver   | 32.0.20102.3930                      |
+| NPU firmware     | 1.5.5.391                            |
+| XRT              | 2.21.0                               |
+| Python           | 3.13.15                              |
+| mlir-aie         | 1.3.4                                |
+| llvm-aie (Peano) | 21.0.0.2026080301+c9c5ecb7           |
+
+See [`docs/SETUP_WINDOWS.md`](docs/SETUP_WINDOWS.md) for the full install
+walkthrough, or run the one-shot bootstrap:
+
+```powershell
+.\scripts\bootstrap_env.ps1
+```
 
 ---
 
-## 2. Coding Standards
+## 2. Development workflow
 
-- **Header Files:** Place all reusable C++ headers under `include/sdr_dsp/`.
-- **Naming Conventions:** Kernels should follow snake_case naming; constants should use uppercase prefixes (`MOD_Q`, `BARRETT_FACTOR`).
-- **Memory Safety:** Tile local memory per AIE2 core is strictly capped at 64 KB (divided into four 16 KB banks). Avoid allocating buffers $> 16\text{ KB}$ per ObjectFIFO to prevent bank overflow.
+### Activate the environment
+
+Every session starts by activating `ironenv`:
+
+```powershell
+& "C:\phoenix-sdr-dsp\third_party\mlir-aie\ironenv\Scripts\Activate.ps1"
+```
+
+### Verify silicon before touching anything
+
+```powershell
+python run_all_silicon_tests.py
+```
+
+You should see `12/12 PASS` in ~60 s. If not, fix your environment before
+starting work. `scripts/verify_environment.ps1` runs quick smoke checks.
+
+### Make your change
+
+Small, focused commits are strongly preferred. Follow existing style:
+
+- Python: `ruff` (config is CI-driven — run `ruff check --fix .`)
+- C++ AIE2 kernels (`*.cc`): match the vectorization style of adjacent files
+- MLIR / eDSL: match the ObjectFifo IRON conventions used in `tests/m*_*/`
+
+### Verify silicon AFTER your change
+
+Re-run the full regression:
+
+```powershell
+python run_all_silicon_tests.py
+```
+
+Any milestone that regresses is a blocker. Paste the SUMMARY block into your
+PR description.
+
+---
+
+## 3. Adding a new milestone
+
+Follow the existing shape of a milestone directory (see `tests/m15_polymul/`):
+
+tests/mN_your_name/
+├── test_your_kernel_mN.py # IRON eDSL + XRT dispatch + host verify
+├── your_kernel.cc # AIE2 vectorized kernel (if applicable)
+└── README.md # numerical spec, expected pass criteria
+
+1. Add a matching entry to `run_all_silicon_tests.py`.
+2. Add the milestone to the `verification.last_verified.milestones` list in
+   [`toolchain.yaml`](toolchain.yaml).
+3. Update `README.md` "Validated Silicon Milestones" table.
+4. Verify: full 12+1/12+1 PASS.
+
+---
+
+## 4. Pull request checklist
+
+Copy this into the PR body:
+
+- [ ] `ruff check .` passes
+- [ ] `python run_all_silicon_tests.py` passes all pre-existing milestones
+      bit-accurate; SUMMARY block pasted in this PR
+- [ ] Any new milestone added to `toolchain.yaml` and README
+- [ ] Docs updated (`README.md`, `docs/`) where behavior changed
+- [ ] Toolchain versions in `toolchain.yaml` updated only if I actually
+      upgraded a component AND the full regression passed on the new version
+- [ ] Commit messages are descriptive
+
+Then open the PR against `main`. CI will run lint + CFF/YAML validation +
+M12 CPU reference + Markdown link check.
+
+---
+
+## 5. Reporting bugs
+
+The issue tracker has three forms tailored to this project — pick the most
+specific:
+
+- **Silicon regression / milestone failure** — a milestone stopped passing
+  or produced incorrect numerical output on physical NPU hardware
+- **Bug report** — build, install, script, or docs
+- **Feature request** — new milestone, kernel, or infrastructure
+
+For upstream bugs (kernel driver, mlir-aie, llvm-aie) the chooser links
+directly to the correct upstream tracker.
+
+---
+
+## 6. Style — quick reference
+
+- Python: 4-space indent, LF endings, UTF-8 without BOM. `ruff` will fix
+  most things.
+- PowerShell scripts (`*.ps1`): CRLF endings preserved (see
+  `.gitattributes`).
+- YAML: 2-space indent (see `.editorconfig`).
+- Commit messages: imperative present, `scope: short summary`, then blank
+  line, then bullet-pointed detail. Examples:
+  - `feat(m17): add bit-reversed radix-4 NTT kernel`
+  - `fix(m9): correct FIR tap indexing at column boundaries`
+  - `chore(ci): pin ruff to 0.5.x`
+
+Thanks for contributing.
