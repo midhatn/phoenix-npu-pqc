@@ -1,5 +1,10 @@
 # Dependabot configuration for phoenix-sdr-dsp
 # Reference: https://docs.github.com/en/code-security/dependabot/dependabot-version-updates/configuration-options-for-the-dependabot.yml-file
+#
+# Note: pip ecosystem is intentionally not enabled — this repo currently has no
+# requirements.txt / pyproject.toml lockfile. Python dependencies are pinned
+# out-of-band in toolchain.yaml and requirements/toolchain-versions.md.
+# Add a pip block here once a proper lockfile is introduced.
 version: 2
 updates:
   # Keep GitHub Actions workflow dependencies up to date
@@ -16,20 +21,4 @@ updates:
       - "ci"
     commit-message:
       prefix: "chore(ci)"
-      include: "scope"
-
-  # Keep Python dependencies in requirements/ up to date
-  - package-ecosystem: "pip"
-    directory: "/requirements"
-    schedule:
-      interval: "weekly"
-      day: "monday"
-      time: "06:00"
-      timezone: "Etc/UTC"
-    open-pull-requests-limit: 5
-    labels:
-      - "dependencies"
-      - "python"
-    commit-message:
-      prefix: "chore(deps)"
       include: "scope"
