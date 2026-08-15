@@ -43,8 +43,8 @@ PEANO_DIR = (
 
 
 def ensure_ironenv_interpreter():
-    """Re-exec under checkout-local ironenv so `py .\run_all_silicon_tests.py`
-    works after `py .\install.py` with no separate activate step.
+    """Re-exec under checkout-local ironenv so `py run_all_silicon_tests.py`
+    works after `py install.py` with no separate activate step.
 
     `py` on Windows is the [Python launcher](https://docs.python.org/3/using/windows.html#python-launcher-for-windows)
     and binds to the system CPython, which has no numpy / mlir_aie / pyxrt.
