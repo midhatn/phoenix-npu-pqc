@@ -29,7 +29,7 @@ The SDR-integration track (LimeSDR, ring buffers, real-time streaming) is deferr
 
 The native-Windows execution path is used because MLIR-AIE and Peano ship first-class native-Windows wheels ([MLIR-AIE 1.2 release notes, Phoronix](https://www.phoronix.com/news/AMD-MLIR-AIE-1.2)) and because the `amdxdna` NPU driver binds to the Windows host — WSL2 cannot directly access the NPU device ([Linux amdxdna documentation](https://docs.kernel.org/accel/amdxdna/amdnpu.html)). See [`docs/M1_ARCHITECTURE_DECISION.md`](M1_ARCHITECTURE_DECISION.md) for the full rejection rationale.
 
-## Track 1 — NPU DSP kernels (active)
+## Track 1 — NPU DSP kernels (shipped 16/16)
 
 ### Vector & scalar primitives (canonical §16 M3–M6)
 
@@ -46,7 +46,7 @@ The native-Windows execution path is used because MLIR-AIE and Peano ship first-
 | M7-ext | Power / RSSI energy detector | ✅ | `tests/m7_power/`. Not in §16 sequence; useful for spectrum monitoring, squelch, and correlation-based preamble detection. |
 | M8-ext | Fused DSP pipeline (mixer + FIR + power) | ✅ | `tests/m8_pipeline/`. Multi-stage kernel fusion pattern, no SDR yet. |
 | M9-ext | 4-column parallel FIR | ✅ | `tests/m9_parallel/`. Multi-column parallelization exercises the XDNA1 4×5 tile grid geometry ([Linux amdxdna docs](https://docs.kernel.org/accel/amdxdna/amdnpu.html)); pattern reusable for future kernels. |
-| M10-ext | 4-column parallel multi-stage demodulator pipeline | 🧪 | `tests/m9b_parallel_pipeline/`. Present in tree, not in regression runner. To be integrated as an M9-ext companion. |
+| M10-ext | 4-column parallel multi-stage demodulator pipeline | ✅ | `tests/m9b_parallel_pipeline/`. In `run_all_silicon_tests.py` as Milestone 9b. |
 | demo-iq | 4-column streamed I/Q throughput | 🧪 | `tests/npu_visible/`. Host-visible IRON+DMA mixer measured 2026-08-15 on Ryzen 9 7940HS: **7.459 Msps**, 29.84 MB/s I/Q in, ~92% Task Manager NPU, first-buffer $L_\infty = 0.007812$. Phoenix NPU is [10 TOPS](https://www.amd.com/en/products/processors/laptop/ryzen/7000-series/amd-ryzen-9-7940hs.html) ([INT8](https://www.tomshardware.com/pc-components/cpus/the-refresh-that-wasnt-amd-announces-hawk-point-ryzen-8040-series-with-zen-4-rdna3-and-xdna-teases-strix-point)). Not in `run_all_silicon_tests.py`. Kernel vectorization deferred. |
 
 ### Modular arithmetic & NTT track (canonical §16 M10–M15)
@@ -132,18 +132,20 @@ Extra milestone after the shipped M10–M15b stack. Numbered **M32** so it does 
 | M32d | K-PKE component | 🚧 | Algorithms 13–15. **Not** approved standalone ([§3.3](https://nvlpubs.nist.gov/nistpubs/fips/nist.fips.203.pdf)). |
 | M32e | ML-KEM.KeyGen / Encaps / Decaps | 🚧 | Algorithms 19–21. Then 768, then 1024. Do not add to the 16-suite until a gate is bit-exact on silicon. |
 
-## Immediate next steps (v0.3 series)
+## Completed — v0.4.0 silicon + new-user install (2026-08-15)
 
-Ordered by dependency:
+The DSP / NTT / FFT kernel library is closed at **16/16 PASS**. A wipe-and-clone of [`main`](https://github.com/midhatn/phoenix-sdr-dsp) ran [`install.py`](../install.py) then `run_all_silicon_tests.py` and passed in **95.91 s** (cold xclbin). Cached re-run on the development tree is **17.46 s**. Stack: [Xilinx XRT](https://github.com/Xilinx/XRT) 2.21.75, [Xilinx MLIR-AIE](https://github.com/Xilinx/mlir-aie) / [IRON](https://xilinx.github.io/mlir-aie/1.4.1/buildHostWinNative/) v1.4.1, [LLVM Peano](https://github.com/Xilinx/llvm-aie) `21.0.0.2026080301+c9c5ecb7`. New-user path is documented on the landing page [Installation](../README.md#installation) section.
 
-1. **v0.2.1 polish** (in progress): dependabot, CI badge in README, delete duplicate `LICENSE.md`, publish v0.2 release tag.
-2. **Directory renumbering pass** — *completed in v0.2.1*. The Scheme B directories have been renamed to align with §16 canonical: `tests/m10_benchmark/` → `tests/m9b_parallel_pipeline/`, `tests/m11_fft/` → `tests/m17_fft_dft/`, `tests/m12_fft_parallel/` → `tests/m17p_fft_parallel/`, `tests/m16_negacyclic/` → `tests/m15b_negacyclic/`. Blob SHAs preserved so `git log --follow` still tracks each file's history. Integration into `run_all_silicon_tests.py` (currently only wires Scheme A milestones M3–M15) is tracked separately.
-3. **M16 CPU FFT reference** — *completed*. Shipped as `tests/m16_fft_ref/test_fft_reference_m16.py` with three cross-validated implementations (direct O(N²) DFT, recursive radix-2 [Cooley-Tukey](https://garfield.library.upenn.edu/classics1993/A1993MJ84400001.pdf), iterative in-place with bit-reversal). Wired into the CI `cpu-reference-tests` job so every push runs it on Ubuntu. Serves as the ground-truth oracle for M17.
-4. **M17-butterfly** — *completed*. Radix-4 Stockham FFT shipped as M17, silicon-validated at 138.79 dB forward and 135.11 dB round-trip SNR.
-5. **M15b negacyclic port to iron.Runtime** — *completed 2026-08-15*. Same `@iron.jit` / `Runtime(seq_fn)` / `Program(..., workers=[...])` shape as M15. Schoolbook kernel, uint32 `XRTTensor` buffers, bit-exact vs the CPU reference. Full suite **16/16 PASS** in 17.46 s (cached xclbin).
-6. **M32 FIPS 203 ML-KEM** — *next NTT item*. Start at M32a (CPU ML-KEM-512 reference). Design: [`docs/M32_FIPS203_MLKEM.md`](M32_FIPS203_MLKEM.md). M15b proved the ring; M32 implements the approved KEM.
-7. **M19 complex FIR**: extend the shipped real-valued FIR to complex-valued taps and complex I/Q input.
-8. **M20 polyphase**: decimation + interpolation on top of M19.
+Items 1–5 below are historical. The live next NTT item is M32a.
+
+1. **v0.2.1 polish** — *completed*. Dependabot, CI badge, v0.4.0 tag.
+2. **Directory renumbering pass** — *completed in v0.2.1*. Scheme B directories renamed to §16 canonical names. Blob SHAs preserved so `git log --follow` still tracks each file.
+3. **M16 CPU FFT reference** — *completed*. `tests/m16_fft_ref/test_fft_reference_m16.py`; CI `cpu-reference-tests` on Ubuntu.
+4. **M17-butterfly** — *completed*. Radix-4 Stockham FFT at 138.79 dB forward / 135.11 dB round-trip SNR.
+5. **M15b negacyclic port to iron.Runtime** — *completed 2026-08-15*. Schoolbook kernel, bit-exact. Closes the 16-suite.
+6. **M32 FIPS 203 ML-KEM** — *next NTT item*. Start at M32a (CPU ML-KEM-512 reference). Design: [`docs/M32_FIPS203_MLKEM.md`](M32_FIPS203_MLKEM.md). M15b proved the ring; M32 implements the approved KEM ([Algorithms 19–21](https://nvlpubs.nist.gov/nistpubs/fips/nist.fips.203.pdf)).
+7. **M19 complex FIR** — DSP-track alternative: extend the shipped real-valued FIR to complex taps × complex I/Q.
+8. **M20 polyphase** — decimation + interpolation on top of M19.
 
 ## Toolchain events
 
@@ -168,6 +170,10 @@ The iron ports of M3–M15 / M17 / M17p landed on `feat/m17-radix2-fft-npu`, fas
 ### 2026-08-15 — M15b iron.Runtime port closes the suite
 
 M15b was rewritten to the M15 host shape: `@iron.jit`, `ExternalFunction`, two input `ObjectFifo`s plus one output, [`Runtime(seq_fn)`](https://github.com/Xilinx/mlir-aie/blob/3ca0193/python/iron/runtime/runtime.py), `Program(..., workers=[...])`, and uint32 `XRTTensor` buffers (the v1.4.1 host tensor rejects `int32` [`same_kind`](https://numpy.org/doc/stable/reference/generated/numpy.can_cast.html) copies). The schoolbook kernel and [Barrett](https://link.springer.com/chapter/10.1007/3-540-47721-7_24) constants (`MU = 20165`, shift 26) are unchanged. Ring is the Kyber / [ML-KEM](https://nvlpubs.nist.gov/nistpubs/fips/nist.fips.203.pdf) ring `Z_3329[x]/(x^256+1)`. Silicon result: bit-exact vs `negacyclic_polymul_ref`, seed 42. Full suite **16 / 16 PASS** in 17.46 s on Phoenix NPU1.
+
+### 2026-08-15 — `install.py` + clean-clone 16/16
+
+[`install.py`](../install.py) is on `main`. A real-user wipe-and-clone downloaded the published [mlir_aie 1.4.1](https://github.com/Xilinx/mlir-aie/releases/tag/v1.4.1) `cp313` wheel (not rolling [`latest-wheels-4`](https://github.com/Xilinx/mlir-aie/releases/expanded_assets/latest-wheels-4)), put VS `llvm-objcopy` on PATH for the [Peano Windows fixup](https://xilinx.github.io/mlir-aie/1.4.1/buildHostWinNative/), and retried shallow fetch over HTTP/1.1. `run_all_silicon_tests.py` re-execs checkout `ironenv` because [`py`](https://docs.python.org/3/using/windows.html#python-launcher-for-windows) binds to system CPython. Clean-clone suite: **16/16 PASS** in 95.91 s (cold xclbin) on Phoenix NPU1.
 
 ## Divergences from master prompt §16 — honest disclosure
 
