@@ -79,7 +79,7 @@ The Fast Fourier Transform in radix-2 form is the [Cooley–Tukey algorithm (196
 
 | M# | Focus | Status | Notes |
 |---|---|---|---|
-| M19 | Complex FIR filter | ✅ (partial) | Real-valued 8-tap FIR shipped as current `tests/m5_fir/`. Complex-valued (complex taps × complex I/Q input) variant is the canonical M19 gap. |
+| M19 | Complex FIR filter | ✅ | Real-valued 8-tap FIR shipped as `tests/m5_fir/`. Complex-valued (complex taps × complex I/Q input) 8-tap variant shipped as `tests/m19_complex_fir/` and wired as the 17th silicon regression entry. Design: [docs/M19_DESIGN.md](M19_DESIGN.md). |
 | M20 | Polyphase decimation & interpolation | 🚧 | No hardware dependency. Post-M17-butterfly. |
 | M21 | Digital downconverter (DDC) | 🚧 | Builds on M6 mixer + M19 complex FIR + M20 polyphase. |
 | M22 | Digital upconverter (DUC) | 🚧 | Symmetric with M21. |

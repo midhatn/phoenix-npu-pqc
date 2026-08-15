@@ -2,7 +2,7 @@
 # Target operating system: Windows 11 Pro 25H2.
 # Target architecture: AMD Phoenix NPU1 / XDNA1 / AIE2 (4-Column Array).
 # Verification: End-to-end automated execution and reporting of Milestones 3, 5, 6, 7, 8, 9, 9b,
-#               10, 11, 12, 13, 14, 15, 15b, 17, 17p.
+#               10, 11, 12, 13, 14, 15, 15b, 17, 17p, 19.
 #
 # History:
 # - v0.2.0: Initial 12-milestone suite (M3, M5–M15).
@@ -17,6 +17,11 @@
 # - v0.4.0+install: Re-exec under third_party/mlir-aie/ironenv so a new user
 #           can run `python run_all_silicon_tests.py` after `python install.py`
 #           with no separate activate step.
+# - v0.4.0+M19: 17th silicon regression entry added. M19 8-tap complex FIR
+#           (tests/m19_complex_fir/test_fir_complex_m19.py) is bit-accurate on
+#           impulse, DC, tone, random I/Q, and M5-degeneracy against a NumPy
+#           reference under the M5/M6 atol=0.01 gate. Published contract moves
+#           from 16/16 to 17/17 silicon-validated milestones.
 
 import os
 import subprocess
@@ -193,6 +198,11 @@ def main():
             "Milestone 17p: 4-Column Parallel 64-Point FFT Channelizer",
             TESTS_DIR / "m17p_fft_parallel",
             "test_parallel_fft_m12.py",
+        ),
+        (
+            "Milestone 19: 8-Tap Complex FIR Filter (complex taps x complex I/Q)",
+            TESTS_DIR / "m19_complex_fir",
+            "test_fir_complex_m19.py",
         ),
     ]
 
