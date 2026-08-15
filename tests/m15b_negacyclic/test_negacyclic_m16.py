@@ -1,46 +1,35 @@
-# Phoenix SDR-DSP Master Prompt: Milestone 16
-# Description: Negacyclic Polynomial Multiplication (mod x^256 + 1, q = 3329) on Phoenix NPU1 (AIE2).
-# Target architecture: AMD Ryzen 9 7940HS Phoenix NPU1 (XDNA1 / AIE2 / Win11 Pro)
+# Purpose: Master Prompt Milestone 15b: NPU negacyclic polynomial
+#          multiplication on silicon (Kyber ring).
+# Target operating system: Windows 11 Pro 25H2.
+# Target architecture: AMD Phoenix NPU1 / XDNA1 / AIE2.
+# Parameters: N = 256, prime modulus q = 3329, ring Z_q[x] / (x^256 + 1).
+#
+# Ported from aie.dialects + runtime_sequence (pre-v1.4.1) to the same
+# iron.Runtime sequence-function shape as M15 (commit 1ec80c8).
+# Kyber ring: https://isa-afp.org/browser_info/current/AFP/CRYSTALS-Kyber/outline.pdf
 
-import sys
+from pathlib import Path
 
 import numpy as np
-from aie.dialects.aie import (
-    AIEDevice,
-    ObjectFifoPort,
-    core,
-    device,
-    object_fifo,
-    tile,
+from aie import iron
+from aie.iron import (
+    CompileTime,
+    ExternalFunction,
+    In,
+    ObjectFifo,
+    Out,
+    Program,
+    Runtime,
+    Worker,
 )
-from aie.dialects.aiex import (
-    npu_dma_memcpy_nd,
-    npu_sync,
-    runtime_sequence,
-)
-from aie.ir import Context, IntegerType, Location
-from aie.iron import Kernel
-from aie.utils.hostruntime.xrtruntime.hostruntime import XRTTensor
+from aie.utils.config import cxx_header_path
+from aie.utils.hostruntime.xrtruntime.tensor import XRTTensor
 
-q = 3329
-N = 256
+MOD_Q = 3329
+N_POLY = 256
 
-# Direct CPU Reference for Negacyclic Convolution mod (x^N + 1, q)
-def negacyclic_polymul_ref(a, b, q=3329):
-    N = len(a)
-    c = [0] * N
-    for i in range(N):
-        for j in range(N):
-            deg = i + j
-            term = (int(a[i]) * int(b[j])) % q
-            if deg < N:
-                c[deg] = (c[deg] + term) % q
-            else:
-                c[deg - N] = (c[deg - N] - term + q) % q
-    return c
-
-# C Kernel for Negacyclic Polynomial Multiplication mod (x^256 + 1, 3329)
-kernel_c_code = r"""
+# Schoolbook kernel. Same Barrett constants as the pre-port M15b test.
+KERNEL_CC_CODE = r"""
 #include <stdint.h>
 
 #define MOD 3329
@@ -72,11 +61,13 @@ static inline int32_t mod_mul(int32_t a, int32_t b) {
     return barrett_reduce(a * b);
 }
 
-// Performs Negacyclic Polynomial Multiplication: C(x) = A(x) * B(x) mod (x^256 + 1, 3329)
+extern "C" {
+
+// C(x) = A(x) * B(x) mod (x^256 + 1, 3329)
 void negacyclic_polymul_kernel(
-    const int32_t* restrict in_a,
-    const int32_t* restrict in_b,
-    int32_t* restrict out_c
+    const uint32_t* restrict in_a,
+    const uint32_t* restrict in_b,
+    uint32_t* restrict out_c
 ) {
     static int32_t c_acc[N];
     for (int i = 0; i < N; i++) {
@@ -101,96 +92,123 @@ void negacyclic_polymul_kernel(
         out_c[i] = c_acc[i];
     }
 }
+
+}
 """
 
+
+def negacyclic_polymul_ref(a, b, q=MOD_Q):
+    n = len(a)
+    c = np.zeros(n, dtype=np.int64)
+    for i in range(n):
+        for j in range(n):
+            deg = i + j
+            term = (int(a[i]) * int(b[j])) % q
+            if deg < n:
+                c[deg] = (c[deg] + term) % q
+            else:
+                c[deg - n] = (c[deg - n] - term + q) % q
+    return c.astype(np.uint32)
+
+
+@iron.jit
+def negacyclic_pipeline(
+    input_a: In,
+    input_b: In,
+    output_c: Out,
+    *,
+    N: CompileTime[int],
+    kernel_source: CompileTime[str],
+):
+    tile_ty = np.ndarray[(N,), np.dtype[np.uint32]]
+
+    of_a = ObjectFifo(tile_ty, name="in_a")
+    of_b = ObjectFifo(tile_ty, name="in_b")
+    of_c = ObjectFifo(tile_ty, name="out_c")
+
+    mul_fn = ExternalFunction(
+        "negacyclic_polymul_kernel",
+        source_file=kernel_source,
+        arg_types=[tile_ty, tile_ty, tile_ty],
+        include_dirs=[cxx_header_path()],
+    )
+
+    def core_body(of_a, of_b, of_c, mul_fn):
+        elem_a = of_a.acquire(1)
+        elem_b = of_b.acquire(1)
+        elem_c = of_c.acquire(1)
+        mul_fn(elem_a, elem_b, elem_c)
+        of_a.release(1)
+        of_b.release(1)
+        of_c.release(1)
+
+    worker = Worker(
+        core_body,
+        fn_args=[of_a.cons(), of_b.cons(), of_c.prod(), mul_fn],
+    )
+
+    def sequence(a_in, b_in, c_out, a_prod, b_prod, c_cons):
+        a_prod.fill(a_in)
+        b_prod.fill(b_in)
+        c_cons.drain(c_out, wait=True)
+
+    rt = Runtime(
+        sequence,
+        [tile_ty, tile_ty, tile_ty, of_a.prod(), of_b.prod(), of_c.cons()],
+    )
+    my_program = Program(iron.get_current_device(), rt, workers=[worker])
+    return my_program.resolve_program()
+
+
 def main():
-    print("======================================================================")
-    print("      PHOENIX SDR-DSP MASTER PROMPT MILESTONE 16: NEGACYCLIC          ")
-    print("            POLYNOMIAL MULTIPLICATION (mod x^256 + 1, q = 3329)        ")
-    print("======================================================================")
-    print(f"Modulus q: {q}, Ring Dimension N: {N}")
-    print(f"Ring: Z_{q}[x] / (x^{N} + 1) (Kyber / ML-KEM arithmetic)")
+    print("=== Phoenix SDR-DSP Milestone 15b: Negacyclic PolyMul (Kyber ring) ===")
+    print(f"Parameters: N = {N_POLY}, modulus q = {MOD_Q}")
+    print(f"Ring: Z_{MOD_Q}[x] / (x^{N_POLY} + 1)")
 
-    # Set deterministic random seed
+    kernel_src_path = Path(__file__).parent.resolve() / "negacyclic_kernel.cc"
+    with open(kernel_src_path, "w", encoding="utf-8", newline="\n") as handle:
+        handle.write(KERNEL_CC_CODE)
+
     np.random.seed(42)
+    poly_a = np.random.randint(0, MOD_Q, size=N_POLY, dtype=np.uint32)
+    poly_b = np.random.randint(0, MOD_Q, size=N_POLY, dtype=np.uint32)
+    ref_c = negacyclic_polymul_ref(poly_a, poly_b, q=MOD_Q)
+    out_c = np.zeros(N_POLY, dtype=np.uint32)
 
-    # Test Case: Polynomial multiplication of random polynomials
-    a_poly = np.random.randint(0, q, size=N, dtype=np.int32)
-    b_poly = np.random.randint(0, q, size=N, dtype=np.int32)
+    print("Computing CPU reference, then compiling with Peano...")
+    t_a = XRTTensor(poly_a)
+    t_b = XRTTensor(poly_b)
+    t_c = XRTTensor(out_c)
 
-    # Compute CPU gold reference
-    print("\nComputing CPU Reference Negacyclic Polynomial Multiplication...")
-    c_gold = negacyclic_polymul_ref(a_poly, b_poly, q=q)
+    res = negacyclic_pipeline(
+        t_a,
+        t_b,
+        t_c,
+        N=N_POLY,
+        kernel_source=str(kernel_src_path),
+    )
+    print(f"Kernel execution result: {res}")
 
-    # Pack input buffer: [A (256), B (256)] -> Total: 512 elements (2048 bytes)
-    # Output buffer: [C (256)] elements of int32 (1024 bytes)
-    input_packed = np.zeros(512, dtype=np.int32)
-    input_packed[0:256] = a_poly
-    input_packed[256:512] = b_poly
-
-    print("Synthesizing AIE2 Kernel and Dispatching to Phoenix NPU...")
-    kernel = Kernel("negacyclic_polymul_kernel", kernel_c_code)
-
-    with Context() as ctx, Location.unknown(ctx):
-        i32_ty = IntegerType.get_signless(32, context=ctx)
-
-        @device(AIEDevice.npu1_1col)
-        def device_body():
-            tile_0_0 = tile(0, 0)
-            tile_0_2 = tile(0, 2)
-
-            fifo_in = object_fifo("in_fifo", tile_0_0, tile_0_2, 2, i32_ty, [512])
-            fifo_out = object_fifo("out_fifo", tile_0_2, tile_0_0, 2, i32_ty, [256])
-
-            @core(tile_0_2)
-            def core_body():
-                elem_in = fifo_in.acquire(ObjectFifoPort.Consume, 1)
-                elem_out = fifo_out.acquire(ObjectFifoPort.Produce, 1)
-
-                kernel(
-                    elem_in,
-                    elem_in + 256,
-                    elem_out
-                )
-
-                fifo_in.release(ObjectFifoPort.Consume, 1)
-                fifo_out.release(ObjectFifoPort.Produce, 1)
-
-            @runtime_sequence(i32_ty, i32_ty)
-            def sequence(in_buf, out_buf):
-                npu_dma_memcpy_nd(metadata="in_fifo", bd_id=0, mem=in_buf, sizes=[1, 1, 1, 512])
-                npu_dma_memcpy_nd(metadata="out_fifo", bd_id=1, mem=out_buf, sizes=[1, 1, 1, 256])
-                npu_sync(column=0, row=0, direction=0, channel=0)
-
-        # Sequences & XRTTensors
-        in_tensor = XRTTensor((512,), dtype=np.int32)
-        out_tensor = XRTTensor((256,), dtype=np.int32)
-
-        in_tensor[:] = input_packed
-        out_tensor[:] = 0
-
-        print("Compiling with Peano and executing on physical Phoenix NPU silicon...")
-        device_body.run([in_tensor], [out_tensor])
-
-        actual_c = np.array(out_tensor[:], dtype=np.int32)
-
-    # Verification
+    actual_c = t_c.numpy().astype(np.uint32)
     print("\n--- Silicon Execution Results ---")
-    print(f"Input Poly A [0..4]:    {list(a_poly[:5])}")
-    print(f"Input Poly B [0..4]:    {list(b_poly[:5])}")
-    print(f"Ref Poly C [0..4]:      {c_gold[:5]}")
+    print(f"Input Poly A [0..4]:    {list(poly_a[:5])}")
+    print(f"Input Poly B [0..4]:    {list(poly_b[:5])}")
+    print(f"Ref Poly C [0..4]:      {list(ref_c[:5])}")
     print(f"Actual Poly C on NPU:   {list(actual_c[:5])}")
 
-    matches = np.array_equal(actual_c, c_gold)
-    diffs = np.sum(actual_c != c_gold)
-
+    matches = np.array_equal(actual_c, ref_c)
+    diffs = int(np.sum(actual_c != ref_c))
     if matches:
         print("\nPASS!")
-        print(f"SUCCESS: Phoenix NPU executed Negacyclic Polynomial Multiplication mod (x^{N} + 1, {q}) with 100% BIT-EXACT accuracy!")
+        print(
+            f"SUCCESS: Phoenix NPU executed Negacyclic Polynomial Multiplication "
+            f"mod (x^{N_POLY} + 1, {MOD_Q}) with 100% BIT-EXACT accuracy!"
+        )
         print("PASS!")
-    else:
-        print(f"\nFAIL: Mismatch in {diffs} / {N} polynomial coefficients!")
-        sys.exit(1)
+        return
+    print(f"\nFAIL: Mismatch in {diffs} / {N_POLY} polynomial coefficients!")
+    raise SystemExit(1)
+
 
 if __name__ == "__main__":
     main()
