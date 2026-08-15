@@ -2,7 +2,7 @@
 # Target operating system: Windows 11 Pro 25H2.
 # Target architecture: AMD Phoenix NPU1 / XDNA1 / AIE2 (4-Column Array).
 # Verification: End-to-end automated execution and reporting of Milestones 3, 5, 6, 7, 8, 9, 9b,
-#               10, 11, 12, 13, 14, 15, 15b, 17, 17p, 19, 20.
+#               10, 11, 12, 13, 14, 15, 15b, 17, 17p, 19, 20, 21.
 #
 # History:
 # - v0.2.0: Initial 12-milestone suite (M3, M5–M15).
@@ -31,6 +31,19 @@
 #           Vaidyanathan 1993, Harris 2004, Kaiser 1974, and
 #           scipy.signal.resample_poly. Published contract moves from 17/17
 #           to 18/18 silicon-validated milestones.
+# - v0.4.0+M21: 19th silicon regression entry added. M21 fused Digital
+#           Down-Converter (DDC): complex NCO at f_c = -f_s/8 (8-sample
+#           cordic-free LO LUT) + 16-tap Kaiser LPF (reused from M20)
+#           + decim-by-M=4, all on one AIE2 core
+#           (tests/m21_ddc/test_ddc_m21.py). Bit-accurate on LO regen,
+#           impulse, on-carrier tone (mag = 1.0000, phase = 0.0000),
+#           image rejection = 55.8 dB, and random I/Q at seed 789 under
+#           the M5/M6 atol=0.01 gate. Silicon PASS at max err 0.003906,
+#           matching M20's envelope. Design cites Harris 2004 chapter 8,
+#           Analog Devices MT-085 (DDS fundamentals), GNU Radio
+#           frequency-xlating FIR filter, and NIST DLMF chapter 1.
+#           Published contract moves from 18/18 to 19/19 silicon-
+#           validated milestones.
 
 import os
 import subprocess
@@ -217,6 +230,11 @@ def main():
             "Milestone 20: Fused Polyphase Decim (M=4) + Interp (L=4)",
             TESTS_DIR / "m20_polyphase",
             "test_polyphase_m20.py",
+        ),
+        (
+            "Milestone 21: Fused DDC (NCO(-fs/8) + Kaiser LPF + Decim-M=4)",
+            TESTS_DIR / "m21_ddc",
+            "test_ddc_m21.py",
         ),
     ]
 

@@ -81,7 +81,7 @@ The Fast Fourier Transform in radix-2 form is the [Cooley–Tukey algorithm (196
 |---|---|---|---|
 | M19 | Complex FIR filter | ✅ | Real-valued 8-tap FIR shipped as `tests/m5_fir/`. Complex-valued (complex taps × complex I/Q input) 8-tap variant shipped as `tests/m19_complex_fir/` and wired as the 17th silicon regression entry. Design: [docs/M19_DESIGN.md](M19_DESIGN.md). |
 | M20 | Polyphase decimation & interpolation | ✅ | Fused decim-M=4 + interp-L=4 kernel on one AIE2 core shipped as `tests/m20_polyphase/`, 16-tap Kaiser-window prototype LPF ([Kaiser 1974](https://ieeexplore.ieee.org/document/1451724)) with `taps *= L` interpolator scaling matching [`scipy.signal.resample_poly`](https://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.resample_poly.html) and [GNU Radio pfb](https://www.gnuradio.org/doc/doxygen-3.7/page_pfb.html). Polyphase decomposition per [Vaidyanathan 1993 ch. 4](https://www.pearson.com/en-us/subject-catalog/p/multirate-systems-and-filter-banks/P200000003431/9780130349507) and [Harris 2004 ch. 6](https://ieeexplore.ieee.org/book/9448967). Silicon PASS at atol=0.01 on random I/Q. Wired as the 18th silicon regression entry. Design: [docs/M20_DESIGN.md](M20_DESIGN.md). |
-| M21 | Digital downconverter (DDC) | 🚧 | Builds on M6 mixer + M19 complex FIR + M20 polyphase. |
+| M21 | Digital downconverter (DDC) | ✅ | Fused DDC (complex NCO at `f_c = -f_s/8` + 16-tap Kaiser LPF + decim-by-M=4) on one AIE2 core, shipped as [`tests/m21_ddc/`](../tests/m21_ddc/). 8-sample cordic-free LO LUT per [Analog Devices MT-085 "Fundamentals of DDS"](https://www.analog.com/media/en/training-seminars/tutorials/MT-085.pdf). Signal chain follows [Harris 2004 ch. 8 "The Digital Down-Converter"](https://ieeexplore.ieee.org/book/9448967); block topology matches the [GNU Radio Frequency Xlating FIR Filter](https://wiki.gnuradio.org/index.php/Frequency_Xlating_FIR_Filter) reference. LPF reuses the M20 16-tap Kaiser prototype ([Kaiser 1974](https://ieeexplore.ieee.org/document/1451724)). Silicon PASS at max err 0.003906 (atol=0.01) on random I/Q (seed 789); on-carrier tone at `+f_s/8` decodes to mag=1.0000/phase=0.0000, image rejection 55.8 dB at `-f_s/8`. Wired as the 19th silicon regression entry. Design: [docs/M21_DESIGN.md](M21_DESIGN.md). |
 | M22 | Digital upconverter (DUC) | 🚧 | Symmetric with M21. |
 | M23 | Channelizer & filter bank | 🚧 | Uses M17 FFT + M19 FIR. `m17p_fft_parallel` is a partial prototype. |
 
@@ -146,6 +146,7 @@ Items 1–5 below are historical. The live next NTT item is M32a.
 6. **M32 FIPS 203 ML-KEM** — *next NTT item*. Start at M32a (CPU ML-KEM-512 reference). Design: [`docs/M32_FIPS203_MLKEM.md`](M32_FIPS203_MLKEM.md). M15b proved the ring; M32 implements the approved KEM ([Algorithms 19–21](https://nvlpubs.nist.gov/nistpubs/fips/nist.fips.203.pdf)).
 7. **M19 complex FIR** — DSP-track alternative: extend the shipped real-valued FIR to complex taps × complex I/Q.
 8. **M20 polyphase** — *completed*. Fused decim + interp with scipy-convention tap scaling on top of M19.
+9. **M21 DDC** — *completed*. Fused complex-NCO + Kaiser-LPF + decim-by-4 on one AIE2 core; reuses M20's LPF prototype and adds an 8-sample cordic-free LO LUT.
 
 ## Toolchain events
 

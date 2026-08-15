@@ -469,9 +469,37 @@ bit-comparable to [`scipy.signal.upfirdn`](https://docs.scipy.org/doc/scipy/refe
 
 The fused-kernel choice (one Worker, one xclbin, no chained `ObjectFifo`) follows [M8](#m8-fused-sdr-demodulator-pipeline). Program-memory sizing on the AIE2 core forced the dot products to be expressed as compact loops rather than hand-flat 16-term expressions: an earlier revision with `#pragma clang loop unroll_count(4)` overflowed the 16 KB program memory (`XAIE_INVALID_ELF`). The loopy revision passes silicon at `atol = 0.01`. See [docs/M20_DESIGN.md](M20_DESIGN.md).
 
+## M21: fused digital down-converter (DDC)
+
+M21 shifts a real-world radio signal that sits at an intermediate frequency down to complex baseband and then reduces the sample rate, all inside one fused AIE2 kernel:
+
+\[
+y[m] \;=\; \text{decim}_{M} \big\{ h * \big(x[n] \cdot e^{-j 2\pi f_c n / f_s}\big) \big\}
+\]
+
+The kernel does the mix, filter, and decimation together on one core with no intermediate `ObjectFifo`, following the M8 fused-pipeline pattern. The signal-chain topology is the canonical DDC of [Harris 2004 ch. 8](https://ieeexplore.ieee.org/book/9448967) and mirrors GNU Radio's [Frequency Xlating FIR Filter](https://wiki.gnuradio.org/index.php/Frequency_Xlating_FIR_Filter) block, which likewise fuses complex NCO + real-tap FIR + integer decimation.
+
+The complex-multiply operand order follows the identity (I_x + jQ_x)(cos + j sin) = (I_x cos − Q_x sin) + j(I_x sin + Q_x cos) ([Oppenheim & Schafer 3e §2.2](https://www.pearson.com/en-us/subject-catalog/p/discrete-time-signal-processing/P200000003390/9780131988422); [NIST DLMF §1.9](https://dlmf.nist.gov/1.9)).
+
+With `f_c = f_s / 8` the local oscillator repeats every 8 input samples, so only 8 unique `(cos, sin)` pairs need to be stored. The kernel bakes an 8-entry `const float` LO LUT indexed by `(n & 7)` — the standard cordic-free DDS trick from [Analog Devices MT-085 "Fundamentals of Direct Digital Synthesis (DDS)", Table 1](https://www.analog.com/media/en/training-seminars/tutorials/MT-085.pdf). The eight closed-form values are the bfloat16 quantisations of `{±1, ±√2/2, 0}`, and a host-side reference-only check regenerates the LUT from the closed-form formula and diffs it against the baked LUT term-for-term before silicon dispatch.
+
+The LPF is the same 16-tap Kaiser prototype used by [M20](#m20-fused-polyphase-decimator--interpolator) (β = 6, cutoff π/M = π/4, unity DC gain, [Kaiser 1974](https://ieeexplore.ieee.org/document/1451724)). Because the taps are real and the signal is complex, one prototype filter is applied twice (once to `I_mix`, once to `Q_mix`) rather than running a full complex-tap FIR — the same efficiency argument GNU Radio uses in its xlating FIR reference above.
+
+The filter runs at the decimated rate (evaluated once per `M = 4` mixed samples), following the same shift-register schedule as the M20 decimator: shift the 16-slot window left by 4, ingest 4 fresh mixed pairs, dot with `h`.
+
+Silicon validation runs four host-side reference checks before dispatch and one silicon-gate check on the NPU:
+
+1. LO LUT regeneration to `≤ 2·10⁻¹⁶`.
+2. Impulse response: exactly 4 non-zero output samples (`h[0], h[4], h[8], h[12]`), which is the decimated impulse response of a 16-tap filter at `M = 4`.
+3. On-carrier tone at `+f_s/8`: after mixing this lands at DC; deep-tail complex magnitude = 1.0000 (unity passband gain), phase = 0.0000 rad.
+4. Image tone at `−f_s/8`: after mixing this lands at `−f_s/4`, deep in the LPF stopband; residual magnitude = 0.0016 (image rejection ≈ **55.8 dB**).
+5. Silicon gate: random complex I/Q at seed 789, `atol = 0.01`. Silicon PASS on Phoenix NPU1 (2026-08-15) at max err 0.003906, matching M20's envelope.
+
+See [docs/M21_DESIGN.md](M21_DESIGN.md).
+
 ## Automated regression coverage
 
-`run_all_silicon_tests.py` executes 18 automated test entries:
+`run_all_silicon_tests.py` executes 19 automated test entries:
 
 ```powershell
 python run_all_silicon_tests.py
@@ -497,6 +525,7 @@ The runner reports pass/fail status and elapsed time for:
 16. M17p four-column parallel FFT
 17. M19  8-tap complex FIR (complex taps × complex I/Q)
 18. M20  fused polyphase decimator (M=4) + interpolator (L=4)
+19. M21  fused DDC (complex NCO at −f_s/8 + Kaiser LPF + decim-by-4)
 
 M0–M2 are setup and reproducibility milestones, while M4 depends on locally attached SDR hardware; therefore they are not entries in the automated silicon regression runner.
 
@@ -548,6 +577,9 @@ Before calling a deterministic kernel complete:
 - F. J. Harris, *Multirate Signal Processing for Communication Systems*, Prentice Hall (2004) — commutator model (ch. 6). https://ieeexplore.ieee.org/book/9448967
 - A. V. Oppenheim and R. W. Schafer, *Discrete-Time Signal Processing*, 3rd ed., Prentice Hall (2010) — multirate DSP (§4.6) and Kaiser window design (§7.5). https://www.pearson.com/en-us/subject-catalog/p/discrete-time-signal-processing/P200000003390/9780131988422
 - J. F. Kaiser, "Nonrecursive digital filter design using the I_0-sinh window function", IEEE ISCAS (1974). https://ieeexplore.ieee.org/document/1451724
+- Analog Devices Inc., "Fundamentals of Direct Digital Synthesis (DDS)", Tutorial MT-085 — 8-sample cordic-free LO LUT for f_c = f_s/8. https://www.analog.com/media/en/training-seminars/tutorials/MT-085.pdf
+- GNU Radio Project, "Frequency Xlating FIR Filter" — fused NCO + real-tap FIR + decimation block reference for the M21 DDC topology. https://wiki.gnuradio.org/index.php/Frequency_Xlating_FIR_Filter
+- NIST Digital Library of Mathematical Functions, §1.9 "Calculus of a Complex Variable" — complex-multiply identity used by the DDC operand order. https://dlmf.nist.gov/1.9
 - SciPy, `scipy.signal.resample_poly` — canonical polyphase resampler and `taps *= up` interpolator scaling. https://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.resample_poly.html
 - SciPy, `scipy.signal.upfirdn` — underlying `upsample → FIR → downsample` primitive. https://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.upfirdn.html
 - SciPy source, `_signaltools.py` (`resample_poly` implementation). https://github.com/scipy/scipy/blob/main/scipy/signal/_signaltools.py
