@@ -10,6 +10,7 @@ import numpy as np
 from aie import iron
 from aie.helpers.taplib.tap import TensorAccessPattern
 from aie.iron import (
+    TaskGroup,
     CompileTime,
     ExternalFunction,
     In,
@@ -90,24 +91,32 @@ def parallel_sdr_pipeline(
         for col in range(num_columns)
     ]
 
-    rt = Runtime()
-    with rt.sequence(in_ty, in_ty, out_ty) as (a_in, a_lo, c_out):
-        rt.start(*workers)
+    input_prods  = [of_inputs[c].prod()  for c in range(num_columns)]
+    lo_prods     = [of_los[c].prod()     for c in range(num_columns)]
+    output_conss = [of_outputs[c].cons() for c in range(num_columns)]
 
-        # Non-blocking Parallel DMA Input Task Group
-        tg_in = rt.task_group()
-        for col in range(num_columns):
-            rt.fill(of_inputs[col].prod(), a_in, taps_in[col], task_group=tg_in)
-            rt.fill(of_los[col].prod(), a_lo, taps_in[col], task_group=tg_in)
-        rt.finish_task_group(tg_in)
+    def sequence(a_in, a_lo, c_out, *endpoints):
+        n = len(endpoints) // 3
+        in_prods  = endpoints[:n]
+        lo_prods_ = endpoints[n:2 * n]
+        out_conss = endpoints[2 * n:]
 
-        # Parallel DMA Output Task Group
-        tg_out = rt.task_group()
-        for col in range(num_columns):
-            rt.drain(of_outputs[col].cons(), c_out, taps_out[col], wait=True, task_group=tg_out)
-        rt.finish_task_group(tg_out)
+        tg_in = TaskGroup()
+        for col in range(n):
+            in_prods[col].fill(a_in, tap=taps_in[col], group=tg_in)
+            lo_prods_[col].fill(a_lo, tap=taps_in[col], group=tg_in)
+        tg_in.finish()
 
-    my_program = Program(device, rt)
+        tg_out = TaskGroup()
+        for col in range(n):
+            out_conss[col].drain(c_out, tap=taps_out[col], wait=True, group=tg_out)
+        tg_out.finish()
+
+    rt = Runtime(
+        sequence,
+        [in_ty, in_ty, out_ty, *input_prods, *lo_prods, *output_conss],
+    )
+    my_program = Program(device, rt, workers=workers)
     return my_program.resolve_program()
 
 

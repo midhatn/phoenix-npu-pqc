@@ -58,8 +58,8 @@ def main():
     test_matrix = [
         (
             "Milestone 3: Single-Core SAXPY Vector Operation",
-            Path(r"C:\phoenix-sdr-dsp\third_party\mlir-aie\programming_examples\getting_started\01_SAXPY"),
-            "saxpy_m3.py"
+            Path(r"C:\phoenix-sdr-dsp\tests\m3_saxpy"),
+            "test_saxpy_m3.py"
         ),
         (
             "Milestone 5: 8-Tap Vectorized Low-Pass FIR Filter",

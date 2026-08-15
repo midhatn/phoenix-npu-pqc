@@ -200,13 +200,15 @@ def ntt16_pipeline(
         fn_args=[of_in.cons(), of_out.prod(), mod_func],
     )
 
-    rt = Runtime()
-    with rt.sequence(in_ty, out_ty) as (a_in, c_out):
-        rt.start(worker)
-        rt.fill(of_in.prod(), a_in)
-        rt.drain(of_out.cons(), c_out, wait=True)
+    def sequence(a_in, c_out, in_prod, out_cons):
+        in_prod.fill(a_in)
+        out_cons.drain(c_out, wait=True)
 
-    my_program = Program(iron.get_current_device(), rt)
+    rt = Runtime(
+        sequence,
+        [in_ty, out_ty, of_in.prod(), of_out.cons()],
+    )
+    my_program = Program(iron.get_current_device(), rt, workers=[worker])
     return my_program.resolve_program()
 
 def main():

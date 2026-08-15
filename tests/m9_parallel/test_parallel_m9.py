@@ -10,6 +10,7 @@ import numpy as np
 from aie import iron
 from aie.helpers.taplib.tap import TensorAccessPattern
 from aie.iron import (
+    TaskGroup,
     CompileTime,
     ExternalFunction,
     In,
@@ -81,23 +82,29 @@ def parallel_fir_filter(
         for col in range(num_columns)
     ]
 
-    rt = Runtime()
-    with rt.sequence(tensor_ty, tensor_ty) as (a_in, c_out):
-        rt.start(*workers)
+    input_prods  = [of_inputs[c].prod()  for c in range(num_columns)]
+    output_conss = [of_outputs[c].cons() for c in range(num_columns)]
 
-        # Parallel DMA Input Task Group
-        tg_in = rt.task_group()
-        for col in range(num_columns):
-            rt.fill(of_inputs[col].prod(), a_in, taps[col], task_group=tg_in)
-        rt.finish_task_group(tg_in)
+    def sequence(a_in, c_out, *endpoints):
+        n = len(endpoints) // 2
+        in_prods  = endpoints[:n]
+        out_conss = endpoints[n:]
 
-        # Parallel DMA Output Task Group
-        tg_out = rt.task_group()
-        for col in range(num_columns):
-            rt.drain(of_outputs[col].cons(), c_out, taps[col], wait=True, task_group=tg_out)
-        rt.finish_task_group(tg_out)
+        tg_in = TaskGroup()
+        for col in range(n):
+            in_prods[col].fill(a_in, tap=taps[col], group=tg_in)
+        tg_in.finish()
 
-    my_program = Program(device, rt)
+        tg_out = TaskGroup()
+        for col in range(n):
+            out_conss[col].drain(c_out, tap=taps[col], wait=True, group=tg_out)
+        tg_out.finish()
+
+    rt = Runtime(
+        sequence,
+        [tensor_ty, tensor_ty, *input_prods, *output_conss],
+    )
+    my_program = Program(device, rt, workers=workers)
     return my_program.resolve_program()
 
 

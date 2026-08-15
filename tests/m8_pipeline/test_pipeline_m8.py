@@ -64,14 +64,16 @@ def sdr_demod_pipeline(
         core_body, fn_args=[of_in.cons(), of_lo.cons(), of_out.prod(), pipe_func]
     )
 
-    rt = Runtime()
-    with rt.sequence(in_ty, in_ty, out_ty) as (a_in, a_lo, c_out):
-        rt.start(worker)
-        rt.fill(of_in.prod(), a_in)
-        rt.fill(of_lo.prod(), a_lo)
-        rt.drain(of_out.cons(), c_out, wait=True)
+    def sequence(a_in, a_lo, c_out, in_prod, lo_prod, out_cons):
+        in_prod.fill(a_in)
+        lo_prod.fill(a_lo)
+        out_cons.drain(c_out, wait=True)
 
-    my_program = Program(iron.get_current_device(), rt)
+    rt = Runtime(
+        sequence,
+        [in_ty, in_ty, out_ty, of_in.prod(), of_lo.prod(), of_out.cons()],
+    )
+    my_program = Program(iron.get_current_device(), rt, workers=[worker])
     return my_program.resolve_program()
 
 
