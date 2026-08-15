@@ -28,10 +28,12 @@ This project was validated on a native Windows environment targeting the AMD Pho
 
 | Component | Verified value |
 |---|---|
-| MLIR-AIE | 1.3.4 |
+| MLIR-AIE | v1.4.1 + 13 commits (pin `3ca0193`) |
 | LLVM-AIE / Peano | `21.0.0.2026080301+c9c5ecb7` |
 | MLIR-AIE repository | `https://github.com/Xilinx/mlir-aie.git` |
 | MLIR-AIE tested commit | `3ca0193cea9e2c39ec670a65f93e1dd43c969f22` |
+| Upstream release base | [v1.4.1](https://github.com/Xilinx/mlir-aie/releases/tag/v1.4.1) |
+| Extra upstream fix included | [PR #3545](https://github.com/Xilinx/mlir-aie/pull/3545) — run_chain executable lifetime |
 | Python environment | `third_party\mlir-aie\ironenv` |
 
 ## Required Validation

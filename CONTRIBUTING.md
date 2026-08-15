@@ -24,8 +24,12 @@ The full toolchain is captured in [`toolchain.yaml`](toolchain.yaml):
 | NPU firmware     | 1.5.5.391                            |
 | XRT              | 2.21.0                               |
 | Python           | 3.13.15                              |
-| mlir-aie         | 1.3.4                                |
+| mlir-aie         | v1.4.1 + 13 commits (pin `3ca0193`)  |
 | llvm-aie (Peano) | 21.0.0.2026080301+c9c5ecb7           |
+
+The mlir-aie pin is v1.4.1 plus PR #3545 (run_chain executable-lifetime fix,
+required by parallel-DMA milestones). See
+[`docs/M2_TOOLCHAIN_PIN.md`](docs/M2_TOOLCHAIN_PIN.md) for details.
 
 See [`docs/SETUP_WINDOWS.md`](docs/SETUP_WINDOWS.md) for the full install
 walkthrough, or run the one-shot bootstrap:
@@ -52,8 +56,10 @@ Every session starts by activating `ironenv`:
 python run_all_silicon_tests.py
 ```
 
-You should see `12/12 PASS` in ~60 s. If not, fix your environment before
-starting work. `scripts/verify_environment.ps1` runs quick smoke checks.
+You should see `15/16 PASS` in ~60 s (M15b is `PORT_PENDING` on the iron API
+migration — see [`docs/ROADMAP.md`](docs/ROADMAP.md)). If not, fix your
+environment before starting work. `scripts/verify_environment.ps1` runs quick
+smoke checks.
 
 ### Make your change
 
@@ -89,7 +95,8 @@ tests/mN_your_name/
 2. Add the milestone to the `verification.last_verified.milestones` list in
    [`toolchain.yaml`](toolchain.yaml).
 3. Update `README.md` "Validated Silicon Milestones" table.
-4. Verify: full 12+1/12+1 PASS.
+4. Verify: full 15/16 PASS is preserved (or 16/16 if your milestone brings
+   M15b back with the iron API port).
 
 ---
 
@@ -107,7 +114,9 @@ Copy this into the PR body:
 - [ ] Commit messages are descriptive
 
 Then open the PR against `main`. CI will run lint + CFF/YAML validation +
-M12 CPU reference + Markdown link check.
+M12 NTT CPU reference + M16 FFT CPU reference + Markdown link check. If your
+change touches the mlir-aie/Peano install path, add the `run-onboarding-smoke`
+label to the PR to also run the fork-onboarding smoke job.
 
 ---
 

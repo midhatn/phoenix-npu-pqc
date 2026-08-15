@@ -1,8 +1,11 @@
 cff-version: 1.2.0
 message: "If you use this software, please cite it using the metadata below."
 title: "Phoenix SDR-DSP: Vectorized SDR & NTT DSP Acceleration Framework for AMD Phoenix NPU (XDNA1/AIE2)"
-abstract: "High-performance native Windows 11 acceleration framework for real-time Software Defined Radio (SDR) processing and Number Theoretic Transform (NTT) finite-field lattice cryptography on AMD Ryzen AI Phoenix silicon (XDNA1 / AIE2). Provides 12 silicon-verified milestones covering vectorized FIR filtering, complex mixing, power detection, multi-stage streaming demodulation, 4-column parallel scaling, modular arithmetic (Barrett reduction), Radix-2 NTT butterflies, and 16/256-point NTT/INTT with cyclic polynomial multiplication mod q=3329."
+abstract: "High-performance native Windows 11 acceleration framework for real-time Software Defined Radio (SDR) processing and Number Theoretic Transform (NTT) finite-field lattice cryptography on AMD Ryzen AI Phoenix silicon (XDNA1 / AIE2). Provides 16 silicon-verified milestones (15/16 PASS at v0.4.0 on Phoenix NPU1) covering vectorized FIR filtering, complex mixing, power detection, multi-stage streaming demodulation, 4-column parallel scaling, modular arithmetic (Barrett reduction), Radix-2 NTT butterflies, 16/256-point NTT/INTT with cyclic polynomial multiplication mod q=3329, CPU FFT reference, silicon radix-2 FFT/IFFT, and 4-column parallel FFT."
 type: software
+version: "0.4.0"
+date-released: "2026-08-15"
+commit: "6022626bb589c1ea545a99a5853a94fb00d35e43"
 authors:
   - family-names: "Nashar"
     given-names: "Midhat"
@@ -27,6 +30,8 @@ keywords:
   - "windows-11"
   - "lattice-cryptography"
   - "vectorization"
+  - "fft"
+  - "iron-api"
 preferred-citation:
   type: software
   title: "Phoenix SDR-DSP: Vectorized SDR & NTT DSP Acceleration Framework for AMD Phoenix NPU"
@@ -34,4 +39,45 @@ preferred-citation:
     - family-names: "Nashar"
       given-names: "Midhat"
   year: 2026
+  version: "0.4.0"
   url: "https://github.com/midhatn/phoenix-sdr-dsp"
+references:
+  - type: software
+    title: "mlir-aie: MLIR-based tooling for AMD AIEngine processors"
+    authors:
+      - name: "AMD (Xilinx) Research Labs"
+    repository-code: "https://github.com/Xilinx/mlir-aie"
+    url: "https://github.com/Xilinx/mlir-aie/releases/tag/v1.4.1"
+    version: "1.4.1+13 (commit 3ca0193)"
+    notes: "Pinned at commit 3ca0193cea9e2c39ec670a65f93e1dd43c969f22 (v1.4.1 + 13 commits) because it additionally contains PR #3545 (Retain executable per kernel handle to fix run_chain use-after-free), which is required by parallel-DMA milestones M9, M9b, and M17p. The v1.4.1 release itself introduced the new iron.Runtime(seq_fn, fn_args=[...]) API used throughout this project."
+    license: "Apache-2.0"
+  - type: software
+    title: "llvm-aie (Peano): LLVM-based backend for AMD AIEngine cores"
+    authors:
+      - name: "AMD (Xilinx) Research Labs"
+    repository-code: "https://github.com/Xilinx/llvm-aie"
+    version: "21.0.0.2026080301+c9c5ecb7"
+    notes: "AMD's LLVM fork with AIE code-generation support. Provides the peano-clang compiler used to build kernels in kernels/*.cc for AIE2 tiles. Full SPDX license expression is `Apache-2.0 WITH LLVM-exception`; the CFF `license` field below records the base license identifier accepted by the SPDX enum."
+    license: "Apache-2.0"
+  - type: software
+    title: "XRT: Xilinx Runtime"
+    authors:
+      - name: "AMD (Xilinx)"
+    repository-code: "https://github.com/Xilinx/XRT"
+    version: "2.21.0"
+    notes: "Provides the userspace runtime (pyxrt Python bindings, xrt-smi CLI) used by run_all_silicon_tests.py to load compiled XCLBINs onto the Phoenix NPU."
+    license: "Apache-2.0"
+  - type: software
+    title: "FFT_R4_AIE: AMD reference radix-4 Stockham FFT kernel"
+    authors:
+      - name: "AMD Research (Xilinx)"
+    repository-code: "https://github.com/Xilinx/mlir-aie"
+    notes: "The M17-v3 radix-4 Stockham FFT kernel (kernels/fft_stockham_f32.cc) is derived from the upstream FFT_R4_AIE reference implementation shipped as an example under Xilinx/mlir-aie. Licensed Apache-2.0."
+    license: "Apache-2.0"
+  - type: article
+    title: "Retain executable per kernel handle to fix run_chain use-after-free"
+    authors:
+      - name: "Xilinx/mlir-aie contributors"
+    url: "https://github.com/Xilinx/mlir-aie/pull/3545"
+    year: 2026
+    notes: "Upstream fix required by parallel-DMA milestones M9, M9b, and M17p. Merged into mlir-aie main after v1.4.1; landed at commit 3ca0193."

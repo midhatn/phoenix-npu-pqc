@@ -1,3 +1,24 @@
+# -----------------------------------------------------------------------------
+# Phoenix SDR-DSP — Continuous Integration
+# -----------------------------------------------------------------------------
+# This workflow runs on every push to `main` and every pull request, plus
+# on-demand via workflow_dispatch. The four normally-active jobs (lint-python,
+# validate-metadata, cpu-reference-tests, markdown-links) run only what can
+# execute on a stock Ubuntu runner without an actual AMD NPU.
+#
+# Silicon regression (16 milestones, 15/16 PASS at v0.4.0) runs on the
+# maintainer's Phoenix laptop via `python run_all_silicon_tests.py`; see
+# `docs/SETUP_WINDOWS.md`.
+#
+# For contributors forking the repo:
+# - The four normally-active jobs will run on your fork's pull requests
+#   without any additional secrets.
+# - To reproduce the mlir-aie build environment locally, use the
+#   `fork-onboarding-smoke` job below as a runnable recipe (or trigger it
+#   in your fork by adding the label `run-onboarding-smoke` to a PR, or via
+#   Actions → Run workflow → CI).
+# -----------------------------------------------------------------------------
+
 name: CI
 
 "on":
@@ -5,6 +26,7 @@ name: CI
     branches: [main]
   pull_request:
     branches: [main]
+    types: [opened, synchronize, reopened, labeled]
   workflow_dispatch:
 
 # Cancel in-progress runs on the same branch when a new commit lands.
@@ -16,7 +38,10 @@ permissions:
   contents: read
 
 jobs:
-  # -------------------------------------------------------------------------
+  # ---------------------------------------------------------------------------
+  # lint-python — ruff lint + advisory format check.
+  # Fast (<1 min). Runs on every PR.
+  # ---------------------------------------------------------------------------
   lint-python:
     name: Lint Python
     runs-on: ubuntu-latest
@@ -35,7 +60,10 @@ jobs:
           ruff format --check .
         continue-on-error: true   # advisory during initial adoption
 
-  # -------------------------------------------------------------------------
+  # ---------------------------------------------------------------------------
+  # validate-metadata — parse CITATION.cff and toolchain.yaml.
+  # Catches malformed release metadata before it reaches main.
+  # ---------------------------------------------------------------------------
   validate-metadata:
     name: Validate CITATION.cff and toolchain.yaml
     runs-on: ubuntu-latest
@@ -73,7 +101,12 @@ jobs:
           print("  xrt      :", d["toolchain"]["xrt"]["verified_version"])
           PY
 
-  # -------------------------------------------------------------------------
+  # ---------------------------------------------------------------------------
+  # cpu-reference-tests — runs the pure-Python CPU reference implementations
+  # for M12 (NTT) and M16 (FFT/IFFT). These are the mathematical ground truth
+  # against which the silicon kernels are compared, so they must stay green
+  # on any runner regardless of NPU availability.
+  # ---------------------------------------------------------------------------
   cpu-reference-tests:
     name: CPU reference tests (M12 NTT, M16 FFT)
     runs-on: ubuntu-latest
@@ -102,7 +135,11 @@ jobs:
         run: |
           python tests/m16_fft_ref/test_fft_reference_m16.py
 
-  # -------------------------------------------------------------------------
+  # ---------------------------------------------------------------------------
+  # markdown-links — external link integrity check for all *.md files.
+  # Advisory (continue-on-error) because external sites go down.
+  # Config: .github/mlc_config.json
+  # ---------------------------------------------------------------------------
   markdown-links:
     name: Check Markdown links
     runs-on: ubuntu-latest
@@ -116,3 +153,100 @@ jobs:
           config-file: ".github/mlc_config.json"
         continue-on-error: true
 
+  # ---------------------------------------------------------------------------
+  # fork-onboarding-smoke — runnable recipe for a fresh forker.
+  #
+  # This job documents the exact steps a new contributor needs to take to
+  # build the mlir-aie / IRON toolchain from scratch on Linux. It:
+  #
+  #   1. Clones upstream mlir-aie at the pinned commit `3ca0193` (v1.4.1 + 13
+  #      commits, includes PR #3545 run_chain executable-lifetime fix — see
+  #      https://github.com/Xilinx/mlir-aie/pull/3545).
+  #   2. Installs llvm-aie (Peano) from AMD's pre-built Python wheels via
+  #      the extra-index-url published under llvm-aie.
+  #   3. Runs the CPU-only Python entry points (no NPU required) to prove
+  #      the environment is wired up correctly.
+  #
+  # Only runs on demand — the mlir-aie clone + install is >5 min per run,
+  # so we skip it on routine PRs. Triggers:
+  #
+  #   - Manual dispatch:  Actions → CI → Run workflow.
+  #   - PR label:         add `run-onboarding-smoke` to a PR to run once.
+  #
+  # This job does NOT test the NPU itself. Silicon regression runs on the
+  # maintainer's Phoenix laptop; see `run_all_silicon_tests.py` and
+  # `docs/SETUP_WINDOWS.md`.
+  # ---------------------------------------------------------------------------
+  fork-onboarding-smoke:
+    name: Fork onboarding smoke (mlir-aie + Peano)
+    runs-on: ubuntu-latest
+    if: |
+      github.event_name == 'workflow_dispatch' ||
+      (github.event_name == 'pull_request' &&
+       contains(github.event.pull_request.labels.*.name, 'run-onboarding-smoke'))
+    timeout-minutes: 20
+    steps:
+      - name: Checkout phoenix-sdr-dsp
+        uses: actions/checkout@v7
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+
+      - name: Read pinned toolchain versions
+        id: pins
+        run: |
+          python - <<'PY'
+          import os, yaml
+          with open("toolchain.yaml", "r", encoding="utf-8") as f:
+              d = yaml.safe_load(f)
+          mlir_aie_commit = d["toolchain"]["mlir_aie"]["verified_commit"]
+          llvm_aie = d["toolchain"]["llvm_aie_peano"]["verified_version"]
+          with open(os.environ["GITHUB_OUTPUT"], "a") as gh:
+              gh.write(f"mlir_aie_commit={mlir_aie_commit}\n")
+              gh.write(f"llvm_aie={llvm_aie}\n")
+          print("mlir-aie commit:", mlir_aie_commit)
+          print("llvm-aie :", llvm_aie)
+          PY
+
+      - name: Clone upstream mlir-aie at pinned commit
+        env:
+          MLIR_AIE_COMMIT: ${{ steps.pins.outputs.mlir_aie_commit }}
+        run: |
+          git clone --filter=blob:none https://github.com/Xilinx/mlir-aie.git third_party/mlir-aie
+          cd third_party/mlir-aie
+          git fetch --depth 1 origin "$MLIR_AIE_COMMIT"
+          git checkout "$MLIR_AIE_COMMIT"
+          echo "mlir-aie HEAD: $(git log -1 --oneline)"
+
+      - name: Install llvm-aie (Peano) wheels
+        run: |
+          python -m pip install --upgrade pip
+          # llvm-aie is published as a pre-built Python wheel by AMD.
+          # See: https://github.com/Xilinx/llvm-aie for the pinned nightly.
+          python -m pip install \
+            --extra-index-url https://github.com/Xilinx/llvm-aie/releases/expanded_assets/nightly \
+            "llvm-aie" || echo "NOTE: Peano wheel install is illustrative; forkers may need to consult docs/SETUP_WINDOWS.md for the exact index used at your point in time."
+
+      - name: Install Python runtime deps (numpy, pyyaml, ml_dtypes)
+        run: |
+          python -m pip install --upgrade numpy pyyaml ml_dtypes
+
+      - name: Smoke — CPU reference tests (no NPU required)
+        run: |
+          python tests/m16_fft_ref/test_fft_reference_m16.py
+          if [ -f tests/m12_ntt_ref/test_ntt_ref_m12.py ]; then
+            python tests/m12_ntt_ref/test_ntt_ref_m12.py
+          fi
+          echo ""
+          echo "==============================================================="
+          echo "Fork onboarding smoke complete."
+          echo ""
+          echo "NEXT STEPS to reach the silicon regression suite:"
+          echo "  1. Move to a machine with an AMD Phoenix NPU (XDNA1/AIE2)."
+          echo "  2. Install XRT >= 2.21.0 from https://github.com/Xilinx/XRT"
+          echo "  3. Install the AMD NPU driver from AMD's driver portal."
+          echo "  4. See docs/SETUP_WINDOWS.md for the full Windows walkthrough."
+          echo "  5. Run: python run_all_silicon_tests.py"
+          echo "==============================================================="

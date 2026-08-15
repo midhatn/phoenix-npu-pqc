@@ -193,6 +193,6 @@ Expected output (v0.4.0, mlir-aie v1.4.1 pin `3ca0193`):
 
 ## 7. Credits & Acknowledgments
 
-- **Lead Architect & Maintainer:** Midhat ([@midhatn](https://github.com/midhatn))
+- **Lead Architect & Maintainer:** Midhat Nashar ([@midhatn](https://github.com/midhatn))
 - **AI Architecture & Engineering Partner:** Perplexity AI (Senior AMD XDNA / AIE & DSP Copilot)
 - **License:** MIT License — See [LICENSE](LICENSE) for details.
