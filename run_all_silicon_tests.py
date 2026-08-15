@@ -81,6 +81,34 @@
 #           I0-sinh window, and scipy.signal.firwin. Published contract
 #           moves from 20/20 to 21/21 silicon-validated milestones and
 #           closes the DSP-track filtering & resampling block (M19-M23).
+# - v0.4.0+M24: 22nd silicon regression entry added. M24 fused Barker-13
+#           matched-filter correlator: two independent real FIRs on I
+#           and Q with reversed Barker-13 taps
+#           (+1,-1,+1,-1,+1,+1,-1,-1,+1,+1,+1,+1,+1), L = 13, on one
+#           AIE2 core (tests/m24_correlator/test_correlator_m24.py).
+#           Matched-filter theory follows Proakis & Salehi 5e sec 5.1.5
+#           and Massey 1972; correlation-as-reversed-FIR identity per
+#           Oppenheim & Schafer 3e sec 2.6.2; block topology matches
+#           the GNU Radio Correlation Estimator and liquid-dsp
+#           detector_cccf. Barker-13 PSL = 1 (|c_v| <= 1 for all
+#           nonzero shifts) per Barker 1953 and Wikipedia "Barker
+#           code". Kernel uses M22 literal-index MAC discipline
+#           (13-term hand-unrolled dot product, 12-slot explicit
+#           shift-and-ingest). Silicon PASS at max err 0.03125
+#           (atol = 0.05) on random I/Q at seed 794; host gates cover
+#           aligned preamble peak = 13.0 at sample 112, DC input Iy
+#           steady = 5.0, +45 deg rotated preamble |y| = 12.99, and
+#           negated preamble Iy = -13.0. Sandbox transliteration is
+#           np.array_equal bit-exact (0 / 4096 slots differ, max diff
+#           0.0). Bring-up incident: three consecutive silicon runs
+#           produced all-zero output because the driver's
+#           correlator_program was missing the @iron.jit decorator and
+#           the In/Out/CompileTime type annotations; root cause and fix
+#           documented in docs/M24_DESIGN.md sec 5.3 with citations to
+#           the mlir-aie IRON API overview and compilation-stages
+#           guide. Published contract moves from 21/21 to 22/22
+#           silicon-validated milestones and opens the modulation &
+#           synchronization block (M24-M27).
 
 import os
 import subprocess
@@ -282,6 +310,11 @@ def main():
             "Milestone 23: Fused Polyphase Channelizer (M=8 commutator + FIR + DFT)",
             TESTS_DIR / "m23_channelizer",
             "test_channelizer_m23.py",
+        ),
+        (
+            "Milestone 24: Fused Barker-13 Matched-Filter Correlator (L=13)",
+            TESTS_DIR / "m24_correlator",
+            "test_correlator_m24.py",
         ),
     ]
 

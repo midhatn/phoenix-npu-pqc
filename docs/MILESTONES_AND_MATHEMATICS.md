@@ -545,9 +545,39 @@ Silicon validation runs four host-side reference checks before dispatch and one 
 
 See [docs/M23_DESIGN.md](M23_DESIGN.md).
 
+## M24: fused Barker-13 matched-filter correlator
+
+M24 opens the modulation & synchronization block. It takes a wideband complex baseband I/Q stream and produces the matched-filter response to a known Barker-13 preamble at every sample, which is the workhorse of PPDU-boundary detection in DSSS receivers ([Proakis & Salehi 5e §5.1.5](https://www.mheducation.com/highered/product/digital-communications-proakis-salehi/M9780072957167.html); [Massey 1972](https://ieeexplore.ieee.org/document/1091459); [Skolnik *Radar Handbook* 3e ch. 8](https://www.accessengineeringlibrary.com/content/book/9780071485470)):
+
+\[
+y[n] \;=\; \sum_{k=0}^{L-1} \overline{s[k]}\, x[n+k], \qquad s \in \{+1,-1\}^{L}, \; L = 13
+\]
+
+The Barker-13 preamble `s = (+1,+1,+1,+1,+1,-1,-1,+1,+1,-1,+1,-1,+1)` has aperiodic autocorrelation `|c_v| ≤ 1` for all `v ≠ 0` and peak `c_0 = 13`, giving a 22.3 dB power PSL ([Barker 1953](https://ieeexplore.ieee.org/document/6773685); [Wikipedia "Barker code"](https://en.wikipedia.org/wiki/Barker_code)). Because `s` is real, `conj(s) = s` and the complex correlator splits into two independent real FIRs on I and Q ([Oppenheim & Schafer 3e §2.6.2](https://www.pearson.com/en-us/subject-catalog/p/discrete-time-signal-processing/P200000003543)):
+
+\[
+I_y[n] = \sum_{k=0}^{L-1} s[k]\, I_x[n+k], \qquad Q_y[n] = \sum_{k=0}^{L-1} s[k]\, Q_x[n+k]
+\]
+
+By the correlation-as-reversed-FIR identity, the same output stream is produced by a causal FIR with reversed taps `h[k] = s[L-1-k] = (+1,-1,+1,-1,+1,+1,-1,-1,+1,+1,+1,+1,+1)` applied via the standard past-history convolution `y[i] = Σ_k h[k]·x[i-k]`, with fixed group delay `L-1 = 12`. This lets the kernel reuse the M8/M19 shift-and-ingest schedule verbatim with zero-history warmup for `n < 12`. Block topology matches the [GNU Radio Correlation Estimator](https://wiki.gnuradio.org/index.php/Correlation_Estimator) and [liquid-dsp `detector_cccf`](https://liquidsdr.org/doc/detector/).
+
+The kernel writes the FIR body as a **single 13-term hand-unrolled dot product** with literal `hist_i[N]` indices and the 12-slot shift-and-ingest as 12 explicit statements — the M22 literal-index MAC discipline. Taps are stored as thirteen named `const float t0..t12` scalars so Peano lowers each MAC term against a compile-time constant instead of an indexed load. Because taps are exactly `±1.0f` (exactly representable in both bfloat16 and float32) and there are no transcendentals in the kernel, no special quantization discipline is required — unlike M23's Kaiser prototype.
+
+Silicon validation runs four host-side reference checks before dispatch and one silicon-gate check on the NPU:
+
+1. Aligned preamble: `|y| = 13.0` at sample `100 + 12 = 112`, max sidelobe = 1.0 (matches Barker-13 PSL bound).
+2. DC input `x[n] = 1 + 0j`: I-channel steady-state = `Σ s = 5.0`, Q-channel = 0.0 (sign-of-taps check).
+3. Complex preamble rotated by `exp(jπ/4)` at sample offset 200: `|y[212]| = 12.99`, `arg(y[212]) = π/4` (phase preservation).
+4. Negated preamble at offset 300: `I_y[312] = -13.0` (sign fidelity).
+5. Silicon gate: random complex I/Q at seed 794, `atol = 0.05`. Silicon PASS on Phoenix NPU1 (2026-08-15) at max err 0.03125. The `atol = 0.05` budget accommodates 13 bfloat16 MAC roundings per output sample on uniform `[-1, 1]` input; each MAC has magnitude `≤ 1` and 13 accumulate, giving an expected `~0.04` error floor. A sandbox transliteration of the `.cc` constants and loop schedule is `np.array_equal` bit-exact to the host reference on the seed-794 vector (0/4096 slots differ, max diff 0.0).
+
+**Bring-up incident (documented for future milestones):** the M24 kernel produced all-zero silicon output for three consecutive attempts before the root cause was identified. The driver's `correlator_program` function had been defined as a plain function without the `@iron.jit` decorator and without the `In`/`Out`/`CompileTime` type annotations on its parameters. Without those, `Program.resolve_program()` returns raw MLIR module text and IRON never invokes `aiecc`; there is no compile step, no cache write in `$HOME/.npu/cache`, and no NPU dispatch. The output buffer stayed at its initial zero fill and the reported max error equalled the reference peak on the random seed vector. Fix: match the M22/M23 driver template verbatim ([`@iron.jit` IRON API overview](https://xilinx.github.io/mlir-aie/1.4.1/api/iron/); [mlir-aie compilation stages](https://xilinx.github.io/mlir-aie/1.4.1/programming_guide/compilation_stages/)). Full root-cause trail and mitigation in [docs/M24_DESIGN.md §5.3](M24_DESIGN.md).
+
+See [docs/M24_DESIGN.md](M24_DESIGN.md).
+
 ## Automated regression coverage
 
-`run_all_silicon_tests.py` executes 21 automated test entries:
+`run_all_silicon_tests.py` executes 22 automated test entries:
 
 ```powershell
 python run_all_silicon_tests.py
@@ -576,6 +606,7 @@ The runner reports pass/fail status and elapsed time for:
 19. M21  fused DDC (complex NCO at −f_s/8 + Kaiser LPF + decim-by-4)
 20. M22  fused DUC (interp-L=4 + Kaiser×L LPF + complex NCO at +f_s/8)
 21. M23  fused polyphase channelizer (M=8 commutator + M-path FIR + 8-point matmul-DFT)
+22. M24  fused Barker-13 matched-filter correlator (reversed-tap FIR pair on I and Q, L=13)
 
 M0–M2 are setup and reproducibility milestones, while M4 depends on locally attached SDR hardware; therefore they are not entries in the automated silicon regression runner.
 
@@ -645,6 +676,19 @@ Before calling a deterministic kernel complete:
 - Parseval's theorem. https://mathworld.wolfram.com/ParsevalsTheorem.html
 - NumPy `numpy.fft.fft` / `ifft`. https://numpy.org/doc/stable/reference/generated/numpy.fft.fft.html
 - K. Ozaki, T. Ogita, S. Oishi, S. M. Rump, "Error-free transformations of matrix multiplication by using fast routines of matrix multiplication and its applications", *Numerical Algorithms* 59:95–118 (2012). https://doi.org/10.1007/s11075-011-9478-1
+- R. H. Barker, "Group Synchronizing of Binary Digital Systems", in W. Jackson (ed.), *Communication Theory*, Butterworth (1953), pp. 273–287 — original definition of Barker codes. https://ieeexplore.ieee.org/document/6773685
+- Wikipedia, "Barker code" — length-13 sequence and PSL = 1 property. https://en.wikipedia.org/wiki/Barker_code
+- J. G. Proakis and M. Salehi, *Digital Communications*, 5th ed., McGraw-Hill (2008), §5.1.5 — matched-filter derivation for known signal detection. https://www.mheducation.com/highered/product/digital-communications-proakis-salehi/M9780072957167.html
+- A. V. Oppenheim and R. W. Schafer, *Discrete-Time Signal Processing*, 3rd ed., Prentice Hall (2010), §2.6.2 — correlation-as-reversed-FIR identity. https://www.pearson.com/en-us/subject-catalog/p/discrete-time-signal-processing/P200000003543
+- J. L. Massey, "Optimum frame synchronization", *IEEE Trans. Communications* COM-20(2):115–119 (1972). https://ieeexplore.ieee.org/document/1091459
+- M. I. Skolnik (ed.), *Radar Handbook*, 3rd ed., McGraw-Hill (2008), ch. 8 — pulse compression and matched filtering. https://www.accessengineeringlibrary.com/content/book/9780071485470
+- GNU Radio Project, "Correlation Estimator" block. https://wiki.gnuradio.org/index.php/Correlation_Estimator
+- GNU Radio, `corr_est_cc_impl.h` source. https://www.gnuradio.org/doc/doxygen-v3.7.10/corr__est__cc_8h_source.html
+- J. Gaeddert, liquid-dsp `detector_cccf` — preamble detection API. https://liquidsdr.org/doc/detector/
+- IEEE Std 802.11-2020, DSSS PHY — Barker-11 preamble in 1/2 Mbps DSSS PHY. https://standards.ieee.org/ieee/802.11/7028/
+- Xilinx/AMD, mlir-aie IRON API overview — `@iron.jit`, `In`/`Out`/`CompileTime` type annotations. https://xilinx.github.io/mlir-aie/1.4.1/api/iron/
+- Xilinx/AMD, mlir-aie compilation stages guide — `Program.resolve_program()` → `aiecc` → xclbin/pdi. https://xilinx.github.io/mlir-aie/1.4.1/programming_guide/compilation_stages/
+- DeepWiki, "Getting Started with IRON" — canonical driver template for AIE2 kernels. https://deepwiki.com/Xilinx/mlir-aie/7.1-getting-started-with-iron
 
 ### Finite fields, NTT, Kyber / ML-KEM
 
