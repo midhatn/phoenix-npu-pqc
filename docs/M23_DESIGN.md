@@ -1,9 +1,10 @@
 # M23 — Polyphase Channelizer Design
 
-Status: implementation complete (host reference + kernel bit-exact match on seed-793 silicon-gate vector, silicon gate pending laptop run).
+Status: **shipped** (silicon PASS on Phoenix NPU1, 2026-08-15, max err 0.003906 on seed-793 random baseband at `atol = 0.02`; commit [`43b0f9c1`](https://github.com/midhatn/phoenix-sdr-dsp/commit/43b0f9c19571e07fb883dce24f70ab8718bd22a5)).
 Owner: Phoenix SDR-DSP team.
-Target hardware: AMD Ryzen 9 7940HS Phoenix / XDNA1 / AIE2 (one core).
-Target OS: Windows 11 Pro 25H2, Clang / Peano AIE2, IRON 1.4.1.
+Target hardware: [AMD Ryzen 9 7940HS "Phoenix"](https://www.amd.com/en/products/apu/amd-ryzen-9-7940hs) / [XDNA1 NPU](https://docs.kernel.org/accel/amdxdna/amdnpu.html) / AIE2 (one core, 4×5 tile array).
+Target OS: Windows 11 Pro 25H2, Clang / Peano AIE2, [IRON MLIR-AIE 1.4.1](https://github.com/Xilinx/mlir-aie/releases/tag/v1.4.1) (pinned at commit [`3ca0193`](https://github.com/Xilinx/mlir-aie/commit/3ca0193)).
+Closing this milestone completes the DSP-track filtering & resampling block (M19–M23).
 Related files:
 
 - `tests/m23_channelizer/channelizer_kernel.cc` — fused AIE2 kernel (commutator + M-path FIR + M-point DFT).
@@ -221,34 +222,130 @@ With all four in place, the sandbox transliteration
 to the host reference on the seed-793 vector: 0 non-matching slots out
 of 4096, max diff 0.0.
 
+### 5.3 Silicon run
+
+Executed on Phoenix NPU1 (2026-08-15, `AMD Ryzen 9 7940HS`,
+Windows 11 Pro 25H2, IRON 1.4.1). Command:
+
+```powershell
+cd C:\phoenix-sdr-dsp
+python tests\m23_channelizer\test_channelizer_m23.py
+```
+
+Result (verbatim):
+
+```
+[reference] Test 1 prototype: PASS (sum(h) = 0.999767, symmetry max diff = 0.00e+00)
+[reference] Test 2 DC -> ch0: PASS (|ch0| = 1.0000, isolation = 66.2 dB)
+[reference] Test 3 tone -> ch3: PASS (|ch3| = 1.0000, isolation = 66.2 dB)
+[reference] Test 4 two-tone (ch1 + ch5): PASS (|ch1| = 1.0000, |ch5| = 1.0000, isolation = 64.5 dB)
+Compiling fused polyphase channelizer with Peano and dispatching to Phoenix NPU...
+Ref Out sample [0..4]:    [-0.00121307 -0.00193787 0.000648499 -0.00037384]
+Actual Out sample [0..4]: [-0.0012207  -0.00193787 0.000644684 -0.000375748]
+Maximum absolute error: 0.003906
+SUCCESS: Phoenix NPU executed fused M-path polyphase channelizer (M = 8, K = 8) on physical silicon!
+```
+
+Wired as the 21st entry in [`run_all_silicon_tests.py`](../run_all_silicon_tests.py).
+Commit [`43b0f9c1`](https://github.com/midhatn/phoenix-sdr-dsp/commit/43b0f9c19571e07fb883dce24f70ab8718bd22a5)
+added 6 files (this design doc + kernel .cc + test .py + ROADMAP +
+MILESTONES_AND_MATHEMATICS + runner) under
+`MIDHAT NASHAR <medhat.nashar@gmail.com>`.
+
 ## 6. References
+
+### Primary literature
 
 - Fred Harris, *Multirate Signal Processing for Communication Systems*,
   Prentice Hall / IEEE, 2004; ch. 6 §6.3 fig. 6.8 M-path analysis
-  bank. <https://ieeexplore.ieee.org/book/9448967>
+  bank; ch. 8 (digital down-converter). IEEE Xplore reissue.
+  <https://ieeexplore.ieee.org/book/9448967>
 - P. P. Vaidyanathan, *Multirate Systems and Filter Banks*, Prentice
   Hall, 1993; ch. 4 §4.3, Eq. 4.3.13 (polyphase commutator identity).
   <https://dl.acm.org/doi/10.5555/151045>
 - J. F. Kaiser, "Nonrecursive Digital Filter Design Using the I0-sinh
   Window Function," *Proc. IEEE ISCAS*, 1974.
   <https://ieeexplore.ieee.org/document/1451724>
-- GNU Radio Wiki, "Polyphase Channelizer."
+- A. V. Oppenheim & R. W. Schafer, *Discrete-Time Signal Processing*,
+  3rd ed., Pearson, 2010; §4.7 (multirate) and §10.9 (window design).
+  <https://www.pearson.com/en-us/subject-catalog/p/discrete-time-signal-processing/P200000003543>
+- fred harris, Chris Dick, Michael Rice, "Digital receivers and
+  transmitters using polyphase filter banks for wireless
+  communications," *IEEE Trans. Microwave Theory & Techniques*,
+  51(4):1395–1412, 2003.
+  <https://ieeexplore.ieee.org/document/1193217>
+
+### Reference implementations
+
+- GNU Radio Wiki, "Polyphase Channelizer" (block-level description
+  and natural sample-to-branch convention).
   <https://wiki.gnuradio.org/index.php/Polyphase_Channelizer>
-- GNU Radio 3.7 API docs, `pfb_channelizer_ccf`.
+- GNU Radio 3.7 API docs, `pfb_channelizer_ccf` (canonical open-source
+  M-path analysis bank).
   <https://www.gnuradio.org/doc/sphinx-3.7.0/filter/channelizers_blk.html>
+- GNU Radio C++ source, `gr::filter::pfb_channelizer_ccf` (natural
+  commutator implementation on `main`).
+  <https://github.com/gnuradio/gnuradio/blob/main/gr-filter/lib/pfb_channelizer_ccf_impl.cc>
 - Tom Rondeau, "Designing Analysis and Synthesis Filterbanks in GNU
-  Radio," 2013 (GRCon).
+  Radio," GRCon 2013 tutorial.
   <https://static.squarespace.com/static/543ae9afe4b0c3b808d72acd/543aee1fe4b09162d08633d9/543aee20e4b09162d086354a/1395369129837/rondeau_gr_filtering.pdf>
 - NVIDIA MatX documentation, `channelize_poly` (natural
-  sample-to-branch convention).
+  sample-to-branch convention on GPU).
   <https://nvidia.github.io/MatX/api/signalimage/filtering/channelize_poly.html>
-- SciPy documentation, `scipy.signal.firwin`.
+- NVIDIA MatX C++ source, `channelize_poly.h`.
+  <https://github.com/NVIDIA/MatX/blob/main/include/matx/transforms/channelize_poly.h>
+- SciPy Cookbook, `scipy.signal.firwin` API reference (prototype
+  design; `scale=True` DC-normalization convention).
   <https://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.firwin.html>
-- SciPy documentation, `scipy.signal.kaiserord`.
+- SciPy Cookbook, `scipy.signal.kaiserord` API reference (Kaiser β /
+  transition-width solver).
   <https://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.kaiserord.html>
+- SciPy Cookbook, `scipy.fft.fft` API reference (analysis-convention
+  sign `-j`, matching this milestone).
+  <https://docs.scipy.org/doc/scipy/reference/generated/scipy.fft.fft.html>
+
+### Blogs, tutorials, and archives
+
 - Tom Verbeure, "Polyphase Channelizer" (visual intuition), 2026-02-16.
   <https://tomverbeure.github.io/2026/02/16/Polyphase-Channelizer.html>
-- "Polyphase FFT Channelizers Derivation" (archived tutorial).
+- "Polyphase FFT Channelizers Derivation" (archived tutorial deriving
+  the FIR + IDFT / DFT identity used here).
   <https://ia600507.us.archive.org/18/items/polyphase-fft-channelizers-derivation/Polyphase-FFT-Channelizers-Derivation.pdf>
-- IRON MLIR-AIE 1.4.1 release, `buildHostWinNative` target.
+- Kyle Isom, "An Interactive Polyphase Channelizer Walkthrough"
+  (equation-by-equation reference).
+  <https://kisom.com/posts/2019-10-04-polyphase-channelizers/>
+
+### Hardware & toolchain
+
+- AMD, product page for the Ryzen 9 7940HS "Phoenix" APU (host of the
+  XDNA1 NPU used here).
+  <https://www.amd.com/en/products/apu/amd-ryzen-9-7940hs>
+- Linux Kernel Docs, "AMD NPU" (XDNA1 4×5 tile topology, `amdxdna`
+  driver surface).
+  <https://docs.kernel.org/accel/amdxdna/amdnpu.html>
+- AMD, XAPP1406 "Floating-Point Numerical Formats on AIE-ML"
+  (bfloat16 quantum, rounding, and MAC semantics).
+  <https://docs.amd.com/r/en-US/xapp1406-aie-ml-fp-computation/Floating-Point-Numerical-Formats>
+- Xilinx `mlir-aie` v1.4.1 release notes (`buildHostWinNative`
+  target used to build this kernel).
   <https://github.com/Xilinx/mlir-aie/releases/tag/v1.4.1>
+- Xilinx `mlir-aie` commit `3ca0193` — "Retain executable per kernel
+  handle to fix run_chain use-after-free" (pinned toolchain revision).
+  <https://github.com/Xilinx/mlir-aie/commit/3ca0193>
+
+### Companion Phoenix SDR-DSP milestones
+
+- M17p parallel FFT kernel `parallel_fft64_kernel.cc` — anchor for the
+  matmul-style DFT with fully-embedded twiddles.
+  <https://github.com/midhatn/phoenix-sdr-dsp/blob/main/tests/m17p_fft_parallel/parallel_fft64_kernel.cc>
+- M19 complex FIR kernel `fir_complex_kernel.cc` — anchor for the
+  per-branch shift-and-ingest structure.
+  <https://github.com/midhatn/phoenix-sdr-dsp/blob/main/tests/m19_complex_fir/fir_complex_kernel.cc>
+- M20 polyphase kernel `polyphase_kernel.cc` — anchor for the
+  polyphase decomposition used here in the analysis-bank direction.
+  <https://github.com/midhatn/phoenix-sdr-dsp/blob/main/tests/m20_polyphase/polyphase_kernel.cc>
+- Phoenix SDR-DSP repository root and ROADMAP (M19–M23 block context).
+  <https://github.com/midhatn/phoenix-sdr-dsp>
+  <https://github.com/midhatn/phoenix-sdr-dsp/blob/main/docs/ROADMAP.md>
+- M23 shipping commit `43b0f9c1` (silicon PASS; this milestone).
+  <https://github.com/midhatn/phoenix-sdr-dsp/commit/43b0f9c19571e07fb883dce24f70ab8718bd22a5>
