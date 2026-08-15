@@ -87,8 +87,8 @@ static inline void fft_stockham_gemm(float *__restrict x,
     const unsigned s = 1u << (2 * stage0); // s = 1
     const unsigned m = n >> 2;             // m = N / 4
 
-    float butterfly_in[Q_TILE][8];
-    float butterfly_out[Q_TILE][8];
+    alignas(aie::vector_decl_align) float butterfly_in[Q_TILE][8];
+    alignas(aie::vector_decl_align) float butterfly_out[Q_TILE][8];
 
     for (unsigned p0 = 0; p0 < m; p0 += Q_TILE) {
       const unsigned p_lim = ((p0 + Q_TILE) < m) ? (p0 + Q_TILE) : m;
@@ -189,9 +189,9 @@ static inline void fft_stockham_gemm(float *__restrict x,
 
     // Scalar q-unrolled format: process 4 q values together for each p.
     constexpr unsigned Q_TILE = 4;
-    float butterfly_in[Q_TILE][8];
-    float butterfly_out[Q_TILE][8];
-    bfloat16 twiddle_buf[kSplitCount][Q_TILE][8];
+    alignas(aie::vector_decl_align) float butterfly_in[Q_TILE][8];
+    alignas(aie::vector_decl_align) float butterfly_out[Q_TILE][8];
+    alignas(aie::vector_decl_align) bfloat16 twiddle_buf[kSplitCount][Q_TILE][8];
 
     for (unsigned p = 0; p < m; ++p) {
       for (unsigned q0 = 0; q0 < s; q0 += Q_TILE) {

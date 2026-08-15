@@ -74,7 +74,8 @@ def fft64_stockham_r4(
         of_out.release(1)
 
     worker = Worker(
-        core_body, fn_args=[of_in.cons(), of_tw.cons(), of_out.prod(), fft_func]
+        core_body, fn_args=[of_in.cons(), of_tw.cons(), of_out.prod(), fft_func],
+        stack_size=0x4000,
     )
 
     def sequence(a_in, a_tw, c_out, in_h, tw_h, out_h):
@@ -139,6 +140,14 @@ def main():
     ref_iq[1::2] = ref_complex.imag
 
     out_np = out_tensor._data
+    print("=== STAGE-1 EXPERIMENT DUMP ===")
+    print(f"NaN count: {int(np.sum(np.isnan(out_np)))}")
+    print(f"Nonzero count: {int(np.sum(np.abs(out_np) > 1e-10))}")
+    for start in range(0, 128, 16):
+        vals = out_np[start:start+16]
+        vals_str = "  ".join(f"{v:+.3e}" for v in vals)
+        print(f"[{start:3d}..{start+15:3d}]: {vals_str}")
+    print("=== END DUMP ===")
     in_np_after = in_tensor._data
     print("")
     print(f"Ref Spectrum Bin [0..2]:    {ref_iq[:6]}")
