@@ -74,6 +74,7 @@ phoenix-sdr-dsp/
 ├── docs/                            # Milestones, mathematics, ROADMAP, Windows setup, toolchain pin
 ├── requirements/                    # Pinned toolchain versions
 ├── toolchain.yaml                   # Machine-readable pinned stack (silicon-verified components)
+├── install.py                       # One-command Windows installer (clone, then run this)
 ├── run_all_silicon_tests.py         # Automated Master Regression Suite
 ├── CITATION.cff                     # Citation metadata (validated with cffconvert)
 ├── LICENSE                          # MIT License
@@ -178,18 +179,28 @@ During development on native Windows 11 with the AMD IRON/AIE2 toolchain, severa
 
 ## 5. Quickstart & Silicon Verification
 
+A new Windows machine only needs a clone and `install.py`. That script wraps the official IRON native-Windows path ([mlir-aie 1.4.1 buildHostWinNative](https://xilinx.github.io/mlir-aie/1.4.1/buildHostWinNative/)), the pinned [XRT 2.21.75 SDK](https://github.com/Xilinx/XRT/releases/tag/2.21.75), and the [mlir_aie 1.4.1](https://github.com/Xilinx/mlir-aie/releases/tag/v1.4.1) wheel. Do not install from the rolling `latest-wheels-4` channel — an untagged checkout of pin `3ca0193` would otherwise resolve to an older series.
+
+```powershell
+conda deactivate   # if a conda prompt is active
+git clone https://github.com/midhatn/phoenix-sdr-dsp.git
+cd phoenix-sdr-dsp
+py .\install.py
+py .\run_all_silicon_tests.py
+```
+
+`install.py` is stdlib-only. It checks Windows 11 22H2+, CPython 3.13, Git, CMake, Visual Studio C++ with the LLVM toolset (`llvm-objcopy` for the Peano wheel fixup), and the AMD NPU driver, then creates `third_party/mlir-aie/ironenv`. The test runner uses that environment automatically.
+
 ### Prerequisites
 - AMD Ryzen 7040 / 8040 APU (Ryzen 9 7940HS or similar Phoenix/Hawk Point silicon).
 - Windows 11 Pro 22H2 / 23H2 / 25H2 with AMD NPU driver enabled.
-- Python 3.10+ virtual environment (`ironenv`) containing MLIR-AIE, IRON, and LLVM Peano compiler.
+- CPython 3.13, Git, CMake, and Visual Studio 2022/18 with the C++ and Clang/LLVM workloads ([IRON Windows guide](https://xilinx.github.io/mlir-aie/1.4.1/buildHostWinNative/)).
 
 ### Running the Full Silicon Test Suite
-In PowerShell:
+After `install.py` has finished, from the clone:
 
 ```powershell
-& "C:\phoenix-sdr-dsp\third_party\mlir-aie\ironenv\Scripts\Activate.ps1"
-Set-Location C:\phoenix-sdr-dsp
-python run_all_silicon_tests.py
+py .\run_all_silicon_tests.py
 ```
 
 Expected output (mlir-aie v1.4.1 pin `3ca0193`, cached xclbin):

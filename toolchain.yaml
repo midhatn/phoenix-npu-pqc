@@ -60,6 +60,12 @@ toolchain:
     verified_commit_date: "2026-08-14"
     verified_commit_pr: "https://github.com/Xilinx/mlir-aie/pull/3545"
     source: "git checkout in third_party/mlir-aie"
+    # Published cp313 Windows wheel used by install.py --wheelhouse.
+    # Do not use latest-wheels-4 for an untagged 3ca0193 checkout.
+    wheel_name: "mlir_aie-1.4.1-cp313-cp313-win_amd64.whl"
+    wheel_url: "https://github.com/Xilinx/mlir-aie/releases/download/v1.4.1/mlir_aie-1.4.1-cp313-cp313-win_amd64.whl"
+    wheel_bytes: 180031689
+    wheel_sha256: "a3a0266051cbeb7bd28c0304d02fa361b3c05036c81f0880a0046992a77e7663"
     # mlir-aie v1.4.1 introduces the current iron.Runtime API used by every
     # iron-based test in tests/:
     #   Runtime(seq_fn, fn_args=[...])
@@ -112,7 +118,7 @@ verification:
     host_build: "Windows 11 Pro 26200"
     result: "16/16 PASS"
     total_elapsed_seconds: 17.46
-    commit: "1a25d46 + local M15b iron.Runtime port"
+    commit: "9effa56"
     milestones:
       - { id: M3,   name: "Single-Core SAXPY Vector Operation",                status: PASS, note: "Bit-exact (0.0 error)" }
       - { id: M5,   name: "8-Tap Vectorized Low-Pass FIR",                     status: PASS, note: "L_inf <= 0.007812" }
@@ -133,7 +139,12 @@ verification:
 
 # --- Bootstrap contract ---------------------------------------------------
 bootstrap:
-  script: "scripts/bootstrap_env.ps1"
+  script: "install.py"
+  repair_script: "scripts/bootstrap_env.ps1"
+  url: "https://github.com/Xilinx/XRT/releases/download/2.21.75/xrt_windows_sdk.zip"
+  tag: "2.21.75"
+  bytes: 70834080
+  sha256: "ccc244c2c423588972ade76142cdc01049477aaa39a35be97e782b97eb7c5295"
   smoke_check:
     - "python -c \"import pyxrt\""
     - "python -c \"import aie; from aie.iron import ObjectFifo\""
