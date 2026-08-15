@@ -7,19 +7,62 @@
 ![Host: Windows 11 Pro](https://img.shields.io/badge/Host-Windows%2011%20Pro%2025H2-0078D6)
 ![Silicon Status: 16/16 PASS](https://img.shields.io/badge/Silicon%20Status-16%2F16%20PASS-brightgreen)
 ![Release: v0.4.0](https://img.shields.io/badge/Release-v0.4.0-informational)
+![Xilinx XRT](https://img.shields.io/badge/Xilinx-XRT-e01f27)
+![Xilinx MLIR-AIE](https://img.shields.io/badge/Xilinx-MLIR--AIE%20%2F%20IRON-e01f27)
 ![Compiler: LLVM Peano](https://img.shields.io/badge/Compiler-LLVM%20Peano%20AIE2-purple)
 ![I/Q: 7.46 Msps](https://img.shields.io/badge/I%2FQ-7.46%20Msps%20%C2%B7%2010%20TOPS%20NPU-ff6b00)
 [![CI](https://github.com/midhatn/phoenix-sdr-dsp/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/midhatn/phoenix-sdr-dsp/actions/workflows/ci.yml)
 
 **High-Performance Vectorized Software Defined Radio (SDR) & Number Theoretic Transform (NTT) Acceleration Engine on AMD Ryzen AI Phoenix Silicon (XDNA1 / AIE2)**
 
+**Built on [Xilinx XRT](https://github.com/Xilinx/XRT), [Xilinx MLIR-AIE](https://github.com/Xilinx/mlir-aie) / [IRON](https://xilinx.github.io/mlir-aie/1.4.1/buildHostWinNative/), and [LLVM Peano](https://github.com/Xilinx/llvm-aie).**
+
 **7.46 Msps of real I/Q on a 10 TOPS AMD laptop NPU.** 29.8 MB/s in · 59.7 MB/s in+out · ~92% NPU. No discrete GPU. No FPGA.
 
-[Architecture](#1-system--hardware-architecture) • [Directory Structure](#2-repository-structure) • [Silicon Milestones](#3-validated-silicon-milestones) • [I/Q Throughput](#iq-throughput) • [Engineering Issues & Fixes](#4-engineering-challenges--technical-solutions) • [Quickstart](#5-quickstart--silicon-verification) • [References](#6-references--upstream-projects) • [Credits](#7-credits--acknowledgments)  • [Documentation](docs/README.md)
+**16/16 silicon PASS** on a clean clone (2026-08-15): `git clone` → `py .\install.py` → `py .\run_all_silicon_tests.py`.
+
+[Install](#installation) • [Architecture](#1-system--hardware-architecture) • [Directory Structure](#2-repository-structure) • [Silicon Milestones](#3-validated-silicon-milestones) • [I/Q Throughput](#iq-throughput) • [Engineering Issues & Fixes](#4-engineering-challenges--technical-solutions) • [Quickstart](#5-quickstart--silicon-verification) • [References](#6-references--upstream-projects) • [Credits](#7-credits--acknowledgments)  • [Documentation](docs/README.md)
 
 </div>
 
 ---
+
+## Installation
+
+A new Windows 11 machine with a Phoenix / Hawk Point NPU only needs a clone of this repository. `install.py` is stdlib-only and wraps the official Xilinx / AMD native-Windows stack:
+
+| Component | Pin | Upstream |
+| :--- | :--- | :--- |
+| [Xilinx XRT](https://github.com/Xilinx/XRT) (Xilinx Runtime) | Windows SDK [2.21.75](https://github.com/Xilinx/XRT/releases/tag/2.21.75) | host DMA / `pyxrt` |
+| [Xilinx MLIR-AIE](https://github.com/Xilinx/mlir-aie) + [IRON](https://xilinx.github.io/mlir-aie/1.4.1/buildHostWinNative/) | wheel [v1.4.1](https://github.com/Xilinx/mlir-aie/releases/tag/v1.4.1) + source [`3ca0193`](https://github.com/Xilinx/mlir-aie/commit/3ca0193cea9e2c39ec670a65f93e1dd43c969f22) | AIE dialect, `iron.Runtime`, `aiecc` |
+| [LLVM Peano](https://github.com/Xilinx/llvm-aie) (`llvm-aie`) | `21.0.0.2026080301+c9c5ecb7` | AIE2 `clang++` |
+| AMD NPU driver / `xrt-smi` | ≥ `32.0.20102.3930` | already on the laptop |
+
+Do not install `mlir_aie` from the rolling [`latest-wheels-4`](https://github.com/Xilinx/mlir-aie/releases/expanded_assets/latest-wheels-4) channel. An untagged checkout of pin `3ca0193` would otherwise resolve to an older series (observed: 1.3.4). `install.py` downloads the published v1.4.1 `cp313` wheel into a local wheelhouse and passes `--wheelhouse` to official [`iron_setup.py`](https://github.com/Xilinx/mlir-aie/blob/3ca0193/utils/iron_setup.py).
+
+### New-user steps
+
+```powershell
+conda deactivate   # if a conda prompt is active
+git clone https://github.com/midhatn/phoenix-sdr-dsp.git
+cd phoenix-sdr-dsp
+py .\install.py
+py .\run_all_silicon_tests.py
+```
+
+`py` is the [Windows Python launcher](https://docs.python.org/3/using/windows.html#python-launcher-for-windows) and binds to system CPython. The test runner re-execs `third_party\mlir-aie\ironenv\Scripts\python.exe` (where Xilinx IRON installed numpy / `mlir_aie` / `pyxrt`) and sets `PEANO_INSTALL_DIR` from that same checkout. No activate step.
+
+### Prerequisites
+
+- AMD Ryzen 7040 / 8040 APU (Ryzen 9 7940HS or similar Phoenix/Hawk Point silicon).
+- Windows 11 Pro 22H2 / 23H2 / 25H2 with the AMD NPU driver enabled.
+- CPython 3.13, Git, CMake, and Visual Studio 2022/18 with the C++ and Clang/LLVM workloads (`llvm-objcopy` is required for the Peano wheel fixup). Official path: [mlir-aie 1.4.1 `buildHostWinNative`](https://xilinx.github.io/mlir-aie/1.4.1/buildHostWinNative/).
+
+### Verified clean clone
+
+On 2026-08-15 a wipe-and-clone of `main` on a second Windows volume ran the two commands above and reported **16/16 PASS** in **95.91 s** (cold xclbin compile) on a Ryzen 9 7940HS Phoenix NPU1. A cached re-run on the development tree is **17.46 s**. M15b remained schoolbook and bit-exact on the [Kyber](https://pq-crystals.org/kyber/data/kyber-specification-round3-20210804.pdf) / [FIPS 203](https://nvlpubs.nist.gov/nistpubs/fips/nist.fips.203.pdf) ring `Z_3329[x]/(x^{256}+1)`.
+
+Longer Windows walkthrough: [`docs/SETUP_WINDOWS.md`](docs/SETUP_WINDOWS.md). Pin rationale: [`docs/M2_TOOLCHAIN_PIN.md`](docs/M2_TOOLCHAIN_PIN.md).
 
 ## 1. System & Hardware Architecture
 
@@ -31,8 +74,8 @@ The **Phoenix SDR-DSP** framework provides native Windows 11 acceleration for re
   - **Vector Architecture:** 512-bit SIMD registers supporting 64-lane `bfloat16`, 32-lane `int16`, and 16-lane `cint16`
   - **Local Memory:** 64 KB local data memory per tile (four 16 KB banks)
 - **Host Operating System:** Windows 11 Pro 25H2
-- **Compilation Toolchain:** LLVM Peano `clang++` (`--target=aie2-none-unknown-elf`)
-- **Runtime Environment:** IRON Python eDSL JIT + Native Windows XRT Runtime (`xrt_core.dll` / `CachedXRTHostRuntime`)
+- **Compilation Toolchain:** [LLVM Peano](https://github.com/Xilinx/llvm-aie) `clang++` (`--target=aie2-none-unknown-elf`)
+- **Runtime Environment:** [Xilinx MLIR-AIE](https://github.com/Xilinx/mlir-aie) / [IRON](https://xilinx.github.io/mlir-aie/1.4.1/buildHostWinNative/) Python eDSL JIT + native Windows [Xilinx XRT](https://github.com/Xilinx/XRT) (`xrt_core.dll` / `CachedXRTHostRuntime`)
 
 ---
 
@@ -179,25 +222,7 @@ During development on native Windows 11 with the AMD IRON/AIE2 toolchain, severa
 
 ## 5. Quickstart & Silicon Verification
 
-A new Windows machine only needs a clone and `install.py`. That script wraps the official IRON native-Windows path ([mlir-aie 1.4.1 buildHostWinNative](https://xilinx.github.io/mlir-aie/1.4.1/buildHostWinNative/)), the pinned [XRT 2.21.75 SDK](https://github.com/Xilinx/XRT/releases/tag/2.21.75), and the [mlir_aie 1.4.1](https://github.com/Xilinx/mlir-aie/releases/tag/v1.4.1) wheel. Do not install from the rolling `latest-wheels-4` channel — an untagged checkout of pin `3ca0193` would otherwise resolve to an older series.
-
-```powershell
-conda deactivate   # if a conda prompt is active
-git clone https://github.com/midhatn/phoenix-sdr-dsp.git
-cd phoenix-sdr-dsp
-py .\install.py
-py .\run_all_silicon_tests.py
-```
-
-`install.py` is stdlib-only. It checks Windows 11 22H2+, CPython 3.13, Git, CMake, Visual Studio C++ with the LLVM toolset (`llvm-objcopy` for the Peano wheel fixup), and the AMD NPU driver, then creates `third_party/mlir-aie/ironenv`. The test runner uses that environment automatically.
-
-### Prerequisites
-- AMD Ryzen 7040 / 8040 APU (Ryzen 9 7940HS or similar Phoenix/Hawk Point silicon).
-- Windows 11 Pro 22H2 / 23H2 / 25H2 with AMD NPU driver enabled.
-- CPython 3.13, Git, CMake, and Visual Studio 2022/18 with the C++ and Clang/LLVM workloads ([IRON Windows guide](https://xilinx.github.io/mlir-aie/1.4.1/buildHostWinNative/)).
-
-### Running the Full Silicon Test Suite
-After `install.py` has finished, from the clone:
+Clone and install are in [Installation](#installation). After `install.py`, from the clone:
 
 ```powershell
 py .\run_all_silicon_tests.py

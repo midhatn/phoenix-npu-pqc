@@ -19,9 +19,10 @@ Read [M0–M17 Milestones and Mathematics](MILESTONES_AND_MATHEMATICS.md) for th
 - [ROADMAP.md](ROADMAP.md) — current status, milestone table, next-step planning, and toolchain events.
 - [M32_FIPS203_MLKEM.md](M32_FIPS203_MLKEM.md) — planned FIPS 203 ML-KEM milestone (M32a–M32e gates).
 - [CITATION_AUDIT.md](CITATION_AUDIT.md) — 2026-08-15 whole-repo citation pass.
-- [SETUP_WINDOWS.md](SETUP_WINDOWS.md) — full native Windows install walkthrough (XRT, mlir-aie, Peano, ironenv).
+- Root [Installation](../README.md#installation) — new-user path: clone, then `py .\install.py` (Xilinx XRT, Xilinx MLIR-AIE / IRON, LLVM Peano).
+- [SETUP_WINDOWS.md](SETUP_WINDOWS.md) — longer native Windows walkthrough (XRT, mlir-aie, Peano, ironenv).
 - [M2_TOOLCHAIN_PIN.md](M2_TOOLCHAIN_PIN.md) — reason for pinning mlir-aie at commit `3ca0193` (v1.4.1 + 13 commits, includes upstream PR #3545 `run_chain` fix required by parallel-DMA milestones).
 
 ## Validation boundary
 
-The documentation distinguishes physical-NPU silicon validation from setup, hardware-dependent integration, and host-side reference work. `python run_all_silicon_tests.py` reports **16/16 PASS** on Phoenix NPU1: M3, M5–M15, M15b, M17, and M17p.
+The documentation distinguishes physical-NPU silicon validation from setup, hardware-dependent integration, and host-side reference work. `python run_all_silicon_tests.py` reports **16/16 PASS** on Phoenix NPU1: M3, M5–M15, M15b, M17, and M17p. A wipe-and-clone of `main` on 2026-08-15 reproduced that result in 95.91 s (cold xclbin compile) after `install.py`.

@@ -119,6 +119,12 @@ verification:
     result: "16/16 PASS"
     total_elapsed_seconds: 17.46
     commit: "9effa56"
+    # Second-volume wipe-and-clone of main (install.py + ironenv runner).
+    clean_clone:
+      date: "2026-08-15"
+      result: "16/16 PASS"
+      total_elapsed_seconds: 95.91
+      note: "cold xclbin compile after py .\\install.py; mlir_aie 1.4.1 wheelhouse"
     milestones:
       - { id: M3,   name: "Single-Core SAXPY Vector Operation",                status: PASS, note: "Bit-exact (0.0 error)" }
       - { id: M5,   name: "8-Tap Vectorized Low-Pass FIR",                     status: PASS, note: "L_inf <= 0.007812" }
