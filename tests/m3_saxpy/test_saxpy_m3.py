@@ -9,8 +9,9 @@
 # Error handling: bit-accurate assert_pass against CPU reference
 
 from pathlib import Path
-import aie.iron as iron
+
 import numpy as np
+from aie import iron
 from aie.iron import (
     CompileTime,
     ExternalFunction,

@@ -33,7 +33,6 @@ from aie.utils.hostruntime.xrtruntime.tensor import XRTTensor
 from aie.utils.verify import assert_pass
 from ml_dtypes import bfloat16
 
-
 # ----------------------------------------------------------------------------
 # Host-side helpers
 # ----------------------------------------------------------------------------

@@ -5,7 +5,8 @@
 ![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)
 ![Target: AMD Phoenix NPU1](https://img.shields.io/badge/Target-AMD%20Ryzen%20AI%20NPU1%20(AIE2)-blue)
 ![Host: Windows 11 Pro](https://img.shields.io/badge/Host-Windows%2011%20Pro%2025H2-0078D6)
-![Silicon Status: 100% Verified](https://img.shields.io/badge/Silicon%20Status-100%25%20PASS%20(12%2F12)-brightgreen)
+![Silicon Status: 15/16 PASS](https://img.shields.io/badge/Silicon%20Status-15%2F16%20PASS-brightgreen)
+![Release: v0.4.0](https://img.shields.io/badge/Release-v0.4.0-informational)
 ![Compiler: LLVM Peano](https://img.shields.io/badge/Compiler-LLVM%20Peano%20AIE2-purple)
 [![CI](https://github.com/midhatn/phoenix-sdr-dsp/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/midhatn/phoenix-sdr-dsp/actions/workflows/ci.yml)
 
@@ -45,17 +46,22 @@ phoenix-sdr-dsp/
 │       ├── modular_arithmetic.hpp   # Barrett & Montgomery modular reduction mod q=3329
 │       └── ntt_butterfly.hpp        # Cooley-Tukey & Gentleman-Sande butterflies
 ├── tests/
-│   ├── m5_fir/                      # Milestone 5: 8-Tap Vectorized Low-Pass FIR Filter
-│   ├── m6_mixer/                    # Milestone 6: Complex Mixer / NCO Frequency Downconverter
-│   ├── m7_power/                    # Milestone 7: Power / RSSI Energy Detector
-│   ├── m8_pipeline/                 # Milestone 8: Streaming Multi-Stage Fused Demodulator Pipeline
-│   ├── m9_parallel/                 # Milestone 9: 4-Column Parallel FIR Filter (Hardware Scaling)
+│   ├── m5_fir/                      # Milestone 5:  8-Tap Vectorized Low-Pass FIR Filter
+│   ├── m6_mixer/                    # Milestone 6:  Complex Mixer / NCO Frequency Downconverter
+│   ├── m7_power/                    # Milestone 7:  Power / RSSI Energy Detector
+│   ├── m8_pipeline/                 # Milestone 8:  Streaming Multi-Stage Fused Demodulator Pipeline
+│   ├── m9_parallel/                 # Milestone 9:  4-Column Parallel FIR Filter (Hardware Scaling)
+│   ├── m9b_parallel_pipeline/       # Milestone 9b: 4-Column Parallel Multi-Stage Demodulator Pipeline
 │   ├── m10_modular/                 # Milestone 10: Modular Arithmetic & Barrett Reduction
 │   ├── m11_butterfly/               # Milestone 11: Radix-2 NTT Butterfly Kernel
 │   ├── m12_ntt_ref/                 # Milestone 12: CPU NTT/INTT Reference & Constant Generator
 │   ├── m13_ntt16/                   # Milestone 13: 16-Point Vectorized NPU NTT (64 Batches)
 │   ├── m14_ntt256/                  # Milestone 14: 256-Point Vectorized NPU NTT (4 Batches)
-│   └── m15_polymul/                 # Milestone 15: NPU INTT & Cyclic Polynomial Multiplication
+│   ├── m15_polymul/                 # Milestone 15: NPU INTT & Cyclic Polynomial Multiplication
+│   ├── m15b_negacyclic/             # Milestone 15b: Negacyclic Polynomial Multiplication (Kyber ring)
+│   ├── m16_fft_ref/                 # Milestone 16: CPU DFT/FFT Reference (three implementations, CI)
+│   ├── m17_radix2_fft/              # Milestone 17: 64-Point NPU Radix-4 Stockham FFT + IFFT
+│   └── m17p_fft_parallel/           # Milestone 17p: 4-Column Parallel FFT Channelizer
 ├── run_all_silicon_tests.py         # Automated Master Regression Suite
 ├── LICENSE                          # MIT License
 ├── CONTRIBUTING.md                  # Contribution Guidelines
@@ -76,12 +82,17 @@ Every milestone is verified on physical Phoenix NPU silicon (`npu1`) against an 
 | **M7** | Power / RSSI Energy Detector | Tile `(0,2)` | 2048 I/Q $\to$ 2048 P | **PASS** | $L_\infty \le 0.015625$ |
 | **M8** | Multi-Stage Fused Demodulator | Tile `(0,2)` | RF I/Q $\to$ Mix $\to$ FIR $\to$ Pwr | **PASS** | Zero stack allocation |
 | **M9** | 4-Column Parallel FIR Scaling | 4 Columns `(0..3,2)` | 4096 samples (1024/core) | **PASS** | 4-Core Parallel Lockstep |
+| **M9b** | 4-Column Parallel Multi-Stage Pipeline | 4 Columns `(0..3,2)` | 2048 I/Q burst / column | **PASS** | 2400.71 µs / burst, 0.85 MSamples/sec |
 | **M10** | Modular Arithmetic & Barrett Reduction | Tile `(0,2)` | 1024 pairs mod $q=3329$ | **PASS** | Bit-Exact Match |
 | **M11** | Radix-2 NTT Butterfly Kernel | Tile `(0,2)` | 1024 CT butterflies mod $q$ | **PASS** | Bit-Exact Match |
 | **M12** | NTT Constant & Reference Engine | CPU Reference | $N=16, 256$, $\omega^N \equiv 1$ | **PASS** | Bit-Exact Match |
 | **M13** | 16-Point Vectorized NPU NTT | Tile `(0,2)` | 64 parallel frames (1024 elems) | **PASS** | Bit-Exact Match |
 | **M14** | 256-Point Vectorized NPU NTT | Tile `(0,2)` | 4 parallel frames (1024 elems) | **PASS** | Bit-Exact Match |
-| **M15** | NPU INTT & Polynomial Multiplication | Tile `(0,2)` | $C(x) = A(x) \times B(x) \pmod{x^{256}-1}$ | **PASS** | Bit-Exact Match |
+| **M15** | NPU INTT & Cyclic Polynomial Multiplication | Tile `(0,2)` | $C(x) = A(x) \times B(x) \pmod{x^{256}-1}$ | **PASS** | Bit-Exact Match |
+| **M15b** | Negacyclic Polynomial Multiplication | Tile `(0,2)` | $C(x) = A(x) \times B(x) \pmod{x^{256}+1}$ | **FAIL** | Pending iron.Runtime port |
+| **M16** | CPU DFT/FFT Reference (three implementations) | CPU Reference (CI) | $N \in \{8..1024\}$ | **PASS** | $\le 10^{-13}$ vs NumPy `fft.fft` |
+| **M17** | 64-Point NPU Radix-4 Stockham FFT + IFFT | Tile `(0,2)` | 64-point complex `bfloat16` | **PASS** | FFT SNR **138.79 dB**, IFFT round-trip **135.11 dB** |
+| **M17p** | 4-Column Parallel FFT Channelizer | 4 Columns `(0..3,2)` | 64 parallel 64-point frames | **PASS** | 1,993 FFTs/sec, 0.51 MB/s I/Q |
 
 ---
 
@@ -109,6 +120,20 @@ During development on native Windows 11 with the AMD IRON/AIE2 toolchain, severa
 - **Root Cause:** Radix-2 Decimation-in-Time (DIT) butterflies require twiddle powers $\omega^{j \cdot (N / 2^s)}$ at stage $s$. Using flat twiddle indexing introduced phase errors.
 - **Solution:** Derived programmatic stage stride step indexing (`W[j * (N >> stage)]`), achieving bit-exact match ($0$ error) across all transform sizes.
 
+### 5. M17 FFT Stage-1 Butterfly Inversion
+- **Issue:** The initial radix-2 M17 FFT produced valid magnitude but wrong bin ordering. Every stage after the first had a systematic butterfly-index inversion, yielding SNR $< 12$ dB against `numpy.fft.fft`.
+- **Root Cause:** The Stockham auto-sort schedule pairs indices $(k, k + m/2)$ where $m$ is the *current* subtransform size. The initial kernel applied the twiddle to the wrong lane of each pair.
+- **Solution:** Rewrote as radix-4 Stockham (twiddle applied per quadruplet, autonomous permutation between stages), reaching **138.79 dB forward SNR** vs NumPy — better than double-precision floor for a 64-point transform.
+
+### 6. IFFT Without Separate Device Code
+- **Issue:** Shipping a full inverse-FFT kernel would double the memory + build footprint of M17.
+- **Solution:** Applied the identity `IFFT(Y) = conj(FFT(conj(Y))) / N` in the host driver. The M17 forward kernel is reused as-is; only conjugate-and-scale runs on the host. Silicon result: **135.11 dB round-trip SNR** on random complex vectors.
+
+### 7. Upstream mlir-aie v1.4.1 iron.Runtime API Break
+- **Issue:** After moving to upstream mlir-aie v1.4.1 (pin commit `3ca0193`, 2026-08-14), the full silicon sweep failed 14/16 milestones with `Runtime.__init__() missing 1 required positional argument: 'seq_fn'`.
+- **Root Cause:** Upstream deprecated the `Runtime()` context-manager pattern in favor of `Runtime(seq_fn, fn_args=[...])`, and moved worker enrollment and task-group management out of the `Runtime` object into `Program(..., workers=[...])` and per-sequence `TaskGroup` objects.
+- **Solution:** Migrated all 12 iron-based tests in one sweep. Single-worker kernels use the new `Runtime(seq_fn, [...])` signature; multi-worker channelizers use `TaskGroup()` inside the sequence body with `tg.finish()` at the end and endpoint-native `prod_ep.fill(buf, tap=tap, group=tg)` for per-column DMA. Full detail in `docs/ROADMAP.md`.
+
 ---
 
 ## 5. Quickstart & Silicon Verification
@@ -127,37 +152,40 @@ Set-Location C:\phoenix-sdr-dsp
 python run_all_silicon_tests.py
 ```
 
-Expected output:
+Expected output (v0.4.0, mlir-aie v1.4.1 pin `3ca0193`):
 ```text
 ======================================================================
                      REGRESSION EXECUTION SUMMARY
 ======================================================================
- [ PASS ] Milestone 3: Single-Core SAXPY Vector Operation              (3.98s)
- [ PASS ] Milestone 5: 8-Tap Vectorized Low-Pass FIR Filter            (4.06s)
- [ PASS ] Milestone 6: Complex Mixer / NCO Frequency Downconverter     (3.86s)
- [ PASS ] Milestone 7: Vectorized Power / RSSI Energy Detector         (3.82s)
- [ PASS ] Milestone 8: Streaming Multi-Stage Fused Demodulator Pipeline (4.32s)
- [ PASS ] Milestone 9: 4-Column Parallel FIR Filter (Hardware Scaling) (4.15s)
- [ PASS ] Milestone 10: Modular Arithmetic & Barrett Reduction (mod 3329) (3.88s)
- [ PASS ] Milestone 11: Radix-2 NTT Butterfly Kernel (mod 3329)        (3.85s)
- [ PASS ] Milestone 12: CPU NTT/INTT Reference & Constant Generator    (0.12s)
- [ PASS ] Milestone 13: 16-Point Vectorized NPU NTT (64 Batches)       (3.91s)
- [ PASS ] Milestone 14: 256-Point Vectorized NPU NTT (4 Batches)       (3.95s)
- [ PASS ] Milestone 15: NPU INTT & Cyclic Polynomial Multiplication    (4.08s)
+ [ PASS ] Milestone 3:   Single-Core SAXPY Vector Operation              (3.98s)
+ [ PASS ] Milestone 5:   8-Tap Vectorized Low-Pass FIR Filter            (4.06s)
+ [ PASS ] Milestone 6:   Complex Mixer / NCO Frequency Downconverter     (3.86s)
+ [ PASS ] Milestone 7:   Vectorized Power / RSSI Energy Detector         (3.82s)
+ [ PASS ] Milestone 8:   Streaming Multi-Stage Fused Demodulator Pipeline (4.32s)
+ [ PASS ] Milestone 9:   4-Column Parallel FIR Filter                    (4.15s)
+ [ PASS ] Milestone 9b:  4-Column Parallel Multi-Stage Pipeline          (4.28s)
+ [ PASS ] Milestone 10:  Modular Arithmetic & Barrett Reduction          (3.88s)
+ [ PASS ] Milestone 11:  Radix-2 NTT Butterfly Kernel                    (3.85s)
+ [ PASS ] Milestone 12:  CPU NTT/INTT Reference & Constant Generator     (0.12s)
+ [ PASS ] Milestone 13:  16-Point Vectorized NPU NTT (64 Batches)        (3.91s)
+ [ PASS ] Milestone 14:  256-Point Vectorized NPU NTT (4 Batches)        (3.95s)
+ [ PASS ] Milestone 15:  NPU INTT & Cyclic Polynomial Multiplication     (4.08s)
+ [ FAIL ] Milestone 15b: Negacyclic Polynomial Multiplication            (pending iron.Runtime port)
+ [ PASS ] Milestone 17:  NPU Radix-4 Stockham FFT + IFFT                 (138.79 / 135.11 dB SNR)
+ [ PASS ] Milestone 17p: 4-Column Parallel FFT Channelizer               (1,993 FFTs/sec)
 ----------------------------------------------------------------------
- Total Tests Run: 12 | Passed: 12 | Failed: 0
- Total Elapsed Time: 44.18 seconds
-
- *** ALL SILICON DSP & NTT REGRESSION TESTS PASSED BIT-ACCURATELY! ***
+ Total Tests Run: 16 | Passed: 15 | Failed: 1
+ Total Elapsed Time: ~96 seconds
 ```
 
 ---
 
 ## 6. References & Upstream Projects
 
+- [Cooley & Tukey (1965), "An algorithm for the machine calculation of complex Fourier series"](https://garfield.library.upenn.edu/classics1993/A1993MJ84400001.pdf): the original radix-2 FFT paper underlying M17.
 - [Xilinx / AMD MLIR-AIE](https://github.com/Xilinx/mlir-aie): AI Engine MLIR dialect and LLVM backend.
 - [AMD XDNA Driver](https://github.com/amd/xdna-driver): Linux and Windows kernel driver for AMD XDNA architecture.
-- [Peano LLVM-AIE Compiler](https://github.com/Xilinx/mlir-aie/tree/main/peano): Clang/LLVM fork targeting AIE/AIE2 vector units.
+- [Peano LLVM-AIE Compiler](https://github.com/Xilinx/llvm-aie): Clang/LLVM fork targeting AIE/AIE2 vector units.
 - [AMD XRT (Xilinx Runtime)](https://github.com/Xilinx/XRT): Host runtime for PCIe and APU accelerator device management.
 - [NTT on AMD AI Engine](https://github.com/hal-lab-u-tokyo/ntt-aie): NTT reference implementation on AI Engine architectures.
 

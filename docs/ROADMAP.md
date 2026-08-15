@@ -60,7 +60,7 @@ The NTT track implements the Number-Theoretic Transform, a finite-field analogue
 | M13 | 16-point NPU NTT | ✅ | `tests/m13_ntt16/` |
 | M14 | 256-point vectorized NPU NTT | ✅ | `tests/m14_ntt256/`. Matches Kyber `N = 256`. |
 | M15 | NPU INTT + cyclic polynomial multiplication | ✅ | `tests/m15_polymul/` |
-| M15+ | Negacyclic polynomial multiplication (`Z_q[x]/(x^N + 1)`) | ✅ | `tests/m15b_negacyclic/`. Repo currently labels this M16; canonically an extension of M15. The negacyclic ring `Z_q[x]/(x^N + 1)` is the Kyber ring, per [Isabelle/AFP CRYSTALS-Kyber formalization](https://isa-afp.org/browser_info/current/AFP/CRYSTALS-Kyber/outline.pdf). To be renumbered to avoid collision with §16 M16 (CPU FFT reference). |
+| M15+ | Negacyclic polynomial multiplication (`Z_q[x]/(x^N + 1)`) | 🚧 | `tests/m15b_negacyclic/`. Repo currently labels this M16; canonically an extension of M15. The negacyclic ring `Z_q[x]/(x^N + 1)` is the Kyber ring, per [Isabelle/AFP CRYSTALS-Kyber formalization](https://isa-afp.org/browser_info/current/AFP/CRYSTALS-Kyber/outline.pdf). Uses low-level `aie.dialects` + `runtime_sequence` + `XRTTensor` rather than `iron.Runtime`; broken after the 2026-08-14 upstream API change (see Toolchain events below) and pending its own port to iron. To be renumbered to avoid collision with §16 M16 (CPU FFT reference). |
 
 ### FFT track (canonical §16 M16–M18)
 
@@ -69,9 +69,9 @@ The Fast Fourier Transform in radix-2 form is the [Cooley–Tukey algorithm (196
 | M# | Focus | Status | Notes |
 |---|---|---|---|
 | M16 | CPU DFT/FFT reference | ✅ | `tests/m16_fft_ref/test_fft_reference_m16.py`. Three independent implementations cross-validated: direct O(N²) DFT via twiddle matrix, recursive radix-2 [Cooley-Tukey 1965](https://garfield.library.upenn.edu/classics1993/A1993MJ84400001.pdf) FFT, iterative in-place radix-2 FFT with bit-reversed permutation (dataflow proxy for the M17 NPU kernel). All match NumPy [`fft.fft`](https://numpy.org/doc/stable/reference/generated/numpy.fft.fft.html) to double-precision round-off (~1e-13 relative). Tests: impulse, DC constant, pure tone, random complex, x = IFFT(FFT(x)) round-trip, Parseval energy conservation. Sizes N ∈ {8, 16, 32, 64, 128, 256, 512, 1024}. Runs on Ubuntu in CI in ~0.3 s. |
-| M17 | NPU FFT/IFFT | 🧪 | Shipped as 64-point direct DFT in bfloat16 (`tests/m17_fft_dft/`). Silicon-validated against NumPy with `atol=0.1`. **Honest caveat**: implementation is a direct O(N²) DFT, not the radix-2/radix-4 O(N log N) butterfly implementation ([Cooley-Tukey 1965](https://garfield.library.upenn.edu/classics1993/A1993MJ84400001.pdf)) that §16 implies. The direct DFT is easier to vectorize on AIE2's 512-bit vector datapath ([AI Engine Wikipedia summary](https://en.wikipedia.org/wiki/AI_engine)) but does not scale beyond small N. Radix-butterfly version tracked as M17-butterfly. To be renumbered and integrated into regression runner. |
-| M17-parallel | 4-column parallel NPU FFT | 🧪 | `tests/m17p_fft_parallel/`. Parallel channelizer variant of M17 using multiple AIE2 tile columns. |
-| M17-butterfly | NPU FFT via radix-2/radix-4 Cooley-Tukey butterflies | 🚧 | Follow-up to M16/M17 to align implementation with §16 intent and achieve O(N log N) complexity. Reuses the modular-arithmetic butterfly pattern from `tests/m11_butterfly/` adapted to complex bfloat16 twiddle factors. |
+| M17 | NPU FFT/IFFT | ✅ | Shipped as 64-point **radix-4 Stockham FFT** (`tests/m17_radix2_fft/test_fft_m17_v3.py`) delivering O(N log N) complexity per [Cooley-Tukey 1965](https://garfield.library.upenn.edu/classics1993/A1993MJ84400001.pdf) and the Stockham auto-sort variant that avoids bit-reversed permutation. Forward FFT SNR **138.79 dB** vs `numpy.fft.fft`. Round-trip IFFT via `conj(FFT(conj(Y)))/N` reuses the forward kernel with no separate IFFT device code, RMS SNR **135.11 dB**. Supersedes the earlier direct-DFT prototype in `tests/m17_fft_dft/` (retained pending removal). Wired into `run_all_silicon_tests.py`. |
+| M17-parallel | 4-column parallel NPU FFT | ✅ | `tests/m17p_fft_parallel/`. Parallel channelizer running the M17 radix-4 Stockham kernel across all four AIE2 tile columns of the Phoenix NPU1 grid ([Linux amdxdna docs](https://docs.kernel.org/accel/amdxdna/amdnpu.html)). Batch throughput 1,993 FFTs/sec on 64 parallel 64-point frames. Wired into `run_all_silicon_tests.py`. |
+| M17-butterfly | NPU FFT via radix-2/radix-4 Cooley-Tukey butterflies | ✅ | Delivered by the M17 radix-4 Stockham kernel above. Row retained for §16 traceability. |
 | M18 | Streaming FFT spectrum analyzer connected to SDR | 🔒 | Requires SDR hardware. |
 
 ### Filtering & resampling (canonical §16 M19–M23)
@@ -123,16 +123,37 @@ Ordered by dependency:
 1. **v0.2.1 polish** (in progress): dependabot, CI badge in README, delete duplicate `LICENSE.md`, publish v0.2 release tag.
 2. **Directory renumbering pass** — *completed in v0.2.1*. The Scheme B directories have been renamed to align with §16 canonical: `tests/m10_benchmark/` → `tests/m9b_parallel_pipeline/`, `tests/m11_fft/` → `tests/m17_fft_dft/`, `tests/m12_fft_parallel/` → `tests/m17p_fft_parallel/`, `tests/m16_negacyclic/` → `tests/m15b_negacyclic/`. Blob SHAs preserved so `git log --follow` still tracks each file's history. Integration into `run_all_silicon_tests.py` (currently only wires Scheme A milestones M3–M15) is tracked separately.
 3. **M16 CPU FFT reference** — *completed*. Shipped as `tests/m16_fft_ref/test_fft_reference_m16.py` with three cross-validated implementations (direct O(N²) DFT, recursive radix-2 [Cooley-Tukey](https://garfield.library.upenn.edu/classics1993/A1993MJ84400001.pdf), iterative in-place with bit-reversal). Wired into the CI `cpu-reference-tests` job so every push runs it on Ubuntu. Serves as the ground-truth oracle for M17.
-4. **M17-butterfly**: implement radix-2 (and optionally radix-4) FFT via the shipped M11 NTT-butterfly pattern adapted to complex bfloat16 twiddles, replacing the direct DFT with an O(N log N) implementation.
-5. **M19 complex FIR**: extend the shipped real-valued FIR to complex-valued taps and complex I/Q input.
-6. **M20 polyphase**: decimation + interpolation on top of M19.
+4. **M17-butterfly** — *completed*. Radix-4 Stockham FFT shipped as M17, silicon-validated at 138.79 dB forward and 135.11 dB round-trip SNR.
+5. **M15b negacyclic port to iron.Runtime** — the only regression still failing after the 2026-08-14 upstream API change. Port from `aie.dialects` + `runtime_sequence` + `XRTTensor` to the iron API using M10/M11 as the shape template.
+6. **M19 complex FIR**: extend the shipped real-valued FIR to complex-valued taps and complex I/Q input.
+7. **M20 polyphase**: decimation + interpolation on top of M19.
+
+## Toolchain events
+
+### 2026-08-14 — Upstream mlir-aie v1.4.1 runtime API break (pinned at commit `3ca0193`)
+
+Upstream release [mlir-aie v1.4.1](https://github.com/Xilinx/mlir-aie/releases/tag/v1.4.1) (2026-08-11) reshaped the `aie.iron.Runtime` surface incompatibly with the pre-v1.4.1 tests. The Phoenix SDR-DSP regression is pinned at commit [`3ca0193` — "Retain executable per kernel handle to fix run_chain use-after-free"](https://github.com/Xilinx/mlir-aie/commit/3ca0193) (2026-08-14, v1.4.1 + 13 commits) because that commit additionally contains the `run_chain` executable-lifetime fix required by the parallel-DMA milestones (M9, M9b, M17p). The four API changes introduced at v1.4.1 are:
+
+- The context-manager form `rt = Runtime(); with rt.sequence(...) as (...):` was removed. `Runtime.__init__` now requires a `seq_fn: Callable` positional argument, verified against [`python/iron/runtime/runtime.py`](https://github.com/Xilinx/mlir-aie/blob/3ca0193/python/iron/runtime/runtime.py) at that revision.
+- `rt.start(worker)` was replaced by passing workers directly to `Program(device, rt, workers=[...])`.
+- `rt.task_group()` / `rt.finish_task_group(tg)` were replaced by a per-sequence [`TaskGroup`](https://github.com/Xilinx/mlir-aie/blob/3ca0193/python/iron/runtime/taskgroup.py) constructed inside the sequence body with `tg.finish()`.
+- `rt.fill(fifo.prod(), buf, tap, task_group=tg)` was replaced by endpoint-native `prod_ep.fill(buf, tap=tap, group=tg)`, with the endpoints passed as `fn_args` to `Runtime(seq_fn, fn_args=[...])`. The canonical multi-worker + TaskGroup shape is documented in the upstream [runtime-sequence test suite](https://github.com/Xilinx/mlir-aie/blob/3ca0193/test/python/runtimesequence.py) and the single-core matmul example [`programming_examples/getting_started/03_matrix_multiplication_single_core/matrix_multiplication_single_core.py`](https://github.com/Xilinx/mlir-aie/blob/3ca0193/programming_examples/getting_started/03_matrix_multiplication_single_core/matrix_multiplication_single_core.py).
+
+An initial silicon sweep after the pull failed 14 of 16 milestones with an identical `Runtime.__init__() missing 1 required positional argument: 'seq_fn'` traceback. All 12 iron-based tests were ported to the new API in a single sweep:
+
+- **Single-worker:** M3 SAXPY (new `tests/m3_saxpy/`, first canonical port using upstream [`saxpy.cc`](https://github.com/Xilinx/mlir-aie/blob/3ca0193/programming_examples/getting_started/01_SAXPY/saxpy.cc)), M5 FIR, M6 mixer, M7 power, M8 fused pipeline, M10 modular arithmetic, M11 NTT butterfly, M13 16-point NTT, M14 256-point NTT, M15 cyclic polymul.
+- **Multi-worker with `TaskGroup` + per-column taps:** M9 4-column FIR, M9b 4-column demod pipeline (2-input), M17-parallel 4-column FFT channelizer.
+
+**Post-migration silicon sweep: 15 / 16 PASS** on Phoenix NPU1 (AIE2, Win11). Only `tests/m15b_negacyclic/` still fails; it uses the low-level `aie.dialects` + `runtime_sequence` + `XRTTensor` API rather than `iron.Runtime`, and needs a separate port to iron rather than a mechanical rewrite of the runtime block.
+
+The port was landed on `feat/m17-radix2-fft-npu`, fast-forwarded to `main`, and pushed as commit `1ec80c8`.
 
 ## Divergences from master prompt §16 — honest disclosure
 
 - **Repo's early M-numbers (M3, M5, M6) map to §16 concepts but with different exact scope.** M3 SAXPY covers §16 M3 pass-through with extra work; M5 FIR is not §16 M5 (vector-copy); M6 mixer is a subset of §16 M6 vector-arithmetic. Numbering is preserved for git history stability; canonical mapping documented in this table.
 - **Repo M7, M8, M9 are DSP-track additions**, not the §16 SDR-integration milestones. This roadmap suffixes them `-ext` and reserves the canonical §16 M7/M8/M9 numbering for Track 2.
 - **Two `m10_`, `m11_`, `m12_` test directories exist** (one Scheme A modular/NTT, one Scheme B parallel-pipeline/FFT). Step 2 of the "Immediate next steps" resolves this via renumbering.
-- **FFT is shipped as direct O(N²) DFT, not O(N log N) butterfly.** §16 implies butterfly; the shipped version is direct DFT. Documented on the M17 line above with a butterfly follow-up planned.
+- **FFT was originally shipped as direct O(N²) DFT.** As of the M17 v3 radix-4 Stockham port the shipped version is O(N log N) and aligns with §16 intent; the earlier direct-DFT prototype in `tests/m17_fft_dft/` is retained pending removal. Prior divergence documented for history.
 - **SDR-integration milestones (M4, M7-canonical, M8-canonical, M9-canonical, M18, M28, M31) are all unshipped** — the master prompt's original ordering has them preceding the NTT track. In this repo they are deferred to Track 2 pending hardware.
 
 ## References

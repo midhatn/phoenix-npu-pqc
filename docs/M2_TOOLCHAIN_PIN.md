@@ -46,8 +46,23 @@ The NPU driver is newer than the documented Windows minimum `32.0.20101.3760`. D
 |---|---|
 | CPython 3.13 | `winget` package `Python.Python.3.13` |
 | Windows XRT SDK | `C:\Xilinx\XRT` from `xrt_windows_sdk.zip` tag `2.21.75` |
-| mlir-aie checkout | `C:\phoenix-sdr-dsp\third_party\mlir-aie` |
+| mlir-aie checkout | `C:\phoenix-sdr-dsp\third_party\mlir-aie` at v1.4.1 or later; regression pinned to commit `3ca0193` (v1.4.1 + 13) |
 | IRON environment | checkout-local `ironenv` created by `utils\iron_setup.py` |
+
+## mlir-aie pinned version
+
+- Minimum release: mlir-aie v1.4.1, published 2026-08-11, https://github.com/Xilinx/mlir-aie/releases/tag/v1.4.1
+- Regression pin: commit `3ca0193cea9e2c39ec670a65f93e1dd43c969f22`, dated 2026-08-14, message "Retain executable per kernel handle to fix run_chain use-after-free" (PR #3545). This commit is v1.4.1 plus 13 commits and additionally contains the `run_chain` executable-lifetime fix required by the parallel-DMA milestones.
+- Machine-readable form of the pin lives in `../toolchain.yaml` under `toolchain.mlir_aie`.
+
+mlir-aie v1.4.1 introduces the current iron.Runtime API used by every iron-based milestone in `tests/`. The differences from the pre-v1.4.1 context-manager style are:
+
+- `Runtime()` used as a `with`-block is removed at v1.4.1. The current form is `Runtime(seq_fn, fn_args=[...])`.
+- Worker enrollment moved out of `Runtime`. Attach workers via `Program(..., workers=[worker0, worker1, ...])`.
+- `rt.task_group()` and `rt.finish_task_group(tg)` are replaced by `TaskGroup()` inside the sequence body, with `tg.finish()` at the end.
+- `rt.fill(fifo.prod(), buf, tap, task_group=tg)` is replaced by the endpoint-native form `prod_ep.fill(buf, tap=tap, group=tg)`.
+
+All 12 iron-based milestones in `tests/` target the v1.4.1 API. Do not check out an mlir-aie release earlier than v1.4.1 without also reverting the tests to the older API.
 
 ## Explicitly not used as the IRON interpreter
 

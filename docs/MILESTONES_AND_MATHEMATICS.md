@@ -4,7 +4,7 @@
 
 `phoenix-sdr-dsp` develops deterministic DSP and finite-field kernels for the AMD Ryzen 9 7940HS Phoenix NPU1, using its XDNA1/AIE2 array through a native Windows MLIR-AIE, Peano, and XRT workflow.
 
-This reference documents M0 through M15 only. A milestone is called **silicon-validated** only when its test runs on the physical NPU and checks the result against an independent CPU reference. An import failure, compiler failure, native assertion, or host-only calculation is not a silicon result.
+This reference documents M0 through M17p. A milestone is called **silicon-validated** only when its test runs on the physical NPU and checks the result against an independent CPU reference. An import failure, compiler failure, native assertion, or host-only calculation is not a silicon result.
 
 ## Notation and numerical policy
 
@@ -13,13 +13,13 @@ This reference documents M0 through M15 only. A milestone is called **silicon-va
 - `Z_q` denotes integers reduced modulo `q`.
 - Canonical modular values are in `[0, q - 1]`.
 - `j` is the imaginary unit, where `j^2 = -1`.
-- DSP kernels use `bfloat16` inputs where stated; finite-field kernels use integer arithmetic.
+- DSP kernels use `bfloat16` inputs where stated; finite-field kernels use integer arithmetic; the M17 FFT uses complex `bfloat16` twiddles.
 
 Validation rules:
 
 - Every deterministic NPU kernel has an independent CPU reference.
 - Modular arithmetic, NTTs, inverse NTTs, and polynomial multiplication must match the reference bit-for-bit.
-- Fixed-point or `bfloat16` paths report a defined error measure such as maximum absolute error.
+- Fixed-point or `bfloat16` paths report a defined error measure such as maximum absolute error or SNR in dB.
 - Test vectors include deterministic random inputs and structured cases appropriate to the operation.
 - Transform roots, ordering, normalization, and reduction conventions are part of the test contract.
 
@@ -37,12 +37,17 @@ Validation rules:
 | M7 | Power / RSSI detector | Silicon-validated |
 | M8 | Fused DSP pipeline | Silicon-validated |
 | M9 | Four-column parallel FIR | Silicon-validated |
+| M9b | Four-column parallel multi-stage pipeline | Silicon-validated |
 | M10 | Modular arithmetic and Barrett reduction | Silicon-validated, bit-exact |
 | M11 | Radix-2 NTT butterfly | Silicon-validated, bit-exact |
 | M12 | CPU NTT/INTT reference | Validated mathematical reference |
 | M13 | Batched 16-point NPU NTT | Silicon-validated, bit-exact |
 | M14 | Batched 256-point NPU NTT | Silicon-validated, bit-exact |
 | M15 | INTT and cyclic polynomial multiplication | Silicon-validated, bit-exact |
+| M15b | Negacyclic polynomial multiplication | Regression fail pending iron.Runtime port |
+| M16 | CPU DFT/FFT reference | Validated mathematical reference |
+| M17 | 64-point NPU radix-4 Stockham FFT and IFFT | Silicon-validated, SNR-bounded |
+| M17p | Four-column parallel FFT channelizer | Silicon-validated |
 
 ## M0–M2: native Windows foundation
 
@@ -56,7 +61,7 @@ M1 selects the native Windows execution path for the Phoenix NPU. The goal is to
 
 ### M2 — Pinned toolchain
 
-M2 establishes the local `ironenv` Python environment and the MLIR-AIE, Peano, and XRT components used by subsequent tests. Pinning the local toolchain prevents an API or compiler update from silently changing kernel behavior.
+M2 establishes the local `ironenv` Python environment and the MLIR-AIE, Peano, and XRT components used by subsequent tests. Pinning the local toolchain prevents an API or compiler update from silently changing kernel behavior. The current pin is upstream mlir-aie v1.4.1 at commit `3ca0193` (v1.4.1 + 13 commits, 2026-08-14); when upstream breaks API compatibility, the ROADMAP's toolchain-events section documents the migration.
 
 ## M3: SAXPY vector arithmetic
 
@@ -178,6 +183,12 @@ y[n] = sum(k = 0 to 7) h[k] * x[n-k]
 but the input work is partitioned across columns. Correctness depends on handling block boundaries: an output near a partition edge may need samples from the previous partition because an FIR kernel has history. The parallel output must be assembled in the original sample order and compared with one global CPU reference.
 
 This milestone validates that hardware parallelism does not alter the filter result.
+
+## M9b: four-column parallel multi-stage pipeline
+
+M9b runs the M8 demodulator pipeline (mixer → FIR → power) on all four columns of the AIE2 grid, with independent per-column DMA supplied by a `TaskGroup` inside the sequence body. Each column processes a 2048-sample I/Q burst.
+
+M9b reports throughput as `microseconds per burst` and derived megasamples per second. The verification contract is identical to M8: the parallel output must be assembled in sample order and match the CPU reference of the full pipeline.
 
 ## M10: modular arithmetic and Barrett reduction
 
@@ -325,28 +336,100 @@ with all operations in `Z_3329`. M15 verifies both requirements:
 
 This check is important because a transform can appear correct on isolated vectors while still failing due to inverse normalization, twiddle ordering, pointwise-product placement, or cyclic wraparound errors.
 
+## M15b: negacyclic polynomial multiplication
+
+M15b targets the negacyclic ring — the Kyber ring — where `x^N = -1`:
+
+```text
+Z_3329[x] / (x^256 + 1)
+```
+
+Negacyclic convolution requires pre-multiplication of both operands by powers of a `2N`-th root of unity `psi`, forward NTT of the twisted operands, pointwise multiplication, inverse NTT, and post-multiplication by `psi^(-k)`. The composed operation gives the negacyclic product.
+
+M15b uses the lower-level `aie.dialects` and `runtime_sequence` API rather than `iron.Runtime`. The v1.4.1 upstream mlir-aie API change does not affect that lower-level path directly, but the surrounding driver code needs a port to `iron.Runtime` before this milestone rejoins the automated regression. Status at release v0.4.0: regression fail; port pending.
+
+## M16: CPU DFT/FFT mathematical reference
+
+M16 supplies the independent CPU source of truth for the NPU FFT tests. It ships three independent implementations that must agree with each other and with `numpy.fft.fft` to double-precision round-off:
+
+1. Direct O(N^2) DFT via an `N` by `N` twiddle matrix:
+
+```text
+W[k, n] = exp(-2 pi j * k * n / N)
+X = W @ x
+```
+
+2. Recursive radix-2 Cooley-Tukey, splitting `x` into even and odd sub-sequences and combining:
+
+```text
+X[k]         = E[k] + W_N^k * O[k]
+X[k + N/2]   = E[k] - W_N^k * O[k]
+```
+
+3. Iterative in-place radix-2 with bit-reversed permutation. This is the dataflow proxy for the M17 NPU butterfly kernel.
+
+The test suite covers impulse, DC constant, pure tone, random complex vectors, Parseval energy conservation, and the round-trip identity `x = IFFT(FFT(x))`, for sizes `N` in `{8, 16, 32, 64, 128, 256, 512, 1024}`. All three implementations agree with NumPy to about 10^-13 relative error. M16 runs on Ubuntu in CI in about 0.3 seconds.
+
+## M17: 64-point NPU radix-4 Stockham FFT
+
+M17 is a 64-point complex-`bfloat16` FFT on a single AIE2 tile. The algorithm is a radix-4 Stockham auto-sort FFT, which interleaves the butterfly and shuffle stages so that the output of each stage is already in natural order and no bit-reversed permutation is required.
+
+For a radix-4 Stockham stage at stride `L`, each quadruplet `(a, b, c, d)` produces four outputs using pre-computed twiddles `W1`, `W2`, `W3`:
+
+```text
+t0 = a + c
+t1 = a - c
+t2 = b + d
+t3 = j * (b - d)
+
+a' = t0 + t2
+b' = W1 * (t1 - t3)
+c' = W2 * (t0 - t2)
+d' = W3 * (t1 + t3)
+```
+
+Three radix-4 stages recover a 64-point transform, because `4 * 4 * 4 = 64`. The shipped kernel uses complex-`bfloat16` twiddles laid out in local L1 memory. Measured against `numpy.fft.fft`, the forward FFT achieves an SNR of about 138.79 dB, which exceeds the double-precision noise floor for a 64-point transform and confirms that the twiddle precision and stage schedule are correct.
+
+M17 does not ship a separate inverse-FFT kernel. The host driver uses the identity
+
+```text
+IFFT(Y) = conj( FFT( conj(Y) ) ) / N
+```
+
+so the same forward kernel serves both directions. Round-trip RMS SNR on random complex vectors is about 135.11 dB.
+
+## M17p: four-column parallel FFT channelizer
+
+M17p runs the M17 radix-4 Stockham kernel across all four AIE2 tile columns of the Phoenix NPU1 grid. Each column receives its own 64-point frame via an independent per-column `TaskGroup`, so 64 parallel frames complete per burst.
+
+Measured throughput on Phoenix NPU1 is about 1,993 FFTs per second, or about 0.51 MB/s of I/Q sample stream. M17p uses the same code path a future channelizer or streaming spectrum analyzer would use, and validates that hardware parallelism does not alter the transform result.
+
 ## Automated regression coverage
 
-`run_all_silicon_tests.py` executes the automated test entries for M3 and M5 through M15:
+`run_all_silicon_tests.py` executes 16 automated test entries at release v0.4.0:
 
 ```powershell
 python run_all_silicon_tests.py
 ```
 
-The runner reports pass/fail status and elapsed time for twelve tests:
+The runner reports pass/fail status and elapsed time for:
 
-1. M3 SAXPY
-2. M5 FIR
-3. M6 complex mixer/NCO
-4. M7 power detector
-5. M8 fused pipeline
-6. M9 four-column FIR
-7. M10 modular arithmetic
-8. M11 NTT butterfly
-9. M12 CPU NTT reference
-10. M13 16-point NTT
-11. M14 256-point NTT
-12. M15 INTT and cyclic polynomial multiplication
+1. M3   SAXPY
+2. M5   FIR
+3. M6   complex mixer/NCO
+4. M7   power detector
+5. M8   fused pipeline
+6. M9   four-column FIR
+7. M9b  four-column multi-stage pipeline
+8. M10  modular arithmetic
+9. M11  NTT butterfly
+10. M12  CPU NTT reference
+11. M13  16-point NTT
+12. M14  256-point NTT
+13. M15  INTT and cyclic polynomial multiplication
+14. M15b negacyclic polynomial multiplication (regression fail, port pending)
+15. M17  radix-4 Stockham FFT and IFFT
+16. M17p four-column parallel FFT
 
 M0–M2 are setup and reproducibility milestones, while M4 depends on locally attached SDR hardware; therefore they are not entries in the automated silicon regression runner.
 
@@ -361,4 +444,5 @@ Before calling a deterministic kernel complete:
 - Check exact output shape, buffer offsets, ordering, and batch boundaries.
 - For fixed-point and `bfloat16` DSP, document scaling, rounding, saturation, and the accepted tolerance.
 - For NTTs, document `N`, `q`, root values, inverse values, forward/inverse convention, ordering, bit-reversal, and normalization.
+- For complex FFTs, document the auto-sort schedule, twiddle layout, and SNR floor being claimed.
 - Record timing separately from correctness; a correct result is not automatically a throughput claim.

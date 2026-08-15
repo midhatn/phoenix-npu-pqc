@@ -10,7 +10,6 @@ import numpy as np
 from aie import iron
 from aie.helpers.taplib.tap import TensorAccessPattern
 from aie.iron import (
-    TaskGroup,
     CompileTime,
     ExternalFunction,
     In,
@@ -18,6 +17,7 @@ from aie.iron import (
     Out,
     Program,
     Runtime,
+    TaskGroup,
     Worker,
 )
 from aie.utils.config import cxx_header_path

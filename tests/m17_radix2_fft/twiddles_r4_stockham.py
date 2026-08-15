@@ -118,7 +118,7 @@ def _selftest():
                 err = abs(expected - reconstructed)
                 max_err = max(max_err, err)
                 print(f"{stage:<6} {s:<4} {m:<4} {q:<4} {tw_idx:<4} "
-                      f"{str(expected):<50} {str(reconstructed):<50} {err:.3e}")
+                      f"{expected!s:<50} {reconstructed!s:<50} {err:.3e}")
         s <<= 2
         stage += 1
 

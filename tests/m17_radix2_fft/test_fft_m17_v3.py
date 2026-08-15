@@ -25,9 +25,7 @@ from aie.utils.config import cxx_header_path
 from aie.utils.hostruntime.xrtruntime.tensor import XRTTensor
 from aie.utils.verify import assert_pass
 from ml_dtypes import bfloat16
-
 from twiddles_r4_stockham import pack_twiddles_r4_stockham
-
 
 N_POINTS = 64
 INPUT_ELEMS = N_POINTS * 2
@@ -172,7 +170,7 @@ def main():
     assert_pass(out_np, ref_iq,
                 fail_msg=f"FFT output mismatch (max_err={max_err:.4f})",
                 atol=atol)
-    print("")
+    print()
     print("=== IFFT via conj(FFT(conj(Y)))/N (forward kernel) ===")
     spec_c = np.array(out_np, dtype=np.float32, copy=True)
     spec_c[1::2] *= np.float32(-1.0)
@@ -206,7 +204,7 @@ def main():
     print(f"Round-trip SNR:           {rt_snr:.2f} dB")
     assert rt_max < 1e-3, f"Round-trip max abs error {rt_max} exceeds 1e-3"
     print("SUCCESS: IFFT round-trip recovered the 3-tone input")
-    print(f"SUCCESS: Phoenix NPU executed 64-point radix-4 Stockham FFT!")
+    print("SUCCESS: Phoenix NPU executed 64-point radix-4 Stockham FFT!")
     print("PASS!")
 
 
