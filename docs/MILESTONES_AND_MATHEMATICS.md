@@ -521,9 +521,33 @@ Silicon validation runs four host-side reference checks before dispatch and one 
 
 See [docs/M22_DESIGN.md](M22_DESIGN.md).
 
+## M23: fused polyphase channelizer (M-path analysis bank)
+
+M23 closes the DSP-track filtering & resampling block. It takes a wideband complex baseband signal at rate `f_s` and simultaneously splits it into `M = 8` uniformly spaced sub-channels, each at rate `f_s / M` — the workhorse of frequency-division multiple-access receivers ([Harris 2004 ch. 6](https://ieeexplore.ieee.org/book/9448967); [Rondeau, "Designing Analysis and Synthesis Filterbanks in GNU Radio"](https://static.squarespace.com/static/543ae9afe4b0c3b808d72acd/543aee1fe4b09162d08633d9/543aee20e4b09162d086354a/1395369129837/rondeau_gr_filtering.pdf)):
+
+\[
+y_k[m] \;=\; \sum_{n=0}^{M-1} v_n[m]\, e^{-j 2\pi k n / M}, \quad v_p[m] \;=\; \sum_{k=0}^{K-1} h_p[k]\, x_p[m-k]
+\]
+
+where `h_p[k] = h[p + k·M]` is the polyphase decomposition of the length-64 prototype into `M = 8` branches of `K = 8` taps each ([Vaidyanathan 1993 §4.3, Eq. 4.3.13](https://dl.acm.org/doi/10.5555/151045); [Harris 2004 §6.3, Fig. 6.8](https://ieeexplore.ieee.org/book/9448967)), and the outer sum is an `M`-point analysis-convention DFT (sign `-j`, matching [scipy.fft.fft](https://docs.scipy.org/doc/scipy/reference/generated/scipy.fft.fft.html)).
+
+The input commutator uses the natural sample-to-branch mapping `p = q` (sample `q` of a frame goes to branch `q`), matching [GNU Radio pfb_channelizer_ccf](https://wiki.gnuradio.org/index.php/Polyphase_Channelizer) and [NVIDIA MatX channelize_poly](https://nvidia.github.io/MatX/api/signalimage/filtering/channelize_poly.html). Each branch keeps its own `K = 8`-slot shift register (identical structure to M19's real FIR). The 64-tap prototype is a Kaiser LPF (β ≈ 5.653, cutoff π/M, 60 dB stop-band) designed via [`scipy.signal.firwin(scale=True)`](https://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.firwin.html) with I0-sinh window ([Kaiser 1974](https://ieeexplore.ieee.org/document/1451724)): `sum(h) = 0.99977`, exact even symmetry.
+
+At `M = 8` the DFT is small enough that a matmul-style scalar implementation with fully-embedded twiddles beats a butterfly FFT — the kernel reuses the M17p `parallel_fft64_kernel.cc` pattern at `N = 8` instead of `N = 64`. Both DFT tables (`W_re`, `W_im`) and the polyphase branches (`hp`) are `constexpr float[8][8]` ROM (768 bytes total) and share **one canonical single-truncation quantization** with the host reference: `firwin` output → bfloat16 quantum → float32 literal. DFT entries at multiples of `π/2` are hard-zeroed in both kernel and host to eliminate a 6·10⁻¹⁷ residual that would otherwise perturb ~30 of 4096 output slots at bfloat16 output resolution.
+
+Silicon validation runs four host-side reference checks before dispatch and one silicon-gate check on the NPU:
+
+1. Prototype sanity: `sum(h) = 0.999767`, exact even symmetry (`max|h[n] - h[63-n]| = 0`).
+2. DC → ch0: `|y[ch0]| = 1.0000`, isolation 66.2 dB against the other seven channels.
+3. Complex tone at `f = 3·f_s/M` (channel-3 center): `|y[ch3]| = 1.0000`, isolation 66.2 dB.
+4. Two-tone at `f = f_s/M` and `f = 5·f_s/M`: `|y[ch1]| = 1.0000`, `|y[ch5]| = 1.0000`, isolation 64.5 dB.
+5. Silicon gate: random complex I/Q at seed 793, `atol = 0.02`. Silicon PASS on Phoenix NPU1 (2026-08-15) at max err 0.003906. The looser tolerance vs. M21/M22 (0.01) accommodates 8 bfloat16 rounding events in the 8-point DFT accumulator on top of the 8-tap FIR (16 total roundings per output sample). A sandbox transliteration of the .cc constants and loop schedule is `np.array_equal` bit-exact to the host reference on the seed-793 vector (0/4096 slots differ).
+
+See [docs/M23_DESIGN.md](M23_DESIGN.md).
+
 ## Automated regression coverage
 
-`run_all_silicon_tests.py` executes 20 automated test entries:
+`run_all_silicon_tests.py` executes 21 automated test entries:
 
 ```powershell
 python run_all_silicon_tests.py
@@ -551,6 +575,7 @@ The runner reports pass/fail status and elapsed time for:
 18. M20  fused polyphase decimator (M=4) + interpolator (L=4)
 19. M21  fused DDC (complex NCO at −f_s/8 + Kaiser LPF + decim-by-4)
 20. M22  fused DUC (interp-L=4 + Kaiser×L LPF + complex NCO at +f_s/8)
+21. M23  fused polyphase channelizer (M=8 commutator + M-path FIR + 8-point matmul-DFT)
 
 M0–M2 are setup and reproducibility milestones, while M4 depends on locally attached SDR hardware; therefore they are not entries in the automated silicon regression runner.
 

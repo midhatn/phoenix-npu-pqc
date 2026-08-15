@@ -59,6 +59,28 @@
 #           Analog Devices MT-085, and GNU Radio frequency-xlating
 #           FIR filter. Published contract moves from 19/19 to 20/20
 #           silicon-validated milestones.
+# - v0.4.0+M23: 21st silicon regression entry added. M23 fused polyphase
+#           channelizer: input commutator (natural sample-to-branch,
+#           p = q) into an M = 8 path polyphase FIR (K = 8 taps/branch,
+#           64-tap Kaiser prototype, beta ~ 5.653, cutoff pi/M) into an
+#           8-point matmul-DFT with fully-embedded twiddles, all on one
+#           AIE2 core (tests/m23_channelizer/test_channelizer_m23.py).
+#           Bit-accurate on prototype LPF (sum(h) = 0.99977, exact even
+#           symmetry), DC -> ch0 (iso 66.2 dB), single tone -> ch3 (iso
+#           66.2 dB), two-tone -> ch1 + ch5 (iso 64.5 dB), and random
+#           I/Q at seed 793 under an atol = 0.02 gate (looser than
+#           M21/M22's 0.01 because the DFT accumulates 8 bfloat16
+#           roundings on top of the 8-tap FIR). Silicon PASS at
+#           max err 0.003906. Sandbox transliteration is np.array_equal
+#           bit-exact to the host reference on the seed-793 vector
+#           (0 / 4096 slots differ). Design cites Harris 2004 ch. 6
+#           section 6.3 (M-path analysis bank), Vaidyanathan 1993
+#           section 4.3 Eq. 4.3.13 (polyphase commutator identity),
+#           GNU Radio pfb_channelizer_ccf, NVIDIA MatX channelize_poly
+#           (natural sample-to-branch convention), Kaiser 1974
+#           I0-sinh window, and scipy.signal.firwin. Published contract
+#           moves from 20/20 to 21/21 silicon-validated milestones and
+#           closes the DSP-track filtering & resampling block (M19-M23).
 
 import os
 import subprocess
@@ -255,6 +277,11 @@ def main():
             "Milestone 22: Fused DUC (Interp-L=4 + Kaiser*L LPF + NCO(+fs/8))",
             TESTS_DIR / "m22_duc",
             "test_duc_m22.py",
+        ),
+        (
+            "Milestone 23: Fused Polyphase Channelizer (M=8 commutator + FIR + DFT)",
+            TESTS_DIR / "m23_channelizer",
+            "test_channelizer_m23.py",
         ),
     ]
 
