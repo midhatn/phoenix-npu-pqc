@@ -1,6 +1,6 @@
 # M17 v3 — Radix-4 Stockham FFT on Peano (port of FFT_R4_AIE)
 
-Status: **DRAFT** — supersedes prior M17 v2 direction (aie_api `fft_dit_r2_stage<>` on cint16).
+Status: **SHIPPED in v0.4.0** — silicon-verified on Phoenix NPU1 (forward FFT 138.79 dB SNR, IFFT round-trip 135.11 dB SNR; regression: `run_all_silicon_tests.py` at commit `1ec80c8`, 2026-08-15). Supersedes prior M17 v2 direction (aie_api `fft_dit_r2_stage<>` on cint16), which is deleted from the tree at this milestone.
 
 ## 1. Decision
 

@@ -45,7 +45,10 @@ phoenix-sdr-dsp/
 │       ├── power_detector.hpp       # I^2 + Q^2 energy / RSSI detector
 │       ├── modular_arithmetic.hpp   # Barrett & Montgomery modular reduction mod q=3329
 │       └── ntt_butterfly.hpp        # Cooley-Tukey & Gentleman-Sande butterflies
+├── kernels/
+│   └── fft_stockham_f32.cc          # Radix-4 Stockham FFT (adapted from AMD FFT_R4_AIE, Apache-2.0)
 ├── tests/
+│   ├── m3_saxpy/                    # Milestone 3:  Single-Core SAXPY Vector Operation (bfloat16)
 │   ├── m5_fir/                      # Milestone 5:  8-Tap Vectorized Low-Pass FIR Filter
 │   ├── m6_mixer/                    # Milestone 6:  Complex Mixer / NCO Frequency Downconverter
 │   ├── m7_power/                    # Milestone 7:  Power / RSSI Energy Detector
@@ -58,11 +61,16 @@ phoenix-sdr-dsp/
 │   ├── m13_ntt16/                   # Milestone 13: 16-Point Vectorized NPU NTT (64 Batches)
 │   ├── m14_ntt256/                  # Milestone 14: 256-Point Vectorized NPU NTT (4 Batches)
 │   ├── m15_polymul/                 # Milestone 15: NPU INTT & Cyclic Polynomial Multiplication
-│   ├── m15b_negacyclic/             # Milestone 15b: Negacyclic Polynomial Multiplication (Kyber ring)
+│   ├── m15b_negacyclic/             # Milestone 15b: Negacyclic Polynomial Multiplication (Kyber ring; PORT_PENDING)
 │   ├── m16_fft_ref/                 # Milestone 16: CPU DFT/FFT Reference (three implementations, CI)
 │   ├── m17_radix2_fft/              # Milestone 17: 64-Point NPU Radix-4 Stockham FFT + IFFT
 │   └── m17p_fft_parallel/           # Milestone 17p: 4-Column Parallel FFT Channelizer
+├── scripts/                         # Windows environment audit, bootstrap, and activation scripts
+├── docs/                            # Milestones, mathematics, ROADMAP, Windows setup, toolchain pin
+├── requirements/                    # Pinned toolchain versions
+├── toolchain.yaml                   # Machine-readable pinned stack (silicon-verified components)
 ├── run_all_silicon_tests.py         # Automated Master Regression Suite
+├── CITATION.cff                     # Citation metadata (validated with cffconvert)
 ├── LICENSE                          # MIT License
 ├── CONTRIBUTING.md                  # Contribution Guidelines
 └── README.md                        # Master Project Documentation
@@ -182,8 +190,11 @@ Expected output (v0.4.0, mlir-aie v1.4.1 pin `3ca0193`):
 
 ## 6. References & Upstream Projects
 
-- [Cooley & Tukey (1965), "An algorithm for the machine calculation of complex Fourier series"](https://garfield.library.upenn.edu/classics1993/A1993MJ84400001.pdf): the original radix-2 FFT paper underlying M17.
-- [Xilinx / AMD MLIR-AIE](https://github.com/Xilinx/mlir-aie): AI Engine MLIR dialect and LLVM backend.
+- [Cooley & Tukey (1965), "An algorithm for the machine calculation of complex Fourier series"](https://garfield.library.upenn.edu/classics1993/A1993MJ84400001.pdf): the original radix-2 FFT paper underlying M16/M17.
+- [Barrett (1986), "Implementing the Rivest Shamir and Adleman Public Key Encryption Algorithm on a Standard Digital Signal Processor"](https://link.springer.com/chapter/10.1007/3-540-47721-7_24): Barrett reduction, used in M10–M15b modular arithmetic.
+- [Xilinx / AMD MLIR-AIE](https://github.com/Xilinx/mlir-aie): AI Engine MLIR dialect and LLVM backend (pinned at commit `3ca0193`, v1.4.1 + 13 commits).
+- [AMD FFT_R4_AIE](https://github.com/diacccc/FFT_R4_AIE): Apache-2.0-licensed radix-4 Stockham FFT reference kernel for AIE-ML. `kernels/fft_stockham_f32.cc` is adapted from this source with attribution preserved.
+- [Xilinx aie-rt](https://github.com/Xilinx/aie-rt): AI Engine runtime library and `aie_api` header source (`fft_dit_r2_stage`, `mmul`, `filter_even/odd`).
 - [AMD XDNA Driver](https://github.com/amd/xdna-driver): Linux and Windows kernel driver for AMD XDNA architecture.
 - [Peano LLVM-AIE Compiler](https://github.com/Xilinx/llvm-aie): Clang/LLVM fork targeting AIE/AIE2 vector units.
 - [AMD XRT (Xilinx Runtime)](https://github.com/Xilinx/XRT): Host runtime for PCIe and APU accelerator device management.
@@ -195,4 +206,7 @@ Expected output (v0.4.0, mlir-aie v1.4.1 pin `3ca0193`):
 
 - **Lead Architect & Maintainer:** Midhat Nashar ([@midhatn](https://github.com/midhatn))
 - **AI Architecture & Engineering Partner:** Perplexity AI (Senior AMD XDNA / AIE & DSP Copilot)
+- **Upstream toolchain (Advanced Micro Devices, Inc. — formerly Xilinx):** [`mlir-aie`](https://github.com/Xilinx/mlir-aie), [`llvm-aie` (Peano)](https://github.com/Xilinx/llvm-aie), [`XRT`](https://github.com/Xilinx/XRT), [`xdna-driver`](https://github.com/amd/xdna-driver), and the [`FFT_R4_AIE`](https://github.com/diacccc/FFT_R4_AIE) radix-4 Stockham FFT reference (Apache-2.0), which `kernels/fft_stockham_f32.cc` is adapted from.
+- **Academic foundations:** J. W. Cooley & J. W. Tukey (1965) for the radix-2 FFT that seeds M16/M17; P. Barrett (1986) for the modular-reduction method underlying M10–M15b.
+- **Community reference:** [`hal-lab-u-tokyo/ntt-aie`](https://github.com/hal-lab-u-tokyo/ntt-aie) NTT-on-AIE reference implementation.
 - **License:** MIT License — See [LICENSE](LICENSE) for details.

@@ -23,11 +23,11 @@ The SDR-integration track (LimeSDR, ring buffers, real-time streaming) is deferr
 
 | M# | Focus | Status | Artifact |
 |---|---|---|---|
-| M0 | Windows + WSL2 environment audit | ✅ | `scripts/windows/`, `scripts/wsl2/`, `audit/` |
+| M0 | Windows environment audit | ✅ | `scripts/windows/windows_audit.ps1`, `audit/` |
 | M1 | Native Windows architecture decision | ✅ | `docs/M1_ARCHITECTURE_DECISION.md` |
 | M2 | Pinned Windows toolchain | ✅ | `docs/M2_TOOLCHAIN_PIN.md`, `toolchain.yaml` |
 
-The native-Windows execution path is used because MLIR-AIE and Peano have first-class Windows/WSL2 support ([MLIR-AIE 1.2 release notes on Windows Subsystem for Linux compatibility, Phoronix](https://www.phoronix.com/news/AMD-MLIR-AIE-1.2)) and because WSL2 cannot directly access the NPU hardware (the `amdxdna` driver binds to the Windows host, per [Linux amdxdna documentation](https://docs.kernel.org/accel/amdxdna/amdnpu.html)).
+The native-Windows execution path is used because MLIR-AIE and Peano ship first-class native-Windows wheels ([MLIR-AIE 1.2 release notes, Phoronix](https://www.phoronix.com/news/AMD-MLIR-AIE-1.2)) and because the `amdxdna` NPU driver binds to the Windows host — WSL2 cannot directly access the NPU device ([Linux amdxdna documentation](https://docs.kernel.org/accel/amdxdna/amdnpu.html)). See [`docs/M1_ARCHITECTURE_DECISION.md`](M1_ARCHITECTURE_DECISION.md) for the full rejection rationale.
 
 ## Track 1 — NPU DSP kernels (active)
 

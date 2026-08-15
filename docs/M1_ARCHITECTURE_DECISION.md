@@ -116,15 +116,9 @@ This decision does not install or select Lime Suite versus SoapySDR.
 
 LimeSDR streaming remains a later Windows-native host problem. Missing Lime software does not change the NPU compile/execute split.
 
-## Fallback rule
+## Outcome (as of v0.4.0)
 
-Switch a later milestone to Priority 2, WSL2 device compilation plus Windows host execution, only if one of these is proven:
-
-1. Official native Windows IRON cannot emit a Phoenix/`npu1` binary on this machine
-2. The Windows XRT SDK cannot load that binary through a native host
-3. Required Peano/`npu1` tools are documented as Windows-unsupported for this exact hardware
-
-A missing package today is not that proof. Milestone 0 showed the packages are absent, not that native Windows cannot compile `npu1`.
+Priority 1 (native Windows for both device compilation and host execution) is validated: 15/16 milestones pass on Phoenix NPU1 silicon under this configuration (M15b is `PORT_PENDING` on the iron API migration, not a Windows-vs-WSL2 issue). The Priority 2 WSL2 fallback is not needed and has not been exercised. This decision is closed.
 
 ## Out of scope for this file
 
