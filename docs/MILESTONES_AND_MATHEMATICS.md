@@ -497,9 +497,33 @@ Silicon validation runs four host-side reference checks before dispatch and one 
 
 See [docs/M21_DESIGN.md](M21_DESIGN.md).
 
+## M22: fused digital up-converter (DUC)
+
+M22 is the mathematical inverse of M21. It takes a narrowband complex baseband signal, raises the sample rate by `L = 4`, and shifts it up to an intermediate frequency — all inside one fused AIE2 kernel:
+
+\[
+y[n] \;=\; \big(h \ast \text{upsample}_{L}\{x_{bb}[m]\}\big) \cdot e^{+j 2\pi f_c n / f_s}
+\]
+
+The zero-stuff-and-filter interpolation is evaluated in polyphase form so the kernel never materialises the zero-stuffed intermediate stream. Each baseband input feeds a 4-slot shift register, and the 16-tap prototype is decomposed into `L = 4` branches of 4 taps each, one per output phase. This is the commutator identity of [Vaidyanathan 1993 §4.3, Eq. 4.3.13](https://dl.acm.org/doi/10.5555/151045) and [Harris 2004 ch. 7](https://ieeexplore.ieee.org/book/9448967), and matches the [GNU Radio Frequency Xlating FIR Filter](https://wiki.gnuradio.org/index.php/Frequency_Xlating_FIR_Filter) block run with negative decimation (interp). The DUC signal-chain topology is [Harris 2004 §8.4 "The Digital Up-Converter"](https://ieeexplore.ieee.org/book/9448967).
+
+The prototype is the same 16-tap Kaiser LPF used by [M20](#m20-fused-polyphase-decimator--interpolator) with the standard `taps *= L` interpolator scaling ([`scipy.signal.resample_poly`](https://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.resample_poly.html), [GNU Radio pfb](https://www.gnuradio.org/doc/doxygen-3.7/page_pfb.html)) so end-to-end DC gain is unity. The complex mix uses the 8-entry cordic-free LO LUT of M21 with `sin_lo` negated (upconversion instead of downconversion), following [Analog Devices MT-085](https://www.analog.com/media/en/training-seminars/tutorials/MT-085.pdf).
+
+Unlike M21, the DUC output buffer is fully populated: 512 baseband pairs expand to 2048 IF pairs at `f_s`, filling all 4096 bfloat16 slots with no zero-tail. The fused kernel writes each interpolated pair × LO product to the output stream in the same iteration where it produces the interpolated value, matching the M8 fused-pipeline pattern.
+
+Silicon validation runs four host-side reference checks before dispatch and one silicon-gate check on the NPU:
+
+1. LO LUT regeneration (sign-flipped from M21) to `≤ 2·10⁻¹⁶`.
+2. Impulse response: 16 non-zero output samples (the 16-tap LPF impulse response) times the LO pattern; the kernel returns 16 non-zero complex samples at max magnitude 0.9667 (peak tap `hi[7]`).
+3. DC baseband → `+f_s/8` tone: mag = 0.9976 with std 0.0024 across the deep tail, FFT peak at bin 192 (= `len(tail) / 8`).
+4. Baseband tone at `-f_bb/8`: the input tone sits at `-f_s/32` on the output-rate grid; after mixing by `+f_s/8` it lands at `+3f_s/32`. FFT peak at bin 144 (= `round(len(tail) · 3 / 32)`), mag = 0.9754.
+5. Silicon gate: random complex I/Q at seed 792, `atol = 0.01`. Silicon PASS on Phoenix NPU1 (2026-08-15) at max err 0.007812, comfortably inside the M20/M21 envelope (larger tap magnitudes after the `× L` scaling widen the per-MAC rounding budget).
+
+See [docs/M22_DESIGN.md](M22_DESIGN.md).
+
 ## Automated regression coverage
 
-`run_all_silicon_tests.py` executes 19 automated test entries:
+`run_all_silicon_tests.py` executes 20 automated test entries:
 
 ```powershell
 python run_all_silicon_tests.py
@@ -526,6 +550,7 @@ The runner reports pass/fail status and elapsed time for:
 17. M19  8-tap complex FIR (complex taps × complex I/Q)
 18. M20  fused polyphase decimator (M=4) + interpolator (L=4)
 19. M21  fused DDC (complex NCO at −f_s/8 + Kaiser LPF + decim-by-4)
+20. M22  fused DUC (interp-L=4 + Kaiser×L LPF + complex NCO at +f_s/8)
 
 M0–M2 are setup and reproducibility milestones, while M4 depends on locally attached SDR hardware; therefore they are not entries in the automated silicon regression runner.
 

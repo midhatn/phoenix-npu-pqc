@@ -44,6 +44,21 @@
 #           frequency-xlating FIR filter, and NIST DLMF chapter 1.
 #           Published contract moves from 18/18 to 19/19 silicon-
 #           validated milestones.
+# - v0.4.0+M22: 20th silicon regression entry added. M22 fused Digital
+#           Up-Converter (DUC): zero-stuff interpolation by L=4 fused
+#           with a 16-tap Kaiser*L LPF (reuses M20 stage-2 taps) and a
+#           complex NCO at f_c = +f_s/8 (8-sample cordic-free LO LUT,
+#           sign-flipped from M21), all on one AIE2 core
+#           (tests/m22_duc/test_duc_m22.py). Bit-accurate on LO regen,
+#           impulse, DC->+f_s/8 tone (mag = 0.9976 at bin 192),
+#           baseband tone at -f_bb/8 upconverts to +3f_s/32 (peak bin
+#           144), and random I/Q at seed 792 under the M5/M6 atol=0.01
+#           gate. Silicon PASS at max err 0.007812. Design cites
+#           Harris 2004 chapter 8 (DUC), Vaidyanathan 1993 Eq. 4.3.13,
+#           Kaiser 1974, scipy.signal.resample_poly interp scaling,
+#           Analog Devices MT-085, and GNU Radio frequency-xlating
+#           FIR filter. Published contract moves from 19/19 to 20/20
+#           silicon-validated milestones.
 
 import os
 import subprocess
@@ -235,6 +250,11 @@ def main():
             "Milestone 21: Fused DDC (NCO(-fs/8) + Kaiser LPF + Decim-M=4)",
             TESTS_DIR / "m21_ddc",
             "test_ddc_m21.py",
+        ),
+        (
+            "Milestone 22: Fused DUC (Interp-L=4 + Kaiser*L LPF + NCO(+fs/8))",
+            TESTS_DIR / "m22_duc",
+            "test_duc_m22.py",
         ),
     ]
 
