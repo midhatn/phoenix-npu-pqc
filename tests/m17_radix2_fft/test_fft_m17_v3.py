@@ -172,6 +172,40 @@ def main():
     assert_pass(out_np, ref_iq,
                 fail_msg=f"FFT output mismatch (max_err={max_err:.4f})",
                 atol=atol)
+    print("")
+    print("=== IFFT via conj(FFT(conj(Y)))/N (forward kernel) ===")
+    spec_c = np.array(out_np, dtype=np.float32, copy=True)
+    spec_c[1::2] *= np.float32(-1.0)
+    time_buf = np.zeros(OUTPUT_ELEMS, dtype=np.float32)
+    spec_tensor = XRTTensor(spec_c, dtype=np.float32)
+    tw_fwd_tensor = XRTTensor(np_twiddles, dtype=bfloat16)
+    time_tensor = XRTTensor(time_buf, dtype=np.float32)
+    res_ifft = fft64_stockham_r4(
+        spec_tensor,
+        tw_fwd_tensor,
+        time_tensor,
+        N_in=INPUT_ELEMS,
+        N_tw=TWIDDLE_ELEMS,
+        N_out=OUTPUT_ELEMS,
+    )
+    print(f"IFFT kernel result: {res_ifft}")
+    time_tensor.to("cpu")
+    rec = np.array(time_tensor._data, dtype=np.float32, copy=True)
+    rec[1::2] *= np.float32(-1.0)
+    rec = rec / np.float32(N_POINTS)
+    nan_rt = int(np.sum(np.isnan(rec)))
+    assert nan_rt == 0, f"IFFT output contains {nan_rt} NaNs"
+    rt_err = np.abs(rec - np_input_iq)
+    rt_max = float(np.max(rt_err))
+    rt_rms = float(np.sqrt(np.mean(rt_err ** 2)))
+    in_pwr = float(np.mean(np_input_iq ** 2))
+    err_pwr = float(np.mean(rt_err ** 2))
+    rt_snr = 10.0 * np.log10(in_pwr / err_pwr) if err_pwr > 0.0 else float("inf")
+    print(f"Round-trip max abs error: {rt_max:.6f}")
+    print(f"Round-trip RMS abs error: {rt_rms:.6f}")
+    print(f"Round-trip SNR:           {rt_snr:.2f} dB")
+    assert rt_max < 1e-3, f"Round-trip max abs error {rt_max} exceeds 1e-3"
+    print("SUCCESS: IFFT round-trip recovered the 3-tone input")
     print(f"SUCCESS: Phoenix NPU executed 64-point radix-4 Stockham FFT!")
     print("PASS!")
 

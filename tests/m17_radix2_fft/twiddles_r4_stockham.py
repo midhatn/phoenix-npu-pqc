@@ -20,7 +20,7 @@ def split_to_bf16(x: float) -> tuple:
     return tuple(slices)
 
 
-def pack_twiddles_r4_stockham(N: int, over_provision: bool = True) -> np.ndarray:
+def pack_twiddles_r4_stockham(N: int, over_provision: bool = True, inverse: bool = False) -> np.ndarray:
     if N < 4 or (N & (N - 1)) != 0:
         raise ValueError(f"N must be a power of 2 (and specifically 4^k); got {N}")
     log2n = int(np.log2(N))
@@ -45,7 +45,8 @@ def pack_twiddles_r4_stockham(N: int, over_provision: bool = True) -> np.ndarray
         for q in range(s):
             for tw_idx in range(3):
                 k = q * m * (tw_idx + 1)
-                angle = -2.0 * np.pi * k / N
+                sign = 1.0 if inverse else -1.0
+                angle = sign * 2.0 * np.pi * k / N
                 twr = float(np.cos(angle))
                 twi = float(np.sin(angle))
 
