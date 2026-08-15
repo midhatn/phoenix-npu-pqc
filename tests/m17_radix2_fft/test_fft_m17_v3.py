@@ -1,6 +1,6 @@
 # Purpose: Milestone 17 v3 (radix-4 Stockham FFT) silicon validation on AMD Phoenix NPU.
 # Target operating system: Windows 11 Pro 25H2.
-# Target architecture: AMD Phoenix NPU / XDNA / AIE2P (npu2).
+# Target architecture: AMD Phoenix NPU / XDNA / AIE2 (npu1).
 # Input:   64 complex f32 samples (interleaved [re, im, re, im, ...] = 128 float32 values)
 # Twiddle: 512 bf16 Ozaki-split radix-4 twiddle table (see twiddles_r4_stockham.py)
 # Output:  64 complex f32 spectrum bins verified against numpy.fft.fft
@@ -140,16 +140,8 @@ def main():
     ref_iq[1::2] = ref_complex.imag
 
     out_np = out_tensor._data
-    print("=== STAGE-1 EXPERIMENT DUMP ===")
-    print(f"NaN count: {int(np.sum(np.isnan(out_np)))}")
-    print(f"Nonzero count: {int(np.sum(np.abs(out_np) > 1e-10))}")
-    for start in range(0, 128, 16):
-        vals = out_np[start:start+16]
-        vals_str = "  ".join(f"{v:+.3e}" for v in vals)
-        print(f"[{start:3d}..{start+15:3d}]: {vals_str}")
-    print("=== END DUMP ===")
-    in_np_after = in_tensor._data
-    print("")
+    nan_count = int(np.sum(np.isnan(out_np)))
+    assert nan_count == 0, f"FFT output contains {nan_count} NaNs"
     print(f"Ref Spectrum Bin [0..2]:    {ref_iq[:6]}")
     print(f"Actual Spectrum Bin [0..2]: {out_np[:6]}")
 
