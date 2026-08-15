@@ -11,6 +11,9 @@
 #           M17 (direct-DFT NPU FFT), M17p (4-column parallel NPU FFT). The four
 #           additions had been silicon-validated independently and now run under
 #           the same regression harness.
+# - v0.4.0: M17 runner entry switched from tests/m17_fft_dft (O(N^2) DFT)
+#           to tests/m17_radix2_fft/test_fft_m17_v3.py (radix-4 Stockham +
+#           IFFT round-trip). Direct-DFT kernel left on disk, unhooked.
 
 import subprocess
 import sys
@@ -124,9 +127,9 @@ def main():
             "test_negacyclic_m16.py"
         ),
         (
-            "Milestone 17: 64-Point Direct DFT NPU Kernel (bfloat16)",
-            Path(r"C:\phoenix-sdr-dsp\tests\m17_fft_dft"),
-            "test_fft_m11.py"
+            "Milestone 17: 64-Point Radix-4 Stockham FFT + IFFT (NPU1)",
+            Path(r"C:\phoenix-sdr-dsp\tests\m17_radix2_fft"),
+            "test_fft_m17_v3.py"
         ),
         (
             "Milestone 17p: 4-Column Parallel 64-Point FFT Channelizer",

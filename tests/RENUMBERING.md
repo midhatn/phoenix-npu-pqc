@@ -65,7 +65,7 @@ git log --follow --stat tests/m17_fft_dft/fft64_kernel.cc
   (`m9b_parallel_pipeline`, `m15b_negacyclic`, `m17_fft_dft`,
   `m17p_fft_parallel`) into `run_all_silicon_tests.py`. Runner now dispatches
   16 milestones (from 12 in v0.2.0) and exits non-zero on any FAIL.
-- **Open** — Ship an M17 radix-butterfly implementation to replace the direct
+- ✅ **Done in v0.4.0** — Ship an M17 radix-4 Stockham FFT to replace the direct
   O(N²) DFT with the O(N log N) [Cooley-Tukey 1965](https://garfield.library.upenn.edu/classics1993/A1993MJ84400001.pdf)
   algorithm. The M16 CPU iterative bit-reversed FFT is the reference dataflow;
   the M11 finite-field radix-2 butterfly is the silicon-proven arithmetic
