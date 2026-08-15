@@ -98,6 +98,11 @@ tests/mN_your_name/
 4. Verify: full 15/16 PASS is preserved (or 16/16 if your milestone brings
    M15b back with the iron API port).
 
+Demos such as `tests/npu_visible/` are not milestones. Do not add them to
+`run_all_silicon_tests.py` or `toolchain.yaml` unless the project explicitly
+promotes them. Keep first-buffer numerical checks if the demo claims DSP
+correctness.
+
 ---
 
 ## 4. Pull request checklist

@@ -49,6 +49,8 @@ Validation rules:
 | M17 | 64-point NPU radix-4 Stockham FFT and IFFT | Silicon-validated, SNR-bounded |
 | M17p | Four-column parallel FFT channelizer | Silicon-validated |
 
+The I/Q throughput demo in `tests/npu_visible/` is not a numbered milestone and is not in `run_all_silicon_tests.py`. It reuses the M6 complex-multiply contract on all four columns and reports host-visible MB/s / Msps.
+
 ## M0–M2: native Windows foundation
 
 ### M0 — Environment audit
@@ -135,6 +137,8 @@ Q_y[n] = I_x[n]Q_lo[n] + Q_x[n]I_lo[n]
 ```
 
 Complex multiplication translates spectrum by the oscillator frequency. Choosing the phasor sign consistently determines whether the operation is interpreted as upconversion or downconversion. M6 checks the mixed I/Q samples against the CPU reference and reports the maximum absolute error.
+
+The optional `tests/npu_visible/test_iq_throughput.py` demo applies the same mix across four columns with many 1024-element frames per dispatch. On 2026-08-15 a Ryzen 9 7940HS Phoenix NPU1 ([10 TOPS](https://www.amd.com/en/products/processors/laptop/ryzen/7000-series/amd-ryzen-9-7940hs.html)) measured **7.459 Msps** / 29.84 MB/s I/Q in, first-buffer $L_\infty = 0.007812$. That rate is host-visible IRON + shim DMA, not a theoretical AIE peak. Kernel vectorization is deferred.
 
 ## M7: power and RSSI estimation
 

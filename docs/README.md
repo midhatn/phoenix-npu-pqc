@@ -11,6 +11,7 @@ Read [M0–M17 Milestones and Mathematics](MILESTONES_AND_MATHEMATICS.md) for th
 - **M16** — CPU FFT/IFFT reference (mathematical ground truth for silicon FFT).
 - **M17** — Radix-2 / Stockham FFT kernel on Phoenix NPU silicon.
 - **M17-parallel (M17p)** — 4-column parallel FFT scaling of M17 using the same ObjectFifo/`iron.Runtime` pattern as M9/M9b.
+- **I/Q throughput demo** — `tests/npu_visible/` (not in the 16-suite). Measured 7.459 Msps / 29.84 MB/s I/Q in on a 10 TOPS Phoenix NPU1.
 
 ## Related documents
 

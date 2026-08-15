@@ -47,6 +47,7 @@ The native-Windows execution path is used because MLIR-AIE and Peano ship first-
 | M8-ext | Fused DSP pipeline (mixer + FIR + power) | ✅ | `tests/m8_pipeline/`. Multi-stage kernel fusion pattern, no SDR yet. |
 | M9-ext | 4-column parallel FIR | ✅ | `tests/m9_parallel/`. Multi-column parallelization exercises the XDNA1 4×5 tile grid geometry ([Linux amdxdna docs](https://docs.kernel.org/accel/amdxdna/amdnpu.html)); pattern reusable for future kernels. |
 | M10-ext | 4-column parallel multi-stage demodulator pipeline | 🧪 | `tests/m9b_parallel_pipeline/`. Present in tree, not in regression runner. To be integrated as an M9-ext companion. |
+| demo-iq | 4-column streamed I/Q throughput | 🧪 | `tests/npu_visible/`. Host-visible IRON+DMA mixer measured 2026-08-15 on Ryzen 9 7940HS: **7.459 Msps**, 29.84 MB/s I/Q in, ~92% Task Manager NPU, first-buffer $L_\infty = 0.007812$. Phoenix NPU is [10 TOPS](https://www.amd.com/en/products/processors/laptop/ryzen/7000-series/amd-ryzen-9-7940hs.html) ([INT8](https://www.tomshardware.com/pc-components/cpus/the-refresh-that-wasnt-amd-announces-hawk-point-ryzen-8040-series-with-zen-4-rdna3-and-xdna-teases-strix-point)). Not in `run_all_silicon_tests.py`. Kernel vectorization deferred. |
 
 ### Modular arithmetic & NTT track (canonical §16 M10–M15)
 
@@ -160,6 +161,8 @@ The port was landed on `feat/m17-radix2-fft-npu`, fast-forwarded to `main`, and 
 
 ### Hardware architecture
 
+- AMD, "AMD Ryzen™ 9 7940HS" — official product page; Phoenix NPU rated up to 10 TOPS. https://www.amd.com/en/products/processors/laptop/ryzen/7000-series/amd-ryzen-9-7940hs.html
+- Tom's Hardware, "The refresh that wasn't — AMD announces 'Hawk Point' Ryzen 8040" (2023-12-06) — AMD states XDNA1 delivers 10 TOPS INT8 on Phoenix 7040. https://www.tomshardware.com/pc-components/cpus/the-refresh-that-wasnt-amd-announces-hawk-point-ryzen-8040-series-with-zen-4-rdna3-and-xdna-teases-strix-point
 - AMD, "AMD XDNA™ Architecture" — official product page describing the spatial-dataflow AI Engine tile array. https://www.amd.com/en/technologies/xdna.html
 - The Linux Kernel, "AMD NPU" — canonical description of the XDNA1 4×5 topology and the `amdxdna` driver. https://docs.kernel.org/accel/amdxdna/amdnpu.html
 - IEEE Computer Society, "AMD XDNA NPU in Ryzen AI Processors" (IEEE Micro, 2024). https://www.computer.org/csdl/magazine/mi/2024/06/10592049/1YtaXNWFBqE

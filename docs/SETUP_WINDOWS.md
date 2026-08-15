@@ -93,6 +93,16 @@ python run_all_silicon_tests.py
 
 The automated suite runs 16 entries covering M3, M5 through M15, M15b, M17, and M17p. It requires the physical NPU and compares NPU results against CPU references. Expected outcome at release v0.4.0: 15 of 16 tests pass, with M15b the sole failure pending iron.Runtime port.
 
+## Optional: I/Q Throughput
+
+Not part of the 16-entry suite. After ironenv is active:
+
+```powershell
+python tests\npu_visible\test_iq_throughput.py
+```
+
+Expected on Phoenix NPU1: first-buffer max abs error 0.007812, then about 7.5 Msps / 30 MB/s I/Q in over a 5 second window. See the landing-page I/Q section and `tests/npu_visible/README.md`.
+
 ## Troubleshooting
 
 | Symptom | Check |

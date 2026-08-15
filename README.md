@@ -8,11 +8,14 @@
 ![Silicon Status: 15/16 PASS](https://img.shields.io/badge/Silicon%20Status-15%2F16%20PASS-brightgreen)
 ![Release: v0.4.0](https://img.shields.io/badge/Release-v0.4.0-informational)
 ![Compiler: LLVM Peano](https://img.shields.io/badge/Compiler-LLVM%20Peano%20AIE2-purple)
+![I/Q: 7.46 Msps](https://img.shields.io/badge/I%2FQ-7.46%20Msps%20%C2%B7%2010%20TOPS%20NPU-ff6b00)
 [![CI](https://github.com/midhatn/phoenix-sdr-dsp/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/midhatn/phoenix-sdr-dsp/actions/workflows/ci.yml)
 
 **High-Performance Vectorized Software Defined Radio (SDR) & Number Theoretic Transform (NTT) Acceleration Engine on AMD Ryzen AI Phoenix Silicon (XDNA1 / AIE2)**
 
-[Architecture](#1-system--hardware-architecture) • [Directory Structure](#2-repository-structure) • [Silicon Milestones](#3-validated-silicon-milestones) • [Engineering Issues & Fixes](#4-engineering-challenges--technical-solutions) • [Quickstart](#5-quickstart--silicon-verification) • [References](#6-references--upstream-projects) • [Credits](#7-credits--acknowledgments)  • [Documentation](docs/README.md)
+**7.46 Msps of real I/Q on a 10 TOPS AMD laptop NPU.** 29.8 MB/s in · 59.7 MB/s in+out · ~92% NPU. No discrete GPU. No FPGA.
+
+[Architecture](#1-system--hardware-architecture) • [Directory Structure](#2-repository-structure) • [Silicon Milestones](#3-validated-silicon-milestones) • [I/Q Throughput](#iq-throughput) • [Engineering Issues & Fixes](#4-engineering-challenges--technical-solutions) • [Quickstart](#5-quickstart--silicon-verification) • [References](#6-references--upstream-projects) • [Credits](#7-credits--acknowledgments)  • [Documentation](docs/README.md)
 
 </div>
 
@@ -23,7 +26,7 @@
 The **Phoenix SDR-DSP** framework provides native Windows 11 acceleration for real-time SDR processing and finite-field lattice cryptography on AMD Ryzen 7040/8040 series processors.
 
 - **Target APU:** AMD Ryzen 9 7940HS (8 Cores / 16 Threads @ 4.0–5.2 GHz)
-- **NPU Silicon:** AMD XDNA1 / 1st Gen Ryzen AI (`npu1`)
+- **NPU Silicon:** AMD XDNA1 / 1st Gen Ryzen AI (`npu1`), [up to 10 TOPS](https://www.amd.com/en/products/processors/laptop/ryzen/7000-series/amd-ryzen-9-7940hs.html) ([INT8 on Phoenix 7040](https://www.tomshardware.com/pc-components/cpus/the-refresh-that-wasnt-amd-announces-hawk-point-ryzen-8040-series-with-zen-4-rdna3-and-xdna-teases-strix-point))
   - **Tile Array:** 4 Columns $\times$ 5 Rows of AI Engine 2 (AIE2) tiles
   - **Vector Architecture:** 512-bit SIMD registers supporting 64-lane `bfloat16`, 32-lane `int16`, and 16-lane `cint16`
   - **Local Memory:** 64 KB local data memory per tile (four 16 KB banks)
@@ -64,7 +67,8 @@ phoenix-sdr-dsp/
 │   ├── m15b_negacyclic/             # Milestone 15b: Negacyclic Polynomial Multiplication (Kyber ring; PORT_PENDING)
 │   ├── m16_fft_ref/                 # Milestone 16: CPU DFT/FFT Reference (three implementations, CI)
 │   ├── m17_radix2_fft/              # Milestone 17: 64-Point NPU Radix-4 Stockham FFT + IFFT
-│   └── m17p_fft_parallel/           # Milestone 17p: 4-Column Parallel FFT Channelizer
+│   ├── m17p_fft_parallel/           # Milestone 17p: 4-Column Parallel FFT Channelizer
+│   └── npu_visible/                 # Demo: 4-column I/Q throughput (not in the 16-suite)
 ├── scripts/                         # Windows environment audit, bootstrap, and activation scripts
 ├── docs/                            # Milestones, mathematics, ROADMAP, Windows setup, toolchain pin
 ├── requirements/                    # Pinned toolchain versions
@@ -101,6 +105,24 @@ Every milestone is verified on physical Phoenix NPU silicon (`npu1`) against an 
 | **M16** | CPU DFT/FFT Reference (three implementations) | CPU Reference (CI) | $N \in \{8..1024\}$ | **PASS** | $\le 10^{-13}$ vs NumPy `fft.fft` |
 | **M17** | 64-Point NPU Radix-4 Stockham FFT + IFFT | Tile `(0,2)` | 64-point complex `bfloat16` | **PASS** | FFT SNR **138.79 dB**, IFFT round-trip **135.11 dB** |
 | **M17p** | 4-Column Parallel FFT Channelizer | 4 Columns `(0..3,2)` | 64 parallel 64-point frames | **PASS** | 1,993 FFTs/sec, 0.51 MB/s I/Q |
+
+<a id="iq-throughput"></a>
+
+### I/Q throughput demo (not in the 16-suite)
+
+Host-visible 4-column streamed complex mixer in `tests/npu_visible/`. Measured 2026-08-15 on a Ryzen 9 7940HS Phoenix NPU1 ([10 TOPS](https://www.amd.com/en/products/processors/laptop/ryzen/7000-series/amd-ryzen-9-7940hs.html)). First buffer matches the M6 complex-multiply reference ($L_\infty = 0.007812$). Kernel vectorization is deferred.
+
+| Metric | 1-column 8 KB loop | 4-column stream |
+| :--- | ---: | ---: |
+| IQ in | 3.85 MB/s | **29.84 MB/s** |
+| IQ out | 3.85 MB/s | **29.84 MB/s** |
+| IQ in+out | 7.70 MB/s | **59.68 MB/s** |
+| Complex rate | 0.963 Msps | **7.459 Msps** |
+| Task Manager NPU | ~53% | **~92%** |
+
+```powershell
+python tests\npu_visible\test_iq_throughput.py
+```
 
 ---
 
@@ -141,6 +163,11 @@ During development on native Windows 11 with the AMD IRON/AIE2 toolchain, severa
 - **Issue:** After moving to upstream mlir-aie v1.4.1 (pin commit `3ca0193`, 2026-08-14), the full silicon sweep failed 14/16 milestones with `Runtime.__init__() missing 1 required positional argument: 'seq_fn'`.
 - **Root Cause:** Upstream deprecated the `Runtime()` context-manager pattern in favor of `Runtime(seq_fn, fn_args=[...])`, and moved worker enrollment and task-group management out of the `Runtime` object into `Program(..., workers=[...])` and per-sequence `TaskGroup` objects.
 - **Solution:** Migrated all 12 iron-based tests in one sweep. Single-worker kernels use the new `Runtime(seq_fn, [...])` signature; multi-worker channelizers use `TaskGroup()` inside the sequence body with `tg.finish()` at the end and endpoint-native `prod_ep.fill(buf, tap=tap, group=tg)` for per-column DMA. Full detail in `docs/ROADMAP.md`.
+
+### 8. AIE2 Program-Memory Overflow on Unrolled ObjectFifo Loops
+- **Issue:** A 64-iteration `for` around acquire/mix/release in the I/Q throughput worker failed `aiecc` at CDO load with `_XAie_LoadProgMemSection(): Overflow of program memory` / `XAie_LoadElf failed`.
+- **Root Cause:** AIE2 core program memory is 16 KB. Static ObjectFifo lowering unrolled the frame loop into the ELF `.text` section.
+- **Solution:** One acquire/release per worker, `Worker(while_true=True, dynamic_objfifo_lowering=True)`, and a 64-frame host TAP. IRON streams the tokens; the core binary stays compact.
 
 ---
 
@@ -186,6 +213,16 @@ Expected output (v0.4.0, mlir-aie v1.4.1 pin `3ca0193`):
  Total Elapsed Time: ~96 seconds
 ```
 
+### Optional: I/Q throughput
+
+Not part of `run_all_silicon_tests.py`. After the suite, or instead of it:
+
+```powershell
+python tests\npu_visible\test_iq_throughput.py
+```
+
+Expected on Phoenix NPU1: first-buffer $L_\infty = 0.007812$, then ~7.5 Msps / ~30 MB/s I/Q in over a 5 s window. See [I/Q Throughput](#iq-throughput).
+
 ---
 
 ## 6. References & Upstream Projects
@@ -195,6 +232,8 @@ Expected output (v0.4.0, mlir-aie v1.4.1 pin `3ca0193`):
 - [Xilinx / AMD MLIR-AIE](https://github.com/Xilinx/mlir-aie): AI Engine MLIR dialect and LLVM backend (pinned at commit `3ca0193`, v1.4.1 + 13 commits).
 - [AMD FFT_R4_AIE](https://github.com/diacccc/FFT_R4_AIE): Apache-2.0-licensed radix-4 Stockham FFT reference kernel for AIE-ML. `kernels/fft_stockham_f32.cc` is adapted from this source with attribution preserved.
 - [Xilinx aie-rt](https://github.com/Xilinx/aie-rt): AI Engine runtime library and `aie_api` header source (`fft_dit_r2_stage`, `mmul`, `filter_even/odd`).
+- [AMD Ryzen 9 7940HS](https://www.amd.com/en/products/processors/laptop/ryzen/7000-series/amd-ryzen-9-7940hs.html): official product page; Phoenix NPU rated up to 10 TOPS.
+- [Tom's Hardware, Hawk Point announcement](https://www.tomshardware.com/pc-components/cpus/the-refresh-that-wasnt-amd-announces-hawk-point-ryzen-8040-series-with-zen-4-rdna3-and-xdna-teases-strix-point): AMD states XDNA1 delivers 10 TOPS INT8 on Phoenix 7040.
 - [AMD XDNA Driver](https://github.com/amd/xdna-driver): Linux and Windows kernel driver for AMD XDNA architecture.
 - [Peano LLVM-AIE Compiler](https://github.com/Xilinx/llvm-aie): Clang/LLVM fork targeting AIE/AIE2 vector units.
 - [AMD XRT (Xilinx Runtime)](https://github.com/Xilinx/XRT): Host runtime for PCIe and APU accelerator device management.
