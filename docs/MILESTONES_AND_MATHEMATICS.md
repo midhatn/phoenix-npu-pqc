@@ -424,9 +424,54 @@ M17p runs the M17 radix-4 Stockham kernel across all four AIE2 tile columns of t
 
 Measured throughput on Phoenix NPU1 is about 1,993 FFTs per second, or about 0.51 MB/s of I/Q sample stream. M17p uses the same code path a future channelizer or streaming spectrum analyzer would use, and validates that hardware parallelism does not alter the transform result.
 
+## M19: 8-tap complex FIR (complex taps × complex I/Q)
+
+M19 extends the [M5](#m5-8-tap-vectorized-fir-filter) real-valued FIR to a complex-tap filter operating on complex I/Q input. For an 8-tap complex filter with taps `c[k] = cI[k] + j·cQ[k]` and complex input `x[n] = I[n] + j·Q[n]`, the output is
+
+\[
+y[n] = \sum_{k=0}^{7} c[k] \cdot x[n-k]
+\]
+
+Expanding into the real and imaginary parts,
+
+\[
+I_y[n] = \sum_{k=0}^{7} \bigl(cI[k]\, I[n-k] - cQ[k]\, Q[n-k]\bigr), \quad
+Q_y[n] = \sum_{k=0}^{7} \bigl(cI[k]\, Q[n-k] + cQ[k]\, I[n-k]\bigr)
+\]
+
+four dot products per output, same shift-register schedule as M5/M8. The kernel is bit-accurate against a NumPy reference at atol=0.01 on impulse, DC, tone, random I/Q, and M5-degeneracy (setting `cQ[k]=0` reproduces M5 exactly). See [docs/M19_DESIGN.md](M19_DESIGN.md).
+
+## M20: fused polyphase decimator + interpolator
+
+M20 puts a two-stage polyphase multirate resampler on one AIE2 core. Stage 1 decimates by `M=4` (2048 complex I/Q → 512 complex I/Q); stage 2 interpolates by `L=4` (512 complex I/Q → 2048 complex I/Q). Both stages share a single 16-tap Kaiser-window prototype low-pass FIR ([Kaiser 1974](https://ieeexplore.ieee.org/document/1451724)) with `β = 6` and cutoff `π/M`.
+
+The efficient polyphase form decomposes `h` into `M` sub-filters `p_k[r] = h[r·M + k]`, so
+
+\[
+y_{\text{decim}}[m] = \sum_{k=0}^{M-1} \sum_{r=0}^{N/M-1} p_k[r]\, x[(m-r)\cdot M - k]
+\]
+
+and symmetrically for the interpolator with `q_k[r] = h_i[r·L + k]`,
+
+\[
+y_{\text{interp}}[m\cdot L + k] = \sum_{r=0}^{N/L-1} q_k[r]\, x[m-r], \quad k = 0,\ldots,L-1
+\]
+
+[Vaidyanathan 1993 ch. 4](https://www.pearson.com/en-us/subject-catalog/p/multirate-systems-and-filter-banks/P200000003431/9780130349507) Eq. 4.3.5 and Eq. 4.3.13, [Harris 2004 ch. 6](https://ieeexplore.ieee.org/book/9448967) Fig. 6.7. This is not a rate-efficient hardware factoring (the fused kernel evaluates the full 16-tap dot product per output rather than a 4-tap branch, matching the M5/M8 shift-register schedule); the polyphase language is used for the derivation and for the tap-scaling convention.
+
+Following [`scipy.signal.resample_poly`](https://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.resample_poly.html) and [GNU Radio pfb](https://www.gnuradio.org/doc/doxygen-3.7/page_pfb.html), the interpolator side scales the prototype by `L` (`taps *= up`) to compensate the 1/L amplitude loss from zero-insertion upsampling. Combined end-to-end DC gain is therefore
+
+\[
+\text{gain}_{\text{DC}} = \frac{\sum h_d \cdot \sum h_i}{L} = \frac{1 \cdot L}{L} = 1
+\]
+
+bit-comparable to [`scipy.signal.upfirdn`](https://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.upfirdn.html) on the same tap arrays (verified to ≤ 0.001 in the sandbox on DC input; startup-transient boundary conventions differ but steady-state gain matches to bfloat16 precision).
+
+The fused-kernel choice (one Worker, one xclbin, no chained `ObjectFifo`) follows [M8](#m8-fused-sdr-demodulator-pipeline). Program-memory sizing on the AIE2 core forced the dot products to be expressed as compact loops rather than hand-flat 16-term expressions: an earlier revision with `#pragma clang loop unroll_count(4)` overflowed the 16 KB program memory (`XAIE_INVALID_ELF`). The loopy revision passes silicon at `atol = 0.01`. See [docs/M20_DESIGN.md](M20_DESIGN.md).
+
 ## Automated regression coverage
 
-`run_all_silicon_tests.py` executes 16 automated test entries:
+`run_all_silicon_tests.py` executes 18 automated test entries:
 
 ```powershell
 python run_all_silicon_tests.py
@@ -450,6 +495,8 @@ The runner reports pass/fail status and elapsed time for:
 14. M15b negacyclic polynomial multiplication
 15. M17  radix-4 Stockham FFT and IFFT
 16. M17p four-column parallel FFT
+17. M19  8-tap complex FIR (complex taps × complex I/Q)
+18. M20  fused polyphase decimator (M=4) + interpolator (L=4)
 
 M0–M2 are setup and reproducibility milestones, while M4 depends on locally attached SDR hardware; therefore they are not entries in the automated silicon regression runner.
 
@@ -497,6 +544,18 @@ Before calling a deterministic kernel complete:
 - C. L. Lawson, R. J. Hanson, D. R. Kincaid, F. T. Krogh, "Basic Linear Algebra Subprograms for Fortran Usage", *ACM TOMS* 5(3):308–323 (1979) — SAXPY. https://dl.acm.org/doi/10.1145/355841.355847
 - S. W. Smith, *The Scientist and Engineer's Guide to Digital Signal Processing*, ch. 14 (FIR). https://www.dspguide.com/ch14.htm
 - Analog Devices, MT-085, "Fundamentals of Direct Digital Synthesis (DDS)" — NCO / complex mixing. https://www.analog.com/media/en/training-seminars/tutorials/MT-085.pdf
+- P. P. Vaidyanathan, *Multirate Systems and Filter Banks*, Prentice Hall (1993) — polyphase decomposition (ch. 4). https://www.pearson.com/en-us/subject-catalog/p/multirate-systems-and-filter-banks/P200000003431/9780130349507
+- F. J. Harris, *Multirate Signal Processing for Communication Systems*, Prentice Hall (2004) — commutator model (ch. 6). https://ieeexplore.ieee.org/book/9448967
+- A. V. Oppenheim and R. W. Schafer, *Discrete-Time Signal Processing*, 3rd ed., Prentice Hall (2010) — multirate DSP (§4.6) and Kaiser window design (§7.5). https://www.pearson.com/en-us/subject-catalog/p/discrete-time-signal-processing/P200000003390/9780131988422
+- J. F. Kaiser, "Nonrecursive digital filter design using the I_0-sinh window function", IEEE ISCAS (1974). https://ieeexplore.ieee.org/document/1451724
+- SciPy, `scipy.signal.resample_poly` — canonical polyphase resampler and `taps *= up` interpolator scaling. https://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.resample_poly.html
+- SciPy, `scipy.signal.upfirdn` — underlying `upsample → FIR → downsample` primitive. https://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.upfirdn.html
+- SciPy source, `_signaltools.py` (`resample_poly` implementation). https://github.com/scipy/scipy/blob/main/scipy/signal/_signaltools.py
+- GNU Radio pfb overview. https://www.gnuradio.org/doc/doxygen-3.7/page_pfb.html
+- GNU Radio `gr-filter` (`pfb_decimator_ccf`, `pfb_interpolator_ccf`). https://github.com/gnuradio/gnuradio/tree/main/gr-filter/lib
+- liquid-dsp `firdecim_crcf` / `firinterp_crcf` (J. Gaeddert, MIT license). https://github.com/jgaeddert/liquid-dsp
+- AMD Vitis DSP Library, AIE-targeted `fir_resampler` (Versal). https://github.com/Xilinx/Vitis_Libraries/tree/main/dsp/L1/include/aie
+- NIST DLMF §10.25 (modified Bessel functions). https://dlmf.nist.gov/10.25#i
 - J. W. Cooley and J. W. Tukey, "An algorithm for the machine calculation of complex Fourier series", *Math. Comput.* 19:297–301 (1965). https://garfield.library.upenn.edu/classics1993/A1993MJ84400001.pdf
 - T. G. Stockham, Jr., "High-speed convolution and correlation", AFIPS Spring Joint Computer Conference (1966). https://dl.acm.org/doi/10.1145/1464182.1464209
 - W. M. Gentleman and G. Sande, "Fast Fourier Transforms — for fun and profit", AFIPS Fall Joint Computer Conference (1966). https://dl.acm.org/doi/10.1145/1464291.1464352

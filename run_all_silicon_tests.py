@@ -2,7 +2,7 @@
 # Target operating system: Windows 11 Pro 25H2.
 # Target architecture: AMD Phoenix NPU1 / XDNA1 / AIE2 (4-Column Array).
 # Verification: End-to-end automated execution and reporting of Milestones 3, 5, 6, 7, 8, 9, 9b,
-#               10, 11, 12, 13, 14, 15, 15b, 17, 17p, 19.
+#               10, 11, 12, 13, 14, 15, 15b, 17, 17p, 19, 20.
 #
 # History:
 # - v0.2.0: Initial 12-milestone suite (M3, M5–M15).
@@ -22,6 +22,15 @@
 #           impulse, DC, tone, random I/Q, and M5-degeneracy against a NumPy
 #           reference under the M5/M6 atol=0.01 gate. Published contract moves
 #           from 16/16 to 17/17 silicon-validated milestones.
+# - v0.4.0+M20: 18th silicon regression entry added. M20 fused polyphase
+#           decimator (M=4) + interpolator (L=4) with a 16-tap Kaiser-window
+#           prototype LPF and scipy-convention interp scaling
+#           (tests/m20_polyphase/test_polyphase_m20.py). Bit-accurate on Kaiser
+#           tap regen, impulse, DC steady, complex tone, and random I/Q against
+#           a NumPy reference under the M5/M6 atol=0.01 gate. Design cites
+#           Vaidyanathan 1993, Harris 2004, Kaiser 1974, and
+#           scipy.signal.resample_poly. Published contract moves from 17/17
+#           to 18/18 silicon-validated milestones.
 
 import os
 import subprocess
@@ -203,6 +212,11 @@ def main():
             "Milestone 19: 8-Tap Complex FIR Filter (complex taps x complex I/Q)",
             TESTS_DIR / "m19_complex_fir",
             "test_fir_complex_m19.py",
+        ),
+        (
+            "Milestone 20: Fused Polyphase Decim (M=4) + Interp (L=4)",
+            TESTS_DIR / "m20_polyphase",
+            "test_polyphase_m20.py",
         ),
     ]
 
