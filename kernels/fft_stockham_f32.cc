@@ -24,7 +24,7 @@
 
 // Radix-4 FFT requires N to be a power of 4
 
-#define PROFILING 1
+#define PROFILING 0
 
 
 static volatile unsigned long long g_fft_stockham_cycles = 0;
@@ -137,7 +137,7 @@ static inline void fft_stockham_gemm(float *__restrict x,
       aie::vector<bfloat16, 64> coeff_vecs;
       coeff_vecs = aie::load_v<64>(coeff_buf);
       aie::accum<accfloat, 32> in_vecs;
-      in_vecs = aie::load_v<32>(&butterfly_in[0][0]);
+      in_vecs.from_vector(aie::load_v<32>(&butterfly_in[0][0]));
       aie::accum<accfloat, 32> tmp_splits;
 
       using MMUL = aie::mmul<4, 8, 8, bfloat16, bfloat16, accfloat>;
@@ -242,7 +242,7 @@ static inline void fft_stockham_gemm(float *__restrict x,
         }
         {
         aie::accum<accfloat, 32> in_vecs;
-        in_vecs = aie::load_v<32>(&butterfly_in[0][0]);
+        in_vecs.from_vector(aie::load_v<32>(&butterfly_in[0][0]));
         aie::vector<bfloat16, 32> tw_vecs[kSplitCount];
         for (unsigned i = 0; i < kSplitCount; ++i) {
           tw_vecs[i] = aie::load_v<32>(&twiddle_buf[i][0][0]);
@@ -306,7 +306,7 @@ static inline void fft_stockham_gemm(float *__restrict x,
         aie::vector<bfloat16, 64> coeff_vecs;
         coeff_vecs = aie::load_v<64>(coeff_buf);
         aie::accum<accfloat, 32> in_vecs;
-        in_vecs = aie::load_v<32>(&butterfly_in[0][0]);
+        in_vecs.from_vector(aie::load_v<32>(&butterfly_in[0][0]));
         aie::accum<accfloat, 32> tmp_splits;
 
         using MMUL = aie::mmul<4, 8, 8, bfloat16, bfloat16, accfloat>;
@@ -375,9 +375,8 @@ void fft_stockham_f32(float *input, const bfloat16 *twiddle,
   }
 
   // Perform FFT using Stockham algorithm with GEMM-based complex multiplication
-  for (int r = 0; r < 10000; ++r) {
-    fft_stockham_gemm<FFT_SIZE>(input, twiddle, output);
-  }
+  // Single-shot invocation (AMD's reference does 10000 iterations for benchmarking)
+  fft_stockham_gemm<FFT_SIZE>(input, twiddle, output);
   if constexpr (PROFILING) {
     end = get_cycles();
     event1();

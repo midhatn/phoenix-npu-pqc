@@ -50,3 +50,9 @@ third_party/
 
 # Local sync helper (not tracked)
 sync.ps1
+
+# Local scratch dirs used during M17 kernel bring-up (Peano sanity compiles)
+_scratch_*/
+
+# Local backup files created during in-place kernel patching
+*.pre-v3b-patch.bak
