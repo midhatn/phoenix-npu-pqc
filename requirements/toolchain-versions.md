@@ -8,8 +8,8 @@ This project was validated on a native Windows environment targeting the AMD Pho
 |---|---|
 | Operating system | Windows 11 Pro, build 26200.9168 |
 | System | ASUS TUF Gaming A15 FA507XI |
-| Processor | AMD Ryzen 9 7940HS with Radeon 780M Graphics |
-| NPU | AMD Phoenix NPU (XDNA1 / AIE2) |
+| Processor | [AMD Ryzen 9 7940HS](https://www.amd.com/en/products/processors/laptop/ryzen/7000-series/amd-ryzen-9-7940hs.html) with Radeon 780M Graphics |
+| NPU | AMD Phoenix NPU ([XDNA1 / AIE2](https://docs.kernel.org/accel/amdxdna/amdnpu.html)) |
 | Git | 2.48.1.windows.1 |
 | Python | 3.13.15 |
 | CMake | 4.3.2 |
@@ -18,7 +18,7 @@ This project was validated on a native Windows environment targeting the AMD Pho
 
 | Component | Verified value |
 |---|---|
-| XRT | 2.21.0 |
+| XRT | 2.21.0 ([SDK zip 2.21.75](https://github.com/Xilinx/XRT/releases/tag/2.21.75); [IRON Windows guide](https://xilinx.github.io/mlir-aie/1.4.1/buildHostWinNative/)) |
 | XRT SDK root | `C:\Xilinx\XRT` |
 | NPU driver | 32.0.20102.3930 |
 | NPU firmware | 1.5.5.391 |

@@ -5,7 +5,7 @@
 ![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)
 ![Target: AMD Phoenix NPU1](https://img.shields.io/badge/Target-AMD%20Ryzen%20AI%20NPU1%20(AIE2)-blue)
 ![Host: Windows 11 Pro](https://img.shields.io/badge/Host-Windows%2011%20Pro%2025H2-0078D6)
-![Silicon Status: 15/16 PASS](https://img.shields.io/badge/Silicon%20Status-15%2F16%20PASS-brightgreen)
+![Silicon Status: 16/16 PASS](https://img.shields.io/badge/Silicon%20Status-16%2F16%20PASS-brightgreen)
 ![Release: v0.4.0](https://img.shields.io/badge/Release-v0.4.0-informational)
 ![Compiler: LLVM Peano](https://img.shields.io/badge/Compiler-LLVM%20Peano%20AIE2-purple)
 ![I/Q: 7.46 Msps](https://img.shields.io/badge/I%2FQ-7.46%20Msps%20%C2%B7%2010%20TOPS%20NPU-ff6b00)
@@ -64,7 +64,8 @@ phoenix-sdr-dsp/
 │   ├── m13_ntt16/                   # Milestone 13: 16-Point Vectorized NPU NTT (64 Batches)
 │   ├── m14_ntt256/                  # Milestone 14: 256-Point Vectorized NPU NTT (4 Batches)
 │   ├── m15_polymul/                 # Milestone 15: NPU INTT & Cyclic Polynomial Multiplication
-│   ├── m15b_negacyclic/             # Milestone 15b: Negacyclic Polynomial Multiplication (Kyber ring; PORT_PENDING)
+│   ├── m15b_negacyclic/             # Milestone 15b: Negacyclic Polynomial Multiplication (Kyber / ML-KEM ring)
+│   ├── m32_mlkem/                   # Milestone 32: FIPS 203 ML-KEM (planned; not in the 16-suite)
 │   ├── m16_fft_ref/                 # Milestone 16: CPU DFT/FFT Reference (three implementations, CI)
 │   ├── m17_radix2_fft/              # Milestone 17: 64-Point NPU Radix-4 Stockham FFT + IFFT
 │   ├── m17p_fft_parallel/           # Milestone 17p: 4-Column Parallel FFT Channelizer
@@ -101,10 +102,14 @@ Every milestone is verified on physical Phoenix NPU silicon (`npu1`) against an 
 | **M13** | 16-Point Vectorized NPU NTT | Tile `(0,2)` | 64 parallel frames (1024 elems) | **PASS** | Bit-Exact Match |
 | **M14** | 256-Point Vectorized NPU NTT | Tile `(0,2)` | 4 parallel frames (1024 elems) | **PASS** | Bit-Exact Match |
 | **M15** | NPU INTT & Cyclic Polynomial Multiplication | Tile `(0,2)` | $C(x) = A(x) \times B(x) \pmod{x^{256}-1}$ | **PASS** | Bit-Exact Match |
-| **M15b** | Negacyclic Polynomial Multiplication | Tile `(0,2)` | $C(x) = A(x) \times B(x) \pmod{x^{256}+1}$ | **FAIL** | Pending iron.Runtime port |
+| **M15b** | Negacyclic Polynomial Multiplication ([Kyber](https://pq-crystals.org/kyber/data/kyber-specification-round3-20210804.pdf) / [FIPS 203](https://nvlpubs.nist.gov/nistpubs/fips/nist.fips.203.pdf) ring) | Tile `(0,2)` | $C(x) = A(x) \times B(x) \pmod{x^{256}+1}$ | **PASS** | Bit-Exact Match |
 | **M16** | CPU DFT/FFT Reference (three implementations) | CPU Reference (CI) | $N \in \{8..1024\}$ | **PASS** | $\le 10^{-13}$ vs NumPy `fft.fft` |
 | **M17** | 64-Point NPU Radix-4 Stockham FFT + IFFT | Tile `(0,2)` | 64-point complex `bfloat16` | **PASS** | FFT SNR **138.79 dB**, IFFT round-trip **135.11 dB** |
 | **M17p** | 4-Column Parallel FFT Channelizer | 4 Columns `(0..3,2)` | 64 parallel 64-point frames | **PASS** | 1,993 FFTs/sec, 0.51 MB/s I/Q |
+
+### Planned — M32 FIPS 203 ML-KEM (not in the 16-suite)
+
+M10–M15b already implement the [FIPS 203](https://nvlpubs.nist.gov/nistpubs/fips/nist.fips.203.pdf) ring `Z_3329[X]/(X^{256}+1)` and the NTT butterflies. **M32** is the extra milestone that turns those primitives into the approved KEM ([ML-KEM.KeyGen / Encaps / Decaps](https://nvlpubs.nist.gov/nistpubs/fips/nist.fips.203.pdf), Algorithms 19–21). First target: ML-KEM-512. Design: [`docs/M32_FIPS203_MLKEM.md`](docs/M32_FIPS203_MLKEM.md). M15b remains schoolbook; the KEM path needs Algorithms 9–12.
 
 <a id="iq-throughput"></a>
 
@@ -187,30 +192,30 @@ Set-Location C:\phoenix-sdr-dsp
 python run_all_silicon_tests.py
 ```
 
-Expected output (v0.4.0, mlir-aie v1.4.1 pin `3ca0193`):
+Expected output (mlir-aie v1.4.1 pin `3ca0193`, cached xclbin):
 ```text
 ======================================================================
                      REGRESSION EXECUTION SUMMARY
 ======================================================================
- [ PASS ] Milestone 3:   Single-Core SAXPY Vector Operation              (3.98s)
- [ PASS ] Milestone 5:   8-Tap Vectorized Low-Pass FIR Filter            (4.06s)
- [ PASS ] Milestone 6:   Complex Mixer / NCO Frequency Downconverter     (3.86s)
- [ PASS ] Milestone 7:   Vectorized Power / RSSI Energy Detector         (3.82s)
- [ PASS ] Milestone 8:   Streaming Multi-Stage Fused Demodulator Pipeline (4.32s)
- [ PASS ] Milestone 9:   4-Column Parallel FIR Filter                    (4.15s)
- [ PASS ] Milestone 9b:  4-Column Parallel Multi-Stage Pipeline          (4.28s)
- [ PASS ] Milestone 10:  Modular Arithmetic & Barrett Reduction          (3.88s)
- [ PASS ] Milestone 11:  Radix-2 NTT Butterfly Kernel                    (3.85s)
- [ PASS ] Milestone 12:  CPU NTT/INTT Reference & Constant Generator     (0.12s)
- [ PASS ] Milestone 13:  16-Point Vectorized NPU NTT (64 Batches)        (3.91s)
- [ PASS ] Milestone 14:  256-Point Vectorized NPU NTT (4 Batches)        (3.95s)
- [ PASS ] Milestone 15:  NPU INTT & Cyclic Polynomial Multiplication     (4.08s)
- [ FAIL ] Milestone 15b: Negacyclic Polynomial Multiplication            (pending iron.Runtime port)
- [ PASS ] Milestone 17:  NPU Radix-4 Stockham FFT + IFFT                 (138.79 / 135.11 dB SNR)
- [ PASS ] Milestone 17p: 4-Column Parallel FFT Channelizer               (1,993 FFTs/sec)
+ [ PASS ] Milestone 3: Single-Core SAXPY Vector Operation                        (1.11s)
+ [ PASS ] Milestone 5: 8-Tap Vectorized Low-Pass FIR Filter                      (1.16s)
+ [ PASS ] Milestone 6: Complex Mixer / NCO Frequency Downconverter               (1.03s)
+ [ PASS ] Milestone 7: Vectorized Power / RSSI Energy Detector                   (1.07s)
+ [ PASS ] Milestone 8: Streaming Multi-Stage Fused Demodulator Pipeline          (1.08s)
+ [ PASS ] Milestone 9: 4-Column Parallel FIR Filter (Hardware Scaling)           (1.04s)
+ [ PASS ] Milestone 9b: 4-Column Parallel Multi-Stage Demodulator Pipeline       (1.18s)
+ [ PASS ] Milestone 10: Modular Arithmetic & Barrett Reduction (mod 3329)        (1.08s)
+ [ PASS ] Milestone 11: Radix-2 NTT Butterfly Kernel (mod 3329)                  (1.03s)
+ [ PASS ] Milestone 12: CPU NTT/INTT Reference & Constant Generator              (0.28s)
+ [ PASS ] Milestone 13: 16-Point Vectorized NPU NTT (64 Batches)                 (0.62s)
+ [ PASS ] Milestone 14: 256-Point Vectorized NPU NTT (4 Batches)                 (1.22s)
+ [ PASS ] Milestone 15: NPU INTT & Cyclic Polynomial Multiplication              (1.18s)
+ [ PASS ] Milestone 15b: NPU Negacyclic Polynomial Multiplication (Kyber ring)   (0.63s)
+ [ PASS ] Milestone 17: 64-Point Radix-4 Stockham FFT + IFFT (NPU1)              (1.07s)
+ [ PASS ] Milestone 17p: 4-Column Parallel 64-Point FFT Channelizer              (2.68s)
 ----------------------------------------------------------------------
- Total Tests Run: 16 | Passed: 15 | Failed: 1
- Total Elapsed Time: ~96 seconds
+ Total Tests Run: 16 | Passed: 16 | Failed: 0
+ Total Elapsed Time: 17.46 seconds
 ```
 
 ### Optional: I/Q throughput
@@ -229,7 +234,18 @@ Expected on Phoenix NPU1: first-buffer $L_\infty = 0.007812$, then ~7.5 Msps / ~
 
 - [Cooley & Tukey (1965), "An algorithm for the machine calculation of complex Fourier series"](https://garfield.library.upenn.edu/classics1993/A1993MJ84400001.pdf): the original radix-2 FFT paper underlying M16/M17.
 - [Barrett (1986), "Implementing the Rivest Shamir and Adleman Public Key Encryption Algorithm on a Standard Digital Signal Processor"](https://link.springer.com/chapter/10.1007/3-540-47721-7_24): Barrett reduction, used in M10–M15b modular arithmetic.
-- [Xilinx / AMD MLIR-AIE](https://github.com/Xilinx/mlir-aie): AI Engine MLIR dialect and LLVM backend (pinned at commit `3ca0193`, v1.4.1 + 13 commits).
+- [NIST FIPS 203](https://nvlpubs.nist.gov/nistpubs/fips/nist.fips.203.pdf) ([DOI](https://doi.org/10.6028/NIST.FIPS.203)): ML-KEM ring `Z_q[X]/(X^n+1)` with `(n, q) = (256, 3329)`. Planned KEM is M32.
+- [NIST FIPS 202](https://nvlpubs.nist.gov/nistpubs/fips/nist.fips.202.pdf): SHA3-256, SHA3-512, SHAKE128, SHAKE256 used by FIPS 203 §4.1.
+- [NIST PQC project](https://csrc.nist.gov/projects/post-quantum-cryptography) and [CAVP](https://csrc.nist.gov/projects/cryptographic-algorithm-validation-program).
+- [CRYSTALS-Kyber specification v3.02](https://pq-crystals.org/kyber/data/kyber-specification-round3-20210804.pdf): Kyber NTT and negacyclic ring.
+- [Isabelle/AFP CRYSTALS-Kyber](https://isa-afp.org/browser_info/current/AFP/CRYSTALS-Kyber/outline.pdf): formalization of `Z_q[x]/(x^N+1)`.
+- [Stockham (1966), "High-speed convolution and correlation"](https://dl.acm.org/doi/10.1145/1464182.1464209): auto-sort FFT used by M17.
+- [Gentleman & Sande (1966)](https://dl.acm.org/doi/10.1145/1464291.1464352): DIF FFT / Gentleman–Sande butterfly.
+- [Ozaki et al. (2012)](https://doi.org/10.1007/s11075-011-9478-1): error-free split used by the AMD FFT_R4_AIE twiddle path.
+- [Higham (2002), *Accuracy and Stability of Numerical Algorithms*](https://doi.org/10.1137/1.9780898718027): FFT round-off bounds cited by M16.
+- [Linux kernel, AMD NPU / `amdxdna`](https://docs.kernel.org/accel/amdxdna/amdnpu.html): Phoenix 4×5 XDNA1 topology.
+- [Native Windows IRON guide, mlir-aie 1.4.1](https://xilinx.github.io/mlir-aie/1.4.1/buildHostWinNative/).
+- [Xilinx / AMD MLIR-AIE](https://github.com/Xilinx/mlir-aie): AI Engine MLIR dialect and LLVM backend (pinned at commit [`3ca0193`](https://github.com/Xilinx/mlir-aie/commit/3ca0193cea9e2c39ec670a65f93e1dd43c969f22), [v1.4.1](https://github.com/Xilinx/mlir-aie/releases/tag/v1.4.1) + 13 commits, [PR #3545](https://github.com/Xilinx/mlir-aie/pull/3545)).
 - [AMD FFT_R4_AIE](https://github.com/diacccc/FFT_R4_AIE): Apache-2.0-licensed radix-4 Stockham FFT reference kernel for AIE-ML. `kernels/fft_stockham_f32.cc` is adapted from this source with attribution preserved.
 - [Xilinx aie-rt](https://github.com/Xilinx/aie-rt): AI Engine runtime library and `aie_api` header source (`fft_dit_r2_stage`, `mmul`, `filter_even/odd`).
 - [AMD Ryzen 9 7940HS](https://www.amd.com/en/products/processors/laptop/ryzen/7000-series/amd-ryzen-9-7940hs.html): official product page; Phoenix NPU rated up to 10 TOPS.

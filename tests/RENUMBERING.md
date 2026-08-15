@@ -29,7 +29,7 @@ Scheme B directories were renamed as follows in commit `<HASH>` (v0.2.1):
 | `tests/m10_benchmark/` | `tests/m9b_parallel_pipeline/` | Contents implement a 4-column parallel multi-stage demodulator pipeline — a companion to the M9 4-column parallel FIR, not a new milestone. Numbered as `m9b` (M9 extension). |
 | `tests/m11_fft/` | `tests/m17_fft_dft/` | Contents implement a 64-point direct O(N²) DFT in `bfloat16`, silicon-validated against the NumPy DFT reference with `atol=0.1`. Per §16, NPU FFT is M17. Suffix `_dft` reflects the actual algorithm (direct DFT, not radix-2 butterfly). |
 | `tests/m12_fft_parallel/` | `tests/m17p_fft_parallel/` | 4-column parallel variant of the M17 direct-DFT kernel. Suffix `p` denotes the parallel implementation. |
-| `tests/m16_negacyclic/` | `tests/m15b_negacyclic/` | Contents test negacyclic polynomial multiplication in the ring `Z_q[x]/(x^N + 1)` — the Kyber ring per the [Isabelle/AFP CRYSTALS-Kyber formalization](https://isa-afp.org/browser_info/current/AFP/CRYSTALS-Kyber/outline.pdf). Canonically an extension of M15 (cyclic polynomial multiplication). Renamed to free the M16 slot for the CPU FFT reference (see §16). |
+| `tests/m16_negacyclic/` | `tests/m15b_negacyclic/` | Contents test negacyclic polynomial multiplication in the ring `Z_q[x]/(x^N + 1)` — the Kyber / [ML-KEM](https://nvlpubs.nist.gov/nistpubs/fips/nist.fips.203.pdf) ring per the [Isabelle/AFP CRYSTALS-Kyber formalization](https://isa-afp.org/browser_info/current/AFP/CRYSTALS-Kyber/outline.pdf) and [Kyber spec v3.02](https://pq-crystals.org/kyber/data/kyber-specification-round3-20210804.pdf). Canonically an extension of M15 (cyclic polynomial multiplication). Renamed to free the M16 slot for the CPU FFT reference (see §16). |
 
 ## Preservation of `git log --follow`
 
@@ -81,3 +81,10 @@ git log --follow --stat tests/m17_fft_dft/fft64_kernel.cc
   19(90): 297–301. [Reprint](https://garfield.library.upenn.edu/classics1993/A1993MJ84400001.pdf).
 - Isabelle/AFP CRYSTALS-Kyber formalization outline (Kyber ring definition):
   https://isa-afp.org/browser_info/current/AFP/CRYSTALS-Kyber/outline.pdf.
+- NIST, FIPS 203, *Module-Lattice-Based Key-Encapsulation Mechanism Standard*
+  (2024-08-13). https://nvlpubs.nist.gov/nistpubs/fips/nist.fips.203.pdf
+- Avanzi et al., *CRYSTALS-Kyber* Algorithm Specification v3.02 (2021-08-04).
+  https://pq-crystals.org/kyber/data/kyber-specification-round3-20210804.pdf
+- T. G. Stockham, Jr. (1966). "High-speed convolution and correlation." AFIPS.
+  https://dl.acm.org/doi/10.1145/1464182.1464209
+- NumPy `numpy.fft.fft`. https://numpy.org/doc/stable/reference/generated/numpy.fft.fft.html

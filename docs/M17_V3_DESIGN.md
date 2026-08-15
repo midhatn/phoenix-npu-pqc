@@ -40,6 +40,8 @@ Reference materials mirrored under `references/fft_r4_aie/` (agent workspace):
 
 ## 3. Algorithm — radix-4 DIT Stockham autosort
 
+Schedule follows [Stockham, AFIPS 1966](https://dl.acm.org/doi/10.1145/1464182.1464209) (auto-sort, no bit-reversal). Complexity is the [Cooley–Tukey](https://garfield.library.upenn.edu/classics1993/A1993MJ84400001.pdf) O(N log N) bound. Implementation is the AMD [`FFT_R4_AIE`](https://github.com/diacccc/FFT_R4_AIE) kernel.
+
 For N a power of 4, run `LOG4(N)` stages, `s` starts at 1 and multiplies by 4 each stage:
 
     a = x[q + s*(p + 0*m)]
@@ -55,6 +57,8 @@ For N a power of 4, run `LOG4(N)` stages, `s` starts at 1 and multiplies by 4 ea
 For N=64: 3 stages (`LOG4N = 3`), no bit-reversal needed (Stockham autosort produces naturally-ordered output).
 
 ## 4. Ozaki-style split-bf16 twiddles
+
+Named after the [Ozaki–Ogita–Oishi–Rump error-free split](https://doi.org/10.1007/s11075-011-9478-1) (*Numerical Algorithms* 59:95–118, 2012). The AMD reference applies that idea to reconstruct an fp32 complex multiply from [`bfloat16`](https://docs.amd.com/r/en-US/xapp1406-aie-ml-fp-computation/Floating-Point-Numerical-Formats) slices accumulated in `accfloat`.
 
 Each fp32 scalar is split into 4 bf16 slices; a complex twiddle W = W_re + j*W_im is stored as 8 bf16 values per twiddle: `[W_re_split0..3, W_im_split0..3]`. Per stage-`s` twiddle table, each `q` lane holds three twiddles (`W^m`, `W^2m`, `W^3m`) so a stage's twiddle block is `24 * s` bf16 elements.
 
@@ -97,7 +101,7 @@ Do NOT add `__AIE_ARCH__` or `__AIE_MODEL_VERSION__` — Peano sets these implic
 Reference uses old-style `@core` / `@runtime_sequence` (AIE dialect direct). Our M11 host driver uses mlir-aie 1.4.1 Runtime API (`Program`, `Worker`, `Runtime`). We port the ObjectFifo topology (input signal, twiddle table, output signal → single compute tile) into the Runtime API form, matching M11's structure exactly. The twiddle table becomes a third XRT bo alongside input/output.
 
 **Host driver side:**
-- Reuse M11's structure: allocate three bo's (input, twiddle, output), fill twiddles from a Python helper that mirrors reference `test.cpp` twiddle generator, run, verify against numpy.fft.
+- Reuse M11's structure: allocate three bo's (input, twiddle, output), fill twiddles from a Python helper that mirrors reference `test.cpp` twiddle generator, run, verify against [`numpy.fft.fft`](https://numpy.org/doc/stable/reference/generated/numpy.fft.fft.html).
 - Twiddle table size for N=64 with LOG4N=3: sum over stages `s = 1, 4, 16` of `24 * s = 24 + 96 + 384 = 504 bf16` = **1008 bytes**.
 
 ## 8. Milestones and exit criteria
@@ -133,7 +137,7 @@ Reference uses old-style `@core` / `@runtime_sequence` (AIE dialect direct). Our
 ## 11. Attribution
 
 Reference: [diacccc/FFT_R4_AIE](https://github.com/diacccc/FFT_R4_AIE), commit `main` as of 2026-04-28.
-License: Apache-2.0 WITH LLVM-exception.
+License: [Apache-2.0 WITH LLVM-exception](https://spdx.org/licenses/Apache-2.0-with-LLVM-exception.html).
 Copyright: (C) 2025-2026, Advanced Micro Devices, Inc.
 
 All ported files in Phoenix-SDR-DSP that derive from this reference retain the SPDX header and add an "Adapted from …" note above our own copyright line.

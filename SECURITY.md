@@ -9,7 +9,7 @@ investigated and disclosed responsibly.
 ### How to report
 
 Preferred: use GitHub's **Private Vulnerability Reporting**
-(Security tab → "Report a vulnerability").
+(Security tab → "Report a vulnerability"). Process: [GitHub Docs — privately reporting a security vulnerability](https://docs.github.com/en/code-security/security-advisories/guidance-on-reporting-and-writing/privately-reporting-a-security-vulnerability).
 
 Alternative: email **medhat.nashar@gmail.com** with the subject line
 `[phoenix-sdr-dsp SECURITY]`.

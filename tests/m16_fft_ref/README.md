@@ -18,7 +18,7 @@ will be bit-checked once implemented.
 | `direct_idft` | Twiddle matrix multiplication, eqn. (2) | O(N²) | Inverse ground truth. |
 | `radix2_fft_recursive` | Recursive [Cooley-Tukey 1965](https://garfield.library.upenn.edu/classics1993/A1993MJ84400001.pdf) DIT | O(N log N) | Closest one-to-one Python transcription of the [CT65] recurrence. |
 | `radix2_fft_iterative` | Iterative in-place with bit-reversed permutation | O(N log N) | Dataflow proxy for the M17 NPU butterfly kernel. |
-| `radix2_ifft_recursive` | `IFFT(X) = conj(FFT(conj(X))) / N` | O(N log N) | Inverse via the standard identity. |
+| `radix2_ifft_recursive` | `IFFT(X) = conj(FFT(conj(X))) / N` | O(N log N) | Inverse via the standard identity ([NumPy `ifft`](https://numpy.org/doc/stable/reference/generated/numpy.fft.ifft.html)). |
 
 ## Test battery
 
@@ -31,7 +31,7 @@ At each size N ∈ {8, 16, 32, 64, 128, 256, 512, 1024}:
    the direct DFT and with NumPy's `fft.fft` to relative L2 error ≤ 1e-11.
 5. **Round-trip** — `x == IFFT(FFT(x))` to relative L2 error ≤ 1e-11
    (typically ~1e-16).
-6. **Parseval / Plancherel** — energy conservation:
+6. **[Parseval](https://mathworld.wolfram.com/ParsevalsTheorem.html) / Plancherel** — energy conservation:
    `Σ|x[n]|² = (1/N) · Σ|X[k]|²`, relative error ≤ 1e-12
    (typically zero at double precision).
 
@@ -86,3 +86,4 @@ against a direct DFT is on the order of 10⁻¹³ — which the test tolerance
   https://numpy.org/doc/stable/reference/generated/numpy.fft.fft.html
 - **Higham, N. J.** (2002). *Accuracy and Stability of Numerical Algorithms*,
   2nd ed., §24.1 (FFT round-off bounds). SIAM.
+  [DOI 10.1137/1.9780898718027](https://doi.org/10.1137/1.9780898718027).

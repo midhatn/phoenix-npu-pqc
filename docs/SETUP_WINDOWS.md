@@ -7,9 +7,9 @@ This guide prepares a clean Windows installation to run Phoenix SDR-DSP on a sup
 The project targets:
 
 - Windows 11 Pro
-- AMD Ryzen 9 7940HS / Phoenix NPU
-- XDNA1 / AIE2
-- Native Windows MLIR-AIE, LLVM-AIE / Peano, and XRT
+- [AMD Ryzen 9 7940HS](https://www.amd.com/en/products/processors/laptop/ryzen/7000-series/amd-ryzen-9-7940hs.html) / Phoenix NPU
+- [XDNA1 / AIE2](https://docs.kernel.org/accel/amdxdna/amdnpu.html)
+- Native Windows [MLIR-AIE](https://github.com/Xilinx/mlir-aie), [LLVM-AIE / Peano](https://github.com/Xilinx/llvm-aie), and [XRT](https://github.com/Xilinx/XRT) ([official IRON Windows guide, v1.4.1](https://xilinx.github.io/mlir-aie/1.4.1/buildHostWinNative/))
 
 The validated versions are recorded in [toolchain-versions.md](../requirements/toolchain-versions.md).
 
@@ -18,11 +18,11 @@ The validated versions are recorded in [toolchain-versions.md](../requirements/t
 Install these before cloning the external toolchain:
 
 1. Git for Windows.
-2. Python 3.13.
+2. Python 3.13 ([IRON requires CPython 3.13 for Windows `pyxrt`](https://xilinx.github.io/mlir-aie/1.4.1/buildHostWinNative/)).
 3. CMake.
-4. Visual Studio 2022 Build Tools with the Desktop Development with C++ workload.
-5. AMD NPU driver compatible with Phoenix/XDNA1.
-6. XRT for Windows, installed under `C:\\Xilinx\\XRT`.
+4. Visual Studio 2022 Build Tools with the Desktop Development with C++ workload (the [IRON guide](https://xilinx.github.io/mlir-aie/1.4.1/buildHostWinNative/) also lists the C++ Clang Compiler for Windows component).
+5. AMD NPU driver compatible with Phoenix/XDNA1 (guide minimum `32.0.20101.3760`).
+6. XRT for Windows, installed under `C:\\Xilinx\\XRT` from [XRT 2.21.75](https://github.com/Xilinx/XRT/releases/tag/2.21.75) (`xrt_windows_sdk.zip`).
 
 Verify the NPU is visible:
 
@@ -42,7 +42,7 @@ Set-Location C:\\phoenix-sdr-dsp
 
 ## Clone MLIR-AIE
 
-MLIR-AIE is an external dependency and is intentionally not included in this repository. The regression suite requires mlir-aie **v1.4.1** or later (v1.4.1 released 2026-08-11 introduces the current `iron.Runtime(seq_fn, fn_args=...)` API used by every iron-based test in `tests/`). The v0.4.0 release of Phoenix SDR-DSP is verified against upstream commit `3ca0193cea9e2c39ec670a65f93e1dd43c969f22` (2026-08-14), which is v1.4.1 plus 13 commits including PR #3545 (`run_chain` executable-lifetime fix).
+MLIR-AIE is an external dependency and is intentionally not included in this repository. The regression suite requires mlir-aie **[v1.4.1](https://github.com/Xilinx/mlir-aie/releases/tag/v1.4.1)** or later (v1.4.1 released 2026-08-11 introduces the current [`iron.Runtime(seq_fn, fn_args=...)`](https://github.com/Xilinx/mlir-aie/blob/3ca0193/python/iron/runtime/runtime.py) API used by every iron-based test in `tests/`). The v0.4.0 release of Phoenix SDR-DSP is verified against upstream commit [`3ca0193cea9e2c39ec670a65f93e1dd43c969f22`](https://github.com/Xilinx/mlir-aie/commit/3ca0193cea9e2c39ec670a65f93e1dd43c969f22) (2026-08-14), which is v1.4.1 plus 13 commits including [PR #3545](https://github.com/Xilinx/mlir-aie/pull/3545) (`run_chain` executable-lifetime fix).
 
 ```powershell
 New-Item -ItemType Directory -Force -Path third_party | Out-Null
@@ -91,7 +91,7 @@ Set-Location C:\\phoenix-sdr-dsp
 python run_all_silicon_tests.py
 ```
 
-The automated suite runs 16 entries covering M3, M5 through M15, M15b, M17, and M17p. It requires the physical NPU and compares NPU results against CPU references. Expected outcome at release v0.4.0: 15 of 16 tests pass, with M15b the sole failure pending iron.Runtime port.
+The automated suite runs 16 entries covering M3, M5 through M15, M15b, M17, and M17p. It requires the physical NPU and compares NPU results against CPU references. Expected outcome: 16 of 16 tests pass.
 
 ## Optional: I/Q Throughput
 

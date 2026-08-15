@@ -61,7 +61,7 @@ The NTT track implements the Number-Theoretic Transform, a finite-field analogue
 | M13 | 16-point NPU NTT | ✅ | `tests/m13_ntt16/` |
 | M14 | 256-point vectorized NPU NTT | ✅ | `tests/m14_ntt256/`. Matches Kyber `N = 256`. |
 | M15 | NPU INTT + cyclic polynomial multiplication | ✅ | `tests/m15_polymul/` |
-| M15+ | Negacyclic polynomial multiplication (`Z_q[x]/(x^N + 1)`) | 🚧 | `tests/m15b_negacyclic/`. Repo currently labels this M16; canonically an extension of M15. The negacyclic ring `Z_q[x]/(x^N + 1)` is the Kyber ring, per [Isabelle/AFP CRYSTALS-Kyber formalization](https://isa-afp.org/browser_info/current/AFP/CRYSTALS-Kyber/outline.pdf). Uses low-level `aie.dialects` + `runtime_sequence` + `XRTTensor` rather than `iron.Runtime`; broken after the 2026-08-14 upstream API change (see Toolchain events below) and pending its own port to iron. To be renumbered to avoid collision with §16 M16 (CPU FFT reference). |
+| M15+ | Negacyclic polynomial multiplication (`Z_q[x]/(x^N + 1)`) | ✅ | `tests/m15b_negacyclic/test_negacyclic_m16.py`. Kyber / [ML-KEM](https://nvlpubs.nist.gov/nistpubs/fips/nist.fips.203.pdf) ring per [Isabelle/AFP](https://isa-afp.org/browser_info/current/AFP/CRYSTALS-Kyber/outline.pdf). Ported 2026-08-15 to the same `iron.Runtime` sequence-function API as M15. Schoolbook O(N²) kernel, bit-exact on Phoenix NPU1. Filename still says `m16`; keep until a dedicated renumber. The FIPS 203 KEM itself is **M32**, not this row. |
 
 ### FFT track (canonical §16 M16–M18)
 
@@ -117,6 +117,21 @@ All milestones below require a working SDR device. Deferred until hardware is av
 | M29 | Adaptive filtering & interference suppression | Can be prototyped on synthetic data; real validation needs SDR. |
 | M30 | Optional learned AI blocks for SDR | Master prompt marks explicitly optional. Depends on Track 1 primitives + SDR integration. |
 
+## Track 4 — FIPS 203 ML-KEM (🚧 next NTT item)
+
+Extra milestone after the shipped M10–M15b stack. Numbered **M32** so it does not collide with master-prompt §16 (M0–M31 are SDR/DSP). Design: [`docs/M32_FIPS203_MLKEM.md`](M32_FIPS203_MLKEM.md). Stub: `tests/m32_mlkem/`.
+
+[FIPS 203](https://nvlpubs.nist.gov/nistpubs/fips/nist.fips.203.pdf) (13 August 2024, [DOI 10.6028/NIST.FIPS.203](https://doi.org/10.6028/NIST.FIPS.203)) specifies ML-KEM, derived from round-3 [CRYSTALS-Kyber](https://pq-crystals.org/kyber/data/kyber-specification-round3-20210804.pdf) (§1.1). Ring `R_q = Z_3329[X]/(X^{256}+1)` is already the M15b ring. The KEM product is Algorithms 9–12 (NTT), not M15b schoolbook.
+
+| M# | Focus | Status | Notes |
+|---|---|---|---|
+| M32 | FIPS 203 ML-KEM | 🚧 | Approved KEM: Algorithms 19–21. First set ML-KEM-512 (`k=2`); NIST default later is ML-KEM-768 ([Table 2](https://nvlpubs.nist.gov/nistpubs/fips/nist.fips.203.pdf)). Hashes from [FIPS 202](https://nvlpubs.nist.gov/nistpubs/fips/nist.fips.202.pdf). |
+| M32a | CPU ML-KEM-512 reference | 🚧 | Host-only, bit-exact vs NIST [example values](https://csrc.nist.gov/projects/cryptographic-standards-and-guidelines/example-values) and CAVP internals ([§6](https://nvlpubs.nist.gov/nistpubs/fips/nist.fips.203.pdf)). |
+| M32b | NPU NTT-domain negacyclic product | 🚧 | Algorithms 9–12 on Phoenix NPU1. Replaces schoolbook for the KEM path only. |
+| M32c | SampleNTT + SamplePolyCBD + SHA3/SHAKE | 🚧 | Algorithms 7–8; PRF/H/G/J from FIPS 203 §4.1. |
+| M32d | K-PKE component | 🚧 | Algorithms 13–15. **Not** approved standalone ([§3.3](https://nvlpubs.nist.gov/nistpubs/fips/nist.fips.203.pdf)). |
+| M32e | ML-KEM.KeyGen / Encaps / Decaps | 🚧 | Algorithms 19–21. Then 768, then 1024. Do not add to the 16-suite until a gate is bit-exact on silicon. |
+
 ## Immediate next steps (v0.3 series)
 
 Ordered by dependency:
@@ -125,9 +140,10 @@ Ordered by dependency:
 2. **Directory renumbering pass** — *completed in v0.2.1*. The Scheme B directories have been renamed to align with §16 canonical: `tests/m10_benchmark/` → `tests/m9b_parallel_pipeline/`, `tests/m11_fft/` → `tests/m17_fft_dft/`, `tests/m12_fft_parallel/` → `tests/m17p_fft_parallel/`, `tests/m16_negacyclic/` → `tests/m15b_negacyclic/`. Blob SHAs preserved so `git log --follow` still tracks each file's history. Integration into `run_all_silicon_tests.py` (currently only wires Scheme A milestones M3–M15) is tracked separately.
 3. **M16 CPU FFT reference** — *completed*. Shipped as `tests/m16_fft_ref/test_fft_reference_m16.py` with three cross-validated implementations (direct O(N²) DFT, recursive radix-2 [Cooley-Tukey](https://garfield.library.upenn.edu/classics1993/A1993MJ84400001.pdf), iterative in-place with bit-reversal). Wired into the CI `cpu-reference-tests` job so every push runs it on Ubuntu. Serves as the ground-truth oracle for M17.
 4. **M17-butterfly** — *completed*. Radix-4 Stockham FFT shipped as M17, silicon-validated at 138.79 dB forward and 135.11 dB round-trip SNR.
-5. **M15b negacyclic port to iron.Runtime** — the only regression still failing after the 2026-08-14 upstream API change. Port from `aie.dialects` + `runtime_sequence` + `XRTTensor` to the iron API using M10/M11 as the shape template.
-6. **M19 complex FIR**: extend the shipped real-valued FIR to complex-valued taps and complex I/Q input.
-7. **M20 polyphase**: decimation + interpolation on top of M19.
+5. **M15b negacyclic port to iron.Runtime** — *completed 2026-08-15*. Same `@iron.jit` / `Runtime(seq_fn)` / `Program(..., workers=[...])` shape as M15. Schoolbook kernel, uint32 `XRTTensor` buffers, bit-exact vs the CPU reference. Full suite **16/16 PASS** in 17.46 s (cached xclbin).
+6. **M32 FIPS 203 ML-KEM** — *next NTT item*. Start at M32a (CPU ML-KEM-512 reference). Design: [`docs/M32_FIPS203_MLKEM.md`](M32_FIPS203_MLKEM.md). M15b proved the ring; M32 implements the approved KEM.
+7. **M19 complex FIR**: extend the shipped real-valued FIR to complex-valued taps and complex I/Q input.
+8. **M20 polyphase**: decimation + interpolation on top of M19.
 
 ## Toolchain events
 
@@ -145,9 +161,13 @@ An initial silicon sweep after the pull failed 14 of 16 milestones with an ident
 - **Single-worker:** M3 SAXPY (new `tests/m3_saxpy/`, first canonical port using upstream [`saxpy.cc`](https://github.com/Xilinx/mlir-aie/blob/3ca0193/programming_examples/getting_started/01_SAXPY/saxpy.cc)), M5 FIR, M6 mixer, M7 power, M8 fused pipeline, M10 modular arithmetic, M11 NTT butterfly, M13 16-point NTT, M14 256-point NTT, M15 cyclic polymul.
 - **Multi-worker with `TaskGroup` + per-column taps:** M9 4-column FIR, M9b 4-column demod pipeline (2-input), M17-parallel 4-column FFT channelizer.
 
-**Post-migration silicon sweep: 15 / 16 PASS** on Phoenix NPU1 (AIE2, Win11). Only `tests/m15b_negacyclic/` still fails; it uses the low-level `aie.dialects` + `runtime_sequence` + `XRTTensor` API rather than `iron.Runtime`, and needs a separate port to iron rather than a mechanical rewrite of the runtime block.
+**Post-migration silicon sweep: 15 / 16 PASS** on Phoenix NPU1 (AIE2, Win11). Only `tests/m15b_negacyclic/` still used the low-level `aie.dialects` + `runtime_sequence` + `XRTTensor` API rather than `iron.Runtime`.
 
-The port was landed on `feat/m17-radix2-fft-npu`, fast-forwarded to `main`, and pushed as commit `1ec80c8`.
+The iron ports of M3–M15 / M17 / M17p landed on `feat/m17-radix2-fft-npu`, fast-forwarded to `main`, and pushed as commit `1ec80c8`.
+
+### 2026-08-15 — M15b iron.Runtime port closes the suite
+
+M15b was rewritten to the M15 host shape: `@iron.jit`, `ExternalFunction`, two input `ObjectFifo`s plus one output, [`Runtime(seq_fn)`](https://github.com/Xilinx/mlir-aie/blob/3ca0193/python/iron/runtime/runtime.py), `Program(..., workers=[...])`, and uint32 `XRTTensor` buffers (the v1.4.1 host tensor rejects `int32` [`same_kind`](https://numpy.org/doc/stable/reference/generated/numpy.can_cast.html) copies). The schoolbook kernel and [Barrett](https://link.springer.com/chapter/10.1007/3-540-47721-7_24) constants (`MU = 20165`, shift 26) are unchanged. Ring is the Kyber / [ML-KEM](https://nvlpubs.nist.gov/nistpubs/fips/nist.fips.203.pdf) ring `Z_3329[x]/(x^256+1)`. Silicon result: bit-exact vs `negacyclic_polymul_ref`, seed 42. Full suite **16 / 16 PASS** in 17.46 s on Phoenix NPU1.
 
 ## Divergences from master prompt §16 — honest disclosure
 
@@ -191,6 +211,20 @@ The port was landed on `feat/m17-radix2-fft-npu`, fast-forwarded to `main`, and 
 - "Algorithm-Targeted NTT hardware acceleration via Design-Time Specialization" (arXiv 2601.17806, 2026) — ML-KEM/Kyber ring parameters `(q, N) = (3329, 256)`. https://arxiv.org/html/2601.17806v1
 - "Area-time efficient pipelined number theoretic transform for CRYSTALS-Kyber" (PLOS ONE, 2025) — Barrett reduction algorithm at `q = 3329`. https://journals.plos.org/plosone/article/file?id=10.1371/journal.pone.0323224&type=printable
 - Isabelle/AFP, "δ-Correctness Proof of CRYSTALS-KYBER with Number Theoretic Transform" — formalization of the negacyclic ring `Z_q[x]/(x^N + 1)`. https://isa-afp.org/browser_info/current/AFP/CRYSTALS-Kyber/outline.pdf
+- NIST, FIPS 203, *Module-Lattice-Based Key-Encapsulation Mechanism Standard* (2024-08-13) — official ML-KEM ring `R_q = Z_q[X]/(X^n+1)` with `(n, q) = (256, 3329)`. https://nvlpubs.nist.gov/nistpubs/fips/nist.fips.203.pdf
+- NIST FIPS 203 landing page. https://csrc.nist.gov/pubs/fips/203/final
+- NIST, FIPS 202, *SHA-3 Standard: Permutation-Based Hash and Extendable-Output Functions* (2015). https://nvlpubs.nist.gov/nistpubs/fips/nist.fips.202.pdf
+- NIST Post-Quantum Cryptography project. https://csrc.nist.gov/projects/post-quantum-cryptography
+- NIST CAVP. https://csrc.nist.gov/projects/cryptographic-algorithm-validation-program
+- NIST cryptographic example values. https://csrc.nist.gov/projects/cryptographic-standards-and-guidelines/example-values
+- Avanzi et al., *CRYSTALS-Kyber* Algorithm Specification v3.02 (2021-08-04). https://pq-crystals.org/kyber/data/kyber-specification-round3-20210804.pdf
+- P. Barrett, "Implementing the Rivest Shamir and Adleman Public Key Encryption Algorithm on a Standard Digital Signal Processor", CRYPTO 1986. https://link.springer.com/chapter/10.1007/3-540-47721-7_24
+- T. G. Stockham, Jr., "High-speed convolution and correlation", AFIPS 1966. https://dl.acm.org/doi/10.1145/1464182.1464209
+- W. M. Gentleman and G. Sande, "Fast Fourier Transforms — for fun and profit", AFIPS 1966. https://dl.acm.org/doi/10.1145/1464291.1464352
+- K. Ozaki, T. Ogita, S. Oishi, S. M. Rump, "Error-free transformations of matrix multiplication…", *Numerical Algorithms* 59:95–118 (2012). https://doi.org/10.1007/s11075-011-9478-1
+- N. J. Higham, *Accuracy and Stability of Numerical Algorithms*, 2nd ed., SIAM (2002). https://doi.org/10.1137/1.9780898718027
+- Native Windows IRON guide, mlir-aie 1.4.1. https://xilinx.github.io/mlir-aie/1.4.1/buildHostWinNative/
+- AMD, FFT_R4_AIE. https://github.com/diacccc/FFT_R4_AIE
 
 ### Project-internal references
 

@@ -1,7 +1,7 @@
 cff-version: 1.2.0
 message: "If you use this software, please cite it using the metadata below."
 title: "Phoenix SDR-DSP: Vectorized SDR & NTT DSP Acceleration Framework for AMD Phoenix NPU (XDNA1/AIE2)"
-abstract: "High-performance native Windows 11 acceleration framework for real-time Software Defined Radio (SDR) processing and Number Theoretic Transform (NTT) finite-field lattice cryptography on AMD Ryzen AI Phoenix silicon (XDNA1 / AIE2). Provides 16 silicon-verified milestones (15/16 PASS at v0.4.0 on Phoenix NPU1) covering vectorized FIR filtering, complex mixing, power detection, multi-stage streaming demodulation, 4-column parallel scaling, modular arithmetic (Barrett reduction), Radix-2 NTT butterflies, 16/256-point NTT/INTT with cyclic polynomial multiplication mod q=3329, CPU FFT reference, silicon radix-2 FFT/IFFT, and 4-column parallel FFT."
+abstract: "High-performance native Windows 11 acceleration framework for real-time Software Defined Radio (SDR) processing and Number Theoretic Transform (NTT) finite-field lattice cryptography on AMD Ryzen AI Phoenix silicon (XDNA1 / AIE2). Provides 16 silicon-verified milestones (16/16 PASS on Phoenix NPU1 as of 2026-08-15) covering vectorized FIR filtering, complex mixing, power detection, multi-stage streaming demodulation, 4-column parallel scaling, modular arithmetic (Barrett reduction), Radix-2 NTT butterflies, 16/256-point NTT/INTT with cyclic polynomial multiplication mod q=3329, CPU FFT reference, silicon radix-2 FFT/IFFT, and 4-column parallel FFT."
 type: software
 version: "0.4.0"
 date-released: "2026-08-15"
@@ -71,8 +71,9 @@ references:
     title: "FFT_R4_AIE: AMD reference radix-4 Stockham FFT kernel"
     authors:
       - name: "AMD Research (Xilinx)"
-    repository-code: "https://github.com/Xilinx/mlir-aie"
-    notes: "The M17-v3 radix-4 Stockham FFT kernel (kernels/fft_stockham_f32.cc) is derived from the upstream FFT_R4_AIE reference implementation shipped as an example under Xilinx/mlir-aie. Licensed Apache-2.0."
+    repository-code: "https://github.com/diacccc/FFT_R4_AIE"
+    url: "https://github.com/diacccc/FFT_R4_AIE"
+    notes: "The M17-v3 radix-4 Stockham FFT kernel (kernels/fft_stockham_f32.cc) is adapted from diacccc/FFT_R4_AIE (AMD-authored, Apache-2.0). Not the mlir-aie tree itself."
     license: "Apache-2.0"
   - type: article
     title: "Retain executable per kernel handle to fix run_chain use-after-free"
@@ -81,3 +82,40 @@ references:
     url: "https://github.com/Xilinx/mlir-aie/pull/3545"
     year: 2026
     notes: "Upstream fix required by parallel-DMA milestones M9, M9b, and M17p. Merged into mlir-aie main after v1.4.1; landed at commit 3ca0193."
+  - type: standard
+    title: "FIPS 203: Module-Lattice-Based Key-Encapsulation Mechanism Standard"
+    authors:
+      - name: "National Institute of Standards and Technology"
+    year: 2024
+    url: "https://nvlpubs.nist.gov/nistpubs/fips/nist.fips.203.pdf"
+    doi: "10.6028/NIST.FIPS.203"
+  - type: article
+    title: "An algorithm for the machine calculation of complex Fourier series"
+    authors:
+      - family-names: "Cooley"
+        given-names: "James W."
+      - family-names: "Tukey"
+        given-names: "John W."
+    year: 1965
+    url: "https://garfield.library.upenn.edu/classics1993/A1993MJ84400001.pdf"
+  - type: article
+    title: "Implementing the Rivest Shamir and Adleman Public Key Encryption Algorithm on a Standard Digital Signal Processor"
+    authors:
+      - family-names: "Barrett"
+        given-names: "Paul"
+    year: 1986
+    url: "https://link.springer.com/chapter/10.1007/3-540-47721-7_24"
+  - type: article
+    title: "High-speed convolution and correlation"
+    authors:
+      - family-names: "Stockham"
+        given-names: "Thomas G."
+        name-particle: "Jr."
+    year: 1966
+    url: "https://dl.acm.org/doi/10.1145/1464182.1464209"
+  - type: article
+    title: "CRYSTALS-Kyber Algorithm Specification and Supporting Documentation (version 3.02)"
+    authors:
+      - name: "Avanzi, Bos, Ducas, Kiltz, Lepoint, Lyubashevsky, Schanck, Schwabe, Seiler, Stehlé"
+    year: 2021
+    url: "https://pq-crystals.org/kyber/data/kyber-specification-round3-20210804.pdf"

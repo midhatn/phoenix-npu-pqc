@@ -1,8 +1,8 @@
 # Contributing to Phoenix SDR-DSP
 
 Thanks for your interest in improving this project. This is a research-quality
-NPU acceleration framework that runs directly on AMD Ryzen AI Phoenix silicon
-(XDNA1 / AIE2), so contributions need to preserve the bit-accurate silicon
+NPU acceleration framework that runs directly on [AMD Ryzen AI Phoenix](https://www.amd.com/en/products/processors/laptop/ryzen/7000-series/amd-ryzen-9-7940hs.html) silicon
+([XDNA1 / AIE2](https://docs.kernel.org/accel/amdxdna/amdnpu.html)), so contributions need to preserve the bit-accurate silicon
 verification guarantees of the master regression suite.
 
 By participating you agree to the [Code of Conduct](CODE_OF_CONDUCT.md).
@@ -27,8 +27,8 @@ The full toolchain is captured in [`toolchain.yaml`](toolchain.yaml):
 | mlir-aie         | v1.4.1 + 13 commits (pin `3ca0193`)  |
 | llvm-aie (Peano) | 21.0.0.2026080301+c9c5ecb7           |
 
-The mlir-aie pin is v1.4.1 plus PR #3545 (run_chain executable-lifetime fix,
-required by parallel-DMA milestones). See
+The mlir-aie pin is [v1.4.1](https://github.com/Xilinx/mlir-aie/releases/tag/v1.4.1) plus [PR #3545](https://github.com/Xilinx/mlir-aie/pull/3545) (run_chain executable-lifetime fix,
+required by parallel-DMA milestones). Official install path: [IRON native Windows 1.4.1](https://xilinx.github.io/mlir-aie/1.4.1/buildHostWinNative/). See
 [`docs/M2_TOOLCHAIN_PIN.md`](docs/M2_TOOLCHAIN_PIN.md) for details.
 
 See [`docs/SETUP_WINDOWS.md`](docs/SETUP_WINDOWS.md) for the full install
@@ -56,16 +56,15 @@ Every session starts by activating `ironenv`:
 python run_all_silicon_tests.py
 ```
 
-You should see `15/16 PASS` in ~60 s (M15b is `PORT_PENDING` on the iron API
-migration — see [`docs/ROADMAP.md`](docs/ROADMAP.md)). If not, fix your
-environment before starting work. `scripts/verify_environment.ps1` runs quick
-smoke checks.
+You should see `16/16 PASS` in about 18 s with a warm IRON cache (first compile
+is slower). If not, fix your environment before starting work.
+`scripts/verify_environment.ps1` runs quick smoke checks.
 
 ### Make your change
 
 Small, focused commits are strongly preferred. Follow existing style:
 
-- Python: `ruff` (config is CI-driven — run `ruff check --fix .`)
+- Python: [`ruff`](https://docs.astral.sh/ruff/) (config is CI-driven — run `ruff check --fix .`)
 - C++ AIE2 kernels (`*.cc`): match the vectorization style of adjacent files
 - MLIR / eDSL: match the ObjectFifo IRON conventions used in `tests/m*_*/`
 
@@ -95,13 +94,13 @@ tests/mN_your_name/
 2. Add the milestone to the `verification.last_verified.milestones` list in
    [`toolchain.yaml`](toolchain.yaml).
 3. Update `README.md` "Validated Silicon Milestones" table.
-4. Verify: full 15/16 PASS is preserved (or 16/16 if your milestone brings
-   M15b back with the iron API port).
+4. Verify: full 16/16 PASS is preserved.
 
 Demos such as `tests/npu_visible/` are not milestones. Do not add them to
 `run_all_silicon_tests.py` or `toolchain.yaml` unless the project explicitly
 promotes them. Keep first-buffer numerical checks if the demo claims DSP
-correctness.
+correctness. The planned FIPS 203 work in `tests/m32_mlkem/` is the same:
+stay out of the 16-suite until a gate is bit-exact on Phoenix NPU1.
 
 ---
 

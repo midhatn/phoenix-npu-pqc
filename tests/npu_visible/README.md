@@ -31,8 +31,10 @@ AMD rates this NPU at [up to 10 TOPS](https://www.amd.com/en/products/processors
 | First-buffer `L_inf` | 0.007812 | 0.007812 |
 
 A 1-column 8 KB M6 loop is host-bound. This version keeps all four AIE
-columns in an acquire/release stream (`Worker(while_true=True)`,
-`dynamic_objfifo_lowering=True`) so the NPU is not idle between 8 KB
+columns ([Phoenix 4×5 XDNA1](https://docs.kernel.org/accel/amdxdna/amdnpu.html))
+in an acquire/release stream (`Worker(while_true=True)`,
+`dynamic_objfifo_lowering=True`; [IRON `Runtime` / `Worker` at the v1.4.1 pin](https://github.com/Xilinx/mlir-aie/blob/3ca0193/python/iron/runtime/runtime.py))
+so the NPU is not idle between 8 KB
 Python round-trips. Rates are host-visible (IRON + shim DMA), not a
 theoretical AIE peak. Kernel vectorization is deferred.
 

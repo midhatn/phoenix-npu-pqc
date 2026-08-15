@@ -20,9 +20,9 @@ target:
   soc: "Ryzen 9 7940HS"
   soc_family: "Phoenix / Hawk Point (Ryzen 7040 / 8040 series)"
   npu:
-    name: "AMD XDNA1 / 1st Gen Ryzen AI"
+    name: "AMD XDNA1 / 1st Gen Ryzen AI"  # https://docs.kernel.org/accel/amdxdna/amdnpu.html
     codename: npu1
-    tile_array: "4 columns x 5 rows"
+    tile_array: "4 columns x 5 rows"  # Linux amdxdna: Phoenix/Hawk Point 4x5
     engine: "AIE2 (AI Engine 2)"
     simd_width_bits: 512
     tile_local_memory_kb: 64
@@ -72,7 +72,7 @@ toolchain:
     # The regression pin (commit 3ca0193) is v1.4.1 + 13 commits and additionally
     # includes PR #3545 ("Retain executable per kernel handle to fix run_chain
     # use-after-free"). Any commit >= v1.4.1 that also contains PR #3545 is expected
-    # to pass the 15/16 suite.
+    # to pass the 16/16 suite.
 
   llvm_aie_peano:
     package: "llvm-aie"
@@ -87,7 +87,7 @@ toolchain:
 
   xrt:
     package_role: "Native Windows XRT runtime + pyxrt bindings"
-    verified_version: "2.21.0"
+    verified_version: "2.21.0"  # SDK zip: https://github.com/Xilinx/XRT/releases/tag/2.21.75
     branch: "HEAD"
     commit_short: "15e6319b"
     commit_date: "2026-05-07"
@@ -110,9 +110,9 @@ verification:
   last_verified:
     date: "2026-08-15"
     host_build: "Windows 11 Pro 26200"
-    result: "15/16 PASS (M15b pending iron.Runtime port)"
-    total_elapsed_seconds: 96.32
-    commit: "1ec80c8"
+    result: "16/16 PASS"
+    total_elapsed_seconds: 17.46
+    commit: "1a25d46 + local M15b iron.Runtime port"
     milestones:
       - { id: M3,   name: "Single-Core SAXPY Vector Operation",                status: PASS, note: "Bit-exact (0.0 error)" }
       - { id: M5,   name: "8-Tap Vectorized Low-Pass FIR",                     status: PASS, note: "L_inf <= 0.007812" }
@@ -127,7 +127,7 @@ verification:
       - { id: M13,  name: "16-Point Vectorized NPU NTT (64 Batches)",          status: PASS, note: "Bit-Exact Match" }
       - { id: M14,  name: "256-Point Vectorized NPU NTT (4 Batches)",          status: PASS, note: "Bit-Exact Match" }
       - { id: M15,  name: "NPU INTT & Cyclic Polynomial Multiplication",       status: PASS, note: "Bit-Exact Match" }
-      - { id: M15b, name: "Negacyclic Polynomial Multiplication (Kyber ring)", status: FAIL, note: "Pending iron.Runtime port to mlir-aie v1.4.1 API" }
+      - { id: M15b, name: "Negacyclic Polynomial Multiplication (Kyber ring)", status: PASS, note: "Bit-Exact Match (schoolbook, iron.Runtime)" }
       - { id: M17,  name: "64-point NPU Radix-4 Stockham FFT + IFFT",          status: PASS, note: "FFT 138.79 dB / IFFT round-trip 135.11 dB SNR" }
       - { id: M17p, name: "4-Column Parallel FFT Channelizer",                 status: PASS, note: "1,993 FFTs/sec, 0.51 MB/s I/Q" }
 

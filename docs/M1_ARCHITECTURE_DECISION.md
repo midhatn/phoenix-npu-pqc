@@ -2,7 +2,7 @@
 
 - Purpose: pin the compile and execution split for Phoenix/XDNA1 custom kernels
 - Target operating system: Windows 11 Pro 25H2, build 26200.9168
-- Target architecture: AMD Ryzen 9 7940HS Phoenix / XDNA1 / AIE2 / `npu1`
+- Target architecture: [AMD Ryzen 9 7940HS](https://www.amd.com/en/products/processors/laptop/ryzen/7000-series/amd-ryzen-9-7940hs.html) Phoenix / [XDNA1 / AIE2](https://docs.kernel.org/accel/amdxdna/amdnpu.html) / `npu1`
 - Input types: Milestone 0 audits plus current official IRON/MLIR-AIE Windows documentation
 - Output types: architecture decision record
 - Scaling: not applicable
@@ -30,7 +30,7 @@ WSL2 remains installed as a compile-only fallback. It is used only if a later mi
 
 The current IRON/MLIR-AIE native Windows guide is the recommended path for Windows 11. It states that programs can be built and run on a Ryzen AI NPU entirely inside Windows, without a POSIX environment.
 
-Source: https://xilinx.github.io/mlir-aie/dev/buildHostWinNative/
+Source (pinned docs, mlir-aie 1.4.1): https://xilinx.github.io/mlir-aie/1.4.1/buildHostWinNative/
 
 That same page requires:
 
@@ -46,7 +46,7 @@ The SAXPY example is the documented first end-to-end check: compile, run on the 
 
 The older WSL2 Windows guide still exists. It compiles device code in Ubuntu and builds host code with Visual Studio. The current native-Windows page now points Windows 11 users away from that path unless they specifically want POSIX.
 
-Source: https://xilinx.github.io/mlir-aie/dev/buildHostWin/
+Source (pinned docs, mlir-aie 1.4.1 WSL path): https://xilinx.github.io/mlir-aie/1.4.1/buildHostWin/
 
 ## Evidence from this machine
 
@@ -118,7 +118,7 @@ LimeSDR streaming remains a later Windows-native host problem. Missing Lime soft
 
 ## Outcome (as of v0.4.0)
 
-Priority 1 (native Windows for both device compilation and host execution) is validated: 15/16 milestones pass on Phoenix NPU1 silicon under this configuration (M15b is `PORT_PENDING` on the iron API migration, not a Windows-vs-WSL2 issue). The Priority 2 WSL2 fallback is not needed and has not been exercised. This decision is closed.
+Priority 1 (native Windows for both device compilation and host execution) is validated: **16/16** milestones pass on Phoenix NPU1 silicon under this configuration (M15b iron.Runtime port landed 2026-08-15). The Priority 2 WSL2 fallback is not needed and has not been exercised. This decision is closed.
 
 ## Out of scope for this file
 
