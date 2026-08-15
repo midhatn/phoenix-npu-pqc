@@ -44,7 +44,7 @@ def power_detector(
     of_out = ObjectFifo(out_ty, name="out_power")
 
     current_dir = Path(__file__).parent.resolve()
-    include_sdr_dir = Path(r"C:\phoenix-sdr-dsp\include\sdr_dsp")
+    include_sdr_dir = Path(__file__).resolve().parents[2] / "include" / "sdr_dsp"
 
     pwr_func = ExternalFunction(
         "power_detector_kernel",

@@ -42,7 +42,7 @@ def sdr_demod_pipeline(
     of_out = ObjectFifo(out_ty, name="out_power")
 
     current_dir = Path(__file__).parent.resolve()
-    include_sdr_dir = Path(r"C:\phoenix-sdr-dsp\include\sdr_dsp")
+    include_sdr_dir = Path(__file__).resolve().parents[2] / "include" / "sdr_dsp"
 
     pipe_func = ExternalFunction(
         "sdr_pipeline_kernel",

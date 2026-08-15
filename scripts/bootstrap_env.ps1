@@ -12,14 +12,29 @@
       6. Runs a smoke check (import pyxrt, clang++ --version)
 
     Requires: Windows 11, Python 3.10+, git, AMD Ryzen AI NPU driver installed,
-              C:\phoenix-sdr-dsp\third_party\xrt_windows_sdk populated.
+              <RepoRoot>\third_party\xrt_windows_sdk populated. RepoRoot is
+              auto-detected as the parent of this script's directory; override
+              with -RepoRoot when the checkout lives elsewhere or the script is
+              invoked from an unusual working directory.
+
+.PARAMETER RepoRoot
+    Absolute path to the phoenix-sdr-dsp checkout. Defaults to the parent of
+    the directory containing this script (i.e. the repo root when this file
+    lives at scripts\bootstrap_env.ps1).
 
 .EXAMPLE
     .\scripts\bootstrap_env.ps1
+
+.EXAMPLE
+    .\scripts\bootstrap_env.ps1 -RepoRoot D:\phoenix-sdr-dsp
 #>
 
+[CmdletBinding()]
+param(
+    [string]$RepoRoot = (Split-Path -Parent $PSScriptRoot)
+)
+
 $ErrorActionPreference = "Stop"
-$RepoRoot   = "C:\phoenix-sdr-dsp"
 $MlirAie    = "$RepoRoot\third_party\mlir-aie"
 $IronEnv    = "$MlirAie\ironenv"
 $XrtSdk     = "$RepoRoot\third_party\xrt_windows_sdk\xrt_sdk\xrt"

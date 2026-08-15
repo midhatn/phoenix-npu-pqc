@@ -54,7 +54,7 @@ def parallel_sdr_pipeline(
     of_outputs = [ObjectFifo(tile_out_ty, name=f"out_col_{col}") for col in range(num_columns)]
 
     current_dir = Path(__file__).parent.resolve()
-    include_sdr_dir = Path(r"C:\phoenix-sdr-dsp\include\sdr_dsp")
+    include_sdr_dir = Path(__file__).resolve().parents[2] / "include" / "sdr_dsp"
 
     pipe_tile_func = ExternalFunction(
         "parallel_pipeline_kernel",

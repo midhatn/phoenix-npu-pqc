@@ -108,7 +108,7 @@ def main():
     t_out = XRTTensor(out_packed)
 
     kernel_src = str(Path(__file__).parent / "modular_kernel.cpp")
-    inc_dir = r"C:\phoenix-sdr-dsp\include"
+    inc_dir = str(Path(__file__).resolve().parents[2] / "include")
 
     print("Compiling Modular Arithmetic & Barrett Reduction Kernel with Peano and dispatching to Phoenix NPU...")
     res = modular_pipeline(

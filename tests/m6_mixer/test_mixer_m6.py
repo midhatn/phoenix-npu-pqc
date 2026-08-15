@@ -45,7 +45,7 @@ def complex_mixer(
     of_out = ObjectFifo(out_ty, name="out_iq")
 
     current_dir = Path(__file__).parent.resolve()
-    include_sdr_dir = Path(r"C:\phoenix-sdr-dsp\include\sdr_dsp")
+    include_sdr_dir = Path(__file__).resolve().parents[2] / "include" / "sdr_dsp"
 
     mixer_func = ExternalFunction(
         "complex_mixer_kernel",

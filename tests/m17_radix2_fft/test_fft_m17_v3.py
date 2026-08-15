@@ -53,7 +53,7 @@ def fft64_stockham_r4(
 
     current_dir = Path(__file__).parent.resolve()
     wrapper_path = current_dir / "fft64_r4_wrapper.cc"
-    include_sdr_dir = Path(r"C:\phoenix-sdr-dsp\include\sdr_dsp")
+    include_sdr_dir = Path(__file__).resolve().parents[2] / "include" / "sdr_dsp"
 
     fft_func = ExternalFunction(
         "fft_stockham_f32",

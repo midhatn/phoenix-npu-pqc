@@ -20,6 +20,11 @@ import sys
 import time
 from pathlib import Path
 
+# Repo root auto-detected from this file's location:
+#   run_all_silicon_tests.py lives at the repo root.
+REPO_ROOT = Path(__file__).resolve().parent
+TESTS_DIR = REPO_ROOT / "tests"
+
 
 def run_test(name, path, script):
     print("\n=======================================================")
@@ -58,82 +63,82 @@ def main():
     test_matrix = [
         (
             "Milestone 3: Single-Core SAXPY Vector Operation",
-            Path(r"C:\phoenix-sdr-dsp\tests\m3_saxpy"),
+            TESTS_DIR / "m3_saxpy",
             "test_saxpy_m3.py"
         ),
         (
             "Milestone 5: 8-Tap Vectorized Low-Pass FIR Filter",
-            Path(r"C:\phoenix-sdr-dsp\tests\m5_fir"),
+            TESTS_DIR / "m5_fir",
             "test_fir_m5.py"
         ),
         (
             "Milestone 6: Complex Mixer / NCO Frequency Downconverter",
-            Path(r"C:\phoenix-sdr-dsp\tests\m6_mixer"),
+            TESTS_DIR / "m6_mixer",
             "test_mixer_m6.py"
         ),
         (
             "Milestone 7: Vectorized Power / RSSI Energy Detector",
-            Path(r"C:\phoenix-sdr-dsp\tests\m7_power"),
+            TESTS_DIR / "m7_power",
             "test_power_m7.py"
         ),
         (
             "Milestone 8: Streaming Multi-Stage Fused Demodulator Pipeline",
-            Path(r"C:\phoenix-sdr-dsp\tests\m8_pipeline"),
+            TESTS_DIR / "m8_pipeline",
             "test_pipeline_m8.py"
         ),
         (
             "Milestone 9: 4-Column Parallel FIR Filter (Hardware Scaling)",
-            Path(r"C:\phoenix-sdr-dsp\tests\m9_parallel"),
+            TESTS_DIR / "m9_parallel",
             "test_parallel_m9.py"
         ),
         (
             "Milestone 9b: 4-Column Parallel Multi-Stage Demodulator Pipeline",
-            Path(r"C:\phoenix-sdr-dsp\tests\m9b_parallel_pipeline"),
+            TESTS_DIR / "m9b_parallel_pipeline",
             "test_parallel_pipeline_m10.py"
         ),
         (
             "Milestone 10: Modular Arithmetic & Barrett Reduction (mod 3329)",
-            Path(r"C:\phoenix-sdr-dsp\tests\m10_modular"),
+            TESTS_DIR / "m10_modular",
             "test_modular_m10.py"
         ),
         (
             "Milestone 11: Radix-2 NTT Butterfly Kernel (mod 3329)",
-            Path(r"C:\phoenix-sdr-dsp\tests\m11_butterfly"),
+            TESTS_DIR / "m11_butterfly",
             "test_butterfly_m11.py"
         ),
         (
             "Milestone 12: CPU NTT/INTT Reference & Constant Generator",
-            Path(r"C:\phoenix-sdr-dsp\tests\m12_ntt_ref"),
+            TESTS_DIR / "m12_ntt_ref",
             "test_ntt_reference_m12.py"
         ),
         (
             "Milestone 13: 16-Point Vectorized NPU NTT (64 Batches)",
-            Path(r"C:\phoenix-sdr-dsp\tests\m13_ntt16"),
+            TESTS_DIR / "m13_ntt16",
             "test_ntt16_m13.py"
         ),
         (
             "Milestone 14: 256-Point Vectorized NPU NTT (4 Batches)",
-            Path(r"C:\phoenix-sdr-dsp\tests\m14_ntt256"),
+            TESTS_DIR / "m14_ntt256",
             "test_ntt256_m14.py"
         ),
         (
             "Milestone 15: NPU INTT & Cyclic Polynomial Multiplication",
-            Path(r"C:\phoenix-sdr-dsp\tests\m15_polymul"),
+            TESTS_DIR / "m15_polymul",
             "test_polymul_m15.py"
         ),
         (
             "Milestone 15b: NPU Negacyclic Polynomial Multiplication (Kyber ring)",
-            Path(r"C:\phoenix-sdr-dsp\tests\m15b_negacyclic"),
+            TESTS_DIR / "m15b_negacyclic",
             "test_negacyclic_m16.py"
         ),
         (
             "Milestone 17: 64-Point Radix-4 Stockham FFT + IFFT (NPU1)",
-            Path(r"C:\phoenix-sdr-dsp\tests\m17_radix2_fft"),
+            TESTS_DIR / "m17_radix2_fft",
             "test_fft_m17_v3.py"
         ),
         (
             "Milestone 17p: 4-Column Parallel 64-Point FFT Channelizer",
-            Path(r"C:\phoenix-sdr-dsp\tests\m17p_fft_parallel"),
+            TESTS_DIR / "m17p_fft_parallel",
             "test_parallel_fft_m12.py"
         ),
     ]

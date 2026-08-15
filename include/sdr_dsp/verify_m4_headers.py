@@ -6,10 +6,14 @@
 
 from pathlib import Path
 
+# Repo root auto-detected from this file's location:
+# include/sdr_dsp/verify_m4_headers.py -> parents[2] is the repo root.
+REPO_ROOT = Path(__file__).resolve().parents[2]
+
 
 def main():
     print("=== Phoenix SDR-DSP Milestone 4: Header Library Verification ===")
-    include_dir = Path(r"C:\phoenix-sdr-dsp\include\sdr_dsp")
+    include_dir = REPO_ROOT / "include" / "sdr_dsp"
     print(f"Checking SDR DSP include directory: {include_dir}")
     
     headers = [
