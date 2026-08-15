@@ -2,7 +2,7 @@
 # Target operating system: Windows 11 Pro 25H2.
 # Target architecture: AMD Phoenix NPU1 / XDNA1 / AIE2 (4-Column Array).
 # Verification: End-to-end automated execution and reporting of Milestones 3, 5, 6, 7, 8, 9, 9b,
-#               10, 11, 12, 13, 14, 15, 15b, 17, 17p, 19, 20, 21, 22, 23, 24, 25.
+#               10, 11, 12, 13, 14, 15, 15b, 17, 17p, 19, 20, 21, 22, 23, 24, 25, 26.
 #
 # History:
 # - v0.2.0: Initial 12-milestone suite (M3, M5–M15).
@@ -152,6 +152,57 @@
 #           (0 / 1024 slots differ, tools/m25_kernel_transliteration_check.py).
 #           Published contract moves from 22/22 to 23/23 silicon-
 #           validated milestones.
+# - v0.6.0: 24th silicon regression entry added. M26 fused QAM-16 receiver
+#           with soft-decision demapping: extends the M25 receiver core (NCO
+#           derotator with open-coded Taylor sin/cos + pi/2 fold, linear
+#           fractional interpolator, Gardner 1986 mid-symbol TED, Rondeau-
+#           tuned PI loop filters) with three new blocks - a Gray-labelled
+#           QAM-16 hard-decision slicer on the unit-average-energy {+/-1,
+#           +/-3}/sqrt(10) constellation (Proakis-Salehi 5e sec 4.3.1, Rice
+#           2e sec 5.3), a decision-directed order-M phase detector
+#           e_phi = z_I * a_Q^ - z_Q * a_I^ per Godard 1980 and Barry-Lee-
+#           Messerschmitt 3e sec 8.5, and a max-log soft-output demapper
+#           emitting 4 LLRs per symbol via the axis-separable closed form
+#           LLR(b_MSB) ~= 4*z_axis, LLR(b_LSB) ~= 4*(2 - |z_axis|) per
+#           Tosato-Bisaglia 2002 and Alvarado-Fabregas 2009. Single
+#           @iron.jit entry point qam16_rx with the first three-argument
+#           kernel signature in the suite (in_iq, out_iq, out_llr); I/O
+#           bfloat16, internal math float32. Loop bandwidths narrowed to
+#           BW_phi = 2*pi/200 (half of M25) to keep the loop inside the
+#           DD detector's linear region for QAM-16's 2.24x-smaller phase
+#           margin per Rice sec 7.4.4. Silicon PASS on Ryzen 9 7940HS
+#           Phoenix NPU1, seed 826 (2026-08-15): gate (a) acquisition
+#           max_err = 0.0039 vs atol 0.10; gate (b1) magnitude-class
+#           median = 0.0020 vs atol 0.15; gate (b2) RMS(z - qam16_slice(z))
+#           = 0.0027 vs atol 0.10; gate (d) LLR MSB b3 = b1 = 1.000 vs
+#           threshold 0.85 and LLR LSB b2 = b0 = 1.000 vs threshold 0.75.
+#           Inherits all four M25 bring-up mitigations verbatim (Taylor
+#           sin/cos + pi/2 fold, dead-zone sgn_bit with volatile uint32_t
+#           OR into 0x3F800000, receiver-theoretic PASS gates). Two M26-
+#           specific test-side bring-up incidents documented in
+#           docs/M26_DESIGN.md sec 4b: (1) initial gate (b2) borrowed M25's
+#           "residual angle mod pi/2" metric which is invalid for QAM-16
+#           because DD-QAM16 lacks pi/2 cost-function symmetry (Barry-Lee-
+#           Messerschmitt 3e sec 8.5.3, Rice 2e sec 7.4.4) - replaced with
+#           the 2D constellation-error metric RMS(z - qam16_slice(z)); (2)
+#           initial gate (c) asserted sample-wise SER < 0.05 which is
+#           architecturally unreachable because two independent DD +
+#           Gardner timing integrators (silicon float32-SIMD vs CPU
+#           float32-serial) drift apart by 1+ symbols over the burst even
+#           when both are individually locked to a valid QAM-16 grid - the
+#           rotation-invariant SER printout was [1.0, 0.7188, 0.7344,
+#           0.9922] on seed 826, ruling out phase ambiguity and confirming
+#           timing drift as root cause per Gardner 1986 and NASA JPL TDA
+#           42-130. Gate (c) is now diagnostic-only per Amendment #1 to the
+#           M26 master-prompt scope in docs/M26_DESIGN.md sec 4; correctness
+#           of the M26 novel surface (slicer, DD detector, LLR demapper)
+#           is certified by gates (a), (b1), (b2), (d) which do not depend
+#           on symbol-position alignment between the two independent DD-
+#           timing loops. Sandbox transliteration is bit-exact on both
+#           hard-sym and LLR buffers (0 / 1024 hardSym slots and 0 / 2048
+#           LLR slots differ, tools/m26_kernel_transliteration_check.py on
+#           seeds 826 and 827). Published contract moves from 23/23 to
+#           24/24 silicon-validated milestones.
 
 import os
 import subprocess
@@ -363,6 +414,11 @@ def main():
             "Milestone 25: Fused BPSK/QPSK Rx (Gardner TED + Costas order-2/4 PI)",
             TESTS_DIR / "m25_psk_rx",
             "test_psk_rx_m25.py",
+        ),
+        (
+            "Milestone 26: Fused QAM-16 Rx (Gardner TED + DD-QAM16 + max-log LLR)",
+            TESTS_DIR / "m26_qam_rx",
+            "test_qam_rx_m26.py",
         ),
     ]
 

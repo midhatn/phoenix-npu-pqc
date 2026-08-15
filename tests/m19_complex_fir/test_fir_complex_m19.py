@@ -41,7 +41,6 @@ from aie.utils.hostruntime.xrtruntime.tensor import XRTTensor
 from aie.utils.verify import assert_pass
 from ml_dtypes import bfloat16
 
-
 # Taps hard-coded to match tests/m19_complex_fir/fir_complex_kernel.cc.
 # Ih matches tests/m5_fir/fir_kernel.cc exactly so the M5-degeneracy check
 # is a real check of the I path.

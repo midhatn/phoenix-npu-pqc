@@ -65,7 +65,6 @@ from aie.utils.hostruntime.xrtruntime.tensor import XRTTensor
 from aie.utils.verify import assert_pass
 from ml_dtypes import bfloat16
 
-
 # ------------------------------------------------------------------
 # Constants (bfloat16-quantized so the reference matches the silicon
 # term-for-term). Values emitted by tools/m23_dump_constants.py.

@@ -62,7 +62,6 @@ from aie.utils.hostruntime.xrtruntime.tensor import XRTTensor
 from aie.utils.verify import assert_pass
 from ml_dtypes import bfloat16
 
-
 # ------------------------------------------------------------------
 # 16-tap Kaiser prototype LPF (identical to M20 decim taps).
 # See docs/M20_DESIGN.md section 3.1 for the design script.

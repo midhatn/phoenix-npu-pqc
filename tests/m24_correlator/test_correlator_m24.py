@@ -64,7 +64,6 @@ from aie.utils.hostruntime.xrtruntime.tensor import XRTTensor
 from aie.utils.verify import assert_pass
 from ml_dtypes import bfloat16
 
-
 # ------------------------------------------------------------------
 # Constants. Barker-13 preamble in canonical order.
 L = 13

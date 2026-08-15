@@ -41,24 +41,20 @@ import numpy as np
 from ml_dtypes import bfloat16
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "tests" / "m25_psk_rx"))
-from test_psk_rx_m25 import (  # noqa: E402
+from test_psk_rx_m25 import (
+    ALPHA_PHI,
+    ALPHA_TAU,
+    BETA_PHI,
+    BETA_TAU,
+    DATA_OUT,
+    N_IN,
+    N_SYM,
     _make_random_burst,
     _sgn_bit,
     _sincos_taylor,
     _wrap_pi,
     psk_rx_reference,
-    N_SYM,
-    N_IN,
-    SPS,
-    DATA_IN,
-    DATA_OUT,
-    TWO_PI,
-    ALPHA_PHI,
-    BETA_PHI,
-    ALPHA_TAU,
-    BETA_TAU,
 )
-
 
 # The .cc-shape wrap_pi and sincos_taylor helpers are re-imported directly
 # from test_psk_rx_m25 to guarantee we do not accidentally introduce a

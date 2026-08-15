@@ -40,10 +40,10 @@ import numpy as np
 from ml_dtypes import bfloat16
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "tests" / "m24_correlator"))
-from test_correlator_m24 import (  # noqa: E402
+from test_correlator_m24 import (
+    L,
     _pack_iq,
     correlator_reference,
-    L,
 )
 
 

@@ -50,7 +50,6 @@ from aie.utils.hostruntime.xrtruntime.tensor import XRTTensor
 from aie.utils.verify import assert_pass
 from ml_dtypes import bfloat16
 
-
 # 16-tap Kaiser-window prototype LPF, beta=6, cutoff pi/4.
 # Coefficients are pre-quantized to bfloat16 values so they exactly match
 # the constexpr floats in tests/m20_polyphase/polyphase_kernel.cc.

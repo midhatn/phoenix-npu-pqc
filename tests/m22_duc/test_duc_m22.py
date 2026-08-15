@@ -68,7 +68,6 @@ from aie.utils.hostruntime.xrtruntime.tensor import XRTTensor
 from aie.utils.verify import assert_pass
 from ml_dtypes import bfloat16
 
-
 # ------------------------------------------------------------------
 # 16-tap Kaiser prototype LPF scaled by L=4 (M20 stage-2 interp taps).
 # sum(hi) ~ 4.00 for unity end-to-end DC gain after 1/L zero-stuff loss.
@@ -339,7 +338,7 @@ def _local_baseband_shift_check():
     spec = np.fft.fft(tail) / len(tail)
     peak_bin = int(np.argmax(np.abs(spec)))
     peak_mag = float(np.abs(spec[peak_bin]))
-    expected_bin = int(round(len(tail) * 3.0 / 32.0))
+    expected_bin = round(len(tail) * 3.0 / 32.0)
 
     # Tolerate +/- 1 bin because 512 baseband samples give a slightly
     # windowed peak but the argmax is stable.

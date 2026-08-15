@@ -72,9 +72,7 @@ from aie.iron import (
 )
 from aie.utils.config import cxx_header_path
 from aie.utils.hostruntime.xrtruntime.tensor import XRTTensor
-from aie.utils.verify import assert_pass
 from ml_dtypes import bfloat16
-
 
 # ------------------------------------------------------------------
 # Constants shared with psk_rx_kernel.cc.
