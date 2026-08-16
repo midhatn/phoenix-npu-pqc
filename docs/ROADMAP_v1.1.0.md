@@ -133,6 +133,40 @@ Deferred to research because GR out-of-tree modules built on Windows against a n
 
 Rationale: (a) and (b) make the project citable in academic writing; (c) inoculates against a class of misunderstanding that would otherwise land in the issue tracker.
 
+### C4. AMD Vitis-Tutorials `Developer_Contributed/` submission
+
+| Field | Value |
+|---|---|
+| Status | 📋 Planned — v1.1.0 |
+| Deliverable | A self-contained tutorial under [`Vitis-Tutorials/Developer_Contributed/`](https://github.com/Xilinx/Vitis-Tutorials/tree/main/Developer_Contributed) walking through one Phoenix SDR/DSP kernel end-to-end on Ryzen AI + IRON — most likely M19 complex FIR or M20 polyphase resampler |
+| Precedent | [`Developer_Contributed/02-AIE_DSP_with_Makefile_and_GUI`](https://github.com/Xilinx/Vitis-Tutorials/tree/main/Developer_Contributed/02-AIE_DSP_with_Makefile_and_GUI) — an older DSP-on-AIE tutorial targeting VCK190 with the classic Vitis 2024.1 flow. Explicitly warns "has not been validated with the latest Vitis release", leaving an open gap for a modern Ryzen-AI / IRON DSP tutorial |
+| Requirements | Signed commits (`git commit -s`), MIT license header, README with tool versions and setup, source + scripts only (no binaries), target the current release branch |
+| Acceptance | Merged into `Developer_Contributed/`, or explicit maintainer feedback recorded and applied |
+
+### C5. `kyber-py` downstream-user issue
+
+| Field | Value |
+|---|---|
+| Status | 📋 Planned — v1.1.0 |
+| Deliverable | A GitHub issue on [`GiacomoPope/kyber-py`](https://github.com/GiacomoPope/kyber-py) documenting Phoenix SDR/DSP as an ACVP-validated downstream user of `kyber-py==1.0.1` for the M32e ML-KEM composer oracle |
+| Purpose | Establishes a public reference from the canonical Python ML-KEM implementation back to this project; gives the maintainer a datapoint on how the library is being used |
+
+### C6. `dilithium-py` downstream-user issue
+
+| Field | Value |
+|---|---|
+| Status | 📋 Planned — v1.1.0 |
+| Deliverable | A GitHub issue on [`GiacomoPope/dilithium-py`](https://github.com/GiacomoPope/dilithium-py) documenting Phoenix SDR/DSP as an ACVP-validated downstream user of `dilithium-py==1.4.0` for the M33d KeyGen and M33e Sign / Verify composer oracles |
+| Purpose | Same as C5, for the ML-DSA oracle path |
+
+### C7. Open Quantum Safe (`liboqs`) community post
+
+| Field | Value |
+|---|---|
+| Status | 📋 Planned — v1.1.0 |
+| Deliverable | A Show-and-Tell style post in [`open-quantum-safe/liboqs`](https://github.com/open-quantum-safe/liboqs) Discussions (or an issue if Discussions are not enabled) describing the M32 / M33 Phoenix NPU implementation of FIPS 203 and FIPS 204, its ACVP KAT validation, and its relationship to `liboqs` (complementary reference-implementation target on non-cryptographic silicon, not a competing production library) |
+| Purpose | Reaches the largest active PQC-implementation community on GitHub; establishes visibility in a venue that predates FIPS 203 / 204 and that all serious PQC library authors track |
+
 ---
 
 ## Milestone numbering
