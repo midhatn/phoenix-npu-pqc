@@ -10,6 +10,10 @@ The software toolchain used across all shipped milestones is the open-source MLI
 
 The SDR-integration track (LimeSDR, ring buffers, real-time streaming) is deferred until suitable SDR hardware is available for validation. The pure-DSP track (transforms, filters, modular arithmetic, NTT/FFT) continues without RF-hardware dependency.
 
+## Post-v1.0.0 development plan
+
+This document is the v1.0.0 closure log. The forward-looking roadmap — RF-live SDR demonstrations, CPU-baseline benchmarks, and community integration — lives at [`ROADMAP_v1.1.0.md`](ROADMAP_v1.1.0.md).
+
 ## Status legend
 
 - ✅ **Shipped** — silicon-validated on physical NPU, bit-accurate against CPU reference where applicable, present in `run_all_silicon_tests.py`.
