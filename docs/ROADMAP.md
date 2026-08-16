@@ -154,7 +154,7 @@ The repository closes at **33/33 PASS** with FIPS 203 ML-KEM and FIPS 204 ML-DSA
 - **Reference oracles**: [`kyber-py` 1.0.1](https://github.com/GiacomoPope/kyber-py) for ML-KEM and [`dilithium-py` 1.4.0](https://github.com/GiacomoPope/dilithium-py) for ML-DSA. Both pinned in [`requirements/toolchain-versions.md`](../requirements/toolchain-versions.md).
 - Full release summary and citation index: [`docs/PQC_COMPLETE_V1.md`](PQC_COMPLETE_V1.md).
 
-The stack (Xilinx XRT, Xilinx MLIR-AIE v1.4.1 + pin `3ca0193`, LLVM Peano `21.0.0.2026080301+c9c5ecb7`) is unchanged from v0.4.0; the PQC track adds only Python-level reference packages (`kyber-py`, `dilithium-py`, `pycryptodome`, `pyshake`) inside the existing `ironenv`.
+The stack (Xilinx XRT, Xilinx MLIR-AIE v1.4.1 + pin `3ca0193`, LLVM Peano `21.0.0.2026080301+c9c5ecb7`) is unchanged from v0.4.0; the PQC track adds only two Python-level reference packages (`kyber-py`, `dilithium-py`) plus `pytest` inside the existing `ironenv`. All SHAKE / SHA-3 primitives come from the CPython [`hashlib`](https://docs.python.org/3/library/hashlib.html) standard library, so no separate SHAKE / Keccak wheel is required. Since v1.0.0, `install.py` auto-installs these packages into `ironenv`.
 
 ## Completed — v0.4.0 silicon + new-user install (2026-08-15)
 
@@ -258,7 +258,7 @@ M15b was rewritten to the M15 host shape: `@iron.jit`, `ExternalFunction`, two i
 - NIST ACVP-Server response vectors — [`usnistgov/ACVP-Server`](https://github.com/usnistgov/ACVP-Server). ML-KEM keyGen / encapDecap and ML-DSA keyGen / sigGen / sigVer prompt and expected-result JSON vendored in-tree under `tests/m32_mlkem/vectors/` and `tests/m33_mldsa/vectors/`.
 - G. Pope, [`kyber-py`](https://github.com/GiacomoPope/kyber-py) — Python reference ML-KEM implementation used as the M32e composer oracle. Pinned at 1.0.1.
 - G. Pope, [`dilithium-py`](https://github.com/GiacomoPope/dilithium-py) — Python reference ML-DSA implementation used as the M33d and M33e composer oracle. Pinned at 1.4.0.
-- Legion of the Bouncy Castle, [`pycryptodome`](https://www.pycryptodome.org/) — SHA-3 / SHAKE primitives (pinned 3.20.0).
+- CPython [`hashlib`](https://docs.python.org/3/library/hashlib.html) — standard-library source of SHAKE128 / SHAKE256 / SHA3-256 / SHA3-512 used by the M32c ([FIPS 202](https://nvlpubs.nist.gov/nistpubs/fips/nist.fips.202.pdf)) reference and by the FIPS 204 Keccak reuse (no third-party wheel required).
 - P. Barrett, "Implementing the Rivest Shamir and Adleman Public Key Encryption Algorithm on a Standard Digital Signal Processor", CRYPTO 1986. https://link.springer.com/chapter/10.1007/3-540-47721-7_24
 - T. G. Stockham, Jr., "High-speed convolution and correlation", AFIPS 1966. https://dl.acm.org/doi/10.1145/1464182.1464209
 - W. M. Gentleman and G. Sande, "Fast Fourier Transforms — for fun and profit", AFIPS 1966. https://dl.acm.org/doi/10.1145/1464291.1464352

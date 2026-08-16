@@ -108,18 +108,20 @@ Both composers (`mlkem_composer.py`, `mldsa_composer.py`) call the M32b / M32c /
 
 ## 5. Reproducing the 33 / 33 result
 
-Prerequisite: a Phoenix / Hawk Point Ryzen laptop with the AMD NPU driver, the toolchain pins from [`M2_TOOLCHAIN_PIN.md`](M2_TOOLCHAIN_PIN.md), and the PQC reference packages installed inside the `ironenv` per [`SETUP_WINDOWS.md §Post-Quantum Cryptography reference dependencies`](SETUP_WINDOWS.md#post-quantum-cryptography-reference-dependencies-m32--m33).
+Prerequisite: a Phoenix / Hawk Point Ryzen laptop with the AMD NPU driver and the toolchain pins from [`M2_TOOLCHAIN_PIN.md`](M2_TOOLCHAIN_PIN.md). Since v1.0.0, `install.py` auto-installs the pinned PQC reference packages into the `ironenv` it just created, so no separate pip step is required on a fresh clone.
 
 ```powershell
 conda deactivate
 git clone https://github.com/midhatn/phoenix-sdr-dsp.git
 cd phoenix-sdr-dsp
 py .\install.py
-
-.\third_party\mlir-aie\ironenv\Scripts\activate.bat
-pip install kyber-py==1.0.1 dilithium-py==1.4.0 pycryptodome==3.20.0 pyshake==1.0.0
-
 py .\run_all_silicon_tests.py
+```
+
+Equivalent manual PQC install — useful if you bootstrapped `ironenv` another way or want to re-pin versions:
+
+```powershell
+& .\third_party\mlir-aie\ironenv\Scripts\python.exe -m pip install kyber-py==1.0.1 dilithium-py==1.4.0 pytest
 ```
 
 Expected outcome: **33 / 33 PASS** on Phoenix NPU1. Timings depend on xclbin cache state (see the v0.4.0 baseline in [`ROADMAP.md`](ROADMAP.md)).
@@ -147,8 +149,8 @@ Expected outcome: **33 / 33 PASS** on Phoenix NPU1. Timings depend on xclbin cac
 - NIST ACVP-Server — [`usnistgov/ACVP-Server`](https://github.com/usnistgov/ACVP-Server). Response vectors vendored under `tests/m32_mlkem/vectors/` and `tests/m33_mldsa/vectors/`.
 - G. Pope, [`kyber-py` 1.0.1](https://github.com/GiacomoPope/kyber-py) — Python reference ML-KEM implementation (M32e oracle).
 - G. Pope, [`dilithium-py` 1.4.0](https://github.com/GiacomoPope/dilithium-py) — Python reference ML-DSA implementation (M33d and M33e oracle).
-- Legion of the Bouncy Castle, [`pycryptodome` 3.20.0](https://www.pycryptodome.org/) — SHA-3 / SHAKE primitives.
-- [`pyshake` 1.0.0](https://pypi.org/project/pyshake/) — SHAKE / cSHAKE utility.
+- [pytest](https://docs.pytest.org/) — test parametrisation framework required by `tests/m32_mlkem/test_mlkem_m32e.py`.
+- CPython [`hashlib`](https://docs.python.org/3/library/hashlib.html) — standard-library source of SHAKE128, SHAKE256, SHA3-256, and SHA3-512 used by the M32c reference and by the FIPS 204 Keccak reuse.
 
 ### Hardware and toolchain
 

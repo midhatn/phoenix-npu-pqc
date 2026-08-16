@@ -748,7 +748,7 @@ The runner reports pass/fail status and elapsed time for:
 32. M33d Post-Quantum Cryptography — [FIPS 204 Algorithm 6](https://nvlpubs.nist.gov/nistpubs/fips/nist.fips.204.pdf) ML-DSA.KeyGen composer against NIST ACVP-Server KATs
 33. M33e Post-Quantum Cryptography — [FIPS 204 Algorithms 7 and 8](https://nvlpubs.nist.gov/nistpubs/fips/nist.fips.204.pdf) ML-DSA.Sign_internal + Verify_internal composer against NIST ACVP-Server sigGen (90/90) + sigVer (90/90) KATs
 
-M0–M2 are setup and reproducibility milestones, while M4 depends on locally attached SDR hardware; therefore they are not entries in the automated silicon regression runner. M32b–M32e and M33a–M33e require the Post-Quantum Cryptography reference packages (`kyber-py`, `dilithium-py`, `pycryptodome`, `pyshake`) pinned in [`requirements/toolchain-versions.md`](../requirements/toolchain-versions.md) and installed per [`docs/SETUP_WINDOWS.md`](SETUP_WINDOWS.md).
+M0–M2 are setup and reproducibility milestones, while M4 depends on locally attached SDR hardware; therefore they are not entries in the automated silicon regression runner. M32b–M32e and M33a–M33e require the Post-Quantum Cryptography reference packages (`kyber-py`, `dilithium-py`, plus `pytest`) pinned in [`requirements/toolchain-versions.md`](../requirements/toolchain-versions.md) and auto-installed into `ironenv` by `install.py`. SHAKE / SHA-3 primitives come from the CPython [`hashlib`](https://docs.python.org/3/library/hashlib.html) standard library, so no separate SHAKE / Keccak wheel is required.
 
 ## Practical verification checklist
 
@@ -839,8 +839,8 @@ Before calling a deterministic kernel complete:
 - NIST ACVP-Server — [`usnistgov/ACVP-Server`](https://github.com/usnistgov/ACVP-Server). ML-KEM and ML-DSA prompt / expected-result JSON vendored in-tree under `tests/m32_mlkem/vectors/` and `tests/m33_mldsa/vectors/`.
 - G. Pope, [`kyber-py` 1.0.1](https://github.com/GiacomoPope/kyber-py) — Python reference implementation used as the M32e composer oracle.
 - G. Pope, [`dilithium-py` 1.4.0](https://github.com/GiacomoPope/dilithium-py) — Python reference implementation used as the M33d and M33e composer oracles.
-- Legion of the Bouncy Castle, [`pycryptodome`](https://www.pycryptodome.org/) — SHA-3 / SHAKE primitives.
-- [`pyshake`](https://pypi.org/project/pyshake/) — SHAKE / cSHAKE utility.
+- CPython [`hashlib`](https://docs.python.org/3/library/hashlib.html) — standard-library source of SHAKE128 / SHAKE256 / SHA3-256 / SHA3-512 used by the M32c ([FIPS 202](https://nvlpubs.nist.gov/nistpubs/fips/nist.fips.202.pdf)) reference and by the FIPS 204 Keccak reuse.
+- [pytest](https://docs.pytest.org/) — test parametrisation framework required by `tests/m32_mlkem/test_mlkem_m32e.py`.
 
 ### OFDM and channel estimation (M27)
 

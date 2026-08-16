@@ -74,19 +74,19 @@ Activate the resulting environment:
 
 ## Post-Quantum Cryptography reference dependencies (M32 / M33)
 
-The M32 FIPS 203 ML-KEM and M33 FIPS 204 ML-DSA milestones (Post-Quantum Cryptography) validate their silicon-dispatch composers bit-exact against the official NIST ACVP-Server known-answer test vectors and against two published reference implementations from the [pq-crystals](https://pq-crystals.org/) family. Install the following Python packages inside the active `ironenv` before running the PQC tests. Versions are pinned to the values validated on 2026-08-16 against the [NIST ACVP-Server](https://github.com/usnistgov/ACVP-Server) response vectors for ML-KEM ([FIPS 203, 2024-08-13](https://nvlpubs.nist.gov/nistpubs/fips/nist.fips.203.pdf)) and ML-DSA ([FIPS 204, 2024-08-13](https://nvlpubs.nist.gov/nistpubs/fips/nist.fips.204.pdf)):
+The M32 FIPS 203 ML-KEM and M33 FIPS 204 ML-DSA milestones (Post-Quantum Cryptography) validate their silicon-dispatch composers bit-exact against the official NIST ACVP-Server known-answer test vectors and against two published reference implementations from the [pq-crystals](https://pq-crystals.org/) family. Since v1.0.0, `install.py` auto-installs the pinned PQC reference packages into the `ironenv` it just created, so a normal `python install.py` on a fresh clone is enough. The equivalent manual step — useful if you bootstrapped `ironenv` another way or want to re-pin versions — is:
 
 ```powershell
-pip install kyber-py==1.0.1
-pip install dilithium-py==1.4.0
-pip install pycryptodome==3.20.0
-pip install pyshake==1.0.0
+& C:\\phoenix-sdr-dsp\\third_party\\mlir-aie\\ironenv\\Scripts\\python.exe -m pip install kyber-py==1.0.1 dilithium-py==1.4.0 pytest
 ```
 
-- [`kyber-py`](https://github.com/GiacomoPope/kyber-py) — reference ML-KEM implementation used by the M32e composer gate as an oracle for [FIPS 203 Algorithms 19-21](https://nvlpubs.nist.gov/nistpubs/fips/nist.fips.203.pdf).
-- [`dilithium-py`](https://github.com/GiacomoPope/dilithium-py) — reference ML-DSA implementation used by the M33d KeyGen and M33e Sign / Verify composer gates as an oracle for [FIPS 204 Algorithms 6-8](https://nvlpubs.nist.gov/nistpubs/fips/nist.fips.204.pdf).
-- [`pycryptodome`](https://www.pycryptodome.org/) — SHA-3 / SHAKE primitives for the M32c ([FIPS 202](https://nvlpubs.nist.gov/nistpubs/fips/nist.fips.202.pdf)) reference and M33 c-slot Keccak-f[1600] reuse.
-- [`pyshake`](https://github.com/duthomhas/pysha3) — additional SHAKE256 fallback used by the M32c KAT harness.
+Versions are pinned to the values validated on 2026-08-16 against the [NIST ACVP-Server](https://github.com/usnistgov/ACVP-Server) response vectors for ML-KEM ([FIPS 203, 2024-08-13](https://nvlpubs.nist.gov/nistpubs/fips/nist.fips.203.pdf)) and ML-DSA ([FIPS 204, 2024-08-13](https://nvlpubs.nist.gov/nistpubs/fips/nist.fips.204.pdf)):
+
+- [`kyber-py`](https://github.com/GiacomoPope/kyber-py) 1.0.1 — reference ML-KEM implementation used by the M32e composer gate as an oracle for [FIPS 203 Algorithms 19-21](https://nvlpubs.nist.gov/nistpubs/fips/nist.fips.203.pdf).
+- [`dilithium-py`](https://github.com/GiacomoPope/dilithium-py) 1.4.0 — reference ML-DSA implementation used by the M33d KeyGen and M33e Sign / Verify composer gates as an oracle for [FIPS 204 Algorithms 6-8](https://nvlpubs.nist.gov/nistpubs/fips/nist.fips.204.pdf).
+- [`pytest`](https://docs.pytest.org/) — test-parametrisation framework required by `tests/m32_mlkem/test_mlkem_m32e.py`, which imports it at module scope.
+
+All SHAKE128, SHAKE256, SHA3-256, and SHA3-512 primitives used by the M32c reference and the FIPS 204 Keccak reuse come from CPython's [`hashlib`](https://docs.python.org/3/library/hashlib.html) standard library ([`shake_128`](https://docs.python.org/3/library/hashlib.html#hashlib.shake_128) and [`shake_256`](https://docs.python.org/3/library/hashlib.html#hashlib.shake_256) shipped in Python 3.6). No separate SHAKE / Keccak wheel is required.
 
 The NIST ACVP-Server key-generation / encapsulation / decapsulation vectors for ML-KEM and the key-generation / signature-generation / signature-verification vectors for ML-DSA are vendored under `tests/m32_mlkem/vectors/` and `tests/m33_mldsa/vectors/` respectively, so the tests run offline once the packages above are installed. Vector provenance is documented in [`docs/PQC_COMPLETE_V1.md`](PQC_COMPLETE_V1.md).
 

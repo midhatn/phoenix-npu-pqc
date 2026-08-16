@@ -51,7 +51,7 @@ py .\install.py
 
 # Post-Quantum Cryptography reference packages (M32 + M33)
 .\third_party\mlir-aie\ironenv\Scripts\activate.bat
-pip install kyber-py==1.0.1 dilithium-py==1.4.0 pycryptodome==3.20.0 pyshake==1.0.0
+pip install kyber-py==1.0.1 dilithium-py==1.4.0 pytest
 
 py .\run_all_silicon_tests.py
 ```
@@ -181,7 +181,7 @@ The v1.0.0 release closes the Post-Quantum Cryptography track. Both NIST-approve
 - **[FIPS 203](https://nvlpubs.nist.gov/nistpubs/fips/nist.fips.203.pdf) ML-KEM** — M32b (NTT over `Z_3329`), M32c (Keccak-f[1600] and [FIPS 202](https://nvlpubs.nist.gov/nistpubs/fips/nist.fips.202.pdf) SHA-3 / SHAKE), M32d (K-PKE component, not standalone approved), M32e (ML-KEM-{512, 768, 1024} KeyGen / Encaps / Decaps composer). Reference oracle: [`kyber-py` 1.0.1](https://github.com/GiacomoPope/kyber-py).
 - **[FIPS 204](https://nvlpubs.nist.gov/nistpubs/fips/nist.fips.204.pdf) ML-DSA** — M33a (NTT over `Z_8380417`), M33b (rounding & hint arithmetic), M33c (SHAKE / Keccak reuse of M32c per [FIPS 204 §3.3.5](https://nvlpubs.nist.gov/nistpubs/fips/nist.fips.204.pdf)), M33d (ML-DSA-{44, 65, 87} KeyGen composer, 75/75), M33e (Sign_internal + Verify_internal composer, **180 / 180** including 72 must-reject tampered signatures across both `externalMu` paths). Reference oracle: [`dilithium-py` 1.4.0](https://github.com/GiacomoPope/dilithium-py).
 
-Full v1.0.0 release summary: [`docs/PQC_COMPLETE_V1.md`](docs/PQC_COMPLETE_V1.md). Per-milestone design notes live at [`docs/M32b_DESIGN.md`](docs/M32b_DESIGN.md), [`docs/M32c_DESIGN.md`](docs/M32c_DESIGN.md), [`docs/M32d_DESIGN.md`](docs/M32d_DESIGN.md), [`docs/M32e_DESIGN.md`](docs/M32e_DESIGN.md), [`docs/M33a_DESIGN.md`](docs/M33a_DESIGN.md), [`docs/M33b_DESIGN.md`](docs/M33b_DESIGN.md), [`docs/M33d_DESIGN.md`](docs/M33d_DESIGN.md), [`docs/M33e_DESIGN.md`](docs/M33e_DESIGN.md). PQC reference packages (`kyber-py`, `dilithium-py`, `pycryptodome`, `pyshake`) are pinned in [`requirements/toolchain-versions.md`](requirements/toolchain-versions.md) and installed per [`docs/SETUP_WINDOWS.md`](docs/SETUP_WINDOWS.md#post-quantum-cryptography-reference-dependencies-m32--m33).
+Full v1.0.0 release summary: [`docs/PQC_COMPLETE_V1.md`](docs/PQC_COMPLETE_V1.md). Per-milestone design notes live at [`docs/M32b_DESIGN.md`](docs/M32b_DESIGN.md), [`docs/M32c_DESIGN.md`](docs/M32c_DESIGN.md), [`docs/M32d_DESIGN.md`](docs/M32d_DESIGN.md), [`docs/M32e_DESIGN.md`](docs/M32e_DESIGN.md), [`docs/M33a_DESIGN.md`](docs/M33a_DESIGN.md), [`docs/M33b_DESIGN.md`](docs/M33b_DESIGN.md), [`docs/M33d_DESIGN.md`](docs/M33d_DESIGN.md), [`docs/M33e_DESIGN.md`](docs/M33e_DESIGN.md). PQC reference packages (`kyber-py`, `dilithium-py`, and `pytest`) are pinned in [`requirements/toolchain-versions.md`](requirements/toolchain-versions.md) and auto-installed into `ironenv` by `install.py`; the manual pip step in [`docs/SETUP_WINDOWS.md`](docs/SETUP_WINDOWS.md#post-quantum-cryptography-reference-dependencies-m32--m33) is only needed if you bootstrapped ironenv another way. All SHAKE / SHA-3 primitives come from the CPython [`hashlib`](https://docs.python.org/3/library/hashlib.html) standard library, so no separate SHAKE / Keccak wheel is required.
 
 <a id="iq-throughput"></a>
 
