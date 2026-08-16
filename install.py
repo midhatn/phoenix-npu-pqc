@@ -929,6 +929,47 @@ def install_vendored_pyxrt(ironenv: Path, xrt_root: Path) -> None:
     print(f" [ OK   ] copied pyxrt.pyd -> {site_pkgs / 'pyxrt.pyd'}")
 
 
+PQC_REFERENCE_PACKAGES: tuple[str, ...] = (
+    # Post-Quantum Cryptography reference oracles used by M32e, M33d, and M33e
+    # regression entries. See docs/PQC_COMPLETE_V1.md and
+    # requirements/toolchain-versions.md. pytest is required because
+    # tests/m32_mlkem/test_mlkem_m32e.py imports it at module scope for
+    # parametrisation.
+    "kyber-py==1.0.1",
+    "dilithium-py==1.4.0",
+    "pytest",
+)
+
+
+def install_pqc_reference_packages(iron_python: Path) -> None:
+    """Install the pinned PQC reference packages into ironenv.
+
+    These are required by the Post-Quantum Cryptography track (M32 FIPS 203
+    ML-KEM and M33 FIPS 204 ML-DSA). Installing them here means a new user
+    running `python install.py` on a fresh clone gets a fully working
+    `python run_all_silicon_tests.py` without a second manual pip step.
+    """
+    section("Post-Quantum Cryptography reference packages")
+    if not iron_python.is_file():
+        print(f" [ SKIP ] ironenv python not found at {iron_python}")
+        print("          Install the PQC reference packages manually with:")
+        print(
+            "          <ironenv>\\Scripts\\python.exe -m pip install "
+            + " ".join(PQC_REFERENCE_PACKAGES)
+        )
+        return
+    cmd = [
+        str(iron_python),
+        "-m",
+        "pip",
+        "install",
+        "--disable-pip-version-check",
+        *PQC_REFERENCE_PACKAGES,
+    ]
+    run_checked(cmd)
+    print(f" [ OK   ] installed into {iron_python.parent.parent}")
+
+
 def smoke_check(iron_python: Path, peano_clang: Path) -> None:
     section("Smoke check")
     run_checked(
@@ -1123,6 +1164,7 @@ def main(argv: list[str] | None = None) -> int:
     peano_clang = ironenv / "Lib" / "site-packages" / "llvm-aie" / "bin" / "clang++.exe"
     if iron_python.is_file():
         smoke_check(iron_python, peano_clang)
+    install_pqc_reference_packages(iron_python)
 
     print("\n======================================================================")
     print(" Install complete.")
@@ -1130,7 +1172,12 @@ def main(argv: list[str] | None = None) -> int:
     print(" Next step:")
     print("   python run_all_silicon_tests.py")
     print(" The test runner uses ironenv automatically. No activate step.")
-    print(" Expected at v0.4.0: 16/16 PASS.")
+    print(" Expected at v1.0.0: 33 / 33 PASS (M3, M5-M15, M15b, M17, M17p,")
+    print("                                   M19-M27, M32b/c/d/e, M33a/b/d/e).")
+    print()
+    print(" Post-Quantum Cryptography reference packages were installed into")
+    print(" ironenv above:")
+    print("   " + ", ".join(PQC_REFERENCE_PACKAGES))
 
     if args.run_tests:
         section("Silicon regression")
