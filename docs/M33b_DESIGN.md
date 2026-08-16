@@ -1,0 +1,113 @@
+# M33b — Dilithium rounding / hint primitives (FIPS 204 ML-DSA)
+
+Post-Quantum Cryptography — FIPS 204 (ML-DSA) primitive layer, silicon side.
+This milestone lands the coefficient-wise rounding, decomposition, hint, and
+norm-check primitives used by ML-DSA-44 / ML-DSA-65 / ML-DSA-87 for KeyGen,
+Sign, and Verify.
+
+## Scope
+
+Kernel: `tests/m33_mldsa/dilithium_sampler_kernel.cc`, six modes.
+
+| mode | operation           | called from    | in_a          | in_b            | out_c                            | out_d           |
+|-----:|:--------------------|:---------------|:--------------|:----------------|:---------------------------------|:----------------|
+| 0    | Power2Round(d=13)   | KeyGen (t split)         | 256 × int32   | —               | r₁ (256 × int32)                 | r₀ (256 × int32) |
+| 1    | Decompose(α)        | Sign (w → w₁,w₀)         | 256 × int32   | —               | r₁ (256 × int32)                 | r₀ (256 × int32) |
+| 2    | MakeHint(α)         | Sign (build h)           | z (256 × int32) | r (256 × int32) | h ∈ {0,1} (256 × int32)          | —                |
+| 3    | UseHint(α)          | Verify (recover w'₁)     | h (256 × int32) | r (256 × int32) | r'₁ (256 × int32)                | —                |
+| 4    | CheckNormBound(b)   | Sign (‖z‖∞ < γ₁−β), Verify (‖h‖ ≤ ω) | 256 × int32 | — | out_c[0] = 1 if all pass, else 0 | —                |
+| 5    | ReduceModPm         | utility (canonical form) | 256 × int32   | —               | r' ∈ (−q/2, q/2]                 | —                |
+
+**SampleInBall is intentionally not in this kernel.** Its inner loop is a
+rejection-sample-and-swap state machine over SHAKE256 output — inherently
+sequential and irregular. It stays in the M33d/e host composer as a Python
+reference call; putting it on tiles would cost more than the fixed-latency
+data-parallel modes gain.
+
+## Parameters per ML-DSA set
+
+| Set        | γ₂ = (q−1)/⋅  | α = 2γ₂     | β         | γ₁ − β   | ω  |
+|:-----------|--------------:|------------:|----------:|---------:|---:|
+| ML-DSA-44  | (q−1)/88 = 95232  | 190464 | 78        | 130994   | 80 |
+| ML-DSA-65  | (q−1)/32 = 261888 | 523776 | 196       | 524092   | 55 |
+| ML-DSA-87  | (q−1)/32 = 261888 | 523776 | 120       | 524168   | 75 |
+
+`d = 13` (Power2Round split point) is the same for all parameter sets per
+FIPS 204 Table 1.
+
+## Kernel signature
+
+```c
+extern "C" void dilithium_sampler(uint8_t  mode,
+                                  int32_t  param,
+                                  int32_t  in_a[256],
+                                  int32_t  in_b[256],
+                                  int32_t  out_c[256],
+                                  int32_t  out_d[256]);
+```
+
+- `param` carries α for Decompose / MakeHint / UseHint, and the norm bound b
+  for CheckNorm. Unused in Power2Round / ReduceModPm.
+- `out_d` is only written by Power2Round and Decompose.
+
+## Semantics notes
+
+**Power2Round** (FIPS 204 Alg 29): `r₁ = (r − r₀) / 2ᵈ, r₀ = r mod± 2ᵈ`,
+computed via `r₀ = r & (2ᵈ−1); if r₀ > 2^(d−1): r₀ -= 2ᵈ`.
+
+**Decompose** (Alg 30): standard split plus the edge case `r₁·α = q−1` where
+the reference sets `r₁ = 0, r₀ = r₀ − 1` so that r₁ stays in `[0, (q−1)/α)`.
+
+**MakeHint** (Alg 33): 1-bit flag `HighBits(r+z) ≠ HighBits(r)`. The composer
+supplies both operands; the kernel does two Decompose calls per coefficient
+under the hood.
+
+**UseHint** (Alg 34): given h and r, returns approximate `HighBits(r+z)` by
+optionally nudging `r₁` up or down by one modulo `m = (q−1)/α`. Handles the
+r₀ = 0 case by nudging down instead of up.
+
+**CheckNormBound**: reduces each coefficient to `(−q/2, q/2]`, takes absolute
+value, checks all coeffs are `< b`. Returns single bit in `out_c[0]` (rest of
+`out_c` undefined). Composer treats out_c[0] = 0 as reject.
+
+## Composer bridge
+
+Unlike M33a / M32b, these primitives operate entirely on **plain Z_q** — no
+Montgomery domain semantics. The composer passes coefficients as int32 in
+either signed form or in `[0, q)`; both are accepted (`canonicalize()`
+normalizes to `[0, q)` inside the kernel).
+
+## Gate results (sandbox, reference path)
+
+    MODE_POWER2ROUND               100/100  PASS
+    MODE_DECOMPOSE  α=190464        50/50   PASS
+    MODE_DECOMPOSE  α=523776        50/50   PASS
+    MODE_MAKEHINT   α=190464        50/50   PASS
+    MODE_MAKEHINT   α=523776        50/50   PASS
+    MODE_USEHINT    α=190464        50/50   PASS
+    MODE_USEHINT    α=523776        50/50   PASS
+    MODE_CHECKNORM                 200/200  PASS
+    MODE_REDUCE_PM                 100/100  PASS
+    -------------------------------------------
+    TOTAL                          700/700  PASS
+
+Laptop silicon gate: TBD.
+
+## Downstream
+
+| ID     | Component                                                       | Status  |
+|:-------|:----------------------------------------------------------------|:--------|
+| M33a   | Dilithium NTT / INTT / BASEMUL / REDUCE                          | Laptop PASS 420/420 |
+| M33b   | rounding / hint / norm-check primitives (this doc)               | Sandbox PASS 700/700 |
+| M33c   | reuse M32c SHAKE128 / SHAKE256 kernel                            | Reuse   |
+| M33d   | KeyGen composer (Alg 1 / 6), 3 param sets, ACVP KeyGen KATs      | Pending |
+| M33e   | Sign / Verify composer, rejection loop, ACVP sigGen / sigVer     | Pending |
+
+Contract path: 30/30 (M33a) → **31/31 (M33b when laptop PASS)** → 32/32 (M33d) → 33/33 (M33e).
+
+## References
+
+- FIPS 204, *Module-Lattice-Based Digital Signature Standard*, NIST, 13 Aug 2024. <https://nvlpubs.nist.gov/nistpubs/fips/nist.fips.204.pdf>
+- pq-crystals dilithium reference, `ref/rounding.c`. <https://github.com/pq-crystals/dilithium/blob/master/ref/rounding.c>
+- `dilithium-py` v1.4.0. <https://github.com/GiacomoPope/dilithium-py>
+- NIST ACVP-Server ML-DSA test vectors. <https://github.com/usnistgov/ACVP-Server/tree/master/gen-val/json-files>
