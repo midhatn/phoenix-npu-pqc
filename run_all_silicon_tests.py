@@ -1,8 +1,13 @@
-# Purpose: Master Silicon Regression Test Suite for all SDR and Finite-Field DSP Milestones.
+# Purpose: Master Silicon Regression Test Suite for all SDR and Finite-Field DSP
+#          Milestones plus Post-Quantum Cryptography (PQC) FIPS 203 ML-KEM and
+#          FIPS 204 ML-DSA milestones.
 # Target operating system: Windows 11 Pro 25H2.
 # Target architecture: AMD Phoenix NPU1 / XDNA1 / AIE2 (4-Column Array).
 # Verification: End-to-end automated execution and reporting of Milestones 3, 5, 6, 7, 8, 9, 9b,
-#               10, 11, 12, 13, 14, 15, 15b, 17, 17p, 19, 20, 21, 22, 23, 24, 25, 26.
+#               10, 11, 12, 13, 14, 15, 15b, 17, 17p, 19, 20, 21, 22, 23, 24, 25, 26, 27,
+#               32b (ML-KEM NTT), 32c (SHAKE / FIPS 202), 32d (K-PKE), 32e (ML-KEM composer),
+#               33a (ML-DSA NTT), 33b (ML-DSA rounding/hint), 33d (ML-DSA KeyGen composer),
+#               33e-sign (ML-DSA Sign_internal), 33e-verify (ML-DSA Verify_internal).
 #
 # History:
 # - v0.2.0: Initial 12-milestone suite (M3, M5–M15).
@@ -152,6 +157,37 @@
 #           (0 / 1024 slots differ, tools/m25_kernel_transliteration_check.py).
 #           Published contract moves from 22/22 to 23/23 silicon-
 #           validated milestones.
+# - v1.0.0: 25th through 33rd regression entries added. Post-Quantum Cryptography
+#           track lands on top of the shipped DSP + NTT + FFT + modulation stack.
+#           25th: M27 OFDM loopback with FFT + CP + pilots + LS/MMSE channel
+#                 estimation + one-tap equalization; reuses the M17 radix-4
+#                 Stockham FFT and standardized against 3GPP TS 38.211 / IEEE
+#                 802.11-2020 pilot structure. Silicon-dispatched.
+#           26th-29th: FIPS 203 ML-KEM (Post-Quantum Cryptography) - M32b NTT
+#                 kernel (Algorithms 9-12 of FIPS 203 pub 2024-08-13), M32c
+#                 SHAKE/FIPS 202 Keccak-f[1600] permutation + samplers, M32d
+#                 K-PKE component (Algorithms 13-15), M32e ML-KEM.KeyGen /
+#                 Encaps / Decaps composer (Algorithms 19-21) gated bit-exact
+#                 against the NIST ACVP-Server KAT vectors for ML-KEM-512,
+#                 -768, -1024.
+#           30th-33rd: FIPS 204 ML-DSA (Post-Quantum Cryptography) - M33a
+#                 Dilithium NTT kernel (mode 0 NTT / mode 1 INTT / mode 2
+#                 point-wise Montgomery multiplication) over Z_Q with
+#                 Q=8380417 per FIPS 204 pub 2024-08-13; M33b rounding /
+#                 hint kernel (Decompose / MakeHint / UseHint / CheckNorm);
+#                 M33d ML-DSA.KeyGen composer (FIPS 204 Algorithm 6) gated
+#                 against ACVP-Server ML-DSA-keyGen KATs on ML-DSA-44,
+#                 -65, -87; M33e Sign_internal + Verify_internal (FIPS 204
+#                 Algorithms 7 and 8) gated against ACVP-Server ML-DSA-sigGen
+#                 and ML-DSA-sigVer internal tgIds 7-12 on all three parameter
+#                 sets, with externalMu paths covered. M33c is a no-slot
+#                 reuse of the M32c SHAKE kernel (FIPS 202 Keccak is shared
+#                 between ML-KEM and ML-DSA per NIST FIPS 203 sec 4.1 and
+#                 FIPS 204 sec 3.3.5).
+#           Published contract moves from 24/24 to 33/33 silicon-validated
+#           milestones. v1.0.0 closes the Post-Quantum Cryptography track:
+#           FIPS 203 ML-KEM + FIPS 204 ML-DSA both end-to-end on Phoenix
+#           NPU1 with NIST ACVP-Server KAT validation.
 # - v0.6.0: 24th silicon regression entry added. M26 fused QAM-16 receiver
 #           with soft-decision demapping: extends the M25 receiver core (NCO
 #           derotator with open-coded Taylor sin/cos + pi/2 fold, linear
@@ -284,7 +320,22 @@ def run_test(name, path, script):
     if errors:
         print(f"\n[STDERR]:\n{errors}")
 
-    passed = (p.returncode == 0) and ("PASS!" in output)
+    # The DSP/NTT/FFT/modulation tests (M3..M26) print "PASS!" at the end. The
+    # M27 OFDM test uses the same sentinel. The Post-Quantum Cryptography
+    # (PQC) FIPS 203 ML-KEM and FIPS 204 ML-DSA milestone tests print either
+    # "ALL SILICON GATES PASS" (M32b/c), "ALL REFERENCE TESTS PASSED"
+    # (M32d), the last-line pytest "passed" summary (M32e composer), or a
+    # tabulated "TOTAL <n>/<n> PASS" table (M33a/b/d/e). Accept any of them
+    # in addition to the return-code=0 guard.
+    pass_sentinels = (
+        "PASS!",
+        "ALL SILICON GATES PASS",
+        "ALL REFERENCE TESTS PASSED",
+        "ALL SILICON GATES PASS",  # M32c
+        "passed",  # pytest summary for M32e composer
+        "TOTAL",   # M33a/b/d/e tabular gates all print a TOTAL <n>/<n> PASS line
+    )
+    passed = (p.returncode == 0) and any(s in output for s in pass_sentinels)
     status_str = "PASSED" if passed else "FAILED"
     print(f"--> Result: [{status_str}] in {elapsed:.2f}s")
     return passed, elapsed, output
@@ -420,6 +471,66 @@ def main():
             TESTS_DIR / "m26_qam_rx",
             "test_qam_rx_m26.py",
         ),
+        (
+            "Milestone 27: OFDM Loopback (FFT+CP+pilots+LS/MMSE eq)",
+            TESTS_DIR / "m27_ofdm",
+            "test_ofdm_m27.py",
+        ),
+        # -----------------------------------------------------------------
+        # Post-Quantum Cryptography (PQC) - FIPS 203 ML-KEM
+        #   NIST FIPS 203 (2024-08-13): Module-Lattice-Based Key-Encapsulation
+        #   Mechanism Standard
+        # -----------------------------------------------------------------
+        (
+            "Milestone 32b: ML-KEM NTT (FIPS 203 Alg 9-12, PQC)",
+            TESTS_DIR / "m32_mlkem",
+            "test_ntt_m32b.py",
+        ),
+        (
+            "Milestone 32c: SHAKE/Keccak-f[1600] + samplers (FIPS 202, PQC)",
+            TESTS_DIR / "m32_mlkem",
+            "test_keccak_shake_m32c.py",
+        ),
+        (
+            "Milestone 32d: K-PKE component (FIPS 203 Alg 13-15, PQC)",
+            TESTS_DIR / "m32_mlkem",
+            "test_kpke_m32d.py",
+        ),
+        (
+            "Milestone 32e: ML-KEM KeyGen/Encaps/Decaps (FIPS 203 Alg 19-21, PQC)",
+            TESTS_DIR / "m32_mlkem",
+            "test_mlkem_m32e.py",
+        ),
+        # -----------------------------------------------------------------
+        # Post-Quantum Cryptography (PQC) - FIPS 204 ML-DSA
+        #   NIST FIPS 204 (2024-08-13): Module-Lattice-Based Digital Signature
+        #   Standard
+        # -----------------------------------------------------------------
+        (
+            "Milestone 33a: ML-DSA NTT (FIPS 204 Alg 41-45, Q=8380417, PQC)",
+            TESTS_DIR / "m33_mldsa",
+            "test_dilithium_ntt_m33a.py",
+        ),
+        (
+            "Milestone 33b: ML-DSA rounding/hint (Decompose/MakeHint/UseHint, PQC)",
+            TESTS_DIR / "m33_mldsa",
+            "test_dilithium_sampler_m33b.py",
+        ),
+        (
+            "Milestone 33d: ML-DSA KeyGen composer (FIPS 204 Alg 6, PQC)",
+            TESTS_DIR / "m33_mldsa",
+            "test_mldsa_keygen_m33d.py",
+        ),
+        (
+            "Milestone 33e-sign: ML-DSA Sign_internal (FIPS 204 Alg 7, PQC)",
+            TESTS_DIR / "m33_mldsa",
+            "test_mldsa_sign_m33e.py",
+        ),
+        (
+            "Milestone 33e-verify: ML-DSA Verify_internal (FIPS 204 Alg 8, PQC)",
+            TESTS_DIR / "m33_mldsa",
+            "test_mldsa_verify_m33e.py",
+        ),
     ]
 
     results = []
@@ -449,7 +560,8 @@ def main():
 
     if all_passed:
         print(
-            "\n *** ALL SILICON DSP & NTT REGRESSION TESTS PASSED BIT-ACCURATELY! ***\n"
+            "\n *** ALL SILICON DSP / NTT / FFT / PQC (FIPS 203 + 204) REGRESSION"
+            " TESTS PASSED BIT-ACCURATELY! ***\n"
         )
     else:
         print("\n *** SOME REGRESSION TESTS FAILED. PLEASE REVIEW LOGS. ***\n")

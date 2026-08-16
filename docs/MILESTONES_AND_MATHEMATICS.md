@@ -48,6 +48,23 @@ Validation rules:
 | M16 | CPU DFT/FFT reference | Validated mathematical reference |
 | M17 | 64-point NPU radix-4 Stockham FFT and IFFT | Silicon-validated, SNR-bounded |
 | M17p | Four-column parallel FFT channelizer | Silicon-validated |
+| M19 | 8-tap complex FIR (complex taps × complex I/Q) | Silicon-validated |
+| M20 | Fused polyphase decimator (M=4) + interpolator (L=4) | Silicon-validated |
+| M21 | Fused digital down-converter (DDC) | Silicon-validated |
+| M22 | Fused digital up-converter (DUC) | Silicon-validated |
+| M23 | Fused polyphase channelizer (M-path) | Silicon-validated |
+| M24 | Fused Barker-13 matched-filter correlator | Silicon-validated |
+| M25 | Fused BPSK / QPSK receiver | Silicon-validated |
+| M26 | Fused QAM-16 receiver with soft-decision demapping | Silicon-validated |
+| M27 | Fused OFDM loopback (FFT + CP + pilots + channel est + equalizer) | Silicon-validated |
+| M32b | Post-Quantum Cryptography — [FIPS 203](https://nvlpubs.nist.gov/nistpubs/fips/nist.fips.203.pdf) ML-KEM NTT | Silicon-validated, bit-exact |
+| M32c | Post-Quantum Cryptography — [FIPS 202](https://nvlpubs.nist.gov/nistpubs/fips/nist.fips.202.pdf) Keccak / SHA-3 / SHAKE | Silicon-validated, bit-exact |
+| M32d | Post-Quantum Cryptography — [FIPS 203](https://nvlpubs.nist.gov/nistpubs/fips/nist.fips.203.pdf) K-PKE component | Silicon-validated, bit-exact |
+| M32e | Post-Quantum Cryptography — [FIPS 203](https://nvlpubs.nist.gov/nistpubs/fips/nist.fips.203.pdf) ML-KEM.{KeyGen, Encaps, Decaps} composer | Bit-exact vs NIST ACVP-Server KATs |
+| M33a | Post-Quantum Cryptography — [FIPS 204](https://nvlpubs.nist.gov/nistpubs/fips/nist.fips.204.pdf) ML-DSA NTT | Silicon-validated, bit-exact |
+| M33b | Post-Quantum Cryptography — [FIPS 204](https://nvlpubs.nist.gov/nistpubs/fips/nist.fips.204.pdf) rounding & hint | Silicon-validated, bit-exact |
+| M33d | Post-Quantum Cryptography — [FIPS 204](https://nvlpubs.nist.gov/nistpubs/fips/nist.fips.204.pdf) ML-DSA.KeyGen composer | Bit-exact vs NIST ACVP-Server KATs |
+| M33e | Post-Quantum Cryptography — [FIPS 204](https://nvlpubs.nist.gov/nistpubs/fips/nist.fips.204.pdf) ML-DSA.{Sign_internal, Verify_internal} composer | 180 / 180 vs NIST ACVP-Server sigGen + sigVer KATs |
 
 The I/Q throughput demo in `tests/npu_visible/` is not a numbered milestone and is not in `run_all_silicon_tests.py`. It reuses the M6 complex-multiply contract on all four columns and reports host-visible MB/s / Msps.
 
@@ -352,9 +369,9 @@ Negacyclic convolution via NTT requires pre-multiplication of both operands by p
 
 The silicon-validated M15b kernel is a schoolbook O(N²) product in that ring (the definition of multiplication in `Z_q[x]`; not the NTT form), checked bit-exact against an independent CPU reference (`negacyclic_polymul_ref`, seed 42). Modular reduction uses [Barrett](https://link.springer.com/chapter/10.1007/3-540-47721-7_24) with the inherited kernel constants `MU = 20165`, shift 26 (do not silently replace with M15's `20158 = floor(2^26/3329)`). The host driver uses the same [`iron.Runtime(seq_fn)`](https://github.com/Xilinx/mlir-aie/blob/3ca0193/python/iron/runtime/runtime.py) sequence-function API as M15 ([mlir-aie v1.4.1](https://github.com/Xilinx/mlir-aie/releases/tag/v1.4.1)). An NTT-based negacyclic path (FIPS 203 Algorithms 9–12) is **M32**, not this milestone. Validated 2026-08-15 on Phoenix NPU1.
 
-## M32: FIPS 203 ML-KEM (planned)
+## M32: FIPS 203 ML-KEM — Post-Quantum Cryptography (v1.0.0, closed)
 
-M32 is an extra milestone after M10–M15b. It implements the approved key-encapsulation mechanism in [NIST FIPS 203](https://nvlpubs.nist.gov/nistpubs/fips/nist.fips.203.pdf) (*Module-Lattice-Based Key-Encapsulation Mechanism Standard*, 13 August 2024, [DOI 10.6028/NIST.FIPS.203](https://doi.org/10.6028/NIST.FIPS.203)). ML-KEM is derived from round-3 [CRYSTALS-Kyber](https://pq-crystals.org/kyber/data/kyber-specification-round3-20210804.pdf) (FIPS 203 §1.1); implement FIPS 203 when Appendix C lists a difference.
+M32 implements the approved key-encapsulation mechanism in [NIST FIPS 203](https://nvlpubs.nist.gov/nistpubs/fips/nist.fips.203.pdf) (*Module-Lattice-Based Key-Encapsulation Mechanism Standard*, 13 August 2024, [DOI 10.6028/NIST.FIPS.203](https://doi.org/10.6028/NIST.FIPS.203)). ML-KEM is derived from round-3 [CRYSTALS-Kyber](https://pq-crystals.org/kyber/data/kyber-specification-round3-20210804.pdf) (FIPS 203 §1.1); implement FIPS 203 when Appendix C lists a difference. All four sub-milestones (M32b, M32c, M32d, M32e) closed on 2026-08-16 and are entries in the 33-entry silicon runner.
 
 The three approved parameter sets ([FIPS 203 Table 2](https://nvlpubs.nist.gov/nistpubs/fips/nist.fips.203.pdf)) all use `(n, q) = (256, 3329)`:
 
@@ -364,9 +381,68 @@ The three approved parameter sets ([FIPS 203 Table 2](https://nvlpubs.nist.gov/n
 | ML-KEM-768 | 3 | 2 | 2 | 10 | 4 |
 | ML-KEM-1024 | 4 | 2 | 2 | 11 | 5 |
 
-First target is ML-KEM-512. NIST's default recommendation is ML-KEM-768 (FIPS 203 §8). Hashes are [FIPS 202](https://nvlpubs.nist.gov/nistpubs/fips/nist.fips.202.pdf) SHA3-256, SHA3-512, SHAKE128, and SHAKE256 (FIPS 203 §4.1). K-PKE (Algorithms 13–15) is a component only and is not approved as a standalone PKE (FIPS 203 §3.3).
+All three parameter sets are validated against [NIST ACVP-Server](https://github.com/usnistgov/ACVP-Server) response vectors vendored under `tests/m32_mlkem/vectors/`. NIST's default recommendation is ML-KEM-768 (FIPS 203 §8). Hashes are [FIPS 202](https://nvlpubs.nist.gov/nistpubs/fips/nist.fips.202.pdf) SHA3-256, SHA3-512, SHAKE128, and SHAKE256 (FIPS 203 §4.1) — all four dispatch from the M32c Keccak-f[1600] kernel. K-PKE (Algorithms 13–15) is a component only and is not approved as a standalone PKE (FIPS 203 §3.3); it is wrapped by M32e.
 
-Gates, pass criteria, and the algorithm table live in [`M32_FIPS203_MLKEM.md`](M32_FIPS203_MLKEM.md). M32 is not an entry in the 16-test silicon runner.
+### M32b — NTT-domain negacyclic product ([FIPS 203 Algorithms 9–12](https://nvlpubs.nist.gov/nistpubs/fips/nist.fips.203.pdf))
+
+Ring `R_q = Z_3329[X]/(X^{256}+1)`. NTT-domain kernel uses the 256-th root of unity ζ = 17 mod 3329 with the pq-crystals ζ-table matching [`ref/ntt.c`](https://github.com/pq-crystals/kyber/blob/main/ref/ntt.c). Silicon kernel: `tests/m32_mlkem/ntt_kernel.cc`. Design: [`docs/M32b_DESIGN.md`](M32b_DESIGN.md). Bit-exact against [`kyber-py` 1.0.1](https://github.com/GiacomoPope/kyber-py) reference.
+
+### M32c — Keccak-f[1600] + FIPS 202 SHA-3 / SHAKE + samplers ([FIPS 203 Algorithms 7–8](https://nvlpubs.nist.gov/nistpubs/fips/nist.fips.203.pdf))
+
+Single Keccak-f[1600] permutation ([FIPS 202](https://nvlpubs.nist.gov/nistpubs/fips/nist.fips.202.pdf)) dispatches SHAKE128 / SHAKE256 / SHA3-256 / SHA3-512 / SampleNTT / SamplePolyCBD via five modes. Silicon kernel: `tests/m32_mlkem/keccak_shake_kernel.cc`. Design: [`docs/M32c_DESIGN.md`](M32c_DESIGN.md).
+
+### M32d — K-PKE component ([FIPS 203 Algorithms 13–15](https://nvlpubs.nist.gov/nistpubs/fips/nist.fips.203.pdf))
+
+Silicon-dispatched K-PKE.KeyGen / Encrypt / Decrypt orchestrated on top of M32b + M32c. Silicon kernel: `tests/m32_mlkem/kpke_kernel.cc`. Design: [`docs/M32d_DESIGN.md`](M32d_DESIGN.md). Not approved standalone.
+
+### M32e — ML-KEM.KeyGen / Encaps / Decaps composer ([FIPS 203 Algorithms 19–21](https://nvlpubs.nist.gov/nistpubs/fips/nist.fips.203.pdf))
+
+Composer `tests/m32_mlkem/mlkem_composer.py` routes all three approved algorithms through the M32b + M32c + M32d kernels via a `SiliconBackend` seam. Bit-exact against NIST ACVP-Server ML-KEM-{512, 768, 1024} keyGen and encapDecap tgIds — 60 passed / 9 skipped on sandbox reference path, gated silicon on laptop. Design: [`docs/M32e_DESIGN.md`](M32e_DESIGN.md).
+
+## M33: FIPS 204 ML-DSA — Post-Quantum Cryptography (v1.0.0, closed)
+
+M33 implements the approved digital-signature scheme in [NIST FIPS 204](https://nvlpubs.nist.gov/nistpubs/fips/nist.fips.204.pdf) (*Module-Lattice-Based Digital Signature Standard*, 13 August 2024, [DOI 10.6028/NIST.FIPS.204](https://doi.org/10.6028/NIST.FIPS.204)). ML-DSA is derived from round-3 [CRYSTALS-Dilithium](https://pq-crystals.org/dilithium/data/dilithium-specification-round3-20210208.pdf); implement FIPS 204 where they differ. All four sub-milestones (M33a, M33b, M33d, M33e; M33c is a documented no-slot reuse of the M32c SHAKE kernel per [FIPS 204 §3.3.5](https://nvlpubs.nist.gov/nistpubs/fips/nist.fips.204.pdf)) closed on 2026-08-16.
+
+The three approved parameter sets ([FIPS 204 Table 1](https://nvlpubs.nist.gov/nistpubs/fips/nist.fips.204.pdf)) all use `(n, q) = (256, 8380417)` with `q = 2^{23} - 2^{13} + 1`, `q ≡ 1 mod 512`:
+
+| Set | (k, ℓ) | η | λ | γ₁ | γ₂ | τ | β | ω |
+|---|---|---:|---:|---:|---:|---:|---:|---:|
+| ML-DSA-44 | (4, 4) | 2 | 128 | 2^{17} | (q-1)/88 = 95232 | 39 | 78 | 80 |
+| ML-DSA-65 | (6, 5) | 4 | 192 | 2^{19} | (q-1)/32 = 261888 | 49 | 196 | 55 |
+| ML-DSA-87 | (8, 7) | 2 | 256 | 2^{19} | (q-1)/32 = 261888 | 60 | 120 | 75 |
+
+All three parameter sets are validated against [NIST ACVP-Server](https://github.com/usnistgov/ACVP-Server) response vectors vendored under `tests/m33_mldsa/vectors/`.
+
+### M33a — ML-DSA NTT ([FIPS 204 Algorithms 41–45](https://nvlpubs.nist.gov/nistpubs/fips/nist.fips.204.pdf))
+
+Ring `R_q = Z_{8380417}[X]/(X^{256}+1)`. Silicon-dispatched NTT / INTT / basemul kernel in Montgomery form with the pq-crystals ζ-table matching [`ref/ntt.c`](https://github.com/pq-crystals/dilithium/blob/master/ref/ntt.c). Kernel: `tests/m33_mldsa/dilithium_ntt_kernel.cc`. Design: [`docs/M33a_DESIGN.md`](M33a_DESIGN.md). 420 / 420 sandbox gate PASS.
+
+### M33b — Rounding & hint ([FIPS 204 Algorithms 30–33](https://nvlpubs.nist.gov/nistpubs/fips/nist.fips.204.pdf))
+
+Silicon-dispatched `Decompose` (HighBits, LowBits), `MakeHint`, `UseHint`, `CheckNorm` operating on `Z_q` with per-parameter-set `γ₂ ∈ {95232, 261888}`. Kernel: `tests/m33_mldsa/dilithium_sampler_kernel.cc`. Design: [`docs/M33b_DESIGN.md`](M33b_DESIGN.md). 700 / 700 sandbox gate PASS.
+
+### M33c — SHAKE / Keccak reuse
+
+No dedicated silicon slot. FIPS 204 shares the [FIPS 202](https://nvlpubs.nist.gov/nistpubs/fips/nist.fips.202.pdf) Keccak-f[1600] permutation with FIPS 203; the M32c kernel serves both KEMs and both signature paths per [FIPS 204 §3.3.5](https://nvlpubs.nist.gov/nistpubs/fips/nist.fips.204.pdf).
+
+### M33d — ML-DSA.KeyGen composer ([FIPS 204 Algorithm 6](https://nvlpubs.nist.gov/nistpubs/fips/nist.fips.204.pdf))
+
+`KeyGen_internal(ξ, K)`: expands matrix `A ← ExpandA(ρ)` via SampleInBall / RejBoundedPoly, samples `s₁, s₂ ← ExpandS(ρ')`, computes `t ← A · NTT(s₁) + s₂`, packs `t₁ = HighBits(t, 2·γ₂)` into the public key and `t₀ = t - t₁ · 2^d` into the secret key, and stamps `tr ← SHAKE256(pk, 512 bits)`. Composer: `tests/m33_mldsa/mldsa_composer.py`. Design: [`docs/M33d_DESIGN.md`](M33d_DESIGN.md). 75 / 75 sandbox gate PASS against NIST ACVP-Server ML-DSA-{44, 65, 87} keyGen KATs.
+
+### M33e — ML-DSA.Sign_internal + Verify_internal composer ([FIPS 204 Algorithms 7 and 8](https://nvlpubs.nist.gov/nistpubs/fips/nist.fips.204.pdf))
+
+`Sign_internal(sk, M', rnd)` runs the ExpandMask rejection loop:
+
+1. Sample `y ← ExpandMask(ρ'', κ, γ₁)` with counter `κ` incrementing until the gates below pass.
+2. Compute `w ← NTT⁻¹(A_hat · NTT(y))` and `w₁ ← HighBits(w, 2·γ₂)`.
+3. Set `č ← SHAKE256(μ ‖ w1Encode(w₁), 2λ bits)` and `c ← SampleInBall(č, τ)`.
+4. Compute `z ← y + c · s₁`, `r₀ ← LowBits(w - c · s₂, 2·γ₂)`; reject if `‖z‖_∞ ≥ γ₁ - β` or `‖r₀‖_∞ ≥ γ₂ - β`.
+5. Compute hint `h ← MakeHint(-c·t₀, w - c·s₂ + c·t₀, 2·γ₂)`; reject if `‖c·t₀‖_∞ ≥ γ₂` or `popcount(h) > ω`.
+6. Emit `σ = (č, z, h)`.
+
+`Verify_internal(pk, M', σ)` re-derives `w₁' ← UseHint(h, A_hat · NTT(z) - c · NTT(t₁ · 2^d))` and accepts iff `č = SHAKE256(μ ‖ w1Encode(w₁'), 2λ bits)`. Both `externalMu` variants are supported. Composer: `tests/m33_mldsa/mldsa_composer.py`. Design: [`docs/M33e_DESIGN.md`](M33e_DESIGN.md). Gate: **90 / 90 sigGen PASS, 90 / 90 sigVer PASS** (72 of which are must-reject tampered signatures) against NIST ACVP-Server ML-DSA-{44, 65, 87} sigGen and sigVer tgIds 7–12.
+
+Reference oracle for M33d and M33e: [`dilithium-py` 1.4.0](https://github.com/GiacomoPope/dilithium-py). Composer is silicon-agnostic (calls M33a / M33b / M32c through a `SiliconBackend` seam) so all bit-exact behaviour is preserved end-to-end on the reference path when silicon is unavailable.
 
 ## M16: CPU DFT/FFT mathematical reference
 
@@ -607,9 +683,30 @@ Silicon PASS on Ryzen 9 7940HS Phoenix NPU1, seed 826 (2026-08-15): gate (a) acq
 
 See [docs/M26_DESIGN.md](M26_DESIGN.md).
 
+## M27: fused OFDM loopback (FFT + CP + pilots + channel estimation + one-tap equalizer)
+
+M27 is the closing milestone of the modulation & synchronization block (M24-M27). One AIE2 tile runs a full OFDM loopback in three fused stages: transmit-side pilot insertion + IFFT + cyclic-prefix prepend, channel injection on the host reference, then receive-side cyclic-prefix removal + FFT + LS or LMMSE channel estimation on pilot subcarriers + one-tap frequency-domain equalization of data subcarriers.
+
+Core identity is the OFDM signal model ([Nee & Prasad 2000 §2.1](https://ieeexplore.ieee.org/book/9100729)):
+
+```text
+s[n] = sum_{k in K} X[k] * exp(j 2 pi k n / N),   n = -N_cp, ..., N-1
+y[k] = H[k] * X[k] + W[k]
+```
+
+where `K` is the set of used subcarriers, `N` is the FFT size, `N_cp` is the cyclic-prefix length, and `W[k]` is complex AWGN in the frequency domain. Pilot placement and cyclic-prefix conventions follow [3GPP TS 38.211 v18.5.0 §5.3.1](https://www.3gpp.org/ftp/Specs/archive/38_series/38.211/38211-i50.zip) (OFDM signal generation) and [3GPP TS 38.211 §7.4.1.1](https://www.3gpp.org/ftp/Specs/archive/38_series/38.211/38211-i50.zip) (DM-RS reference signals), together with [IEEE 802.11-2020 §21.3.11](https://ieeexplore.ieee.org/document/9363693) for the 802.11ax legacy long training field. LS channel estimation on pilot subcarriers uses the standard reciprocal-multiply form:
+
+```text
+H_hat_LS[p] = Y[p] / X_pilot[p]
+```
+
+([Van de Beek et al. 1995](https://ieeexplore.ieee.org/document/456405)); LMMSE follows [Edfors et al. 1998](https://ieeexplore.ieee.org/document/725572). Data subcarriers are equalized with the one-tap zero-forcing rule `X_hat[k] = Y[k] / H_hat[k]`. The FFT/IFFT dispatch reuses the M17 radix-4 Stockham kernel bit-exact.
+
+Silicon kernel: `tests/m27_ofdm/ofdm_loopback_kernel.cc`. Test: `tests/m27_ofdm/test_ofdm_m27.py`. Design: [`docs/M27_DESIGN.md`](M27_DESIGN.md). 25th silicon regression entry. Sandbox transliteration audit `tools/m27_kernel_transliteration_check.py` passes at 9 / 9.
+
 ## Automated regression coverage
 
-`run_all_silicon_tests.py` executes 24 automated test entries:
+`run_all_silicon_tests.py` executes 33 automated test entries (v1.0.0):
 
 ```powershell
 python run_all_silicon_tests.py
@@ -641,8 +738,17 @@ The runner reports pass/fail status and elapsed time for:
 22. M24  fused Barker-13 matched-filter correlator (reversed-tap FIR pair on I and Q, L=13)
 23. M25  fused BPSK/QPSK receiver (Gardner TED + linear interpolator + on-tile NCO derotate + Costas order-2/4 detector + Rondeau PI, `psk_rx_body<ORDER>` templated body with two `@iron.jit` entry points)
 24. M26  fused QAM-16 receiver with soft-decision demapping (M25 core + Gray QAM-16 slicer + decision-directed order-M phase detector + max-log axis-separable LLR demapper, `qam16_rx` `@iron.jit` entry with three-argument DMA signature)
+25. M27  fused OFDM loopback (FFT + CP + pilots + LS/LMMSE channel estimation + one-tap frequency-domain equalizer, reuses M17 radix-4 Stockham FFT)
+26. M32b Post-Quantum Cryptography — [FIPS 203](https://nvlpubs.nist.gov/nistpubs/fips/nist.fips.203.pdf) ML-KEM NTT (Algorithms 9–12, `Z_3329`, pq-crystals ζ-table)
+27. M32c Post-Quantum Cryptography — [FIPS 202](https://nvlpubs.nist.gov/nistpubs/fips/nist.fips.202.pdf) Keccak-f[1600] + SHA-3 / SHAKE + [FIPS 203 Algorithms 7–8](https://nvlpubs.nist.gov/nistpubs/fips/nist.fips.203.pdf) samplers
+28. M32d Post-Quantum Cryptography — [FIPS 203 Algorithms 13–15](https://nvlpubs.nist.gov/nistpubs/fips/nist.fips.203.pdf) K-PKE component (not standalone approved)
+29. M32e Post-Quantum Cryptography — [FIPS 203 Algorithms 19–21](https://nvlpubs.nist.gov/nistpubs/fips/nist.fips.203.pdf) ML-KEM.KeyGen / Encaps / Decaps composer against [NIST ACVP-Server](https://github.com/usnistgov/ACVP-Server) KATs
+30. M33a Post-Quantum Cryptography — [FIPS 204](https://nvlpubs.nist.gov/nistpubs/fips/nist.fips.204.pdf) ML-DSA NTT / INTT / basemul (`Z_8380417`, Montgomery form)
+31. M33b Post-Quantum Cryptography — [FIPS 204 Algorithms 30–33](https://nvlpubs.nist.gov/nistpubs/fips/nist.fips.204.pdf) rounding & hint (Decompose / MakeHint / UseHint / CheckNorm)
+32. M33d Post-Quantum Cryptography — [FIPS 204 Algorithm 6](https://nvlpubs.nist.gov/nistpubs/fips/nist.fips.204.pdf) ML-DSA.KeyGen composer against NIST ACVP-Server KATs
+33. M33e Post-Quantum Cryptography — [FIPS 204 Algorithms 7 and 8](https://nvlpubs.nist.gov/nistpubs/fips/nist.fips.204.pdf) ML-DSA.Sign_internal + Verify_internal composer against NIST ACVP-Server sigGen (90/90) + sigVer (90/90) KATs
 
-M0–M2 are setup and reproducibility milestones, while M4 depends on locally attached SDR hardware; therefore they are not entries in the automated silicon regression runner.
+M0–M2 are setup and reproducibility milestones, while M4 depends on locally attached SDR hardware; therefore they are not entries in the automated silicon regression runner. M32b–M32e and M33a–M33e require the Post-Quantum Cryptography reference packages (`kyber-py`, `dilithium-py`, `pycryptodome`, `pyshake`) pinned in [`requirements/toolchain-versions.md`](../requirements/toolchain-versions.md) and installed per [`docs/SETUP_WINDOWS.md`](SETUP_WINDOWS.md).
 
 ## Practical verification checklist
 
@@ -723,6 +829,26 @@ Before calling a deterministic kernel complete:
 - Xilinx/AMD, mlir-aie IRON API overview — `@iron.jit`, `In`/`Out`/`CompileTime` type annotations. https://xilinx.github.io/mlir-aie/1.4.1/api/iron/
 - Xilinx/AMD, mlir-aie compilation stages guide — `Program.resolve_program()` → `aiecc` → xclbin/pdi. https://xilinx.github.io/mlir-aie/1.4.1/programming_guide/compilation_stages/
 - DeepWiki, "Getting Started with IRON" — canonical driver template for AIE2 kernels. https://deepwiki.com/Xilinx/mlir-aie/7.1-getting-started-with-iron
+
+### Post-Quantum Cryptography — FIPS 202 / 203 / 204, ML-KEM, ML-DSA
+
+- NIST, FIPS 204, *Module-Lattice-Based Digital Signature Standard* (2024-08-13). https://nvlpubs.nist.gov/nistpubs/fips/nist.fips.204.pdf
+- NIST FIPS 204 landing page. https://csrc.nist.gov/pubs/fips/204/final
+- Ducas et al., *CRYSTALS-Dilithium* Algorithm Specification, version 3.1 (2021-02-08). https://pq-crystals.org/dilithium/data/dilithium-specification-round3-20210208.pdf
+- pq-crystals reference implementations — [kyber](https://github.com/pq-crystals/kyber) and [dilithium](https://github.com/pq-crystals/dilithium). Master ζ-tables and round-3 reference C code cited from `ref/ntt.c` at both repositories.
+- NIST ACVP-Server — [`usnistgov/ACVP-Server`](https://github.com/usnistgov/ACVP-Server). ML-KEM and ML-DSA prompt / expected-result JSON vendored in-tree under `tests/m32_mlkem/vectors/` and `tests/m33_mldsa/vectors/`.
+- G. Pope, [`kyber-py` 1.0.1](https://github.com/GiacomoPope/kyber-py) — Python reference implementation used as the M32e composer oracle.
+- G. Pope, [`dilithium-py` 1.4.0](https://github.com/GiacomoPope/dilithium-py) — Python reference implementation used as the M33d and M33e composer oracles.
+- Legion of the Bouncy Castle, [`pycryptodome`](https://www.pycryptodome.org/) — SHA-3 / SHAKE primitives.
+- [`pyshake`](https://pypi.org/project/pyshake/) — SHAKE / cSHAKE utility.
+
+### OFDM and channel estimation (M27)
+
+- 3GPP, TS 38.211 v18.5.0, *NR; Physical channels and modulation*. https://www.3gpp.org/ftp/Specs/archive/38_series/38.211/38211-i50.zip
+- IEEE, IEEE Std 802.11-2020, *Wireless LAN Medium Access Control (MAC) and Physical Layer (PHY) Specifications*. https://ieeexplore.ieee.org/document/9363693
+- J.-J. van de Beek, O. Edfors, M. Sandell, S. K. Wilson, P. O. Börjesson, "On channel estimation in OFDM systems", *IEEE VTC* 1995. https://ieeexplore.ieee.org/document/456405
+- O. Edfors, M. Sandell, J.-J. van de Beek, S. K. Wilson, P. O. Börjesson, "OFDM channel estimation by singular value decomposition", *IEEE TCOM* 46(7):931–939 (1998). https://ieeexplore.ieee.org/document/725572
+- R. van Nee and R. Prasad, *OFDM for Wireless Multimedia Communications*, Artech House (2000). https://ieeexplore.ieee.org/book/9100729
 
 ### Finite fields, NTT, Kyber / ML-KEM
 

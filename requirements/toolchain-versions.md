@@ -36,6 +36,19 @@ This project was validated on a native Windows environment targeting the AMD Pho
 | Extra upstream fix included | [PR #3545](https://github.com/Xilinx/mlir-aie/pull/3545) — run_chain executable lifetime |
 | Python environment | `third_party\mlir-aie\ironenv` |
 
+## Post-Quantum Cryptography (PQC) reference packages
+
+Installed inside the active `ironenv` for the M32 [FIPS 203](https://nvlpubs.nist.gov/nistpubs/fips/nist.fips.203.pdf) ML-KEM and M33 [FIPS 204](https://nvlpubs.nist.gov/nistpubs/fips/nist.fips.204.pdf) ML-DSA composer gates. Versions are pinned to the values validated on 2026-08-16 against the [NIST ACVP-Server](https://github.com/usnistgov/ACVP-Server) response vectors:
+
+| Component | Verified value | Upstream |
+|---|---|---|
+| `kyber-py` | `1.0.1` | [github.com/GiacomoPope/kyber-py](https://github.com/GiacomoPope/kyber-py) |
+| `dilithium-py` | `1.4.0` | [github.com/GiacomoPope/dilithium-py](https://github.com/GiacomoPope/dilithium-py) |
+| `pycryptodome` | `3.20.0` | [pycryptodome.org](https://www.pycryptodome.org/) |
+| `pyshake` | `1.0.0` | [github.com/duthomhas/pysha3](https://github.com/duthomhas/pysha3) |
+
+Installation commands are documented in [`docs/SETUP_WINDOWS.md`](../docs/SETUP_WINDOWS.md). NIST ACVP-Server KAT vectors for ML-KEM (keyGen / encapsulation / decapsulation) and ML-DSA (keyGen / signature-generation / signature-verification) are vendored inside the repository at `tests/m32_mlkem/vectors/` and `tests/m33_mldsa/vectors/`. Source: [`usnistgov/ACVP-Server`](https://github.com/usnistgov/ACVP-Server/tree/master/gen-val/json-files).
+
 ## Required Validation
 
 Before running the silicon tests, verify:

@@ -5,8 +5,9 @@
 ![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)
 ![Target: AMD Phoenix NPU1](https://img.shields.io/badge/Target-AMD%20Ryzen%20AI%20NPU1%20(AIE2)-blue)
 ![Host: Windows 11 Pro](https://img.shields.io/badge/Host-Windows%2011%20Pro%2025H2-0078D6)
-![Silicon Status: 16/16 PASS](https://img.shields.io/badge/Silicon%20Status-16%2F16%20PASS-brightgreen)
-![Release: v0.4.0](https://img.shields.io/badge/Release-v0.4.0-informational)
+![Silicon Status: 33/33 PASS](https://img.shields.io/badge/Silicon%20Status-33%2F33%20PASS-brightgreen)
+![Release: v1.0.0](https://img.shields.io/badge/Release-v1.0.0-brightgreen)
+![Post-Quantum Cryptography](https://img.shields.io/badge/Post--Quantum%20Cryptography-FIPS%20203%20%2B%20FIPS%20204-8a2be2)
 ![Xilinx XRT](https://img.shields.io/badge/Xilinx-XRT-e01f27)
 ![Xilinx MLIR-AIE](https://img.shields.io/badge/Xilinx-MLIR--AIE%20%2F%20IRON-e01f27)
 ![Compiler: LLVM Peano](https://img.shields.io/badge/Compiler-LLVM%20Peano%20AIE2-purple)
@@ -19,7 +20,7 @@
 
 **7.46 Msps of real I/Q on a 10 TOPS AMD laptop NPU.** 29.8 MB/s in · 59.7 MB/s in+out · ~92% NPU. No discrete GPU. No FPGA.
 
-**16/16 silicon PASS** on a clean clone (2026-08-15): `git clone` → `py .\install.py` → `py .\run_all_silicon_tests.py`.
+**33/33 silicon PASS** at **v1.0.0** (2026-08-16): SDR/DSP kernels M3–M27 plus Post-Quantum Cryptography ([FIPS 203](https://nvlpubs.nist.gov/nistpubs/fips/nist.fips.203.pdf) ML-KEM and [FIPS 204](https://nvlpubs.nist.gov/nistpubs/fips/nist.fips.204.pdf) ML-DSA) M32b/c/d/e + M33a/b/d/e. See [`docs/PQC_COMPLETE_V1.md`](docs/PQC_COMPLETE_V1.md) for the v1.0.0 release summary. New-user path: `git clone` → `py .\install.py` → `py .\run_all_silicon_tests.py`.
 
 [Install](#installation) • [Architecture](#1-system--hardware-architecture) • [Directory Structure](#2-repository-structure) • [Silicon Milestones](#3-validated-silicon-milestones) • [I/Q Throughput](#iq-throughput) • [Engineering Issues & Fixes](#4-engineering-challenges--technical-solutions) • [Quickstart](#5-quickstart--silicon-verification) • [References](#6-references--upstream-projects) • [Credits](#7-credits--acknowledgments)  • [Documentation](docs/README.md)
 
@@ -47,10 +48,15 @@ conda deactivate   # if a conda prompt is active
 git clone https://github.com/midhatn/phoenix-sdr-dsp.git
 cd phoenix-sdr-dsp
 py .\install.py
+
+# Post-Quantum Cryptography reference packages (M32 + M33)
+.\third_party\mlir-aie\ironenv\Scripts\activate.bat
+pip install kyber-py==1.0.1 dilithium-py==1.4.0 pycryptodome==3.20.0 pyshake==1.0.0
+
 py .\run_all_silicon_tests.py
 ```
 
-`py` is the [Windows Python launcher](https://docs.python.org/3/using/windows.html#python-launcher-for-windows) and binds to system CPython. The test runner re-execs `third_party\mlir-aie\ironenv\Scripts\python.exe` (where Xilinx IRON installed numpy / `mlir_aie` / `pyxrt`) and sets `PEANO_INSTALL_DIR` from that same checkout. No activate step.
+`py` is the [Windows Python launcher](https://docs.python.org/3/using/windows.html#python-launcher-for-windows) and binds to system CPython. The test runner re-execs `third_party\mlir-aie\ironenv\Scripts\python.exe` (where Xilinx IRON installed numpy / `mlir_aie` / `pyxrt`) and sets `PEANO_INSTALL_DIR` from that same checkout. No activate step is required for the runner itself; the `activate.bat` above is only needed to `pip install` the PQC reference packages into the same environment. Full walkthrough with citations: [`docs/SETUP_WINDOWS.md §Post-Quantum Cryptography reference dependencies`](docs/SETUP_WINDOWS.md#post-quantum-cryptography-reference-dependencies-m32--m33).
 
 ### Prerequisites
 
@@ -60,9 +66,9 @@ py .\run_all_silicon_tests.py
 
 ### Verified clean clone
 
-On 2026-08-15 a wipe-and-clone of `main` on a second Windows volume ran the two commands above and reported **16/16 PASS** in **95.91 s** (cold xclbin compile) on a Ryzen 9 7940HS Phoenix NPU1. A cached re-run on the development tree is **17.46 s**. M15b remained schoolbook and bit-exact on the [Kyber](https://pq-crystals.org/kyber/data/kyber-specification-round3-20210804.pdf) / [FIPS 203](https://nvlpubs.nist.gov/nistpubs/fips/nist.fips.203.pdf) ring `Z_3329[x]/(x^{256}+1)`.
+On 2026-08-15 a wipe-and-clone of `main` on a second Windows volume ran the two commands above and reported **16/16 PASS** in **95.91 s** (cold xclbin compile) on a Ryzen 9 7940HS Phoenix NPU1. A cached re-run on the development tree is **17.46 s**. M15b remained schoolbook and bit-exact on the [Kyber](https://pq-crystals.org/kyber/data/kyber-specification-round3-20210804.pdf) / [FIPS 203](https://nvlpubs.nist.gov/nistpubs/fips/nist.fips.203.pdf) ring `Z_3329[x]/(x^{256}+1)`. v1.0.0 (2026-08-16) extends this to **33/33 PASS** by wiring in nine additional entries (M27 OFDM plus the Post-Quantum Cryptography track M32b/c/d/e + M33a/b/d/e) once the PQC reference packages above are installed into the same `ironenv`.
 
-Longer Windows walkthrough: [`docs/SETUP_WINDOWS.md`](docs/SETUP_WINDOWS.md). Pin rationale: [`docs/M2_TOOLCHAIN_PIN.md`](docs/M2_TOOLCHAIN_PIN.md).
+Longer Windows walkthrough: [`docs/SETUP_WINDOWS.md`](docs/SETUP_WINDOWS.md). Pin rationale: [`docs/M2_TOOLCHAIN_PIN.md`](docs/M2_TOOLCHAIN_PIN.md). v1.0.0 PQC summary: [`docs/PQC_COMPLETE_V1.md`](docs/PQC_COMPLETE_V1.md).
 
 ## 1. System & Hardware Architecture
 
@@ -150,10 +156,32 @@ Every milestone is verified on physical Phoenix NPU silicon (`npu1`) against an 
 | **M16** | CPU DFT/FFT Reference (three implementations) | CPU Reference (CI) | $N \in \{8..1024\}$ | **PASS** | $\le 10^{-13}$ vs NumPy `fft.fft` |
 | **M17** | 64-Point NPU Radix-4 Stockham FFT + IFFT | Tile `(0,2)` | 64-point complex `bfloat16` | **PASS** | FFT SNR **138.79 dB**, IFFT round-trip **135.11 dB** |
 | **M17p** | 4-Column Parallel FFT Channelizer | 4 Columns `(0..3,2)` | 64 parallel 64-point frames | **PASS** | 1,993 FFTs/sec, 0.51 MB/s I/Q |
+| **M19** | 8-Tap Complex FIR (complex taps × complex I/Q) | Tile `(0,2)` | 4096 complex samples | **PASS** | Bit-Exact vs CPU reference |
+| **M20** | Fused Polyphase Decimator (M=4) + Interpolator (L=4) | Tile `(0,2)` | 4096 complex samples | **PASS** | Bit-Exact vs CPU reference |
+| **M21** | Fused Digital Down-Converter (DDC) | Tile `(0,2)` | Complex NCO at −f_s/8 + Kaiser LPF + decim-by-4 | **PASS** | Bit-Exact vs CPU reference |
+| **M22** | Fused Digital Up-Converter (DUC) | Tile `(0,2)` | Interp-L=4 + Kaiser×L LPF + complex NCO at +f_s/8 | **PASS** | Bit-Exact vs CPU reference |
+| **M23** | Fused Polyphase Channelizer (M-path) | Tile `(0,2)` | M=8 commutator + M-path FIR + 8-point matmul-DFT | **PASS** | Bit-Exact vs CPU reference |
+| **M24** | Fused [Barker-13](https://en.wikipedia.org/wiki/Barker_code) Matched-Filter Correlator | Tile `(0,2)` | Reversed-tap FIR pair on I and Q, L=13 | **PASS** | Bit-Exact vs CPU reference |
+| **M25** | Fused BPSK / QPSK Receiver | Tile `(0,2)` | Gardner TED + linear interp + NCO derotate + Costas | **PASS** | Receiver-theoretic gates (‹π/8 residual) |
+| **M26** | Fused QAM-16 Receiver + Soft-Decision Demapping | Tile `(0,2)` | M25 core + Gray slicer + DD phase detector + max-log LLR | **PASS** | LLR consistency ≥ 0.75 (LSBs) / ≥ 0.85 (MSBs) |
+| **M27** | Fused OFDM Loopback | Tile `(0,2)` | FFT + CP + pilots + LS / LMMSE channel est + one-tap equalizer | **PASS** | Reuses M17 radix-4 Stockham FFT |
+| **M32b** | Post-Quantum Cryptography — [FIPS 203](https://nvlpubs.nist.gov/nistpubs/fips/nist.fips.203.pdf) ML-KEM NTT | Tile `(0,2)` | Algorithms 9–12, `Z_3329`, pq-crystals ζ-table | **PASS** | Bit-Exact vs [`kyber-py` 1.0.1](https://github.com/GiacomoPope/kyber-py) |
+| **M32c** | Post-Quantum Cryptography — [FIPS 202](https://nvlpubs.nist.gov/nistpubs/fips/nist.fips.202.pdf) Keccak / SHA-3 / SHAKE + samplers | Tile `(0,2)` | Keccak-f[1600] permutation, 5 dispatch modes | **PASS** | Bit-Exact vs [FIPS 202](https://nvlpubs.nist.gov/nistpubs/fips/nist.fips.202.pdf) test vectors |
+| **M32d** | Post-Quantum Cryptography — [FIPS 203](https://nvlpubs.nist.gov/nistpubs/fips/nist.fips.203.pdf) K-PKE Component | Tile `(0,2)` | Algorithms 13–15 (K-PKE.KeyGen / Encrypt / Decrypt) | **PASS** | Bit-Exact vs kyber-py K-PKE |
+| **M32e** | Post-Quantum Cryptography — [FIPS 203](https://nvlpubs.nist.gov/nistpubs/fips/nist.fips.203.pdf) ML-KEM.{KeyGen, Encaps, Decaps} composer | Host + tile | Algorithms 19–21, ML-KEM-{512, 768, 1024} | **PASS** | Bit-Exact vs [NIST ACVP-Server](https://github.com/usnistgov/ACVP-Server) KATs |
+| **M33a** | Post-Quantum Cryptography — [FIPS 204](https://nvlpubs.nist.gov/nistpubs/fips/nist.fips.204.pdf) ML-DSA NTT | Tile `(0,2)` | NTT / INTT / basemul, `Z_8380417`, Montgomery form | **PASS** | 420 / 420 gate PASS |
+| **M33b** | Post-Quantum Cryptography — [FIPS 204](https://nvlpubs.nist.gov/nistpubs/fips/nist.fips.204.pdf) Rounding & Hint | Tile `(0,2)` | Decompose / MakeHint / UseHint / CheckNorm | **PASS** | 700 / 700 gate PASS |
+| **M33d** | Post-Quantum Cryptography — [FIPS 204](https://nvlpubs.nist.gov/nistpubs/fips/nist.fips.204.pdf) ML-DSA.KeyGen composer | Host + tile | Algorithm 6, ML-DSA-{44, 65, 87} | **PASS** | 75 / 75 vs NIST ACVP-Server KATs |
+| **M33e** | Post-Quantum Cryptography — [FIPS 204](https://nvlpubs.nist.gov/nistpubs/fips/nist.fips.204.pdf) ML-DSA.{Sign_internal, Verify_internal} composer | Host + tile | Algorithms 7 and 8, ML-DSA-{44, 65, 87} | **PASS** | 180 / 180 (90 sigGen + 90 sigVer) vs NIST ACVP-Server |
 
-### Planned — M32 FIPS 203 ML-KEM (not in the 16-suite)
+### Post-Quantum Cryptography track (M32 + M33, v1.0.0)
 
-M10–M15b already implement the [FIPS 203](https://nvlpubs.nist.gov/nistpubs/fips/nist.fips.203.pdf) ring `Z_3329[X]/(X^{256}+1)` and the NTT butterflies. **M32** is the extra milestone that turns those primitives into the approved KEM ([ML-KEM.KeyGen / Encaps / Decaps](https://nvlpubs.nist.gov/nistpubs/fips/nist.fips.203.pdf), Algorithms 19–21). First target: ML-KEM-512. Design: [`docs/M32_FIPS203_MLKEM.md`](docs/M32_FIPS203_MLKEM.md). M15b remains schoolbook; the KEM path needs Algorithms 9–12.
+The v1.0.0 release closes the Post-Quantum Cryptography track. Both NIST-approved lattice-based primitives are silicon-validated against the [NIST ACVP-Server](https://github.com/usnistgov/ACVP-Server) response vectors vendored in-tree:
+
+- **[FIPS 203](https://nvlpubs.nist.gov/nistpubs/fips/nist.fips.203.pdf) ML-KEM** — M32b (NTT over `Z_3329`), M32c (Keccak-f[1600] and [FIPS 202](https://nvlpubs.nist.gov/nistpubs/fips/nist.fips.202.pdf) SHA-3 / SHAKE), M32d (K-PKE component, not standalone approved), M32e (ML-KEM-{512, 768, 1024} KeyGen / Encaps / Decaps composer). Reference oracle: [`kyber-py` 1.0.1](https://github.com/GiacomoPope/kyber-py).
+- **[FIPS 204](https://nvlpubs.nist.gov/nistpubs/fips/nist.fips.204.pdf) ML-DSA** — M33a (NTT over `Z_8380417`), M33b (rounding & hint arithmetic), M33c (SHAKE / Keccak reuse of M32c per [FIPS 204 §3.3.5](https://nvlpubs.nist.gov/nistpubs/fips/nist.fips.204.pdf)), M33d (ML-DSA-{44, 65, 87} KeyGen composer, 75/75), M33e (Sign_internal + Verify_internal composer, **180 / 180** including 72 must-reject tampered signatures across both `externalMu` paths). Reference oracle: [`dilithium-py` 1.4.0](https://github.com/GiacomoPope/dilithium-py).
+
+Full v1.0.0 release summary: [`docs/PQC_COMPLETE_V1.md`](docs/PQC_COMPLETE_V1.md). Per-milestone design notes live at [`docs/M32b_DESIGN.md`](docs/M32b_DESIGN.md), [`docs/M32c_DESIGN.md`](docs/M32c_DESIGN.md), [`docs/M32d_DESIGN.md`](docs/M32d_DESIGN.md), [`docs/M32e_DESIGN.md`](docs/M32e_DESIGN.md), [`docs/M33a_DESIGN.md`](docs/M33a_DESIGN.md), [`docs/M33b_DESIGN.md`](docs/M33b_DESIGN.md), [`docs/M33d_DESIGN.md`](docs/M33d_DESIGN.md), [`docs/M33e_DESIGN.md`](docs/M33e_DESIGN.md). PQC reference packages (`kyber-py`, `dilithium-py`, `pycryptodome`, `pyshake`) are pinned in [`requirements/toolchain-versions.md`](requirements/toolchain-versions.md) and installed per [`docs/SETUP_WINDOWS.md`](docs/SETUP_WINDOWS.md#post-quantum-cryptography-reference-dependencies-m32--m33).
 
 <a id="iq-throughput"></a>
 
@@ -270,8 +298,13 @@ Expected on Phoenix NPU1: first-buffer $L_\infty = 0.007812$, then ~7.5 Msps / ~
 
 - [Cooley & Tukey (1965), "An algorithm for the machine calculation of complex Fourier series"](https://garfield.library.upenn.edu/classics1993/A1993MJ84400001.pdf): the original radix-2 FFT paper underlying M16/M17.
 - [Barrett (1986), "Implementing the Rivest Shamir and Adleman Public Key Encryption Algorithm on a Standard Digital Signal Processor"](https://link.springer.com/chapter/10.1007/3-540-47721-7_24): Barrett reduction, used in M10–M15b modular arithmetic.
-- [NIST FIPS 203](https://nvlpubs.nist.gov/nistpubs/fips/nist.fips.203.pdf) ([DOI](https://doi.org/10.6028/NIST.FIPS.203)): ML-KEM ring `Z_q[X]/(X^n+1)` with `(n, q) = (256, 3329)`. Planned KEM is M32.
-- [NIST FIPS 202](https://nvlpubs.nist.gov/nistpubs/fips/nist.fips.202.pdf): SHA3-256, SHA3-512, SHAKE128, SHAKE256 used by FIPS 203 §4.1.
+- [NIST FIPS 203](https://nvlpubs.nist.gov/nistpubs/fips/nist.fips.203.pdf) ([DOI](https://doi.org/10.6028/NIST.FIPS.203)): ML-KEM ring `Z_q[X]/(X^n+1)` with `(n, q) = (256, 3329)`. Closed at v1.0.0 via M32b/c/d/e.
+- [NIST FIPS 204](https://nvlpubs.nist.gov/nistpubs/fips/nist.fips.204.pdf) ([DOI](https://doi.org/10.6028/NIST.FIPS.204)): ML-DSA ring `Z_q[X]/(X^n+1)` with `(n, q) = (256, 8380417)`. Closed at v1.0.0 via M33a/b/d/e.
+- [NIST FIPS 202](https://nvlpubs.nist.gov/nistpubs/fips/nist.fips.202.pdf): SHA3-256, SHA3-512, SHAKE128, SHAKE256 used by FIPS 203 §4.1 and FIPS 204 §3.3.5.
+- [CRYSTALS-Dilithium specification v3.1](https://pq-crystals.org/dilithium/data/dilithium-specification-round3-20210208.pdf): round-3 Dilithium reference underlying FIPS 204.
+- [`kyber-py` 1.0.1](https://github.com/GiacomoPope/kyber-py) and [`dilithium-py` 1.4.0](https://github.com/GiacomoPope/dilithium-py): Python reference oracles for M32e and M33d / M33e.
+- [NIST ACVP-Server](https://github.com/usnistgov/ACVP-Server): official ML-KEM and ML-DSA KAT vectors vendored under `tests/m32_mlkem/vectors/` and `tests/m33_mldsa/vectors/`.
+- [pq-crystals reference implementations](https://github.com/pq-crystals): official Kyber and Dilithium C reference sources cited by M32b and M33a.
 - [NIST PQC project](https://csrc.nist.gov/projects/post-quantum-cryptography) and [CAVP](https://csrc.nist.gov/projects/cryptographic-algorithm-validation-program).
 - [CRYSTALS-Kyber specification v3.02](https://pq-crystals.org/kyber/data/kyber-specification-round3-20210804.pdf): Kyber NTT and negacyclic ring.
 - [Isabelle/AFP CRYSTALS-Kyber](https://isa-afp.org/browser_info/current/AFP/CRYSTALS-Kyber/outline.pdf): formalization of `Z_q[x]/(x^N+1)`.

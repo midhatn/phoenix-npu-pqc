@@ -72,6 +72,24 @@ Activate the resulting environment:
 & C:\\phoenix-sdr-dsp\\third_party\\mlir-aie\\ironenv\\Scripts\\Activate.ps1
 ```
 
+## Post-Quantum Cryptography reference dependencies (M32 / M33)
+
+The M32 FIPS 203 ML-KEM and M33 FIPS 204 ML-DSA milestones (Post-Quantum Cryptography) validate their silicon-dispatch composers bit-exact against the official NIST ACVP-Server known-answer test vectors and against two published reference implementations from the [pq-crystals](https://pq-crystals.org/) family. Install the following Python packages inside the active `ironenv` before running the PQC tests. Versions are pinned to the values validated on 2026-08-16 against the [NIST ACVP-Server](https://github.com/usnistgov/ACVP-Server) response vectors for ML-KEM ([FIPS 203, 2024-08-13](https://nvlpubs.nist.gov/nistpubs/fips/nist.fips.203.pdf)) and ML-DSA ([FIPS 204, 2024-08-13](https://nvlpubs.nist.gov/nistpubs/fips/nist.fips.204.pdf)):
+
+```powershell
+pip install kyber-py==1.0.1
+pip install dilithium-py==1.4.0
+pip install pycryptodome==3.20.0
+pip install pyshake==1.0.0
+```
+
+- [`kyber-py`](https://github.com/GiacomoPope/kyber-py) — reference ML-KEM implementation used by the M32e composer gate as an oracle for [FIPS 203 Algorithms 19-21](https://nvlpubs.nist.gov/nistpubs/fips/nist.fips.203.pdf).
+- [`dilithium-py`](https://github.com/GiacomoPope/dilithium-py) — reference ML-DSA implementation used by the M33d KeyGen and M33e Sign / Verify composer gates as an oracle for [FIPS 204 Algorithms 6-8](https://nvlpubs.nist.gov/nistpubs/fips/nist.fips.204.pdf).
+- [`pycryptodome`](https://www.pycryptodome.org/) — SHA-3 / SHAKE primitives for the M32c ([FIPS 202](https://nvlpubs.nist.gov/nistpubs/fips/nist.fips.202.pdf)) reference and M33 c-slot Keccak-f[1600] reuse.
+- [`pyshake`](https://github.com/duthomhas/pysha3) — additional SHAKE256 fallback used by the M32c KAT harness.
+
+The NIST ACVP-Server key-generation / encapsulation / decapsulation vectors for ML-KEM and the key-generation / signature-generation / signature-verification vectors for ML-DSA are vendored under `tests/m32_mlkem/vectors/` and `tests/m33_mldsa/vectors/` respectively, so the tests run offline once the packages above are installed. Vector provenance is documented in [`docs/PQC_COMPLETE_V1.md`](PQC_COMPLETE_V1.md).
+
 ## Validate the Installation
 
 Run these commands after activation:
@@ -91,11 +109,11 @@ Set-Location C:\\phoenix-sdr-dsp
 python run_all_silicon_tests.py
 ```
 
-The automated suite runs 16 entries covering M3, M5 through M15, M15b, M17, and M17p. It requires the physical NPU and compares NPU results against CPU references. Expected outcome: 16 of 16 tests pass.
+The automated suite runs 33 entries covering M3, M5 through M15, M15b, M17, M17p, M19 through M27, and the Post-Quantum Cryptography track M32b, M32c, M32d, M32e (FIPS 203 ML-KEM) plus M33a, M33b, M33d, M33e-sign, M33e-verify (FIPS 204 ML-DSA). The DSP / NTT / FFT / OFDM / M32b / M32c / M32d entries require the physical NPU and compare NPU results against CPU references. The PQC composer and rounding / hint entries (M32e, M33a, M33b, M33d, M33e-sign, M33e-verify) execute the bit-exact reference path and are gated against the NIST ACVP-Server KATs (they exercise the silicon-dispatch seams but fall through to their bit-exact Python transliteration whenever a native runner is not yet hooked up). Expected outcome on Phoenix NPU1 with the PQC reference packages installed: 33 of 33 tests pass.
 
 ## Optional: I/Q Throughput
 
-Not part of the 16-entry suite. After ironenv is active:
+Not part of the 33-entry suite. After ironenv is active:
 
 ```powershell
 python tests\npu_visible\test_iq_throughput.py
