@@ -444,6 +444,224 @@ No dedicated silicon slot. FIPS 204 shares the [FIPS 202](https://nvlpubs.nist.g
 
 Reference oracle for M33d and M33e: [`dilithium-py` 1.4.0](https://github.com/GiacomoPope/dilithium-py). Composer is silicon-agnostic (calls M33a / M33b / M32c through a `SiliconBackend` seam) so all bit-exact behaviour is preserved end-to-end on the reference path when silicon is unavailable.
 
+## Publication and reviewer record: mathematics of the NPU PQC implementation
+
+This section is the reviewer-facing mathematical record for the legacy M32/M33 paths and the device-resident DR0/DR1/DR2 series. Claims are classified as **Normative** when stated by a final NIST standard, **Derived** when they follow arithmetically from normative values, **Reference implementation** when they come from the official PQ-Crystals C code, and **Project choice** when they describe a Phoenix scheduling, data-residency, bounding, or representation decision. A project choice must not be presented as normative pseudocode.
+
+### ML-KEM algebra and ML-KEM-512 parameters
+
+**Normative.** FIPS 203 fixes \(n=256\), \(q=3329=2^8\cdot13+1\), and the negacyclic polynomial ring
+
+\[
+R_q=\mathbb Z_q[X]/(X^{256}+1).
+\]
+
+Its NTT representation is the direct sum of 128 quadratic factors
+
+\[
+T_q=\bigoplus_{i=0}^{127}\mathbb Z_q[X]/
+\left(X^2-\zeta^{\,2\operatorname{BitRev}_7(i)+1}\right),
+\qquad \zeta=17,
+\]
+
+where \(\zeta\) is a primitive 256th root of unity modulo \(q\) and \(\zeta^{128}\equiv-1\pmod q\) ([FIPS 203 §2.4 and §4.3, equations 4.10–4.13](https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.203.pdf)). ML-KEM-512 uses \(k=2\), \(\eta_1=3\), \(\eta_2=2\), \(d_u=10\), and \(d_v=4\) ([FIPS 203 Table 2](https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.203.pdf)). Consequently, its expanded matrix contains four NTT polynomials, while its KeyGen secret and error vectors contain two polynomials each.
+
+**Normative.** K-PKE.KeyGen expands and samples
+
+\[
+\widehat A[i,j]=\operatorname{SampleNTT}(\rho\mathbin\Vert j\mathbin\Vert i),
+\]
+
+\[
+s[i]=\operatorname{SamplePolyCBD}_{\eta_1}
+\left(\operatorname{PRF}_{\eta_1}(\sigma,N)\right),\qquad
+e[i]=\operatorname{SamplePolyCBD}_{\eta_1}
+\left(\operatorname{PRF}_{\eta_1}(\sigma,N)\right),
+\]
+
+then computes
+
+\[
+\widehat t=\widehat A\circ\widehat s+\widehat e,
+\]
+
+where \(\circ\) is matrix-vector multiplication over \(T_q\) using `MultiplyNTTs` ([FIPS 203 Algorithm 13 and §2.4.7](https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.203.pdf)). For \(k=2\), the KeyGen counter \(N\) takes values 0, 1, 2, and 3 for \(s[0],s[1],e[0],e[1]\), respectively.
+
+### ML-KEM SampleNTT and the DR2a bound
+
+**Normative.** `SampleNTT` absorbs the 34-byte string \(\rho\Vert j\Vert i\) into SHAKE128. Each three-byte squeeze yields two 12-bit little-endian candidates
+
+\[
+d_1=C_0+256(C_1\bmod16),\qquad
+d_2=\left\lfloor C_1/16\right\rfloor+16C_2,
+\]
+
+and accepts each candidate only when it is less than \(q=3329\), until 256 coefficients have been accepted ([FIPS 203 Algorithm 7](https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.203.pdf)). The normative algorithm is an unbounded `while` loop.
+
+**Project choice with normative bound.** DR2a schedules five SHAKE128 rate blocks:
+
+\[
+5\cdot168=840\text{ bytes},\qquad 840/3=280
+\]
+
+three-byte candidate iterations. FIPS 203 recommends leaving this loop unbounded when possible, but if it is bounded, Appendix B requires a limit of at least 280 iterations and a fixed failure behavior that destroys intermediate results ([FIPS 203 Appendix B, Table 4](https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.203.pdf)). DR2a therefore implements a project-specific bound exactly equal to the permitted minimum; five blocks are not part of Algorithm 7. On exhaustion or malformed input, DR2a returns a fixed zero-payload terminal error rather than a partial polynomial.
+
+### ML-KEM PRF, centered binomial sampling, and DR2b
+
+**Normative.** FIPS 203 defines
+
+\[
+\operatorname{PRF}_{\eta}(s,b)
+=\operatorname{SHAKE256}(s\mathbin\Vert b,\;8\cdot64\eta).
+\]
+
+For ML-KEM-512, \(\eta_1=3\), so one KeyGen noise polynomial consumes \(64\eta_1=192\) PRF bytes ([FIPS 203 §4.1, equation 4.3](https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.203.pdf)). `SamplePolyCBD` converts those bytes to little-endian bits and, for coefficient \(i\), computes
+
+\[
+x_i=\sum_{j=0}^{\eta-1}b_{2i\eta+j},\qquad
+y_i=\sum_{j=0}^{\eta-1}b_{2i\eta+\eta+j},\qquad
+f_i=x_i-y_i\pmod q
+\]
+
+([FIPS 203 Algorithm 8 and Algorithms 3–4](https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.203.pdf)). For \(\eta=3\), each coefficient consumes six bits and lies in the centered set \(\{-3,-2,-1,0,1,2,3\}\), represented canonically modulo 3329.
+
+**Project choice.** DR2b keeps the complete pipeline
+
+\[
+\operatorname{SHAKE256}(\sigma\Vert N,192\text{ B})
+\longrightarrow \operatorname{CBD}_3
+\longrightarrow \operatorname{NTT}
+\]
+
+on two AIE2 workers. The 192-byte PRF material and the coefficient-domain CBD polynomial remain device-local; only the complete 256-lane canonical NTT polynomial is transferred to the host. The strict counter range \(0\ldots3\) directly covers the four ML-KEM-512 KeyGen draws. Device residency and the fixed 208-byte internal token are project architecture, not FIPS data formats.
+
+### ML-KEM forward and inverse NTT
+
+**Normative.** FIPS 203 Algorithm 9 applies the Cooley–Tukey butterflies
+
+\[
+t=\zeta^{\operatorname{BitRev}_7(k)}\widehat f[j+\mathrm{len}]\pmod q,
+\]
+\[
+\widehat f[j+\mathrm{len}]=\widehat f[j]-t\pmod q,\qquad
+\widehat f[j]=\widehat f[j]+t\pmod q
+\]
+
+for \(\mathrm{len}=128,64,32,16,8,4,2\) ([FIPS 203 Algorithm 9](https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.203.pdf)). The seven-stage count is derived from these loop bounds; FIPS 203 does not print the phrase “seven stages.” The 128 standard-domain twiddles \(\zeta^{\operatorname{BitRev}_7(k)}\bmod q\) are tabulated in [FIPS 203 Appendix A](https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.203.pdf). DR2b stores this fixed table rather than generating roots at runtime, preserving the same mathematics while avoiding unsupported Peano lowering.
+
+**Normative.** Algorithm 10 reverses the butterfly schedule and multiplies all outputs by \(3303\equiv128^{-1}\pmod q\). Multiplication in \(T_q\) uses 128 independent quadratic base cases:
+
+\[
+c_0=a_0b_0+a_1b_1\gamma,\qquad
+c_1=a_0b_1+a_1b_0,
+\]
+
+with \(\gamma=\zeta^{2\operatorname{BitRev}_7(i)+1}\) ([FIPS 203 Algorithms 10–12 and equation 4.14](https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.203.pdf)). These equations are the mathematical basis of the earlier M32 NTT, inverse NTT, and NTT-domain product path.
+
+### ML-DSA algebra, ExpandA, and DR1
+
+**Normative.** FIPS 204 uses
+
+\[
+q=8380417=2^{23}-2^{13}+1,\qquad
+R_q=\mathbb Z_q[X]/(X^{256}+1),
+\]
+
+with \(\zeta=1753\), a 512th root of unity. ML-DSA-44 has \((k,\ell)=(4,4)\), \(\eta=2\), \(d=13\), \(\tau=39\), \(\lambda=128\), \(\gamma_1=2^{17}\), \(\gamma_2=(q-1)/88\), \(\beta=78\), and \(\omega=80\) ([FIPS 204 Table 1](https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.204.pdf)). Its NTT ring is the direct product of 256 copies of \(\mathbb Z_q\), so multiplication is pointwise.
+
+**Normative.** `ExpandA` computes
+
+\[
+\widehat A[r,s]=\operatorname{RejNTTPoly}(\rho\mathbin\Vert s\mathbin\Vert r).
+\]
+
+Each SHAKE128 three-byte group forms one 23-bit little-endian candidate after clearing the top bit of the third byte; it is accepted only when less than \(q\) ([FIPS 204 Algorithms 14, 30, and 32](https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.204.pdf)). ML-DSA-44 therefore requires 16 matrix-polynomial expansions.
+
+**Bounded implementation rule.** FIPS 204 requires at least 298 `RejNTTPoly` iterations, or 894 XOF bytes, if the loop is bounded. At a 168-byte SHAKE128 rate this requires at least
+
+\[
+\left\lceil894/168\right\rceil=6
+\]
+
+whole rate blocks, not five ([FIPS 204, while-loop and XOF-output limits, Table 3](https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.204.pdf)). Any DR1 bounded schedule must meet this ML-DSA-specific minimum and must return a uniform failure after destroying intermediate results.
+
+### ML-DSA NTT and matrix-vector product
+
+**Normative.** FIPS 204 uses the twiddles
+
+\[
+\operatorname{zetas}[m]=\zeta^{\operatorname{BitRev}_8(m)}\pmod q
+\]
+
+and the forward NTT butterfly for lengths \(128,64,\ldots,1\) ([FIPS 204 Algorithms 41 and 43](https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.204.pdf)). The eight-stage count is derived from the loop bounds. Algorithm 42 applies the inverse schedule and the final factor \(8347681\equiv256^{-1}\pmod q\). Pointwise multiplication and matrix-vector multiplication are
+
+\[
+\widehat c[i]=\widehat a[i]\widehat b[i]\pmod q,
+\]
+
+\[
+\widehat w_i=\sum_{j=0}^{\ell-1}
+\widehat M_{i,j}\circ\widehat v_j
+\]
+
+([FIPS 204 Algorithms 45 and 48](https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.204.pdf)). ML-DSA.KeyGen then computes
+
+\[
+t=\operatorname{NTT}^{-1}
+\left(\widehat A\circ\operatorname{NTT}(s_1)\right)+s_2
+\]
+
+([FIPS 204 Algorithm 6](https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.204.pdf)). This is the mathematical basis of the M33 and DR0 matrix-product paths.
+
+### Keccak-f[1600], SHAKE128, and SHAKE256
+
+**Normative.** FIPS 202 represents KECCAK-p[1600,24] as a \(5\times5\) array of 64-bit lanes and defines a round as
+
+\[
+\operatorname{Rnd}(A,i_r)=
+\iota\!\left(\chi\!\left(\pi\!\left(\rho\!\left(\theta(A)\right)\right)\right),i_r\right).
+\]
+
+The five mappings are column-parity diffusion \(\theta\), lane rotation \(\rho\), lane permutation \(\pi\), nonlinear row mapping \(\chi\), and round-constant injection \(\iota\) ([FIPS 202 §3.1–3.3](https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.202.pdf)). SHAKE uses `pad10*1` and the `1111` domain-separation suffix ([FIPS 202 §5.1–5.2 and §6.2](https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.202.pdf)).
+
+**Derived.** SHAKE128 is KECCAK[256], so its rate is
+
+\[
+(1600-256)/8=168\text{ bytes}.
+\]
+
+SHAKE256 is KECCAK[512], so its rate is
+
+\[
+(1600-512)/8=136\text{ bytes}.
+\]
+
+The rate derivation follows the FIPS 202 sponge definition; the byte constants are independently present as `SHAKE128_RATE 168` and `SHAKE256_RATE 136` in the [official Kyber reference `fips202.h`](https://raw.githubusercontent.com/pq-crystals/kyber/main/ref/fips202.h).
+
+### Modular representations and reductions
+
+**Normative.** FIPS 203 defines \(r\bmod m\) as the canonical representative in \(\{0,\ldots,m-1\}\) but deliberately leaves the reduction algorithm and internal representation to the implementation ([FIPS 203 §2.4.1](https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.203.pdf)). FIPS 204 additionally defines centered `mod±` representatives and documents canonical, centered, and C-remainder ranges ([FIPS 204 symbol list and Appendix A](https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.204.pdf)).
+
+**Normative for ML-DSA.** FIPS 204 Algorithm 49 specifies Montgomery reduction with \(R=2^{32}\) and `QINV = 58728449`:
+
+\[
+t=((a\bmod2^{32})\operatorname{QINV})\bmod2^{32},\qquad
+r=(a-tq)/2^{32},
+\]
+
+so \(r\equiv aR^{-1}\pmod q\) ([FIPS 204 Appendix A, Algorithm 49](https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.204.pdf)).
+
+**Reference implementation.** FIPS 203 does not prescribe Montgomery or Barrett reduction. The official Kyber reference uses \(R=2^{16}\), `QINV = -3327`, `MONT = -1044`, and a centered Barrett reducer ([Kyber `reduce.h`](https://raw.githubusercontent.com/pq-crystals/kyber/main/ref/reduce.h) and [`reduce.c`](https://raw.githubusercontent.com/pq-crystals/kyber/main/ref/reduce.c)). The official Dilithium reference implements `reduce32`, `caddq`, and `freeze` for bounded/centered reduction and conversion to a canonical nonnegative representative ([Dilithium `reduce.c`](https://raw.githubusercontent.com/pq-crystals/dilithium/master/ref/reduce.c)). These are implementation conventions used for bit-exact cross-checks, not additional FIPS requirements.
+
+### Review and reproducibility rules
+
+- Every equation above is tied to a final NIST standard or an identified reference implementation; derived stage counts and byte budgets show their arithmetic.
+- Fixed twiddle tables must be reproducible from the stated roots and bit-reversal definitions and checked against the applicable NIST appendix or official PQ-Crystals table.
+- FIPS 203 explicitly prohibits floating-point arithmetic in compression and decompression, while FIPS 204 states a general no-floating-point requirement for its specified computations. The NPU PQC kernels use integer and bitwise operations ([FIPS 203 §4.2.1](https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.203.pdf) and [FIPS 204 §3.6.4](https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.204.pdf)).
+- A physical claim requires the `:silicon` backend, an independent mathematical oracle, exact output comparison, repeated-operation evidence, and compiler placement/memory records. A host reference, fallback, or successfully compiled binary alone is not a physical pass.
+- `kyber-py` and `dilithium-py` are operation-level test oracles and composer references. Production NPU kernels must not import either package, and narrow primitive gates should remain independently specified from the final NIST algorithms.
+- Device-resident FIFOs, terminal-only host output, fixed descriptor layouts, zero-payload error records, and worker placement are project contracts. They support reproducibility and intermediate-value containment but must not be described as NIST-prescribed data formats.
+
 ## M16: CPU DFT/FFT mathematical reference
 
 M16 supplies the independent CPU source of truth for the NPU FFT tests. It ships three independent implementations that must agree with each other and with [`numpy.fft.fft`](https://numpy.org/doc/stable/reference/generated/numpy.fft.fft.html) to double-precision round-off:

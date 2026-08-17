@@ -1,0 +1,207 @@
+"""DR2b terminal-only ML-KEM-512 SHAKE256 PRF -> CBD(3) -> NTT graph."""
+
+from pathlib import Path
+from typing import Any
+
+import numpy as np
+
+from . import dr2b_mlkem512_noise_ntt_abi as abi
+
+BACKEND_LABEL = "dr2b-mlkem512-noise-ntt:silicon"
+_PROGRAM: Any | None = None
+
+
+class NativeBackendUnavailable(RuntimeError):
+    """The native IRON/XRT DR2b backend is unavailable or failed closed."""
+
+
+def _load_iron() -> tuple[Any, ...]:
+    try:
+        from aie import iron
+        from aie.iron import (
+            CompileTime,
+            ExternalFunction,
+            In,
+            ObjectFifo,
+            Out,
+            Program,
+            Runtime,
+            Worker,
+        )
+        from aie.utils.config import cxx_header_path
+        from aie.utils.hostruntime.xrtruntime.tensor import XRTTensor
+    except Exception as exc:
+        raise NativeBackendUnavailable(
+            "DR2b requires MLIR-AIE/IRON 1.4.1, XRT, and an XRT-visible Phoenix NPU; "
+            "no host PRF, CBD, or NTT fallback is available."
+        ) from exc
+    return (
+        iron,
+        CompileTime,
+        ExternalFunction,
+        In,
+        ObjectFifo,
+        Out,
+        Program,
+        Runtime,
+        Worker,
+        cxx_header_path,
+        XRTTensor,
+    )
+
+
+def require_hardware_runtime() -> None:
+    _load_iron()
+
+
+def _program() -> Any:
+    global _PROGRAM
+    if _PROGRAM is not None:
+        return _PROGRAM
+    (
+        iron,
+        CompileTime,
+        ExternalFunction,
+        In,
+        ObjectFifo,
+        Out,
+        Program,
+        Runtime,
+        Worker,
+        cxx_header_path,
+        _,
+    ) = _load_iron()
+
+    @iron.jit
+    def dr2b_mlkem512_program(
+        sigma_in: In,
+        descriptor_in: In,
+        result_out: Out,
+        *,
+        sigma_slots: CompileTime[int],
+        descriptor_slots: CompileTime[int],
+        prf_token_slots: CompileTime[int],
+        result_slots: CompileTime[int],
+        element_type: CompileTime[type],
+    ):
+        sigma_ty = np.ndarray[(sigma_slots,), np.dtype[element_type]]
+        descriptor_ty = np.ndarray[(descriptor_slots,), np.dtype[element_type]]
+        prf_token_ty = np.ndarray[(prf_token_slots,), np.dtype[element_type]]
+        result_ty = np.ndarray[(result_slots,), np.dtype[element_type]]
+        of_sigma = ObjectFifo(sigma_ty, name="dr2b_sigma")
+        of_descriptor = ObjectFifo(descriptor_ty, name="dr2b_descriptor")
+        of_prf_token = ObjectFifo(prf_token_ty, name="dr2b_prf_token")
+        of_result = ObjectFifo(result_ty, name="dr2b_result")
+        kernel_path = Path(__file__).resolve().parent / "kernels"
+        prf = ExternalFunction(
+            "dr2b_shake256_prf_emit",
+            source_file=str(kernel_path / "dr2b_mlkem512_shake256_prf_service.cc"),
+            arg_types=[sigma_ty, descriptor_ty, prf_token_ty],
+            include_dirs=[cxx_header_path(), str(kernel_path)],
+        )
+        cbd_ntt = ExternalFunction(
+            "dr2b_cbd3_ntt_consume",
+            source_file=str(kernel_path / "dr2b_mlkem512_cbd_ntt.cc"),
+            arg_types=[prf_token_ty, result_ty],
+            include_dirs=[cxx_header_path(), str(kernel_path)],
+        )
+
+        def prf_body(of_sigma, of_descriptor, of_prf_token, prf):
+            sigma = of_sigma.acquire(1)
+            descriptor = of_descriptor.acquire(1)
+            token = of_prf_token.acquire(1)
+            prf(sigma, descriptor, token)
+            of_prf_token.release(1)
+            of_sigma.release(1)
+            of_descriptor.release(1)
+
+        def cbd_ntt_body(of_prf_token, of_result, cbd_ntt):
+            token = of_prf_token.acquire(1)
+            result = of_result.acquire(1)
+            cbd_ntt(token, result)
+            of_prf_token.release(1)
+            of_result.release(1)
+
+        prf_worker = Worker(
+            prf_body,
+            fn_args=[of_sigma.cons(), of_descriptor.cons(), of_prf_token.prod(), prf],
+            stack_size=0x4000,
+        )
+        cbd_ntt_worker = Worker(
+            cbd_ntt_body,
+            fn_args=[of_prf_token.cons(), of_result.prod(), cbd_ntt],
+            stack_size=0x4000,
+        )
+
+        def sequence(
+            sigma, descriptor, result, sigma_prod, descriptor_prod, result_cons
+        ):
+            sigma_prod.fill(sigma)
+            descriptor_prod.fill(descriptor)
+            result_cons.drain(result, wait=True)
+
+        runtime = Runtime(
+            sequence,
+            [
+                sigma_ty,
+                descriptor_ty,
+                result_ty,
+                of_sigma.prod(),
+                of_descriptor.prod(),
+                of_result.cons(),
+            ],
+        )
+        return Program(
+            iron.get_current_device(), runtime, workers=[prf_worker, cbd_ntt_worker]
+        ).resolve_program()
+
+    _PROGRAM = dr2b_mlkem512_program
+    return _PROGRAM
+
+
+def run_mlkem512_eta1_noise_ntt(
+    sigma: bytes | bytearray | memoryview, counter: int, request_id: int
+) -> list[int]:
+    """Return one device-produced eta1=3 ML-KEM NTT polynomial, or fail closed."""
+    sigma_bytes, descriptor_bytes = abi.validate_request(sigma, counter, request_id)
+    sigma_np = np.frombuffer(sigma_bytes, dtype=np.uint8).copy()
+    descriptor_np = np.frombuffer(descriptor_bytes, dtype=np.uint8).copy()
+    result_np = np.frombuffer(abi.result_sentinel(), dtype=np.uint8).copy()
+    *_, XRTTensor = _load_iron()
+    sigma_t = XRTTensor(sigma_np, dtype=np.uint8)
+    descriptor_t = XRTTensor(descriptor_np, dtype=np.uint8)
+    result_t = XRTTensor(result_np, dtype=np.uint8)
+    try:
+        _program()(
+            sigma_t,
+            descriptor_t,
+            result_t,
+            sigma_slots=abi.SIGMA_BYTES,
+            descriptor_slots=abi.DESCRIPTOR_BYTES,
+            prf_token_slots=abi.PRF_TOKEN_BYTES,
+            result_slots=abi.RESULT_BYTES,
+            element_type=np.uint8,
+        )
+        result_t.to("cpu")
+    except Exception as exc:
+        raise NativeBackendUnavailable(
+            "DR2b native MLIR-AIE dispatch failed; no PRF/CBD/NTT fallback ran."
+        ) from exc
+    try:
+        return abi.parse_result(result_t._data[: abi.RESULT_BYTES], request_id)
+    except abi.Dr2bOperationError:
+        raise
+    except Exception as exc:
+        raise NativeBackendUnavailable(
+            "DR2b terminal result failed ABI validation; refusing malformed output."
+        ) from exc
+
+
+run = run_mlkem512_eta1_noise_ntt
+__all__ = [
+    "BACKEND_LABEL",
+    "NativeBackendUnavailable",
+    "require_hardware_runtime",
+    "run",
+    "run_mlkem512_eta1_noise_ntt",
+]
