@@ -157,37 +157,17 @@
 #           (0 / 1024 slots differ, tools/m25_kernel_transliteration_check.py).
 #           Published contract moves from 22/22 to 23/23 silicon-
 #           validated milestones.
-# - v1.0.0: 25th through 33rd regression entries added. Post-Quantum Cryptography
-#           track lands on top of the shipped DSP + NTT + FFT + modulation stack.
-#           25th: M27 OFDM loopback with FFT + CP + pilots + LS/MMSE channel
-#                 estimation + one-tap equalization; reuses the M17 radix-4
-#                 Stockham FFT and standardized against 3GPP TS 38.211 / IEEE
-#                 802.11-2020 pilot structure. Silicon-dispatched.
-#           26th-29th: FIPS 203 ML-KEM (Post-Quantum Cryptography) - M32b NTT
-#                 kernel (Algorithms 9-12 of FIPS 203 pub 2024-08-13), M32c
-#                 SHAKE/FIPS 202 Keccak-f[1600] permutation + samplers, M32d
-#                 K-PKE component (Algorithms 13-15), M32e ML-KEM.KeyGen /
-#                 Encaps / Decaps composer (Algorithms 19-21) gated bit-exact
-#                 against the NIST ACVP-Server KAT vectors for ML-KEM-512,
-#                 -768, -1024.
-#           30th-33rd: FIPS 204 ML-DSA (Post-Quantum Cryptography) - M33a
-#                 Dilithium NTT kernel (mode 0 NTT / mode 1 INTT / mode 2
-#                 point-wise Montgomery multiplication) over Z_Q with
-#                 Q=8380417 per FIPS 204 pub 2024-08-13; M33b rounding /
-#                 hint kernel (Decompose / MakeHint / UseHint / CheckNorm);
-#                 M33d ML-DSA.KeyGen composer (FIPS 204 Algorithm 6) gated
-#                 against ACVP-Server ML-DSA-keyGen KATs on ML-DSA-44,
-#                 -65, -87; M33e Sign_internal + Verify_internal (FIPS 204
-#                 Algorithms 7 and 8) gated against ACVP-Server ML-DSA-sigGen
-#                 and ML-DSA-sigVer internal tgIds 7-12 on all three parameter
-#                 sets, with externalMu paths covered. M33c is a no-slot
-#                 reuse of the M32c SHAKE kernel (FIPS 202 Keccak is shared
-#                 between ML-KEM and ML-DSA per NIST FIPS 203 sec 4.1 and
-#                 FIPS 204 sec 3.3.5).
-#           Published contract moves from 24/24 to 33/33 silicon-validated
-#           milestones. v1.0.0 closes the Post-Quantum Cryptography track:
-#           FIPS 203 ML-KEM + FIPS 204 ML-DSA both end-to-end on Phoenix
-#           NPU1 with NIST ACVP-Server KAT validation.
+# - v1.0.0: Nine milestone groups added as ten test invocations, bringing the
+#           matrix to 34 invocations. M27 implements LS pilot estimation,
+#           linear interpolation, and one-tap zero-forcing equalization.
+#           M32b/c/d are hardware-backed FIPS 203 primitive/component tests;
+#           M32e covers ML-KEM-512 with 60 host KATs plus 9 hardware smoke
+#           vectors. Native, fail-closed M33a/M33b runners were added on
+#           2026-08-17 and passed their individual Phoenix silicon gates.
+#           M33d and M33e remain host-orchestrated compositions that dispatch
+#           those polynomial primitives to the NPU. The complete 34-invocation
+#           aggregate result must be recorded before updating repository-wide
+#           validation counts. See docs/M33_SILICON_VALIDATION_20260817.md.
 # - v0.6.0: 24th silicon regression entry added. M26 fused QAM-16 receiver
 #           with soft-decision demapping: extends the M25 receiver core (NCO
 #           derotator with open-coded Taylor sin/cos + pi/2 fold, linear
@@ -241,6 +221,7 @@
 #           24/24 silicon-validated milestones.
 
 import os
+import re
 import subprocess
 import sys
 import time
@@ -297,7 +278,75 @@ def ensure_ironenv_interpreter():
         os.environ["PEANO_INSTALL_DIR"] = str(PEANO_DIR)
 
 
-def run_test(name, path, script):
+def validate_test_output(output, policy):
+    """Return (passed, reason) for the requested validation policy."""
+    if policy == "hardware":
+        pass_sentinels = (
+            "PASS!",
+            "ALL SILICON GATES PASS",
+        )
+        passed = any(sentinel in output for sentinel in pass_sentinels)
+        return passed, "expected hardware-test sentinel was not found"
+
+    if policy == "reference":
+        passed = "ALL REFERENCE TESTS PASSED" in output
+        return passed, "expected reference-test sentinel was not found"
+
+    if policy == "m32e_silicon":
+        required_groups = (
+            "test_silicon_keygen",
+            "test_silicon_encaps",
+            "test_silicon_decaps",
+        )
+        missing = [group for group in required_groups if group not in output]
+        if missing:
+            return False, f"missing M32e silicon test groups: {', '.join(missing)}"
+        if " skipped" in output.lower():
+            return False, "M32e silicon tests were skipped"
+        return "passed" in output.lower(), "pytest did not report passing tests"
+
+    backend_lines = [
+        line.strip().lower()
+        for line in output.splitlines()
+        if line.strip().lower().startswith("backend:")
+    ]
+    if not backend_lines:
+        return False, "required hardware backend declaration was not found"
+    backend = backend_lines[-1]
+
+    if policy == "m33_primitive_silicon":
+        rejected = ("reference", "no silicon", "unavailable", "fallback", "host")
+        backend_ok = "silicon" in backend and not any(
+            word in backend for word in rejected
+        )
+        total_ok = re.search(
+            r"(?m)^\s*TOTAL\s+\d+/\d+\s+PASS\s*$", output
+        ) is not None
+        passed = backend_ok and total_ok
+        return passed, (
+            "M33 hardware backend and anchored TOTAL x/x PASS are required; "
+            f"found '{backend}'"
+        )
+
+    if policy == "m33_composer_silicon":
+        backend_ok = (
+            "m33a:silicon" in backend
+            and "m33b:silicon" in backend
+            and "reference" not in backend
+        )
+        total_ok = re.search(
+            r"(?m)^\s*TOTAL\s+\d+/\d+\s+PASS\s*$", output
+        ) is not None
+        passed = backend_ok and total_ok
+        return passed, (
+            "M33a/M33b hardware backends and anchored TOTAL x/x PASS are "
+            f"required; found '{backend}'"
+        )
+
+    return False, f"unknown validation policy: {policy}"
+
+
+def run_test(name, path, script, policy="hardware"):
     print("\n=======================================================")
     print(f" Running: {name}")
     print(f" Directory: {path}")
@@ -320,22 +369,13 @@ def run_test(name, path, script):
     if errors:
         print(f"\n[STDERR]:\n{errors}")
 
-    # The DSP/NTT/FFT/modulation tests (M3..M26) print "PASS!" at the end. The
-    # M27 OFDM test uses the same sentinel. The Post-Quantum Cryptography
-    # (PQC) FIPS 203 ML-KEM and FIPS 204 ML-DSA milestone tests print either
-    # "ALL SILICON GATES PASS" (M32b/c), "ALL REFERENCE TESTS PASSED"
-    # (M32d), the last-line pytest "passed" summary (M32e composer), or a
-    # tabulated "TOTAL <n>/<n> PASS" table (M33a/b/d/e). Accept any of them
-    # in addition to the return-code=0 guard.
-    pass_sentinels = (
-        "PASS!",
-        "ALL SILICON GATES PASS",
-        "ALL REFERENCE TESTS PASSED",
-        "ALL SILICON GATES PASS",  # M32c
-        "passed",  # pytest summary for M32e composer
-        "TOTAL",   # M33a/b/d/e tabular gates all print a TOTAL <n>/<n> PASS line
-    )
-    passed = (p.returncode == 0) and any(s in output for s in pass_sentinels)
+    output_valid, validation_reason = validate_test_output(output, policy)
+    passed = (p.returncode == 0) and output_valid
+    if not passed:
+        if p.returncode != 0:
+            print(f"[VALIDATION]: process exited with code {p.returncode}")
+        if not output_valid:
+            print(f"[VALIDATION]: {validation_reason}")
     status_str = "PASSED" if passed else "FAILED"
     print(f"--> Result: [{status_str}] in {elapsed:.2f}s")
     return passed, elapsed, output
@@ -400,6 +440,7 @@ def main():
             "Milestone 12: CPU NTT/INTT Reference & Constant Generator",
             TESTS_DIR / "m12_ntt_ref",
             "test_ntt_reference_m12.py",
+            "reference",
         ),
         (
             "Milestone 13: 16-Point Vectorized NPU NTT (64 Batches)",
@@ -472,7 +513,7 @@ def main():
             "test_qam_rx_m26.py",
         ),
         (
-            "Milestone 27: OFDM Loopback (FFT+CP+pilots+LS/MMSE eq)",
+            "Milestone 27: OFDM Loopback (FFT+CP+pilots+LS+linear+ZF eq)",
             TESTS_DIR / "m27_ofdm",
             "test_ofdm_m27.py",
         ),
@@ -500,6 +541,7 @@ def main():
             "Milestone 32e: ML-KEM KeyGen/Encaps/Decaps (FIPS 203 Alg 19-21, PQC)",
             TESTS_DIR / "m32_mlkem",
             "test_mlkem_m32e.py",
+            "m32e_silicon",
         ),
         # -----------------------------------------------------------------
         # Post-Quantum Cryptography (PQC) - FIPS 204 ML-DSA
@@ -510,34 +552,42 @@ def main():
             "Milestone 33a: ML-DSA NTT (FIPS 204 Alg 41-45, Q=8380417, PQC)",
             TESTS_DIR / "m33_mldsa",
             "test_dilithium_ntt_m33a.py",
+            "m33_primitive_silicon",
         ),
         (
             "Milestone 33b: ML-DSA rounding/hint (Decompose/MakeHint/UseHint, PQC)",
             TESTS_DIR / "m33_mldsa",
             "test_dilithium_sampler_m33b.py",
+            "m33_primitive_silicon",
         ),
         (
             "Milestone 33d: ML-DSA KeyGen composer (FIPS 204 Alg 6, PQC)",
             TESTS_DIR / "m33_mldsa",
             "test_mldsa_keygen_m33d.py",
+            "m33_composer_silicon",
         ),
         (
             "Milestone 33e-sign: ML-DSA Sign_internal (FIPS 204 Alg 7, PQC)",
             TESTS_DIR / "m33_mldsa",
             "test_mldsa_sign_m33e.py",
+            "m33_composer_silicon",
         ),
         (
             "Milestone 33e-verify: ML-DSA Verify_internal (FIPS 204 Alg 8, PQC)",
             TESTS_DIR / "m33_mldsa",
             "test_mldsa_verify_m33e.py",
+            "m33_composer_silicon",
         ),
     ]
 
     results = []
     total_start = time.perf_counter()
 
-    for name, path, script in test_matrix:
-        passed, elapsed, _ = run_test(name, path, script)
+    for test in test_matrix:
+        name, path, script, *policy = test
+        passed, elapsed, _ = run_test(
+            name, path, script, policy[0] if policy else "hardware"
+        )
         results.append((name, passed, elapsed))
 
     total_elapsed = time.perf_counter() - total_start
@@ -560,8 +610,8 @@ def main():
 
     if all_passed:
         print(
-            "\n *** ALL SILICON DSP / NTT / FFT / PQC (FIPS 203 + 204) REGRESSION"
-            " TESTS PASSED BIT-ACCURATELY! ***\n"
+            "\n *** ALL REQUIRED HARDWARE-BACKED AND REFERENCE REGRESSION"
+            " TESTS PASSED! ***\n"
         )
     else:
         print("\n *** SOME REGRESSION TESTS FAILED. PLEASE REVIEW LOGS. ***\n")

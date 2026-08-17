@@ -185,6 +185,7 @@ def main():
     print("\n" + "=" * 70)
     print("PASS!")
     print("SUCCESS: All NTT/INTT mathematical constants and reference transforms verified!")
+    print("ALL REFERENCE TESTS PASSED")
     print("PASS!")
 
 if __name__ == "__main__":

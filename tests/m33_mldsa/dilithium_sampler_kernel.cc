@@ -186,4 +186,29 @@ void dilithium_sampler(uint8_t mode,
     }
 }
 
+// MLIR-AIE ObjectFifos transport arrays, so the host runner passes scalar
+// fields through this two-int32 control buffer:
+//   in_ctrl[0] = mode, in_ctrl[1] = param.
+// Keep the algorithmic entry point above as the single source of truth.
+void dilithium_sampler_controlled(int32_t in_ctrl[2],
+                                  int32_t in_a[N],
+                                  int32_t in_b[N],
+                                  int32_t out_c[N],
+                                  int32_t out_d[N]) {
+    dilithium_sampler(static_cast<uint8_t>(in_ctrl[0]), in_ctrl[1],
+                      in_a, in_b, out_c, out_d);
+}
+
+// Fit the Phoenix XDNA1 two-input-DMA limit by carrying mode, param, and the
+// second polynomial in one ObjectFifo token:
+//   in_packed[0] = mode, in_packed[1] = param,
+//   in_packed[2..257] = in_b[0..255].
+void dilithium_sampler_packed(int32_t in_a[N],
+                              int32_t in_packed[N + 2],
+                              int32_t out_c[N],
+                              int32_t out_d[N]) {
+    dilithium_sampler(static_cast<uint8_t>(in_packed[0]), in_packed[1],
+                      in_a, &in_packed[2], out_c, out_d);
+}
+
 }  // extern "C"

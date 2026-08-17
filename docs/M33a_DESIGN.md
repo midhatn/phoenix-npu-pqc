@@ -99,28 +99,32 @@ Mirrors the M32b template exactly. `in_b` is only read for `MODE_BASEMUL`
 (mode == 2) but is present in the signature to keep the AIE2 harness identical
 across primitives.
 
-## Gate results (sandbox, reference path)
+## Native silicon gate
 
-Sandbox has no attached NPU; the harness gracefully falls back to a bit-exact
-Python transliteration of the C source. Results are equivalent by construction
-(same butterfly loop, same Montgomery macro, same table) and gate against
-`dilithium-py v1.4.0` outputs:
+`phoenix_sdr_dsp.silicon.m33a_runner` now implements the M32-style
+MLIR-AIE/IRON path. To respect the Phoenix XDNA1 core tile's two-input-DMA
+limit, it sends `in_a[256]` in one ObjectFifo and packs `mode` plus
+`in_b[256]` into a second 257-lane ObjectFifo. It retrieves the 256-lane
+output through XRT. The gate prints `Backend: m33a:silicon` when the native
+runtime preflight succeeds. If IRON/XRT is unavailable, the gate exits nonzero
+with `m33a:unavailable`; it does **not** report a Python
+transliteration as a silicon pass. Static transliteration checks validate
+constants and source shape only.
 
-    MODE_NTT         50/50   PASS
-    MODE_INTT        50/50   PASS
-    MODE_BASEMUL    100/100  PASS
-    MODE_REDUCE     200/200  PASS
-    end-to-end mul   20/20   PASS   (vs schoolbook negacyclic ref)
-    ----------------------------
-    TOTAL          420/420   PASS
-
-Laptop silicon gate: TBD — waiting on paste + run.
+Phoenix laptop silicon gate recorded on 2026-08-17:
+`Backend: m33a:silicon`, **420/420 PASS** across NTT, INTT, base
+multiplication, reduction, and end-to-end polynomial multiplication. See
+[`M33_SILICON_VALIDATION_20260817.md`](M33_SILICON_VALIDATION_20260817.md).
 
 ## Provenance and audit
 
 - Zetas table matches the published pq-crystals reference implementation
   ([ref/ntt.c](https://github.com/pq-crystals/dilithium/blob/master/ref/ntt.c))
   for all 256 entries (index 0 is 0 in both — never used in butterflies).
+- `mont_reduce` explicitly computes the low 32 bits of the `QINV` product and
+  reconstructs that word as signed before the final multiply by `q`. This
+  preserves the pq-crystals reduction semantics without relying on signed
+  `int64_t` overflow for legal base-multiplication inputs.
 - Constants Q, QINV, F_MONT, MONT_R_MOD verified by
   `tools/m33a_kernel_transliteration_check.py` against first-principles
   derivations, and against the pq-crystals ref-C values.
@@ -131,14 +135,15 @@ Laptop silicon gate: TBD — waiting on paste + run.
 
 | ID     | Component                                                       | Status  |
 |:-------|:----------------------------------------------------------------|:--------|
-| M33a   | Dilithium NTT / INTT / BASEMUL / REDUCE (this doc)              | Sandbox PASS |
-| M33b   | SampleInBall, Power2Round, Decompose (HighBits / LowBits), MakeHint / UseHint | Pending |
+| M33a   | Dilithium NTT / INTT / BASEMUL / REDUCE (this doc)              | Phoenix silicon: 420/420 PASS |
+| M33b   | SampleInBall, Power2Round, Decompose (HighBits / LowBits), MakeHint / UseHint | Phoenix silicon: 700/700 PASS |
 | M33c   | SHAKE128 / SHAKE256 (reuse M32c kernel unchanged)                | Reuse   |
-| M33d   | KeyGen composer (FIPS 204 Alg 1 / 6), all 3 param sets           | Pending |
-| M33e   | Sign + Verify composer with rejection loop, ACVP KATs 44/65/87   | Pending |
+| M33d   | KeyGen composer (FIPS 204 Alg 1 / 6), all 3 param sets           | Hybrid host/NPU: 75/75 PASS |
+| M33e   | Sign + Verify composer with rejection loop, ACVP KATs 44/65/87   | Hybrid host/NPU: 180/180 PASS |
 
-Contract path lands at **30/30 (M33a)** → **31/31 (M33b)** → **32/32 (M33d)** →
-**33/33 (M33e)**. M33c is a re-use of the existing SHAKE kernel and does not
+The primitive silicon and hybrid-composer results are recorded separately;
+they are not represented as a single count of fully device-resident milestones.
+M33c is a reuse of existing SHAKE work and does not
 consume a contract slot.
 
 ## References

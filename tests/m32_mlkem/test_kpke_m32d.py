@@ -676,3 +676,8 @@ def test_gate_d_msg_roundtrip_silicon():
 if __name__ == "__main__":
     _run_local_reference_checks()
     print("\nALL REFERENCE TESTS PASSED\n")
+    _gate_a_compress_d4()
+    _gate_b_compress_d10()
+    _gate_c_tobytes_d12()
+    _gate_d_msg_roundtrip()
+    print("\nM32d: ALL SILICON GATES PASS\n")

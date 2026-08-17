@@ -77,33 +77,34 @@ Montgomery domain semantics. The composer passes coefficients as int32 in
 either signed form or in `[0, q)`; both are accepted (`canonicalize()`
 normalizes to `[0, q)` inside the kernel).
 
-## Gate results (sandbox, reference path)
+## Native silicon gate
 
-    MODE_POWER2ROUND               100/100  PASS
-    MODE_DECOMPOSE  α=190464        50/50   PASS
-    MODE_DECOMPOSE  α=523776        50/50   PASS
-    MODE_MAKEHINT   α=190464        50/50   PASS
-    MODE_MAKEHINT   α=523776        50/50   PASS
-    MODE_USEHINT    α=190464        50/50   PASS
-    MODE_USEHINT    α=523776        50/50   PASS
-    MODE_CHECKNORM                 200/200  PASS
-    MODE_REDUCE_PM                 100/100  PASS
-    -------------------------------------------
-    TOTAL                          700/700  PASS
+`phoenix_sdr_dsp.silicon.m33b_runner` now implements the M32-style
+MLIR-AIE/IRON path. To fit the Phoenix XDNA1 two-input-DMA limit, it sends
+`in_a[256]` in one ObjectFifo and packs `mode`, `param`, and `in_b[256]` into
+a second 258-lane ObjectFifo. It drains two 256-lane int32 outputs through
+XRT. The gate prints `Backend: m33b:silicon` after native runtime preflight.
+If IRON/XRT is unavailable, it exits nonzero with
+`m33b:unavailable`; it does **not** turn the Python transliteration into a
+silicon pass.
 
-Laptop silicon gate: TBD.
+Phoenix laptop silicon gate recorded on 2026-08-17:
+`Backend: m33b:silicon`, **700/700 PASS** across Power2Round, Decompose,
+MakeHint, UseHint, CheckNorm, and reduce-to-centered-range gates. See
+[`M33_SILICON_VALIDATION_20260817.md`](M33_SILICON_VALIDATION_20260817.md).
 
 ## Downstream
 
 | ID     | Component                                                       | Status  |
 |:-------|:----------------------------------------------------------------|:--------|
-| M33a   | Dilithium NTT / INTT / BASEMUL / REDUCE                          | Laptop PASS 420/420 |
-| M33b   | rounding / hint / norm-check primitives (this doc)               | Sandbox PASS 700/700 |
+| M33a   | Dilithium NTT / INTT / BASEMUL / REDUCE                          | Phoenix silicon: 420/420 PASS |
+| M33b   | rounding / hint / norm-check primitives (this doc)               | Phoenix silicon: 700/700 PASS |
 | M33c   | reuse M32c SHAKE128 / SHAKE256 kernel                            | Reuse   |
-| M33d   | KeyGen composer (Alg 1 / 6), 3 param sets, ACVP KeyGen KATs      | Pending |
-| M33e   | Sign / Verify composer, rejection loop, ACVP sigGen / sigVer     | Pending |
+| M33d   | KeyGen composer (Alg 1 / 6), 3 param sets, ACVP KeyGen KATs      | Hybrid host/NPU: 75/75 PASS |
+| M33e   | Sign / Verify composer, rejection loop, ACVP sigGen / sigVer     | Hybrid host/NPU: 180/180 PASS |
 
-Contract path: 30/30 (M33a) → **31/31 (M33b when laptop PASS)** → 32/32 (M33d) → 33/33 (M33e).
+The primitive silicon and hybrid-composer results are recorded separately;
+they are not represented as a single count of fully device-resident milestones.
 
 ## References
 

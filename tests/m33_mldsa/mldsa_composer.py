@@ -45,8 +45,10 @@ R_INV_MOD_Q = pow(1 << R_POW, -1, Q)
 # ---------------------------------------------------------------------------
 # Silicon backend abstraction. Any callable exposing the same dispatch signature
 # as `run_m33a(mode, in_a, in_b) -> list[int]` and `run_m33b(mode, param, in_a,
-# in_b) -> tuple[list[int], list[int]]` can be plugged in. When no silicon is
-# available the composer falls back to bit-exact Python reference primitives.
+# in_b) -> tuple[list[int], list[int]]` can be plugged in. The default is the
+# native-only Phoenix runner package.  Reference dispatchers remain below only
+# as explicit test fixtures; a default composer must not claim silicon while
+# silently evaluating those fixtures on the host.
 # ---------------------------------------------------------------------------
 class SiliconBackend:
     """Dispatch abstraction.
@@ -63,10 +65,31 @@ class SiliconBackend:
         m33a: Callable | None = None,
         m33b: Callable | None = None,
     ) -> None:
-        self._m33a = m33a or self._ref_m33a()
-        self._m33b = m33b or self._ref_m33b()
+        if (m33a is None) != (m33b is None):
+            raise ValueError("M33a and M33b dispatchers must be supplied together")
+        if m33a is None:
+            # Importing the runners is safe on a host without IRON; their
+            # MLIR-AIE/XRT imports are intentionally lazy. A real dispatch
+            # either reaches the NPU or raises NativeRunnerUnavailable.
+            from phoenix_sdr_dsp.silicon.m33a_runner import run_m33a
+            from phoenix_sdr_dsp.silicon.m33b_runner import run_m33b
 
-    # -- reference (Python transliteration) fallbacks -----------------------
+            self._m33a = run_m33a
+            self._m33b = run_m33b
+        else:
+            self._m33a = m33a
+            self._m33b = m33b
+
+    @classmethod
+    def reference_for_unit_tests(cls) -> "SiliconBackend":
+        """Return an explicitly named host reference fixture.
+
+        This method exists for isolated host-only tests.  It must not be used
+        by a script whose output is evaluated as silicon evidence.
+        """
+        return cls(m33a=cls._ref_m33a(), m33b=cls._ref_m33b())
+
+    # -- explicit host-only reference fixtures ------------------------------
     @staticmethod
     def _ref_m33a() -> Callable:
         QINV = 58728449

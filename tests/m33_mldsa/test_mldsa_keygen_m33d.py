@@ -1,20 +1,9 @@
 """M33d - ML-DSA KeyGen gate (FIPS 204, Post-Quantum Cryptography).
 
-Two-stage gate against NIST ACVP-Server ML-DSA-keyGen-FIPS204 vectors:
-
-    1. Reference stage - composer with software fallbacks in SiliconBackend
-       must bit-match all 75 ACVP KAT (pk, sk) tuples across ML-DSA-44,
-       ML-DSA-65, ML-DSA-87 (25 vectors each). This proves the composer wiring
-       (rejection sampling, bit-packing, NTT domain conventions) is correct
-       independent of any hardware.
-
-    2. Silicon stage - the M33a and M33b tile runners, if importable, replace
-       the software fallbacks in SiliconBackend. Same 75 KATs must pass. Any
-       byte-level divergence surfaces the silicon bridge as the fault.
-
-The test is deliberately silent about which mode it is running in - the header
-prints the backend so both a laptop AIE deploy and the CI sandbox produce
-comparable output.
+Native-only gate against NIST ACVP-Server ML-DSA-keyGen-FIPS204 vectors. The
+M33a and M33b tile runners must bit-match all 75 ACVP KAT (pk, sk) tuples
+across ML-DSA-44, ML-DSA-65, ML-DSA-87 (25 vectors each). A missing native
+runtime is an explicit nonzero failure, never a Python-reference pass.
 
 References
     FIPS 204: https://nvlpubs.nist.gov/nistpubs/fips/nist.fips.204.pdf
@@ -40,24 +29,18 @@ PROMPT = VECTOR_DIR / "ML-DSA-keyGen-FIPS204_prompt.json"
 EXPECTED = VECTOR_DIR / "ML-DSA-keyGen-FIPS204_expectedResults.json"
 
 
-def _try_silicon_backend() -> tuple[SiliconBackend, str]:
-    """Prefer silicon runners; fall back to reference dispatch on ImportError."""
-    m33a = None
-    m33b = None
-    tags = []
+def _try_silicon_backend() -> tuple[SiliconBackend | None, str]:
+    """Build an all-native backend; partial/reference composition is forbidden."""
     try:
         mod_a = importlib.import_module("phoenix_sdr_dsp.silicon.m33a_runner")
-        m33a = mod_a.run
-        tags.append("m33a:silicon")
-    except Exception:  # noqa: BLE001
-        tags.append("m33a:reference")
-    try:
         mod_b = importlib.import_module("phoenix_sdr_dsp.silicon.m33b_runner")
-        m33b = mod_b.run
-        tags.append("m33b:silicon")
-    except Exception:  # noqa: BLE001
-        tags.append("m33b:reference")
-    return SiliconBackend(m33a=m33a, m33b=m33b), ", ".join(tags)
+        mod_a.require_hardware_runtime()
+        mod_b.require_hardware_runtime()
+        return SiliconBackend(m33a=mod_a.run, m33b=mod_b.run), (
+            "m33a:silicon, m33b:silicon"
+        )
+    except Exception as exc:  # noqa: BLE001 - do not silently choose reference
+        return None, f"m33:unavailable ({type(exc).__name__}: {exc})"
 
 
 def main() -> int:
@@ -70,8 +53,11 @@ def main() -> int:
     print("=" * 72)
     print("M33d - ML-DSA KeyGen silicon gate (FIPS 204, Post-Quantum Crypto)")
     print(f"  vectors: {PROMPT.name}")
-    print(f"  backend: {backend_tag}")
+    print(f"Backend: {backend_tag}")
     print("=" * 72)
+    if backend is None:
+        print("FAIL: both native M33 runners are required; no reference composer ran.")
+        return 2
 
     per_set: dict[str, list[int]] = {}
     total_ok = 0

@@ -74,7 +74,7 @@ Activate the resulting environment:
 
 ## Post-Quantum Cryptography reference dependencies (M32 / M33)
 
-The M32 FIPS 203 ML-KEM and M33 FIPS 204 ML-DSA milestones (Post-Quantum Cryptography) validate their silicon-dispatch composers bit-exact against the official NIST ACVP-Server known-answer test vectors and against two published reference implementations from the [pq-crystals](https://pq-crystals.org/) family. Since v1.0.0, `install.py` auto-installs the pinned PQC reference packages into the `ironenv` it just created, so a normal `python install.py` on a fresh clone is enough. The equivalent manual step — useful if you bootstrapped `ironenv` another way or want to re-pin versions — is:
+The M32 FIPS 203 ML-KEM and M33 FIPS 204 ML-DSA tests use official NIST ACVP-Server known-answer vectors and two published reference implementations from the [pq-crystals](https://pq-crystals.org/) family. M32b/c/d and M33a/b dispatch directly to the NPU. M32e combines 60 host KATs with a nine-vector ML-KEM-512 silicon smoke gate, while M33d/e are host/NPU composers using the native M33a/M33b primitive runners. Since v1.0.0, `install.py` auto-installs the pinned PQC reference packages into the `ironenv` it creates. The equivalent manual step, useful if you bootstrapped `ironenv` another way or want to re-pin versions, is:
 
 ```powershell
 & C:\\phoenix-sdr-dsp\\third_party\\mlir-aie\\ironenv\\Scripts\\python.exe -m pip install kyber-py==1.0.1 dilithium-py==1.4.0 pytest
@@ -109,11 +109,11 @@ Set-Location C:\\phoenix-sdr-dsp
 python run_all_silicon_tests.py
 ```
 
-The automated suite runs 33 entries covering M3, M5 through M15, M15b, M17, M17p, M19 through M27, and the Post-Quantum Cryptography track M32b, M32c, M32d, M32e (FIPS 203 ML-KEM) plus M33a, M33b, M33d, M33e-sign, M33e-verify (FIPS 204 ML-DSA). The DSP / NTT / FFT / OFDM / M32b / M32c / M32d entries require the physical NPU and compare NPU results against CPU references. The PQC composer and rounding / hint entries (M32e, M33a, M33b, M33d, M33e-sign, M33e-verify) execute the bit-exact reference path and are gated against the NIST ACVP-Server KATs (they exercise the silicon-dispatch seams but fall through to their bit-exact Python transliteration whenever a native runner is not yet hooked up). Expected outcome on Phoenix NPU1 with the PQC reference packages installed: 33 of 33 tests pass.
+The automated suite runs 34 invocations covering M3, M5 through M15, M15b, M17, M17p, M19 through M27, and the Post-Quantum Cryptography track M32b, M32c, M32d, M32e plus M33a, M33b, M33d, M33e-sign, and M33e-verify. Its current composition is 29 direct-hardware entries, four host/NPU composer entries, and one intentional CPU reference entry (M12). The strict runner requires all three M32e silicon groups without skips, explicit M33 silicon backend declarations, and anchored `TOTAL x/x PASS` lines. The recorded 2026-08-17 run completed 34/34 in 126.29 seconds. See [`M33_SILICON_VALIDATION_20260817.md`](M33_SILICON_VALIDATION_20260817.md).
 
 ## Optional: I/Q Throughput
 
-Not part of the 33-entry suite. After ironenv is active:
+Not part of the 34-invocation suite. After ironenv is active:
 
 ```powershell
 python tests\npu_visible\test_iq_throughput.py

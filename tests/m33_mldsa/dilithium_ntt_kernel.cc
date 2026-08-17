@@ -87,9 +87,17 @@ static const int32_t ZETAS_MONT[256] = {
 // Montgomery reduction: input a in (-2^31 * q, 2^31 * q), returns t
 // with t congruent to a * R^-1 mod q, t in (-q, q).
 static inline int32_t mont_reduce(int64_t a) {
-    int32_t t = static_cast<int32_t>(a * static_cast<int64_t>(QINV));
-    t = static_cast<int32_t>((a - static_cast<int64_t>(t) * static_cast<int64_t>(Q)) >> 32);
-    return t;
+    // Dilithium needs the signed low 32-bit word of `a`, multiplied by QINV.
+    // Express that conversion explicitly instead of overflowing signed int64
+    // in `a * QINV` before narrowing.
+    const uint32_t low = static_cast<uint32_t>(static_cast<uint64_t>(a));
+    const uint32_t t_low = static_cast<uint32_t>(
+        static_cast<uint64_t>(low) * static_cast<uint32_t>(QINV));
+    const int64_t t =
+        t_low <= 0x7fffffffU ? static_cast<int64_t>(t_low)
+                             : static_cast<int64_t>(t_low) - (INT64_C(1) << 32);
+    return static_cast<int32_t>(
+        (a - t * static_cast<int64_t>(Q)) >> 32);
 }
 
 // Reduce to representative in (-6283009, 6283008) then to (-q/2, q/2].
@@ -185,6 +193,29 @@ void dilithium_ntt(uint8_t mode,
             for (int32_t i = 0; i < N; ++i) out_c[i] = 0;
             break;
     }
+}
+
+// MLIR-AIE ObjectFifos transport arrays, not scalar function arguments.  This
+// fixed-width control-buffer ABI is therefore the native IRON entry point:
+//   in_ctrl[0] = mode (0=NTT, 1=INTT, 2=BASEMUL, 3=REDUCE).
+// It delegates to the canonical primitive above; no numerical logic is
+// duplicated in the host runner.
+void dilithium_ntt_controlled(int32_t in_ctrl[1],
+                              int32_t in_a[MAX_COEFFS],
+                              int32_t in_b[MAX_COEFFS],
+                              int32_t out_c[MAX_COEFFS]) {
+    dilithium_ntt(static_cast<uint8_t>(in_ctrl[0]), in_a, in_b, out_c);
+}
+
+// Phoenix XDNA1 core tiles expose only two input DMA channels. Pack the mode
+// and second polynomial into one ObjectFifo token so the native graph uses
+// exactly two input channels:
+//   in_packed[0] = mode, in_packed[1..256] = in_b[0..255].
+void dilithium_ntt_packed(int32_t in_a[MAX_COEFFS],
+                          int32_t in_packed[MAX_COEFFS + 1],
+                          int32_t out_c[MAX_COEFFS]) {
+    dilithium_ntt(static_cast<uint8_t>(in_packed[0]), in_a,
+                  &in_packed[1], out_c);
 }
 
 }  // extern "C"

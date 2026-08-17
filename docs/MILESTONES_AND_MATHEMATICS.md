@@ -685,7 +685,7 @@ See [docs/M26_DESIGN.md](M26_DESIGN.md).
 
 ## M27: fused OFDM loopback (FFT + CP + pilots + channel estimation + one-tap equalizer)
 
-M27 is the closing milestone of the modulation & synchronization block (M24-M27). One AIE2 tile runs a full OFDM loopback in three fused stages: transmit-side pilot insertion + IFFT + cyclic-prefix prepend, channel injection on the host reference, then receive-side cyclic-prefix removal + FFT + LS or LMMSE channel estimation on pilot subcarriers + one-tap frequency-domain equalization of data subcarriers.
+M27 is the closing milestone of the modulation & synchronization block (M24-M27). One AIE2 tile runs a full OFDM loopback in three fused stages: transmit-side pilot insertion + IFFT + cyclic-prefix prepend, channel injection on the host reference, then receive-side cyclic-prefix removal + FFT + least-squares (LS) channel estimation on pilot subcarriers, linear interpolation across data subcarriers, and one-tap zero-forcing equalization.
 
 Core identity is the OFDM signal model ([Nee & Prasad 2000 §2.1](https://ieeexplore.ieee.org/book/9100729)):
 
@@ -700,13 +700,16 @@ where `K` is the set of used subcarriers, `N` is the FFT size, `N_cp` is the cyc
 H_hat_LS[p] = Y[p] / X_pilot[p]
 ```
 
-([Van de Beek et al. 1995](https://ieeexplore.ieee.org/document/456405)); LMMSE follows [Edfors et al. 1998](https://ieeexplore.ieee.org/document/725572). Data subcarriers are equalized with the one-tap zero-forcing rule `X_hat[k] = Y[k] / H_hat[k]`. The FFT/IFFT dispatch reuses the M17 radix-4 Stockham kernel bit-exact.
+([Van de Beek et al. 1995](https://ieeexplore.ieee.org/document/456405)). The implementation linearly interpolates those LS pilot estimates across data subcarriers and applies the one-tap zero-forcing rule `X_hat[k] = Y[k] / H_hat[k]`. It does not implement LMMSE estimation or equalization. The FFT/IFFT dispatch reuses the M17 radix-4 Stockham kernel bit-exact.
 
 Silicon kernel: `tests/m27_ofdm/ofdm_loopback_kernel.cc`. Test: `tests/m27_ofdm/test_ofdm_m27.py`. Design: [`docs/M27_DESIGN.md`](M27_DESIGN.md). 25th silicon regression entry. Sandbox transliteration audit `tools/m27_kernel_transliteration_check.py` passes at 9 / 9.
 
 ## Automated regression coverage
 
-`run_all_silicon_tests.py` executes 33 automated test entries (v1.0.0):
+`run_all_silicon_tests.py` executes 34 automated test entries in the current
+development tree. The verified backend accounting is 29 direct-hardware
+entries, four host/NPU composer entries, and one intentional CPU reference
+entry (M12):
 
 ```powershell
 python run_all_silicon_tests.py
@@ -738,7 +741,7 @@ The runner reports pass/fail status and elapsed time for:
 22. M24  fused Barker-13 matched-filter correlator (reversed-tap FIR pair on I and Q, L=13)
 23. M25  fused BPSK/QPSK receiver (Gardner TED + linear interpolator + on-tile NCO derotate + Costas order-2/4 detector + Rondeau PI, `psk_rx_body<ORDER>` templated body with two `@iron.jit` entry points)
 24. M26  fused QAM-16 receiver with soft-decision demapping (M25 core + Gray QAM-16 slicer + decision-directed order-M phase detector + max-log axis-separable LLR demapper, `qam16_rx` `@iron.jit` entry with three-argument DMA signature)
-25. M27  fused OFDM loopback (FFT + CP + pilots + LS/LMMSE channel estimation + one-tap frequency-domain equalizer, reuses M17 radix-4 Stockham FFT)
+25. M27  fused OFDM loopback (FFT + CP + pilots + LS channel estimation + linear interpolation + one-tap zero-forcing equalizer, reuses M17 radix-4 Stockham FFT)
 26. M32b Post-Quantum Cryptography — [FIPS 203](https://nvlpubs.nist.gov/nistpubs/fips/nist.fips.203.pdf) ML-KEM NTT (Algorithms 9–12, `Z_3329`, pq-crystals ζ-table)
 27. M32c Post-Quantum Cryptography — [FIPS 202](https://nvlpubs.nist.gov/nistpubs/fips/nist.fips.202.pdf) Keccak-f[1600] + SHA-3 / SHAKE + [FIPS 203 Algorithms 7–8](https://nvlpubs.nist.gov/nistpubs/fips/nist.fips.203.pdf) samplers
 28. M32d Post-Quantum Cryptography — [FIPS 203 Algorithms 13–15](https://nvlpubs.nist.gov/nistpubs/fips/nist.fips.203.pdf) K-PKE component (not standalone approved)
@@ -746,9 +749,10 @@ The runner reports pass/fail status and elapsed time for:
 30. M33a Post-Quantum Cryptography — [FIPS 204](https://nvlpubs.nist.gov/nistpubs/fips/nist.fips.204.pdf) ML-DSA NTT / INTT / basemul (`Z_8380417`, Montgomery form)
 31. M33b Post-Quantum Cryptography — [FIPS 204 Algorithms 30–33](https://nvlpubs.nist.gov/nistpubs/fips/nist.fips.204.pdf) rounding & hint (Decompose / MakeHint / UseHint / CheckNorm)
 32. M33d Post-Quantum Cryptography — [FIPS 204 Algorithm 6](https://nvlpubs.nist.gov/nistpubs/fips/nist.fips.204.pdf) ML-DSA.KeyGen composer against NIST ACVP-Server KATs
-33. M33e Post-Quantum Cryptography — [FIPS 204 Algorithms 7 and 8](https://nvlpubs.nist.gov/nistpubs/fips/nist.fips.204.pdf) ML-DSA.Sign_internal + Verify_internal composer against NIST ACVP-Server sigGen (90/90) + sigVer (90/90) KATs
+33. M33e Sign Post-Quantum Cryptography — [FIPS 204 Algorithm 7](https://nvlpubs.nist.gov/nistpubs/fips/nist.fips.204.pdf) ML-DSA.Sign_internal composer against NIST ACVP-Server sigGen KATs (90/90)
+34. M33e Verify Post-Quantum Cryptography — [FIPS 204 Algorithm 8](https://nvlpubs.nist.gov/nistpubs/fips/nist.fips.204.pdf) ML-DSA.Verify_internal composer against NIST ACVP-Server sigVer KATs (90/90)
 
-M0–M2 are setup and reproducibility milestones, while M4 depends on locally attached SDR hardware; therefore they are not entries in the automated silicon regression runner. M32b–M32e and M33a–M33e require the Post-Quantum Cryptography reference packages (`kyber-py`, `dilithium-py`, plus `pytest`) pinned in [`requirements/toolchain-versions.md`](../requirements/toolchain-versions.md) and auto-installed into `ironenv` by `install.py`. SHAKE / SHA-3 primitives come from the CPython [`hashlib`](https://docs.python.org/3/library/hashlib.html) standard library, so no separate SHAKE / Keccak wheel is required.
+M0–M2 are setup and reproducibility milestones, while M4 depends on locally attached SDR hardware; therefore they are not entries in the automated regression runner. M32e, M33d, M33e Sign, and M33e Verify are host/NPU compositions rather than fully device-resident algorithms. M32b–M32e and M33a–M33e require the Post-Quantum Cryptography reference packages (`kyber-py`, `dilithium-py`, plus `pytest`) pinned in [`requirements/toolchain-versions.md`](../requirements/toolchain-versions.md) and auto-installed into `ironenv` by `install.py`. SHAKE / SHA-3 host operations use the CPython [`hashlib`](https://docs.python.org/3/library/hashlib.html) standard library, so no separate SHAKE / Keccak wheel is required.
 
 ## Practical verification checklist
 

@@ -6,9 +6,9 @@
 # validate-metadata, cpu-reference-tests, markdown-links) run only what can
 # execute on a stock Ubuntu runner without an actual AMD NPU.
 #
-# Silicon regression (16 milestones, 15/16 PASS at v0.4.0) runs on the
-# maintainer's Phoenix laptop via `python run_all_silicon_tests.py`; see
-# `docs/SETUP_WINDOWS.md`.
+# The hardware-backed regression entries run on the maintainer's Phoenix
+# laptop via `python run_all_silicon_tests.py`. Stock GitHub runners execute
+# only CPU/reference checks; see `docs/SETUP_WINDOWS.md`.
 #
 # For contributors forking the repo:
 # - The four normally-active jobs will run on your fork's pull requests

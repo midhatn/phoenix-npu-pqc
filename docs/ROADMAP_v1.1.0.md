@@ -2,11 +2,11 @@
 
 Post-v1.0.0 development plan. Every claim in this document is intended to be citable to a primary source; the References section at the bottom collects all sources with canonical URLs.
 
-Related: [`ROADMAP.md`](ROADMAP.md) covers milestones through v1.0.0 (M3, M5–M15, M15b, M17, M17p, M19–M27, M32b/c/d/e, M33a/b/d/e — **34 / 34 PASS on Phoenix NPU1**). This document extends that plan.
+Related: [`ROADMAP.md`](ROADMAP.md) covers milestones through v1.0.0. The current 34-invocation boundary is **29 direct-hardware, four host/NPU composers, and one intentional CPU reference**. This document extends that plan.
 
 ## Positioning statement for v1.1.0
 
-v1.0.0 is a **correctness** release: 33 milestones and 34 test invocations validated bit-exact against reference implementations and, for the Post-Quantum Cryptography track, against the [NIST ACVP-Server](https://github.com/usnistgov/ACVP-Server) known-answer test vectors for [FIPS 203](https://nvlpubs.nist.gov/nistpubs/fips/nist.fips.203.pdf) and [FIPS 204](https://nvlpubs.nist.gov/nistpubs/fips/nist.fips.204.pdf).
+The post-release development tree remains a **correctness** project with mixed backends. Its 34 invocations completed 34/34 PASS on 2026-08-17: 29 direct-hardware entries, four host/NPU composers, and one intentional CPU reference. See [`M33_SILICON_VALIDATION_20260817.md`](M33_SILICON_VALIDATION_20260817.md).
 
 v1.1.0 extends v1.0.0 along three orthogonal tracks. Each track is independently valuable and independently releasable — a mini-release for any completed track is acceptable and encouraged. None of the tracks invalidates a v1.0.0 claim.
 
@@ -16,7 +16,7 @@ v1.1.0 extends v1.0.0 along three orthogonal tracks. Each track is independently
 
 ## Status legend (reused from `ROADMAP.md`)
 
-- ✅ **Shipped** — silicon-validated on physical NPU, bit-accurate against CPU reference where applicable, present in `run_all_silicon_tests.py`.
+- ✅ **Shipped** — implemented and present in the repository; the relevant document must state whether validation is hardware-backed or reference-only.
 - 🚧 **Next up** — no hardware dependency, actively planned.
 - 🔒 **Deferred — SDR hardware** — blocked pending acquisition of a supported SDR device.
 - 📋 **Planned — v1.1.0** — targeted for this roadmap, no hardware or research blocker known.
@@ -164,7 +164,7 @@ Rationale: (a) and (b) make the project citable in academic writing; (c) inocula
 | Field | Value |
 |---|---|
 | Status | 📋 Planned — v1.1.0 |
-| Deliverable | A Show-and-Tell style post in [`open-quantum-safe/liboqs`](https://github.com/open-quantum-safe/liboqs) Discussions (or an issue if Discussions are not enabled) describing the M32 / M33 Phoenix NPU implementation of FIPS 203 and FIPS 204, its ACVP KAT validation, and its relationship to `liboqs` (complementary reference-implementation target on non-cryptographic silicon, not a competing production library) |
+| Deliverable | A Show-and-Tell style post in [`open-quantum-safe/liboqs`](https://github.com/open-quantum-safe/liboqs) Discussions (or an issue if Discussions are not enabled) describing the hardware-backed M32 primitives, native M33a/M33b silicon gates, and the separate hybrid ML-KEM/ML-DSA composers, with their exact validation boundaries and relationship to `liboqs` |
 | Purpose | Reaches the largest active PQC-implementation community on GitHub; establishes visibility in a venue that predates FIPS 203 / 204 and that all serious PQC library authors track |
 
 ---

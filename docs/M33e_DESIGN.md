@@ -7,11 +7,12 @@ Post-Quantum Cryptography — final sub-milestone of M33. Assembles
 - **M33a** — NTT / INTT / basemul over `Z_q`, `q = 8380417`
 - **M33b** — Power2Round, Decompose, MakeHint, UseHint, CheckNormBound,
   ReduceModPm
-- **M33c** — SHAKE128 / SHAKE256 (re-use of the M32c Keccak kernel, no new
-  silicon slot)
+- **Host SHAKE** — the current composer calls the `dilithium-py` SHAKE and
+  sampling paths; M32c is not yet wired into M33
 
-No new `.cc` kernel lands with M33e — everything data-parallel is already
-covered by M33a and M33b. This milestone is pure composer work.
+No new `.cc` kernel lands with M33e. M33a/M33b polynomial and hint primitives
+run on the NPU, while the Python composer retains SHAKE, sampling, packing,
+matrix/vector orchestration, rejection-loop control, and byte comparisons.
 
 ## Scope
 
@@ -87,8 +88,9 @@ New composer methods on top of M33d's `MLDSAComposer` / `SiliconBackend`:
 | `poly_use_hint`       | M33b     | 3    | Alg 34   |
 | `poly_check_norm`     | M33b     | 4    | norm check |
 
-Everything else (NTT / INTT / basemul / Power2Round / SHAKE / SampleInBall
-/ bit-packing) was already in the composer from M33d.
+Everything else is inherited from M33d. NTT / INTT / basemul and
+Power2Round dispatch to M33a/M33b; SHAKE, SampleInBall, and bit-packing remain
+host operations.
 
 ## Gates
 
@@ -103,13 +105,24 @@ vectors mix must-pass and must-reject cases (18 valid, 72 tampered
 across the 90 sigVer tests), exercising the M33b MODE 4 CheckNormBound
 early-exit and the popcount omega check.
 
-### Sandbox results (reference path)
+### Native gate status
 
-    Sign_internal   (90 tests):  90/90 PASS   (~8.7s wall)
-    Verify_internal (90 tests):  90/90 PASS   (~1.2s wall)
-    transliteration audit:       35/35 PASS
+Sign and Verify construct the same all-native M33a/M33b backend as M33d and
+report `Backend: m33a:silicon, m33b:silicon` only when both MLIR-AIE/IRON
+runners preflight successfully. A missing runtime or failed dispatch is
+nonzero and does not run the reference backend. Static composer/transliteration
+audits are useful host checks but are not hardware evidence.
 
-Laptop silicon gate: TBD.
+Laptop validation recorded 2026-08-17 on the Phoenix XDNA1 host:
+
+- Sign_internal: **90/90 PASS** for tgIds 7-12 across ML-DSA-44/65/87.
+- Verify_internal: **90/90 PASS**, comprising 18 valid signatures accepted
+  and 72 tampered signatures rejected.
+- Backend: `m33a:silicon, m33b:silicon`.
+
+These results validate the host-orchestrated composer with native polynomial
+dispatches. They do not establish that SHAKE, sampling, packing, matrix/vector
+control, or the complete signing rejection loop is NPU-resident.
 
 ## Notes on the deterministic path
 
@@ -138,12 +151,15 @@ delegates to for `SampleInBall` and packing.
 
 ## Contract path
 
-    30/30 (M33a) -> 31/31 (M33b) -> [M33c reuse, no slot]
-        -> 32/32 (M33d KeyGen) -> 33/33 (M33e, this milestone)
+    Entry 30: M33a -> entry 31: M33b -> [M33c reuse, no slot]
+        -> entry 32: M33d KeyGen -> entries 33-34: M33e Sign and Verify
 
-M33 fully closed — FIPS 204 ML-DSA (Post-Quantum Cryptography) end-to-end
-signing and verification on Phoenix NPU, all three parameter sets, gated
-against NIST ACVP.
+These entry numbers describe the 34-invocation mixed-backend regression matrix,
+not a count of fully device-resident workloads.
+
+M33's current hybrid functional path is closed against the selected NIST ACVP
+vectors for all three parameter sets. Full device-resident ML-DSA remains a
+separate architecture milestone.
 
 ## References
 

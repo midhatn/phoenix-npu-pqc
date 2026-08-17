@@ -37,23 +37,18 @@ EXPECTED = VECTOR_DIR / "ML-DSA-sigVer-FIPS204_expectedResults.json"
 TARGET_TGIDS = {7, 8, 9, 10, 11, 12}
 
 
-def _try_silicon_backend() -> tuple[SiliconBackend, str]:
-    m33a = None
-    m33b = None
-    tags = []
+def _try_silicon_backend() -> tuple[SiliconBackend | None, str]:
+    """Build an all-native backend; partial/reference composition is forbidden."""
     try:
         mod_a = importlib.import_module("phoenix_sdr_dsp.silicon.m33a_runner")
-        m33a = mod_a.run
-        tags.append("m33a:silicon")
-    except Exception:  # noqa: BLE001
-        tags.append("m33a:reference")
-    try:
         mod_b = importlib.import_module("phoenix_sdr_dsp.silicon.m33b_runner")
-        m33b = mod_b.run
-        tags.append("m33b:silicon")
-    except Exception:  # noqa: BLE001
-        tags.append("m33b:reference")
-    return SiliconBackend(m33a=m33a, m33b=m33b), ", ".join(tags)
+        mod_a.require_hardware_runtime()
+        mod_b.require_hardware_runtime()
+        return SiliconBackend(m33a=mod_a.run, m33b=mod_b.run), (
+            "m33a:silicon, m33b:silicon"
+        )
+    except Exception as exc:  # noqa: BLE001
+        return None, f"m33:unavailable ({type(exc).__name__}: {exc})"
 
 
 def main() -> int:
@@ -67,8 +62,11 @@ def main() -> int:
     print("M33e - ML-DSA Verify_internal gate (FIPS 204, Post-Quantum Crypto)")
     print(f"  vectors: {PROMPT.name}")
     print(f"  scope:   tgIds {sorted(TARGET_TGIDS)} (internal, mixed pass/fail)")
-    print(f"  backend: {backend_tag}")
+    print(f"Backend: {backend_tag}")
     print("=" * 72)
+    if backend is None:
+        print("FAIL: both native M33 runners are required; no reference composer ran.")
+        return 2
 
     total_ok = 0
     total = 0

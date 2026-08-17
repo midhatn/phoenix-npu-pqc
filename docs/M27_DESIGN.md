@@ -1,6 +1,6 @@
 # M27 — OFDM: FFT + CP + Pilots + Channel Estimation + Equalization
 
-**Status:** ⏸️ In bring-up (kernel written, awaiting silicon PASS on laptop)
+**Status:** Hardware-backed functional PASS on Phoenix NPU1
 **Depends on:** M17 (64-pt radix-4 Stockham FFT), M25/M26 (fused receiver kernel discipline)
 **Deliverables:** `tests/m27_ofdm/`, `tools/m27_kernel_transliteration_check.py`, this document
 

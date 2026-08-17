@@ -1,11 +1,10 @@
 cff-version: 1.2.0
 message: "If you use this software, please cite it using the metadata below."
-title: "Phoenix SDR-DSP: Vectorized SDR & NTT DSP Acceleration Framework for AMD Phoenix NPU (XDNA1/AIE2)"
-abstract: "High-performance native Windows 11 acceleration framework for real-time Software Defined Radio (SDR) processing and Number Theoretic Transform (NTT) finite-field lattice cryptography on AMD Ryzen AI Phoenix silicon (XDNA1 / AIE2). Provides 16 silicon-verified milestones (16/16 PASS on Phoenix NPU1 as of 2026-08-15) covering vectorized FIR filtering, complex mixing, power detection, multi-stage streaming demodulation, 4-column parallel scaling, modular arithmetic (Barrett reduction), Radix-2 NTT butterflies, 16/256-point NTT/INTT with cyclic polynomial multiplication mod q=3329, CPU FFT reference, silicon radix-2 FFT/IFFT, and 4-column parallel FFT."
+title: "Phoenix SDR-DSP: Windows-Native DSP, SDR, and PQC Experiments for AMD Phoenix XDNA1"
+abstract: "A native Windows 11 engineering corpus for deterministic DSP, SDR, transform, and FIPS-aligned post-quantum cryptography experiments on AMD Ryzen AI Phoenix silicon (XDNA1 / AIE2). The 34-invocation regression matrix completed 34/34 PASS on 2026-08-17: 29 direct-hardware entries, four host/NPU composer entries, and one intentional CPU reference entry. M33a/M33b are native ML-DSA primitive gates; M32e and M33d/e remain host-orchestrated rather than fully device-resident. FIPS 203 end-to-end composition coverage is currently ML-KEM-512."
 type: software
-version: "0.4.0"
-date-released: "2026-08-15"
-commit: "6022626bb589c1ea545a99a5853a94fb00d35e43"
+version: "1.0.0"
+date-released: "2026-08-16"
 authors:
   - family-names: "Nashar"
     given-names: "Midhat"
@@ -34,12 +33,12 @@ keywords:
   - "iron-api"
 preferred-citation:
   type: software
-  title: "Phoenix SDR-DSP: Vectorized SDR & NTT DSP Acceleration Framework for AMD Phoenix NPU"
+  title: "Phoenix SDR-DSP: Windows-Native DSP, SDR, and PQC Experiments for AMD Phoenix XDNA1"
   authors:
     - family-names: "Nashar"
       given-names: "Midhat"
   year: 2026
-  version: "0.4.0"
+  version: "1.0.0"
   url: "https://github.com/midhatn/phoenix-sdr-dsp"
 references:
   - type: software

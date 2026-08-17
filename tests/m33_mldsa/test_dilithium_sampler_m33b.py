@@ -20,6 +20,8 @@ import sys
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
 
 try:
     from dilithium_py.polynomials.polynomials import PolynomialRing
@@ -51,22 +53,16 @@ ALPHA_65 = 2 * GAMMA2_65           # 523776
 
 
 # ---------------------------------------------------------------------------
-# Silicon dispatch. Prefer NPU runner, fall back to Python transliteration.
+# Silicon dispatch. This is a silicon gate, never a reference fallback.
 # ---------------------------------------------------------------------------
 def _try_import_silicon():
-    for mod, fn in (
-        ("phoenix_sdr_dsp.silicon.m33b_runner", "run_m33b"),
-        ("tests.m33_mldsa.m33b_runner", "run_m33b"),
-    ):
-        try:
-            m = __import__(mod, fromlist=[fn])
-            f = getattr(m, fn, None)
-            if callable(f):
-                return f, mod
-        except Exception as _e:  # noqa: BLE001
-            _ = _e
-            continue
-    return None, "no silicon runner import path"
+    try:
+        from phoenix_sdr_dsp.silicon import m33b_runner
+
+        m33b_runner.require_hardware_runtime()
+        return m33b_runner.run_m33b, "m33b:silicon"
+    except Exception as exc:  # noqa: BLE001 - report all native setup failures
+        return None, f"m33b:unavailable ({type(exc).__name__}: {exc})"
 
 
 _silicon_dispatch, _silicon_backend = _try_import_silicon()
@@ -158,9 +154,12 @@ def _ref_dispatch(mode, param, in_a, in_b):
 
 def dispatch(mode, param, in_a, in_b=None):
     in_b = in_b or [0] * N
-    if _silicon_dispatch is not None:
-        return _silicon_dispatch(mode, param, list(in_a), list(in_b))
-    return _ref_dispatch(mode, param, in_a, in_b)
+    if _silicon_dispatch is None:
+        raise RuntimeError(
+            "M33b hardware runner is unavailable. This silicon gate does not "
+            "fall back to the Python transliteration."
+        )
+    return _silicon_dispatch(mode, param, list(in_a), list(in_b))
 
 
 # ---------------------------------------------------------------------------
@@ -286,8 +285,11 @@ def main() -> int:
     print("=" * 72)
     print("M33b - Dilithium rounding / hint primitives silicon gate")
     print(f"  Q = {Q}, N = {N}, D_BITS = {D_BITS}")
-    print(f"  backend: {_silicon_backend}")
+    print(f"Backend: {_silicon_backend}")
     print("=" * 72)
+    if _silicon_dispatch is None:
+        print("FAIL: native M33b MLIR-AIE/IRON runner is required; no reference fallback ran.")
+        return 2
     results = [
         ("MODE_POWER2ROUND      ", *gate_power2round()),
         (f"MODE_DECOMPOSE a={ALPHA_44}", *gate_decompose(ALPHA_44)),

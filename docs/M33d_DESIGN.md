@@ -1,22 +1,20 @@
 # M33d — ML-DSA KeyGen composer (FIPS 204)
 
-Post-Quantum Cryptography — FIPS 204 ML-DSA (Dilithium) key generation on
-Phoenix NPU. This milestone assembles the previous per-primitive silicon
-kernels (M33a NTT, M33b rounding, M32c SHAKE reused as M33c) into an
-end-to-end KeyGen implementing Algorithm 6 of FIPS 204 for all three
-parameter sets in a single composer.
+Post-Quantum Cryptography — FIPS 204 ML-DSA (Dilithium) key generation using
+a host-orchestrated Phoenix NPU composer. This milestone invokes M33a NTT and
+M33b rounding primitives on silicon while Python implements Algorithm 6
+control, SHAKE, sampling, accumulation, and packing for all three parameter
+sets.
 
 ## Scope
 
-- **In silicon**: coefficient-wise NTT / INTT / basemul (M33a modes 0/1/2),
-  Power2Round (M33b mode 0), and every SHAKE128 / SHAKE256 absorb-squeeze
-  used by ExpandA, ExpandS, `H`, and `tr = H(pk, 64)` (M32c, reused
-  unchanged from M33c — no new tile slot).
-- **In host Python**: rejection sampling loops driven by SHAKE output
+- **In silicon**: coefficient-wise NTT / INTT / basemul (M33a modes 0/1/2)
+  and Power2Round (M33b mode 0).
+- **In host Python**: SHAKE128 / SHAKE256, rejection sampling loops
   (`RejNTTPoly`, `RejBoundedPoly`), bit-packing (`_pack_pk`, `_pack_sk`,
   `bit_pack_t1`, `bit_pack_t0`, `bit_pack_s`), and the tiny linear-time
-  matrix-vector accumulation. These are either data-dependent branchy
-  state machines or O(bytes) glue — the wrong shape for AIE tiles.
+  matrix-vector accumulation. Moving these operations to a fused device graph
+  is future work; this gate does not claim fully NPU-resident KeyGen.
 
 ## Composer shape (Alg 6, FIPS 204)
 
@@ -73,9 +71,13 @@ Montgomery R factor introduced by the NTT is stripped in `poly_invntt` and
 matches how M32e wraps the ML-KEM NTT kernel, so downstream Sign/Verify
 (M33e) can reuse the same conversion conventions.
 
-When silicon runners `phoenix_sdr_dsp.silicon.m33a_runner` and
-`phoenix_sdr_dsp.silicon.m33b_runner` are importable, they replace the
-Python fallbacks — same test file, same 75 KATs, byte-identical outputs.
+The composer test constructs `SiliconBackend` from
+`phoenix_sdr_dsp.silicon.m33a_runner.run` and
+`phoenix_sdr_dsp.silicon.m33b_runner.run`. Both are native-only dispatchers:
+if either runtime is unavailable, the test exits nonzero rather than running a
+partial or reference backend. A default `SiliconBackend()` also chooses these
+native runners; `reference_for_unit_tests()` is explicitly named and is not
+silicon evidence.
 
 ## Rationale: what stays in host, and why
 
@@ -85,7 +87,7 @@ Python fallbacks — same test file, same 75 KATs, byte-identical outputs.
 | ExpandS rejection loop     | host     | Same — rejection over 4-bit nibbles vs eta bound. |
 | Matrix-vector accumulator  | host     | k·ell = 32 additions worst case; each add is 256 int32 adds. Host CPU is faster than round-tripping through DMA. |
 | bit_pack_t1 / t0 / s       | host     | Sequential 10-bit / 13-bit / eta-bit packing. |
-| SHAKE128 / SHAKE256        | **M33c (=M32c)** | Already deployed and validated on ML-KEM. No new slot. |
+| SHAKE128 / SHAKE256        | host | The current M33 composer calls `dilithium-py`; it does not dispatch M32c. |
 
 Sign and Verify (M33e) will add: `SampleInBall` (host, sequential rejection),
 `HighBits` / `LowBits` / `MakeHint` / `UseHint` (all in M33b modes 1-4), norm
@@ -99,31 +101,36 @@ sourced verbatim from
 [NIST usnistgov/ACVP-Server](https://github.com/usnistgov/ACVP-Server/tree/master/gen-val/json-files).
 25 tests per parameter set, 75 total.
 
-### Sandbox results (reference path)
+### Native gate status
 
-    ML-DSA-44      25/25    PASS
-    ML-DSA-65      25/25    PASS
-    ML-DSA-87      25/25    PASS
-    ----------------------------
-    TOTAL          75/75    PASS      (~1.1s wall)
+The test reports `Backend: m33a:silicon, m33b:silicon` only after both native
+runner modules and their MLIR-AIE runtime preflight are available. It is
+intentionally nonzero on a sandbox/no-NPU host, so no reference KAT result is
+presented as hardware proof. Static composer and kernel audits remain
+host-only checks.
 
-    transliteration check:  15/15 PASS
-
-Laptop silicon gate: TBD.
+Laptop validation recorded 2026-08-17 on the Phoenix XDNA1 host:
+`Backend: m33a:silicon, m33b:silicon`, with ML-DSA-44, ML-DSA-65, and
+ML-DSA-87 each passing 25/25 ACVP KeyGen vectors (**75/75 total**). This is
+evidence for the host-orchestrated composer and its native polynomial
+dispatches, not for device-resident SHAKE, sampling, packing, or control.
 
 ## Files
 
 | Path                                                     | Role                                              |
 |:---------------------------------------------------------|:--------------------------------------------------|
 | `tests/m33_mldsa/mldsa_composer.py`                      | Composer + SiliconBackend abstraction              |
-| `tests/m33_mldsa/test_mldsa_keygen_m33d.py`              | Two-stage gate (ref + silicon) against 75 ACVP KATs |
+| `tests/m33_mldsa/test_mldsa_keygen_m33d.py`              | Native-only gate against 75 ACVP KATs |
 | `tools/m33d_kernel_transliteration_check.py`             | Static composer-shape + Montgomery constants check |
 | `docs/M33d_DESIGN.md`                                    | This document                                     |
 
 ## Contract path
 
-    30/30 (M33a) -> 31/31 (M33b) -> [M33c reuse, no slot]
-        -> 32/32 (M33d, this milestone) -> 33/33 (M33e Sign+Verify)
+    Entry 30: M33a -> entry 31: M33b -> [M33c reuse, no slot]
+        -> entry 32: M33d -> entries 33-34: M33e Sign and Verify
+
+These entry numbers describe the 34-invocation mixed-backend regression matrix,
+not a count of fully device-resident workloads.
 
 ## References
 
