@@ -32,25 +32,21 @@ class ValidationPolicyTests(unittest.TestCase):
         self.assertFalse(passed)
 
     def test_m32e_requires_all_silicon_groups(self):
-        output = "\n".join(
-            (
-                "test_silicon_keygen[kg1] PASSED",
-                "test_silicon_encaps[en1] PASSED",
-                "test_silicon_decaps[de1] PASSED",
-                "69 passed",
-            )
+        output = (
+            "test_silicon_keygen[kg1] PASSED\n"
+            "test_silicon_encaps[en1] PASSED\n"
+            "test_silicon_decaps[de1] PASSED\n"
+            "69 passed"
         )
         passed, _ = validate_test_output(output, "m32e_silicon")
         self.assertTrue(passed)
 
     def test_m32e_rejects_skipped_silicon(self):
-        output = "\n".join(
-            (
-                "test_silicon_keygen[kg1] SKIPPED",
-                "test_silicon_encaps[en1] SKIPPED",
-                "test_silicon_decaps[de1] SKIPPED",
-                "60 passed, 9 skipped",
-            )
+        output = (
+            "test_silicon_keygen[kg1] SKIPPED\n"
+            "test_silicon_encaps[en1] SKIPPED\n"
+            "test_silicon_decaps[de1] SKIPPED\n"
+            "60 passed, 9 skipped"
         )
         passed, _ = validate_test_output(output, "m32e_silicon")
         self.assertFalse(passed)

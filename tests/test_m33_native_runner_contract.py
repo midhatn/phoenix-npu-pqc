@@ -12,7 +12,6 @@ from pathlib import Path
 
 from phoenix_sdr_dsp.silicon import m33a_runner, m33b_runner
 
-
 REPO = Path(__file__).resolve().parents[1]
 M33_DIR = REPO / "tests" / "m33_mldsa"
 

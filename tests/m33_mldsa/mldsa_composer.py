@@ -81,7 +81,7 @@ class SiliconBackend:
             self._m33b = m33b
 
     @classmethod
-    def reference_for_unit_tests(cls) -> "SiliconBackend":
+    def reference_for_unit_tests(cls) -> SiliconBackend:
         """Return an explicitly named host reference fixture.
 
         This method exists for isolated host-only tests.  It must not be used

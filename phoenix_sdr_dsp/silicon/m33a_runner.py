@@ -50,7 +50,7 @@ def _load_iron() -> tuple[Any, ...]:
         )
         from aie.utils.config import cxx_header_path
         from aie.utils.hostruntime.xrtruntime.tensor import XRTTensor
-    except Exception as exc:  # noqa: BLE001 - report all native-runtime failures
+    except Exception as exc:
         raise NativeRunnerUnavailable(
             "M33a requires MLIR-AIE/IRON and an XRT-visible Phoenix NPU; "
             "no reference fallback is available."
@@ -215,7 +215,7 @@ def run_m33a(
             element_type=np.int32,
         )
         out_t.to("cpu")
-    except Exception as exc:  # noqa: BLE001 - never hide failed hardware work
+    except Exception as exc:
         raise NativeRunnerUnavailable(
             "M33a native MLIR-AIE dispatch failed; no reference fallback was used."
         ) from exc
