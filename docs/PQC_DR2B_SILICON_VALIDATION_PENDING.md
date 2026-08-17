@@ -36,7 +36,7 @@ counters, eight deterministic varied-seed requests, and one alternating
 | Definitive log | `PQC_DR2B_MLKEM512_NOISE_NTT_physical_20260817.log`, 856 bytes, 2026-08-17 21:29:13 local time |
 | Complete DR0/DR1/DR2a/DR2b host log | `PQC_DR0_DR1_DR2A_DR2B_complete_host_zero_skip_20260817.log`, 17,492 bytes, 2026-08-17 21:31:56 local time |
 | Complete host result | 92 tests passed, zero skips, exit code 0 |
-| Source revision before local DR2b patch | `60e63ea` |
+| Ordered validated source | DR2a `99c80ac`; DR2b `8b1bff2` |
 | JIT cache key | `4311961d4f3a43976aa5a60d` |
 | Generated xclbin | `final.xclbin`, 17,288 bytes |
 | Generated PDI | `main.pdi`, 10,832 bytes |
@@ -46,6 +46,11 @@ counters, eight deterministic varied-seed requests, and one alternating
 The repeated run reused the cached native program and exercised producer and
 consumer state reset across 26 sequential requests. Every request returned the
 terminal success ABI with 256 canonical coefficients.
+
+The ordered DR2a and DR2b commits were reconstructed on top of merged DR0/DR1
+commit `7b38973`. All ten DR2a files and all eleven DR2b/mathematics files were
+byte-compared with their preserved physical-validation snapshots before the
+final 92-test host gate; both equivalence checks returned exit code 0.
 
 ## Compiler-reported program size and memory
 

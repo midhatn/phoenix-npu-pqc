@@ -154,6 +154,8 @@ class DR2bDeviceResidencyContractTests(unittest.TestCase):
         self.assertIn(
             "PQC_DR0_DR1_DR2A_DR2B_complete_host_zero_skip_20260817.log", pending
         )
+        self.assertIn("DR2a `99c80ac`; DR2b `8b1bff2`", pending)
+        self.assertIn("byte-compared", pending)
         self.assertIn("4311961d4f3a43976aa5a60d", pending)
         self.assertIn("d420b963-9fb7-47c3-9fda-a9a55ae3ed2d", pending)
         self.assertIn("only the terminal NTT result returns to the host", pending)
