@@ -262,4 +262,5 @@ notices remain authoritative when they differ from the project default; see
 [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md). Immutable upstream anchors,
 local SHA-256 identities, and ACVP extraction records are in
 [THIRD_PARTY_PROVENANCE.md](THIRD_PARTY_PROVENANCE.md). Research users should
-use the metadata in [`CITATION.cff`](CITATION.cff) when citing the software.
+use [`CITATION.cff`](CITATION.cff) or [`.zenodo.json`](.zenodo.json) when
+citing or archiving the software.

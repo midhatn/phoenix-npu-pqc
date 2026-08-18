@@ -1,9 +1,9 @@
 cff-version: 1.2.0
 message: "If you use this research repository, please cite it using the metadata below."
 title: "Phoenix NPU PQC: Post-Quantum Cryptography Research for AMD Phoenix NPU1"
-abstract: "A private research repository for FIPS 202 SHA-3/SHAKE, FIPS 203 ML-KEM, and FIPS 204 ML-DSA work on AMD Ryzen AI Phoenix NPU1 (XDNA1/AIE2). It preserves a historical M32/M33 hybrid foundation, narrow physical DR0/DR1 and DR2a/DR2b/DR2c records, and an unresolved integrated DR2d ML-KEM-512 K-PKE.KeyGen physical result of 0/25. The long-term goal is 100% NPU residency; this repository does not claim that goal is complete."
+abstract: "A public research repository for FIPS 202 SHA-3/SHAKE, FIPS 203 ML-KEM, and FIPS 204 ML-DSA work on AMD Ryzen AI Phoenix NPU1 (XDNA1/AIE2). It preserves a historical M32/M33 hybrid foundation, narrow physical DR0/DR1 and DR2a/DR2b/DR2c records, and an unresolved integrated DR2d ML-KEM-512 K-PKE.KeyGen physical result of 0/25. The long-term goal is 100% NPU residency; this repository does not claim that goal is complete."
 type: software
-version: "0.1.0"
+version: "0.1.0-rc.4"
 date-released: "2026-08-18"
 authors:
   - family-names: "Nashar"
@@ -34,7 +34,7 @@ preferred-citation:
     - family-names: "Nashar"
       given-names: "Midhat"
   year: 2026
-  version: "0.1.0"
+  version: "0.1.0-rc.4"
   url: "https://github.com/midhatn/phoenix-npu-pqc"
 references:
   - type: generic

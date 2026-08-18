@@ -2,7 +2,7 @@
 
 ## Purpose
 
-Phoenix NPU PQC (`phoenix-npu-pqc`) is a dedicated private research repository
+Phoenix NPU PQC (`phoenix-npu-pqc`) is a dedicated public research repository
 created by history-preserving separation of the post-quantum cryptography
 material from `phoenix-sdr-dsp`. The split narrows the repository's active
 scope to FIPS 202/203/204 research on AMD Phoenix NPU1; it does not alter,

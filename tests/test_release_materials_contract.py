@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import hashlib
+import json
 import re
 import unittest
 from pathlib import Path
@@ -21,6 +22,7 @@ class ReleaseMaterialsContractTests(unittest.TestCase):
         license_text = (REPO / "LICENSE").read_text(encoding="utf-8")
         notice = (REPO / "NOTICE").read_text(encoding="utf-8")
         citation = (REPO / "CITATION.cff").read_text(encoding="utf-8")
+        zenodo = json.loads((REPO / ".zenodo.json").read_text(encoding="utf-8"))
         toolchain = TOOLCHAIN.read_text(encoding="utf-8")
         third_party = (REPO / "THIRD_PARTY_NOTICES.md").read_text(encoding="utf-8")
         provenance = (REPO / "THIRD_PARTY_PROVENANCE.md").read_text(encoding="utf-8")
@@ -38,6 +40,11 @@ class ReleaseMaterialsContractTests(unittest.TestCase):
         self.assertIn("Version 2.0", license_text)
         self.assertIn("Copyright 2026 Midhat Nashar", notice)
         self.assertIn("license: Apache-2.0", citation)
+        self.assertIn('version: "0.1.0-rc.4"', citation)
+        self.assertIn("A public research repository", citation)
+        self.assertEqual(zenodo["version"], "0.1.0-rc.4")
+        self.assertEqual(zenodo["license"], "Apache-2.0")
+        self.assertEqual(zenodo["access_right"], "open")
         self.assertIn("license: Apache-2.0", toolchain)
         self.assertIn("LICENSES/MIT.txt", third_party)
         self.assertIn("THIRD_PARTY_PROVENANCE.md", third_party)

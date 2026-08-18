@@ -1,0 +1,34 @@
+{
+  "title": "Phoenix NPU PQC: Post-Quantum Cryptography Research for AMD Phoenix NPU1",
+  "description": "A public research repository for FIPS 202 SHA-3/SHAKE, FIPS 203 ML-KEM, and FIPS 204 ML-DSA work on AMD Ryzen AI Phoenix NPU1. The v0.1.0-rc.4 snapshot preserves audited provenance and narrow physical milestones while explicitly retaining the unresolved DR2d 0/25 result and making no complete 100% NPU-residency claim.",
+  "upload_type": "software",
+  "creators": [
+    {
+      "name": "Nashar, Midhat"
+    }
+  ],
+  "license": "Apache-2.0",
+  "access_right": "open",
+  "version": "0.1.0-rc.4",
+  "publication_date": "2026-08-18",
+  "keywords": [
+    "post-quantum cryptography",
+    "ML-KEM",
+    "ML-DSA",
+    "FIPS 202",
+    "FIPS 203",
+    "FIPS 204",
+    "AMD Ryzen AI",
+    "Phoenix NPU",
+    "XDNA1",
+    "AIE2",
+    "MLIR-AIE"
+  ],
+  "related_identifiers": [
+    {
+      "identifier": "https://github.com/midhatn/phoenix-npu-pqc",
+      "relation": "isSupplementTo",
+      "scheme": "url"
+    }
+  ]
+}
