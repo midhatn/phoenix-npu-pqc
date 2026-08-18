@@ -49,7 +49,9 @@ contracts establish FIPS conformance.
 1. Clone the intended revision into a new directory and record remote URL,
    `git rev-parse HEAD`, and status.
 2. In normal-user PowerShell 7 run
-   `pwsh -File .\scripts\validate_clean_clone.ps1`.
+   `pwsh -File .\scripts\validate_clean_clone.ps1
+   -InstallHostDependencies`. The explicit switch installs and verifies
+   pinned `numpy==2.5.2`; it does not add a hardware-dispatch path.
 3. The script records commit/status/tool versions, compiles maintained Python,
    lists and runs the repository's actual host-safe suite, confirms the
    protected evidence tree has no Git diff, and verifies every
@@ -94,6 +96,18 @@ do not filter a release narrative to passing subsystems.
    abstracts, tables, and release notes.
 
 ## Release and tag policy
+
+### Clean-drive RC.1 result
+
+The first independent Windows clean-drive execution of `v0.1.0-rc.1` on
+2026-08-18 used PowerShell 7.6.5, Git 2.48.1.windows.1, and Python 3.13.15.
+The protected-tree Git gate and all 35 protected evidence hashes passed, the
+18-module plan was enumerated, and maintained Python compiled. The host-safe
+suite then reported 15 import failures because system Python did not contain
+NumPy; three modules passed, including the protected-manifest and
+release-material contracts. No NPU access or native compilation occurred.
+This is a prerequisite failure, not a host-suite pass. RC.2 adds an explicit
+pinned-dependency installation switch rather than rewriting RC.1.
 
 Create an annotated RC only after the host-safe report, protected-manifest
 verification, reviewed diff, and explicit limitation statement are retained.

@@ -19,8 +19,12 @@ about physical evidence. A checked item means the cited material was retained.
 
 ## Hashes, protected evidence, and clean clone
 
-- [ ] Run `pwsh -File .\scripts\validate_clean_clone.ps1` from a clean-drive
-  clone and retain its one timestamped report.
+- [ ] Run
+  `pwsh -File .\scripts\validate_clean_clone.ps1 -InstallHostDependencies`
+  from a clean-drive clone and retain its one timestamped report. The switch
+  explicitly installs and verifies pinned `numpy==2.5.2`. Without it, a
+  missing or mismatched NumPy installation must stop with an actionable
+  refusal before the host-safe suite.
 - [ ] Confirm the report verifies every entry in
   `docs/pqc_dr2_evidence_20260818/SHA256SUMS` and records no protected-tree
   Git diff.

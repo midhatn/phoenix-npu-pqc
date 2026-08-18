@@ -72,10 +72,13 @@ For a normal-user PowerShell 7 clean-clone audit with commit/status, tool,
 Python, and protected-evidence checks, run:
 
 ```powershell
-pwsh -File .\scripts\validate_clean_clone.ps1
+pwsh -File .\scripts\validate_clean_clone.ps1 `
+    -InstallHostDependencies
 ```
 
-The script has no hardware switch and writes one timestamped report under the
+The explicit switch installs and verifies pinned `numpy==2.5.2`. Without it,
+a missing or mismatched NumPy version causes an actionable refusal. The script
+still has no hardware switch and writes one timestamped report under the
 ignored `release-evidence/` directory. See the [publication readiness
 matrix](docs/PUBLICATION_READINESS.md) and [journal reproducibility
 checklist](docs/JOURNAL_REPRODUCIBILITY_CHECKLIST.md) for scope, retention,

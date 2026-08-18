@@ -17,8 +17,11 @@ class ReleaseMaterialsContractTests(unittest.TestCase):
     def test_clean_clone_script_has_no_hardware_dispatch_path(self) -> None:
         source = SCRIPT.read_text(encoding="utf-8-sig")
         self.assertEqual(source.count("{"), source.count("}"))
-        self.assertNotIn("[switch]", source)
+        self.assertIn("[switch]$InstallHostDependencies", source)
         self.assertNotIn("RunSilicon", source)
+        self.assertIn("numpy==$requiredNumpyVersion", source)
+        self.assertIn('"2.5.2"', source)
+        self.assertIn("Re-run with -InstallHostDependencies", source)
         self.assertIn("Hardware access: disabled", source)
         self.assertIn("Test-Sha256Manifest", source)
         self.assertIn("run_all_pqc_tests.py", source)
@@ -50,6 +53,7 @@ class ReleaseMaterialsContractTests(unittest.TestCase):
         self.assertIn("DR2b is solved only", readiness)
         self.assertIn("DR2c is solved only", readiness)
         self.assertIn("`TOTAL 0/25 FAIL`, exit 1", readiness)
+        self.assertIn("-InstallHostDependencies", checklist)
         self.assertRegex(checklist, r"no hardware-dispatch\s+switch")
 
 

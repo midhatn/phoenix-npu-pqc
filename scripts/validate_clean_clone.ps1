@@ -1,5 +1,6 @@
 [CmdletBinding()]
 param(
+    [switch]$InstallHostDependencies,
     [string]$Python = ""
 )
 
@@ -13,6 +14,7 @@ $stamp = Get-Date -Format "yyyyMMdd-HHmmss"
 $report = Join-Path $evidenceDirectory "pqc-clean-clone-$stamp.txt"
 $protectedRelative = "docs/pqc_dr2_evidence_20260818"
 $manifestRelative = "$protectedRelative/SHA256SUMS"
+$requiredNumpyVersion = "2.5.2"
 
 function Write-Report {
     param([string]$Message)
@@ -46,6 +48,38 @@ function Resolve-Python {
         return "python"
     }
     throw "Neither the Windows Python launcher ('py') nor 'python' is available."
+}
+
+function Test-HostDependencies {
+    param(
+        [string]$PythonCommand,
+        [switch]$Install
+    )
+
+    $versionCheck = @(
+        "-c",
+        "import numpy; assert numpy.__version__ == '$requiredNumpyVersion', numpy.__version__"
+    )
+    & $PythonCommand @versionCheck 2>&1 |
+        ForEach-Object { Write-Report "$_" }
+    if ($LASTEXITCODE -eq 0) {
+        Write-Report "Pinned host dependency: numpy==$requiredNumpyVersion (PASS)"
+        return
+    }
+
+    if (-not $Install) {
+        throw (
+            "Pinned host dependency numpy==$requiredNumpyVersion is missing or has " +
+            "a different version. Re-run with -InstallHostDependencies, or install " +
+            "it explicitly with: $PythonCommand -m pip install --upgrade " +
+            "numpy==$requiredNumpyVersion"
+        )
+    }
+
+    Invoke-Checked "Install pinned host dependency" $PythonCommand @(
+        "-m", "pip", "install", "--upgrade", "numpy==$requiredNumpyVersion"
+    )
+    Invoke-Checked "Verify pinned host dependency" $PythonCommand $versionCheck
 }
 
 function Test-Sha256Manifest {
@@ -109,6 +143,7 @@ try {
 
     $pythonCommand = Resolve-Python $Python
     Invoke-Checked "Record Python version" $pythonCommand @("--version")
+    Test-HostDependencies $pythonCommand -Install:$InstallHostDependencies
     Invoke-Checked "List host-safe test plan" $pythonCommand @("run_all_pqc_tests.py", "--dry-run")
     Invoke-Checked "Compile maintained Python" $pythonCommand @(
         "-m", "compileall", "-q", "phoenix_sdr_dsp", "tests", "tools",
