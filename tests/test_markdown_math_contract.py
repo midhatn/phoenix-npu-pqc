@@ -8,14 +8,16 @@ from pathlib import Path
 
 REPO = Path(__file__).resolve().parents[1]
 PROTECTED_EVIDENCE = REPO / "docs" / "pqc_dr2_evidence_20260818"
+THIRD_PARTY = REPO / "third_party"
 
 
 def maintained_markdown() -> tuple[Path, ...]:
-    """Return tracked Markdown excluding immutable evidence and generated caches."""
+    """Return project Markdown, excluding immutable evidence and dependencies."""
     return tuple(
         path
         for path in sorted(REPO.rglob("*.md"))
         if PROTECTED_EVIDENCE not in path.parents
+        and THIRD_PARTY not in path.parents
         and ".git" not in path.parts
         and "__pycache__" not in path.parts
     )
@@ -32,6 +34,11 @@ def unescaped_count(text: str, delimiter: str) -> int:
 
 
 class MarkdownMathContractTests(unittest.TestCase):
+    def test_third_party_markdown_is_not_treated_as_maintained(self) -> None:
+        self.assertTrue(
+            all(THIRD_PARTY not in path.parents for path in maintained_markdown())
+        )
+
     def test_maintained_markdown_uses_no_operatorname(self) -> None:
         offenders = [
             path.relative_to(REPO)
