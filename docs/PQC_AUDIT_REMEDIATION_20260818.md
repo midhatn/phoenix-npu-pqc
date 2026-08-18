@@ -66,10 +66,12 @@ accepting an incomplete polynomial.
    make the package installation hash-locked; that remains a release blocker.
 7. **Research security boundary.** `SECURITY.md` now states the research-use,
    evidence-class, protected-evidence, and publication-risk boundaries.
-8. **Licensing/provenance.** `THIRD_PARTY_NOTICES.md` and
-   `LICENSES/Apache-2.0.txt` distinguish root MIT licensing from file-level
-   Apache-2.0 SPDX declarations and record unresolved pq-crystals/vector
-   provenance for formal review.
+8. **Licensing/provenance.** At the time of this audit,
+   `THIRD_PARTY_NOTICES.md` and `LICENSES/Apache-2.0.txt` distinguished the
+   then-current root MIT license from file-level Apache-2.0 SPDX declarations
+   and recorded unresolved pq-crystals/vector provenance for formal review.
+   The later project-wide Apache-2.0 transition preserves file-specific
+   exceptions and the former MIT text under `LICENSES/MIT.txt`.
 9. **Duplicate evidence.** Exactly 20 root-level files that were byte-identical
    to SHA-256-manifested protected copies were removed. The complete list,
    canonical replacements, and hashes are in

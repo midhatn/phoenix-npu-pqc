@@ -2,18 +2,24 @@
 
 ## Scope
 
-The root [`LICENSE`](LICENSE) is MIT for files that do not declare a different
-license. A file-level SPDX identifier controls when it differs. This notice
-records known provenance and is not a substitute for a legal review of
-line-for-line transliterations or future redistribution.
+The root [`LICENSE`](LICENSE) is Apache License 2.0 for original project files
+that do not declare a different license. A file-level SPDX identifier controls
+when it differs. This notice records known provenance and is not a substitute
+for a legal review of line-for-line transliterations or future redistribution.
 
 ## Apache-2.0 source files
 
 Most native DR1–DR2d and M33 kernel files carry
 `SPDX-License-Identifier: Apache-2.0`. The full Apache License 2.0 text is
-bundled at [`LICENSES/Apache-2.0.txt`](LICENSES/Apache-2.0.txt). The file-level
-SPDX identifier is authoritative for those files; the root MIT license does not
-replace it.
+bundled at [`LICENSES/Apache-2.0.txt`](LICENSES/Apache-2.0.txt). File-level SPDX
+identifiers remain authoritative when they differ from the project default.
+
+`tests/m32_mlkem/kpke_kernel.cc` remains explicitly MIT because its header
+describes a line-for-line pq-crystals Kyber reference transliteration. Its
+file-level SPDX identifier must be retained. The previously applicable project
+MIT text is preserved at [`LICENSES/MIT.txt`](LICENSES/MIT.txt); exact upstream
+revision and notice verification remains required before a formal
+redistribution claim.
 
 ## Cryptographic reference provenance requiring retention review
 

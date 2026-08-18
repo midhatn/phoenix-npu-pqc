@@ -2,7 +2,7 @@
 
 <div align="center">
 
-![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)
+![License: Apache 2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)
 ![Target: AMD Phoenix NPU1](https://img.shields.io/badge/Target-AMD%20Ryzen%20AI%20NPU1%20(AIE2)-blue)
 ![Research: Post-Quantum Cryptography](https://img.shields.io/badge/Research-Post--Quantum%20Cryptography-8a2be2)
 ![Standards: FIPS 202/203/204](https://img.shields.io/badge/Standards-FIPS%20202%20%2F%20203%20%2F%20204-005ea8)
@@ -252,3 +252,12 @@ M33e `v1.0.0` baseline at `9c592a4`, the later native M33 runner at
 The pinned environment and its evidence boundaries are recorded in
 [`toolchain.yaml`](toolchain.yaml) and
 [the Windows setup guide](docs/SETUP_WINDOWS.md).
+
+## License and citation
+
+Original project work is licensed under the
+[Apache License 2.0](LICENSE). File-level SPDX identifiers and third-party
+notices remain authoritative when they differ from the project default; see
+[LICENSE_HISTORY.md](LICENSE_HISTORY.md), [NOTICE](NOTICE), and
+[THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md). Research users should use the
+metadata in [`CITATION.cff`](CITATION.cff) when citing the software.

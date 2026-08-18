@@ -11,7 +11,7 @@ authors:
     alias: "midhatn"
 repository-code: "https://github.com/midhatn/phoenix-npu-pqc"
 url: "https://github.com/midhatn/phoenix-npu-pqc"
-license: MIT
+license: Apache-2.0
 keywords:
   - "post-quantum cryptography"
   - "ML-KEM"

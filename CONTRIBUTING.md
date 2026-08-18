@@ -8,6 +8,20 @@ evidence and must never be presented as interchangeable.
 By participating, you agree to the [Code of Conduct](CODE_OF_CONDUCT.md).
 Security reports belong in [SECURITY.md](SECURITY.md), not public issues.
 
+## Licensing of contributions
+
+Unless a pull request clearly states otherwise and the maintainers accept that
+exception in writing, contributions are submitted under the repository's
+Apache License 2.0. By submitting a contribution, you represent that you have
+the right and authority to license it on those terms.
+
+Identify all third-party code, data, vectors, generated material, and adapted
+algorithms in the pull request. Preserve applicable copyright and license
+notices, provide the immutable upstream URL and revision when available, and
+update [`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md). Do not submit
+employer-, university-, sponsor-, or collaborator-owned material without the
+required authorization.
+
 ## Start with host-safe validation
 
 The default test runner and CI do not use hardware:

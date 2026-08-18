@@ -17,6 +17,32 @@ TOOLCHAIN = REPO / "toolchain.yaml"
 
 
 class ReleaseMaterialsContractTests(unittest.TestCase):
+    def test_project_license_metadata_and_file_exception_are_consistent(self) -> None:
+        license_text = (REPO / "LICENSE").read_text(encoding="utf-8")
+        notice = (REPO / "NOTICE").read_text(encoding="utf-8")
+        citation = (REPO / "CITATION.cff").read_text(encoding="utf-8")
+        toolchain = TOOLCHAIN.read_text(encoding="utf-8")
+        third_party = (REPO / "THIRD_PARTY_NOTICES.md").read_text(encoding="utf-8")
+        history = (REPO / "LICENSE_HISTORY.md").read_text(encoding="utf-8")
+        contributing = (REPO / "CONTRIBUTING.md").read_text(encoding="utf-8")
+        mit_text = (REPO / "LICENSES" / "MIT.txt").read_text(encoding="utf-8")
+        kpke = (REPO / "tests" / "m32_mlkem" / "kpke_kernel.cc").read_text(
+            encoding="utf-8"
+        )
+
+        self.assertIn("Apache License", license_text)
+        self.assertIn("Version 2.0", license_text)
+        self.assertIn("Copyright 2026 Midhat Nashar", notice)
+        self.assertIn("license: Apache-2.0", citation)
+        self.assertIn("license: Apache-2.0", toolchain)
+        self.assertIn("LICENSES/MIT.txt", third_party)
+        self.assertIn("Permissions already granted", history)
+        self.assertIn("submitted under the repository's", contributing)
+        self.assertIn("Apache License 2.0", contributing)
+        self.assertIn("immutable upstream URL and revision", contributing)
+        self.assertTrue(mit_text.startswith("MIT License"))
+        self.assertTrue(kpke.startswith("// SPDX-License-Identifier: MIT"))
+
     def test_extensionless_launcher_is_the_primary_native_install_path(self) -> None:
         launcher = INSTALL.read_text(encoding="utf-8")
         installer = INSTALL_IMPLEMENTATION.read_text(encoding="utf-8")

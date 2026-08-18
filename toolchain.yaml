@@ -6,7 +6,7 @@ schema_version: "1.0"
 project:
   name: phoenix-npu-pqc
   repository: "https://github.com/midhatn/phoenix-npu-pqc"
-  license: MIT
+  license: Apache-2.0
   scope: "FIPS 202/203/204 post-quantum cryptography research"
 
 target:
