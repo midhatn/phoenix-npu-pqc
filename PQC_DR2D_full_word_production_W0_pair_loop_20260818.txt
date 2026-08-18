@@ -1,0 +1,51 @@
+
+C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\elfs_main_core_0_2\elfs_main_core_0_2.elf:	file format elf32-aie
+
+Disassembly of section .text:
+
+000015e0 <.L_LEnd19>:
+    16d0: 15 01 00 d0 10 00    	jl	#0x21a0
+    16d6: 01 00        	nop	
+    16d8: 01 00        	nop	
+    16da: 01 00        	nop	
+    16dc: 01 00        	nop	
+    16de: 01 00        	nop	
+    16e0: c0 03 00 10 a8 3b 04 00 00 00 00 00 00 00 00 00      	nopb	;		nopa	;		nops	;		movxm	ls, #0x1750;		nopv	
+    16f0: b7 10 c8 3b 06 00 00 00 00 08 00 10  	mova	r0, #0x80;		nopb	;		movxm	le, #0x1790
+    16fc: 6d 7f 70 0d 40 00    	mova	r0, #0x2;		add.nc	lc, r0, #-0x2
+    1702: 99 0d 82 15  	lshl	r1, r22, r0
+    1706: 43 28 8b 1c 98 2f 02 00      	add	r2, r1, #-0x4;		mov	p0, r18
+    170e: 59 16 21 1c  	mov	dj0, r2
+    1712: bb 28 4b 10 5a 40 2c f8 60 02	lda.u16	r3, [p0, dj0];		add	r4, r22, #0x2;		mov	dj0, r1
+    171c: 9d 0d 04 89 11 02    	lda	r6, [p0, dj0];		lshl	r2, r4, r0
+    1722: 1d f3 83 d8 39 fc    	lda	p1, [sp, #-244];		add	r1, r2, #-0x4
+    1728: 59 96 60 1c  	mov	dj1, r1
+    172c: 4d 16 61 7c 60 06    	lda.u16	r1, [p0, dj1];		mov	dj1, r2
+    1732: 1d 13 4a 8c 10 06    	lda	r2, [p0, dj1];		add	r5, r17, #0x4
+    1738: 19 0b 08 11  	add	r4, r4, #0x2
+    173c: 43 28 4b 31 9a 50 0a 00      	add	r5, r5, #0x4;		mov	dj1, r5
+    1744: 99 5d 8d 11  	lshl	r6, r6, r21
+    1748: 43 28 4b 14 ae 31 0c 00      	or	r3, r6, r3;		mov	dj0, r17
+
+00001750 <.LBB1_12>:
+    1750: c0 03 00 88 03 00 6c 60 08 00 00 00 00 00 00 00      	nopb	;		nopa	;		nops	;		lshl	r6, r4, r0;		nopm	;		nopv	
+    1760: 59 16 a3 1c  	mov	dj2, r6
+    1764: fb 25 8e 00 00 86 10 89 10 0a	lda	r2, [p0, dj2];		st	r3, [p1, dj0];		or	r7, r2, r2
+    176e: 43 28 6b 14 5a 40 08 00      	add	r4, r4, #0x2;		mov	dj0, dj1
+    1776: 43 28 4b 31 9a 8f 0c 00      	add	r8, r6, #-0x4;		mov	dj1, r5
+    177e: 43 28 0b 52 9a 50 0a 00      	add	r5, r5, #0x4;		mov	dj2, r8
+    1786: bb 28 4b c0 ec 7a 0e 78 60 0a	lda.u16	r1, [p0, dj2];		lshl	r7, r7, r21;		mov	r6, r1
+
+00001790 <.L_LEnd18>:
+    1790: c0 03 00 88 03 00 2c 33 0e 00 00 00 00 00 00 00      	nopb	;		nopa	;		nops	;		or	r3, r7, r6;		nopm	;		nopv	
+    17a0: 13 00 00 00 00 00 00 00      	nopa	;		nopb	;		nopx	
+    17a8: 01 00        	nop	
+    17aa: 01 00        	nop	
+    17ac: 01 00        	nop	
+    17ae: 99 5d 81 10  	lshl	r0, r2, r21
+    17b2: bd 15 00 c0 10 22    	st	r3, [p1, dj0];		or	r0, r0, r1
+    17b8: 19 80 30 09  	st	r0, [p1, dj1]
+    17bc: 01 00        	nop	
+    17be: 55 c0 ef 10 00 00    	movxm	ls, #0x17e0
+    17c4: 55 80 f0 18 00 00    	movxm	le, #0x1840
+    17ca: 55 00 08 00 00 00    	movxm	r0, #0x400

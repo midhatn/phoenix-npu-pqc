@@ -1,0 +1,26 @@
+CASE=acvp-tcId-01
+RHO_SHA256=b6db3d7f30de11fc03d997d25208abd3d622d644c08fec75c40cf742a076a361
+CANONICAL_SIGMA_SHA256=0ae20d0e1bfe749b3e324d91e81e140156c6bf8a34063185acae84f0c91c3248
+ACTUAL_FIRSTS=(2281, 1067)
+HYPOTHESES=4158 EXACT_MATCHES=0
+NEAREST_20
+(23, (2282, 1089), 'g_cyclic_window_10', 'shake128', 'rotate_right_one')
+(65, (2321, 1042), 'g_cyclic_window_26', 'counter_plus_one', 'bit_reverse_each_byte')
+(67, (2333, 1052), 'g_cyclic_window_2', 'canonical', 'repeat_first_56_as_tail')
+(78, (2358, 1066), 'g_cyclic_window_29', 'canonical', 'rotate_right_one')
+(83, (2335, 1038), 'g_cyclic_window_24', 'shake128', 'repeat_first_56_as_tail')
+(91, (2297, 1142), 'sigma_rotate_left_6', 'counter_prefix', 'exact_136_plus_56')
+(97, (2363, 1052), 'g_cyclic_window_5', 'counter_prefix', 'rotate_right_one')
+(115, (2247, 1148), 'g_cyclic_window_26', 'shake128', 'reverse_all')
+(142, (2335, 1155), 'g_cyclic_window_60', 'counter_plus_one', 'rotate_right_one')
+(147, (2192, 1009), 'g_cyclic_window_53', 'shake128', 'repeat_first_56_as_tail')
+(150, (2318, 954), 'sigma_rotate_left_9', 'shake128', 'reverse_all')
+(162, (2325, 949), 'g_cyclic_window_33', 'counter_prefix', 'rotate_left_one')
+(166, (2116, 1066), 'g_cyclic_window_38', 'shake128', 'zero_tail_56')
+(168, (2436, 1054), 'sigma_rotate_left_8', 'counter_prefix', 'rotate_left_one')
+(169, (2168, 1011), 'zero_sigma', 'shake128', 'repeat_first_56_as_tail')
+(173, (2350, 963), 'g_cyclic_window_2', 'canonical', 'exact_136_plus_56')
+(183, (2395, 1136), 'g_cyclic_window_1', 'counter_plus_one', 'reverse_all')
+(192, (2471, 1065), 'canonical_sigma', 'counter_plus_one', 'reverse_all')
+(192, (2471, 1065), 'g_cyclic_window_32', 'counter_plus_one', 'reverse_all')
+(194, (2349, 941), 'g_cyclic_window_39', 'canonical', 'rotate_left_one')

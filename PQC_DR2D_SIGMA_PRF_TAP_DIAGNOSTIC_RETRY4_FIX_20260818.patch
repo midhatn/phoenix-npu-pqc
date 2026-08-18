@@ -1,0 +1,10 @@
+diff --git a/phoenix_sdr_dsp/pqc/dr2d_mlkem512_kpke_sigma_prf_tap_graph.py b/phoenix_sdr_dsp/pqc/dr2d_mlkem512_kpke_sigma_prf_tap_graph.py
+index 526fdc2b15b8..30e71813719b 100644
+--- a/phoenix_sdr_dsp/pqc/dr2d_mlkem512_kpke_sigma_prf_tap_graph.py
++++ b/phoenix_sdr_dsp/pqc/dr2d_mlkem512_kpke_sigma_prf_tap_graph.py
+@@ -153,4 +153,4 @@
+         )
+         return Program(iron.get_current_device(), runtime, workers=[worker]).resolve_program()
+ 
+-    return _specialized_program()
++    return _specialized_program

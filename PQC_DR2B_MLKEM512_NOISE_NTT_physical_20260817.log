@@ -1,0 +1,19 @@
+========================================================================
+PQC DR2b - ML-KEM-512 SHAKE256 CBD3 NTT
+Backend: dr2b-mlkem512-noise-ntt:silicon
+  base-counter-0                   PASS
+  base-counter-1                   PASS
+  base-counter-2                   PASS
+  base-counter-3                   PASS
+  varied-00                        PASS
+  varied-01                        PASS
+  varied-02                        PASS
+  varied-03                        PASS
+  varied-04                        PASS
+  varied-05                        PASS
+  varied-06                        PASS
+  varied-07                        PASS
+  alternating-00-ff                PASS
+------------------------------------------------------------------------
+TOTAL 13/13 PASS
+========================================================================

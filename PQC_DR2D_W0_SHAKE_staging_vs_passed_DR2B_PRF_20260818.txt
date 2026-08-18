@@ -1,0 +1,805 @@
+PASSED_ELF_SHA256=0B83CFE2A1D5A6FE758FD448946DDFD92B863289B8E539CC0273157121321502
+W0_ELF_SHA256=042D0CAD7591FF27B68212CB69016C39B24EE417A9A56F85E3DBB7CF89C2BC54
+PASSED_SOURCE_SHA256=6F0AE1598BDA06D4C711446297715CB19BE7A608C3C307B5BF6D38D8B1A600A7
+W0_SOURCE_SHA256=2F94E2995706AC5636F35C66167E5DD8F54AC54B618C200BF4EE45B8B754CEAF
+===== PASSED DR2B PRODUCER SYMBOL TABLE =====
+
+C:\Users\midhat\.npu\cache\4311961d4f3a43976aa5a60d\elfs_main_core_0_2\elfs_main_core_0_2.elf:	file format elf32-aie
+
+SYMBOL TABLE:
+00000000 l    df *ABS*	00000000 LLVMDialectModule
+000000a0 l       .text	00000000 .LBB0_1
+00000000 l    df *ABS*	00000000 dr2b_shake256_prf_emit.cc
+00000220 l     F .text	000008d0 _ZN12_GLOBAL__N_14emitEPKhS1_Ph
+00000420 l       .text	00000000 .LBB1_12
+000005c0 l       .text	00000000 .LBB1_16
+00000440 l       .text	00000000 .LBB1_13
+000004a0 l       .text	00000000 .L_LEnd6
+00000580 l       .text	00000000 .LBB1_15
+00000610 l       .text	00000000 .LBB1_17
+00000670 l       .text	00000000 .L_LEnd5
+00000770 l       .text	00000000 .LBB1_19
+000007d0 l       .text	00000000 .L_LEnd4
+00000820 l       .text	00000000 .LBB1_21
+00000880 l       .text	00000000 .L_LEnd3
+00000af0 l     F .text	000007f0 _ZN15phoenix_sdr_dsp3pqc3dr1L12keccak_f1600EPh
+00000950 l       .text	00000000 .LBB1_23
+00000980 l       .text	00000000 .L_LEnd2
+000009f0 l       .text	00000000 .LBB1_25
+00000a30 l       .text	00000000 .L_LEnd1
+00000a70 l       .text	00000000 .LBB1_27
+00000ad0 l       .text	00000000 .L_LEnd0
+00000b40 l       .text	00000000 .LBB2_1
+00000f90 l       .text	00000000 .LBB2_2
+000010b0 l       .text	00000000 .LBB2_4
+000011a0 l       .text	00000000 .L_LEnd8
+000011f0 l       .text	00000000 .LBB2_6
+00001260 l       .text	00000000 .L_LEnd7
+00000000 l    df *ABS*	00000000 umodsi3.c
+00000000 l    df *ABS*	00000000 crt1.cc
+00000020 g     F .text	000001f0 core_0_2
+0007c000 g       .strtab	00000000 dr2b_sigma_cons_buff_0
+000740e0 g       .strtab	00000000 dr2b_sigma_cons_buff_1
+00074100 g       .strtab	00000000 _anonymous0
+0007c020 g       .strtab	00000000 dr2b_descriptor_cons_buff_1
+000780e0 g       .strtab	00000000 dr2b_descriptor_cons_buff_0
+00078000 g       .strtab	00000000 dr2b_prf_token_buff_1
+00074000 g       .strtab	00000000 dr2b_prf_token_buff_0
+00000210 g     F .text	00000010 dr2b_shake256_prf_emit
+000012e0 g     F .text	00000090 __umodsi3
+00000000 g     F .text	00000020 __start
+00070000 g       .strtab	00000000 _sp_start_value_DM_stack
+00001370 g     F .text	00000050 _main_init
+00000020 g     F .text	00000000 main
+00000020 g       .text	00000000 _ctors_start
+00000020 g       .text	00000000 _init_array_start
+00000020 g       .text	00000000 _ctors_end
+00000020 g       .text	00000000 _init_array_end
+00000020 g       .text	00000000 _dtors_start
+00000020 g       .text	00000000 _dtors_end
+00064000 g       .strtab	00000000 dr2b_result_buff_0
+00068000 g       .strtab	00000000 dr2b_result_buff_1
+0006c000 g       .strtab	00000000 _anonymous1
+PASSED_EMIT_SYMBOL=00000220 l     F .text	000008d0 _ZN12_GLOBAL__N_14emitEPKhS1_Ph
+PASSED_EMIT_RANGE=0x220-0xaf0
+===== PHYSICALLY PASSED DR2B SHAKE256 PRF EMIT =====
+
+C:\Users\midhat\.npu\cache\4311961d4f3a43976aa5a60d\elfs_main_core_0_2\elfs_main_core_0_2.elf:	file format elf32-aie
+
+Disassembly of section .text:
+
+00000220 <_ZN12_GLOBAL__N_14emitEPKhS1_Ph>:
+     220: 7f 00 00 00 00 00 00 00 00 00 00 38 a1 21    	lda.u8	r4, [p1, #0x0];		nopb	;		nopxm	;		nops	
+     22e: 01 00        	nop	
+     230: 45 76 32 03 07 00    	paddb	[sp], #0x100;		mov	p3, p1
+     236: 19 e0 f9 0f  	st	r16, [sp, #-52]
+     23a: 85 42 f9 57 03 0b    	paddb	[p3], #8;		st	lr, [sp, #-56]
+     240: 35 62 fa ff 80 62    	lda.s8	r3, [p3], #0x1;		st	r17, [sp, #-48]
+     246: 7b 05 0a 00 00 e4 fa bf 80 62	lda.s8	r2, [p3], #0x1;		st	r18, [sp, #-44];		movx	r5, #0x1
+     250: fb 58 08 01 00 66 fb 7f 80 61	lda.s8	r1, [p3, #0x0];		st	r19, [sp, #-40];		ne	r4, r4, r5
+     25a: 77 60 00 10 84 00 08 e8 fb 3f 80 65  	lda.s8	r0, [p3, #0x1];		st	r20, [sp, #-36];		jnz	r4, #0x420
+     266: 19 6a fc 0f  	st	r21, [sp, #-32]
+     26a: 19 ec fc 0f  	st	r22, [sp, #-28]
+     26e: 99 76 fd 0f  	st	p6, [sp, #-24]
+     272: 59 f6 3c 1e  	mov	p6, sp
+     276: 37 48 a3 c1 08 00 01 10 e3 d6 bf ff  	st	p7, [sp, #-20];		paddb	[p6], #-256;		movx	r16, #0x0;		mov	r6, #0xd0
+     282: d9 09 2d 01  	lda.u8	r4, [p1, #0x1]
+     286: 01 00        	nop	
+     288: 01 00        	nop	
+     28a: 01 00        	nop	
+     28c: 01 00        	nop	
+     28e: 01 00        	nop	
+     290: 19 89 0a 10  	movx	r5, #0x22
+     294: 99 58 08 11  	ne	r4, r4, r5
+     298: 95 01 40 10 02 20    	jnz	r4, #0x420
+     29e: 01 00        	nop	
+     2a0: 01 00        	nop	
+     2a2: 01 00        	nop	
+     2a4: 01 00        	nop	
+     2a6: 01 00        	nop	
+     2a8: d9 09 4d 01  	lda.u8	r4, [p1, #0x2]
+     2ac: 01 00        	nop	
+     2ae: 01 00        	nop	
+     2b0: 01 00        	nop	
+     2b2: 01 00        	nop	
+     2b4: 01 00        	nop	
+     2b6: 19 49 4a 10  	movx	r5, #0x52
+     2ba: 99 58 08 11  	ne	r4, r4, r5
+     2be: 95 01 40 10 02 20    	jnz	r4, #0x420
+     2c4: 01 00        	nop	
+     2c6: 01 00        	nop	
+     2c8: 01 00        	nop	
+     2ca: 01 00        	nop	
+     2cc: 01 00        	nop	
+     2ce: d9 09 6d 01  	lda.u8	r4, [p1, #0x3]
+     2d2: 01 00        	nop	
+     2d4: 01 00        	nop	
+     2d6: 01 00        	nop	
+     2d8: 01 00        	nop	
+     2da: 01 00        	nop	
+     2dc: 01 00        	nop	
+     2de: 95 01 40 10 02 20    	jnz	r4, #0x420
+     2e4: 01 00        	nop	
+     2e6: 01 00        	nop	
+     2e8: 01 00        	nop	
+     2ea: 01 00        	nop	
+     2ec: 01 00        	nop	
+     2ee: 59 21 04 00  	mova	dj0, #0x4
+     2f2: d9 09 11 01  	lda.u8	r4, [p1, dj0]
+     2f6: 01 00        	nop	
+     2f8: 01 00        	nop	
+     2fa: 01 00        	nop	
+     2fc: 01 00        	nop	
+     2fe: 01 00        	nop	
+     300: 19 11 0a 10  	movx	r5, #0x4
+     304: 99 5b 08 11  	geu	r4, r4, r5
+     308: 95 01 40 10 02 20    	jnz	r4, #0x420
+     30e: 01 00        	nop	
+     310: 01 00        	nop	
+     312: 01 00        	nop	
+     314: 01 00        	nop	
+     316: 01 00        	nop	
+     318: 59 21 05 00  	mova	dj0, #0x5
+     31c: d9 09 11 01  	lda.u8	r4, [p1, dj0]
+     320: 01 00        	nop	
+     322: 01 00        	nop	
+     324: 01 00        	nop	
+     326: 01 00        	nop	
+     328: 01 00        	nop	
+     32a: 19 0d 0a 10  	movx	r5, #0x3
+     32e: 99 58 08 11  	ne	r4, r4, r5
+     332: 95 01 40 10 02 20    	jnz	r4, #0x420
+     338: 01 00        	nop	
+     33a: 01 00        	nop	
+     33c: 01 00        	nop	
+     33e: 01 00        	nop	
+     340: 01 00        	nop	
+     342: 59 21 06 00  	mova	dj0, #0x6
+     346: d9 09 11 01  	lda.u8	r4, [p1, dj0]
+     34a: 01 00        	nop	
+     34c: 01 00        	nop	
+     34e: 01 00        	nop	
+     350: 01 00        	nop	
+     352: 01 00        	nop	
+     354: 19 01 ca 10  	movx	r5, #0xc0
+     358: 99 58 08 11  	ne	r4, r4, r5
+     35c: 95 01 40 10 02 20    	jnz	r4, #0x420
+     362: 01 00        	nop	
+     364: 01 00        	nop	
+     366: 01 00        	nop	
+     368: 01 00        	nop	
+     36a: 01 00        	nop	
+     36c: 59 21 07 00  	mova	dj0, #0x7
+     370: d9 09 11 01  	lda.u8	r4, [p1, dj0]
+     374: 01 00        	nop	
+     376: 01 00        	nop	
+     378: 01 00        	nop	
+     37a: 01 00        	nop	
+     37c: 01 00        	nop	
+     37e: 01 00        	nop	
+     380: 95 01 40 10 02 20    	jnz	r4, #0x420
+     386: 01 00        	nop	
+     388: 01 00        	nop	
+     38a: 01 00        	nop	
+     38c: 01 00        	nop	
+     38e: 01 00        	nop	
+     390: 59 21 0c 00  	mova	dj0, #0xc
+     394: d9 09 11 01  	lda.u8	r4, [p1, dj0]
+     398: 01 00        	nop	
+     39a: 01 00        	nop	
+     39c: 01 00        	nop	
+     39e: 01 00        	nop	
+     3a0: 01 00        	nop	
+     3a2: 01 00        	nop	
+     3a4: 95 01 40 10 02 20    	jnz	r4, #0x420
+     3aa: 01 00        	nop	
+     3ac: 01 00        	nop	
+     3ae: 01 00        	nop	
+     3b0: 01 00        	nop	
+     3b2: 01 00        	nop	
+     3b4: 59 21 0d 00  	mova	dj0, #0xd
+     3b8: d9 09 11 01  	lda.u8	r4, [p1, dj0]
+     3bc: 01 00        	nop	
+     3be: 01 00        	nop	
+     3c0: 01 00        	nop	
+     3c2: 01 00        	nop	
+     3c4: 01 00        	nop	
+     3c6: 01 00        	nop	
+     3c8: 95 01 40 10 02 20    	jnz	r4, #0x420
+     3ce: 01 00        	nop	
+     3d0: 01 00        	nop	
+     3d2: 01 00        	nop	
+     3d4: 01 00        	nop	
+     3d6: 01 00        	nop	
+     3d8: 59 21 0e 00  	mova	dj0, #0xe
+     3dc: d9 09 11 01  	lda.u8	r4, [p1, dj0]
+     3e0: 01 00        	nop	
+     3e2: 01 00        	nop	
+     3e4: 01 00        	nop	
+     3e6: 01 00        	nop	
+     3e8: 01 00        	nop	
+     3ea: 01 00        	nop	
+     3ec: 95 01 40 10 02 20    	jnz	r4, #0x420
+     3f2: 01 00        	nop	
+     3f4: 01 00        	nop	
+     3f6: 01 00        	nop	
+     3f8: 01 00        	nop	
+     3fa: 01 00        	nop	
+     3fc: 59 21 0f 00  	mova	dj0, #0xf
+     400: d9 09 11 01  	lda.u8	r4, [p1, dj0]
+     404: 01 00        	nop	
+     406: 01 00        	nop	
+     408: 01 00        	nop	
+     40a: 01 00        	nop	
+     40c: 01 00        	nop	
+     40e: 01 00        	nop	
+     410: 95 01 00 e0 02 20    	jz	r4, #0x5c0
+     416: 01 00        	nop	
+     418: 01 00        	nop	
+     41a: 01 00        	nop	
+     41c: 01 00        	nop	
+     41e: 01 00        	nop	
+
+00000420 <.LBB1_12>:
+     420: 6d 06 73 05 00 00    	nopa	;		add.nc	lc, r6, #0x0
+     426: bb 10 20 3a 00 00 00 08 41 00	mova	r4, #0x2;		movxm	ls, #0x440
+     430: c0 03 00 10 50 3a 02 00 00 00 00 48 01 00 00 00      	nopb	;		mova	r5, #0x0;		nops	;		movxm	le, #0x4a0;		nopv	
+
+00000440 <.LBB1_13>:
+     440: c0 03 00 28 4b 11 3a 50 0a 00 00 00 00 00 00 00      	nopb	;		nopa	;		nops	;		add	r5, r5, #0x1;		mov	dj0, r5;		nopv	
+     450: c0 03 00 00 00 00 00 00 00 00 00 00 24 42 00 00      	nopb	;		st.s8	r16, [p2, dj0];		nops	;		nopxm	;		nopv	
+     460: c0 03 00 00 00 00 00 00 00 00 00 00 00 00 00 00      	nopb	;		nopa	;		nops	;		nopxm	;		nopv	
+     470: c0 03 00 00 00 00 00 00 00 00 00 00 00 00 00 00      	nopb	;		nopa	;		nops	;		nopxm	;		nopv	
+     480: c0 03 00 00 00 00 00 00 00 00 00 00 00 00 00 00      	nopb	;		nopa	;		nops	;		nopxm	;		nopv	
+     490: c0 03 00 00 00 00 00 00 00 00 00 00 00 00 00 00      	nopb	;		nopa	;		nops	;		nopxm	;		nopv	
+
+000004a0 <.L_LEnd6>:
+     4a0: c0 03 00 00 00 00 00 00 00 00 00 00 00 00 00 00      	nopb	;		nopa	;		nops	;		nopxm	;		nopv	
+     4b0: c0 03 00 00 00 00 00 00 00 00 00 00 00 00 00 00      	nopb	;		nopa	;		nops	;		nopxm	;		nopv	
+     4c0: 19 06 15 02  	st.s8	r3, [p2], #0x1
+     4c4: 01 00        	nop	
+     4c6: 01 00        	nop	
+     4c8: 01 00        	nop	
+     4ca: 01 00        	nop	
+     4cc: 01 00        	nop	
+     4ce: 01 00        	nop	
+     4d0: 19 04 15 02  	st.s8	r2, [p2], #0x1
+     4d4: 01 00        	nop	
+     4d6: 01 00        	nop	
+     4d8: 01 00        	nop	
+     4da: 01 00        	nop	
+     4dc: 01 00        	nop	
+     4de: 01 00        	nop	
+     4e0: 19 02 15 02  	st.s8	r1, [p2], #0x1
+     4e4: 01 00        	nop	
+     4e6: 01 00        	nop	
+     4e8: 01 00        	nop	
+     4ea: 01 00        	nop	
+     4ec: 01 00        	nop	
+     4ee: 01 00        	nop	
+     4f0: 19 00 15 02  	st.s8	r0, [p2], #0x1
+     4f4: 01 00        	nop	
+     4f6: 01 00        	nop	
+     4f8: 01 00        	nop	
+     4fa: 01 00        	nop	
+     4fc: 01 00        	nop	
+     4fe: 01 00        	nop	
+     500: 19 20 15 02  	st.s8	r16, [p2], #0x1
+     504: 01 00        	nop	
+     506: 01 00        	nop	
+     508: 01 00        	nop	
+     50a: 01 00        	nop	
+     50c: 01 00        	nop	
+     50e: 01 00        	nop	
+     510: 19 20 15 02  	st.s8	r16, [p2], #0x1
+     514: 01 00        	nop	
+     516: 01 00        	nop	
+     518: 01 00        	nop	
+     51a: 01 00        	nop	
+     51c: 01 00        	nop	
+     51e: 01 00        	nop	
+     520: 19 20 15 02  	st.s8	r16, [p2], #0x1
+     524: 01 00        	nop	
+     526: 01 00        	nop	
+     528: 01 00        	nop	
+     52a: 01 00        	nop	
+     52c: 01 00        	nop	
+     52e: 01 00        	nop	
+     530: 19 20 15 02  	st.s8	r16, [p2], #0x1
+     534: 01 00        	nop	
+     536: 01 00        	nop	
+     538: 01 00        	nop	
+     53a: 01 00        	nop	
+     53c: 01 00        	nop	
+     53e: 01 00        	nop	
+     540: 19 08 15 02  	st.s8	r4, [p2], #0x1
+     544: 01 00        	nop	
+     546: 01 00        	nop	
+     548: 01 00        	nop	
+     54a: 01 00        	nop	
+     54c: 01 00        	nop	
+     54e: 01 00        	nop	
+     550: 19 20 15 02  	st.s8	r16, [p2], #0x1
+     554: 01 00        	nop	
+     556: 01 00        	nop	
+     558: 01 00        	nop	
+     55a: 01 00        	nop	
+     55c: 01 00        	nop	
+     55e: 01 00        	nop	
+     560: 19 20 0d 02  	st.s8	r16, [p2, #0x0]
+     564: 01 00        	nop	
+     566: 01 00        	nop	
+     568: 01 00        	nop	
+     56a: 01 00        	nop	
+     56c: 01 00        	nop	
+     56e: 01 00        	nop	
+     570: 19 20 2d 02  	st.s8	r16, [p2, #0x1]
+     574: 01 00        	nop	
+     576: 01 00        	nop	
+     578: 01 00        	nop	
+     57a: 01 00        	nop	
+     57c: 01 00        	nop	
+     57e: 01 00        	nop	
+
+00000580 <.LBB1_15>:
+     580: b7 00 00 00 00 00 00 00 00 d8 bf ff  	lda	p7, [sp, #-20];		nopb	;		nopxm	
+     58c: d9 76 fd 07  	lda	p6, [sp, #-24]
+     590: 59 ec fc 07  	lda	r22, [sp, #-28]
+     594: d9 42 f9 07  	lda	lr, [sp, #-56]
+     598: 59 6a fc 07  	lda	r21, [sp, #-32]
+     59c: 59 e8 fb 07  	lda	r20, [sp, #-36]
+     5a0: 59 66 fb 07  	lda	r19, [sp, #-40]
+     5a4: 59 e4 fa 07  	lda	r18, [sp, #-44]
+     5a8: 59 62 fa 07  	lda	r17, [sp, #-48]
+     5ac: 59 e0 f9 07  	lda	r16, [sp, #-52]
+     5b0: 19 18 00 10  	ret lr	
+     5b4: 01 00        	nop	
+     5b6: 01 00        	nop	
+     5b8: 01 00        	nop	
+     5ba: 01 00        	nop	
+     5bc: 19 00 ff 3f  	paddb	[sp], #-0x100
+
+000005c0 <.LBB1_16>:
+     5c0: c0 03 00 48 83 07 09 11 07 00 00 c8 01 04 00 00      	nopb	;		mova	r7, #0x20;		nops	;		movx	r17, #0xc8;		mov	r8, #-0x40;		nopv	
+     5d0: c0 03 00 10 4c 40 02 fc 3f 00 00 48 e1 03 00 00      	nopb	;		mova	r5, #0x1f;		nops	;		movxm	r18, #-0xfff68;		nopv	
+     5e0: b7 10 00 60 02 04 00 00 00 08 01 f0  	mova	r4, #-0x80;		nopb	;		movxm	r19, #0x100000
+     5ec: bb 38 83 b9 0a 61 05 08 05 07	mova	r20, #0x38;		movx	r22, #0x88;		add.nc	lc, r6, #0x0
+     5f6: bb 10 08 3b 00 00 00 48 05 02	mova	r21, #0x10;		movxm	ls, #0x610
+     600: c0 03 00 10 38 3b 02 00 00 00 00 88 01 00 00 00      	nopb	;		mova	r6, #0x0;		nops	;		movxm	le, #0x670;		nopv	
+
+00000610 <.LBB1_17>:
+     610: c0 03 00 28 8b 11 3a 60 0c 00 00 00 00 00 00 00      	nopb	;		nopa	;		nops	;		add	r6, r6, #0x1;		mov	dj0, r6;		nopv	
+     620: c0 03 00 00 00 00 00 00 00 00 00 00 24 42 00 00      	nopb	;		st.s8	r16, [p2, dj0];		nops	;		nopxm	;		nopv	
+     630: c0 03 00 00 00 00 00 00 00 00 00 00 00 00 00 00      	nopb	;		nopa	;		nops	;		nopxm	;		nopv	
+     640: c0 03 00 00 00 00 00 00 00 00 00 00 00 00 00 00      	nopb	;		nopa	;		nops	;		nopxm	;		nopv	
+     650: c0 03 00 00 00 00 00 00 00 00 00 00 00 00 00 00      	nopb	;		nopa	;		nops	;		nopxm	;		nopv	
+     660: c0 03 00 00 00 00 00 00 00 00 00 00 00 00 00 00      	nopb	;		nopa	;		nops	;		nopxm	;		nopv	
+
+00000670 <.L_LEnd5>:
+     670: c0 03 00 00 00 00 00 00 00 00 00 00 00 00 00 00      	nopb	;		nopa	;		nops	;		nopxm	;		nopv	
+     680: c0 03 00 00 00 00 00 00 00 00 00 00 00 00 00 00      	nopb	;		nopa	;		nops	;		nopxm	;		nopv	
+     690: 4d 76 34 c7 a0 42    	st.s8	r3, [p2], #0x1;		mov	p7, p2
+     696: 01 00        	nop	
+     698: 01 00        	nop	
+     69a: 01 00        	nop	
+     69c: 01 00        	nop	
+     69e: 01 00        	nop	
+     6a0: 01 00        	nop	
+     6a2: 19 04 15 02  	st.s8	r2, [p2], #0x1
+     6a6: 01 00        	nop	
+     6a8: 01 00        	nop	
+     6aa: 01 00        	nop	
+     6ac: 01 00        	nop	
+     6ae: 01 00        	nop	
+     6b0: 01 00        	nop	
+     6b2: 19 02 15 02  	st.s8	r1, [p2], #0x1
+     6b6: 01 00        	nop	
+     6b8: 01 00        	nop	
+     6ba: 01 00        	nop	
+     6bc: 01 00        	nop	
+     6be: 01 00        	nop	
+     6c0: 01 00        	nop	
+     6c2: 19 00 15 02  	st.s8	r0, [p2], #0x1
+     6c6: 01 00        	nop	
+     6c8: 01 00        	nop	
+     6ca: 01 00        	nop	
+     6cc: 01 00        	nop	
+     6ce: 01 00        	nop	
+     6d0: 01 00        	nop	
+     6d2: 19 20 15 02  	st.s8	r16, [p2], #0x1
+     6d6: 01 00        	nop	
+     6d8: 01 00        	nop	
+     6da: 01 00        	nop	
+     6dc: 01 00        	nop	
+     6de: 01 00        	nop	
+     6e0: 01 00        	nop	
+     6e2: 19 20 15 02  	st.s8	r16, [p2], #0x1
+     6e6: 01 00        	nop	
+     6e8: 01 00        	nop	
+     6ea: 01 00        	nop	
+     6ec: 01 00        	nop	
+     6ee: 01 00        	nop	
+     6f0: 01 00        	nop	
+     6f2: 19 10 15 02  	st.s8	r8, [p2], #0x1
+     6f6: 01 00        	nop	
+     6f8: 01 00        	nop	
+     6fa: 01 00        	nop	
+     6fc: 01 00        	nop	
+     6fe: 01 00        	nop	
+     700: 01 00        	nop	
+     702: 19 20 15 02  	st.s8	r16, [p2], #0x1
+     706: 01 00        	nop	
+     708: 01 00        	nop	
+     70a: 01 00        	nop	
+     70c: 01 00        	nop	
+     70e: 01 00        	nop	
+     710: 01 00        	nop	
+     712: 19 20 15 02  	st.s8	r16, [p2], #0x1
+     716: 01 00        	nop	
+     718: 01 00        	nop	
+     71a: 01 00        	nop	
+     71c: 01 00        	nop	
+     71e: 01 00        	nop	
+     720: 01 00        	nop	
+     722: 19 20 15 02  	st.s8	r16, [p2], #0x1
+     726: 01 00        	nop	
+     728: 01 00        	nop	
+     72a: 01 00        	nop	
+     72c: 01 00        	nop	
+     72e: 01 00        	nop	
+     730: 01 00        	nop	
+     732: 19 20 0d 02  	st.s8	r16, [p2, #0x0]
+     736: 01 00        	nop	
+     738: 01 00        	nop	
+     73a: 01 00        	nop	
+     73c: 01 00        	nop	
+     73e: 01 00        	nop	
+     740: 01 00        	nop	
+     742: 19 20 2d 02  	st.s8	r16, [p2, #0x1]
+     746: 01 00        	nop	
+     748: 01 00        	nop	
+     74a: 01 00        	nop	
+     74c: 01 00        	nop	
+     74e: 01 00        	nop	
+     750: 01 00        	nop	
+     752: 01 00        	nop	
+     754: 01 00        	nop	
+     756: 79 86 78 1d  	add.nc	lc, r17, #0x0
+     75a: 55 e0 ee 00 00 00    	movxm	ls, #0x770
+     760: c0 03 00 10 e8 3b 02 00 00 00 00 08 00 00 00 00      	nopb	;		mova	r0, #0x0;		nops	;		movxm	le, #0x7d0;		nopv	
+
+00000770 <.LBB1_19>:
+     770: c0 03 00 28 0b 10 3a 00 00 00 00 00 00 00 00 00      	nopb	;		nopa	;		nops	;		add	r0, r0, #0x1;		mov	dj0, r0;		nopv	
+     780: c0 03 00 00 00 00 00 00 00 00 00 00 24 c2 00 00      	nopb	;		st.s8	r16, [p6, dj0];		nops	;		nopxm	;		nopv	
+     790: c0 03 00 00 00 00 00 00 00 00 00 00 00 00 00 00      	nopb	;		nopa	;		nops	;		nopxm	;		nopv	
+     7a0: c0 03 00 00 00 00 00 00 00 00 00 00 00 00 00 00      	nopb	;		nopa	;		nops	;		nopxm	;		nopv	
+     7b0: c0 03 00 00 00 00 00 00 00 00 00 00 00 00 00 00      	nopb	;		nopa	;		nops	;		nopxm	;		nopv	
+     7c0: c0 03 00 00 00 00 00 00 00 00 00 00 00 00 00 00      	nopb	;		nopa	;		nops	;		nopxm	;		nopv	
+
+000007d0 <.L_LEnd4>:
+     7d0: c0 03 00 00 00 00 00 00 00 00 00 00 00 00 00 00      	nopb	;		nopa	;		nops	;		nopxm	;		nopv	
+     7e0: c0 03 00 28 0b 14 00 00 00 00 00 00 00 00 00 00      	nopb	;		nopa	;		nops	;		nopx	;		mov	m0, r16;		nopv	
+     7f0: 4d 76 3c 02 00 00    	nopa	;		mov	p2, p6
+     7f6: 59 16 28 1c  	mov	dj0, r16
+     7fa: b7 10 10 3c 00 00 00 08 0b 7a 00 02  	lda.s8	r1, [p0, dj0];		paddb	[p2], m0;		movxm	ls, #0x820
+     806: bb 10 40 3c 02 00 00 b8 80 41	lda.s8	r2, [p2, #0x0];		movxm	le, #0x880
+     810: c0 03 00 f8 ff b9 3a 00 20 00 00 00 00 00 00 00      	nopb	;		nopa	;		nops	;		add	r0, r16, #0x1;		add.nc	lc, r7, #-0x1;		nopv	
+
+00000820 <.LBB1_21>:
+     820: c0 03 00 00 00 00 00 00 00 00 00 40 a0 41 00 00      	nopb	;		st.s8	r1, [p2, #0x0];		nops	;		nopxm	;		nopv	
+     830: c0 03 00 00 00 00 00 00 00 00 00 00 00 00 00 00      	nopb	;		nopa	;		nops	;		nopxm	;		nopv	
+     840: c0 03 00 00 00 00 00 00 00 00 00 00 00 00 00 00      	nopb	;		nopa	;		nops	;		nopxm	;		nopv	
+     850: c0 03 00 00 00 00 00 00 00 00 00 00 00 00 00 00      	nopb	;		nopa	;		nops	;		nopxm	;		nopv	
+     860: bb 28 0b 10 00 00 00 00 00 00	nopa	;		nopx	;		mov	m0, r0
+     86a: 43 28 3b 1e b5 10 04 00      	xor	r1, r2, r1;		mov	p2, p6
+     872: 59 16 20 1c  	mov	dj0, r0
+     876: 7d 08 0b 7a 00 02    	lda.s8	r1, [p0, dj0];		paddb	[p2], m0
+     87c: d9 05 0c 02  	lda.s8	r2, [p2, #0x0]
+
+00000880 <.L_LEnd3>:
+     880: c0 03 00 88 03 00 38 00 00 00 00 00 00 00 00 00      	nopb	;		nopa	;		nops	;		add	r0, r0, #0x1;		nopm	;		nopv	
+     890: 19 00 0d 02  	st.s8	r0, [p2, #0x0]
+     894: 01 00        	nop	
+     896: 01 00        	nop	
+     898: 01 00        	nop	
+     89a: 01 00        	nop	
+     89c: 99 16 80 10  	xor	r0, r2, r1
+     8a0: 59 21 04 00  	mova	dj0, #0x4
+     8a4: d9 01 10 01  	lda.s8	r0, [p1, dj0]
+     8a8: 59 21 20 00  	mova	dj0, #0x20
+     8ac: d9 03 10 06  	lda.s8	r1, [p6, dj0]
+     8b0: 01 00        	nop	
+     8b2: 19 00 11 06  	st.s8	r0, [p6, dj0]
+     8b6: 01 00        	nop	
+     8b8: 01 00        	nop	
+     8ba: 01 00        	nop	
+     8bc: 01 00        	nop	
+     8be: 99 06 40 10  	xor	r0, r1, r0
+     8c2: 59 21 21 00  	mova	dj0, #0x21
+     8c6: d9 01 10 06  	lda.s8	r0, [p6, dj0]
+     8ca: 01 00        	nop	
+     8cc: 19 00 11 06  	st.s8	r0, [p6, dj0]
+     8d0: 01 00        	nop	
+     8d2: 01 00        	nop	
+     8d4: 01 00        	nop	
+     8d6: 01 00        	nop	
+     8d8: 99 56 00 10  	xor	r0, r0, r5
+     8dc: 59 21 87 00  	mova	dj0, #0x87
+     8e0: d9 01 10 06  	lda.s8	r0, [p6, dj0]
+     8e4: 01 00        	nop	
+     8e6: 19 00 11 06  	st.s8	r0, [p6, dj0]
+     8ea: 01 00        	nop	
+     8ec: 15 01 00 78 05 00    	jl	#0xaf0
+     8f2: 01 00        	nop	
+     8f4: 01 00        	nop	
+     8f6: 99 46 00 10  	xor	r0, r0, r4
+     8fa: 01 00        	nop	
+     8fc: 59 76 3c 18  	mov	p0, p6
+     900: bb f8 bf bd 02 00 00 00 00 00	nopa	;		nopx	;		add.nc	lc, r22, #-0x1
+     90a: 55 a0 f2 00 00 00    	movxm	ls, #0x950
+     910: c0 03 00 10 c0 3c 02 00 00 00 00 00 00 00 00 00      	nopb	;		nopa	;		nops	;		movxm	le, #0x980;		nopv	
+     920: c0 03 00 28 4b 15 02 00 00 00 00 00 00 00 00 00      	nopb	;		nopa	;		nops	;		nopx	;		mov	dj0, r21;		nopv	
+     930: c0 03 00 28 3b 1f 18 0e 2a 00 00 00 00 00 00 00      	nopb	;		nopa	;		nops	;		add	r0, r21, #-0x10;		mov	p0, p7;		nopv	
+     940: c0 03 00 28 0b 30 3a 00 2a 00 00 00 00 00 00 00      	nopb	;		nopa	;		nops	;		add	r0, r21, #0x1;		mov	dj1, r0;		nopv	
+
+00000950 <.LBB1_23>:
+     950: c0 03 00 00 00 00 00 00 00 00 00 78 00 c6 00 00      	nopb	;		lda.s8	r1, [p6, dj1];		nops	;		nopxm	;		nopv	
+     960: b7 00 00 00 00 00 00 00 00 40 20 02  	st.s8	r1, [p0, dj0];		nopb	;		nopxm	
+     96c: 01 00        	nop	
+     96e: 01 00        	nop	
+     970: 01 00        	nop	
+     972: 01 00        	nop	
+     974: 19 07 04 10  	add	r2, r0, #0x1
+     978: 43 28 0b 10 1a 1e 00 00      	add	r1, r0, #-0x10;		mov	dj0, r0
+
+00000980 <.L_LEnd2>:
+     980: c0 03 00 28 4b 30 2e 01 04 00 00 00 00 00 00 00      	nopb	;		nopa	;		nops	;		or	r0, r2, r2;		mov	dj1, r1;		nopv	
+     990: 13 00 00 00 00 38 00 c6      	lda.s8	r0, [p6, dj1];		nopb	;		nopx	
+     998: 19 00 11 00  	st.s8	r0, [p0, dj0]
+     99c: 01 00        	nop	
+     99e: 15 01 00 78 05 00    	jl	#0xaf0
+     9a4: 01 00        	nop	
+     9a6: 01 00        	nop	
+     9a8: 01 00        	nop	
+     9aa: 01 00        	nop	
+     9ac: 59 76 3c 18  	mov	p0, p6
+     9b0: bb f8 3f bd 02 00 00 00 00 00	nopa	;		nopx	;		add.nc	lc, r20, #-0x1
+     9ba: 55 e0 f3 00 00 00    	movxm	ls, #0x9f0
+     9c0: c0 03 00 10 18 3d 02 00 00 00 00 00 00 00 00 00      	nopb	;		nopa	;		nops	;		movxm	le, #0xa30;		nopv	
+     9d0: c0 03 00 28 cb 14 06 19 26 00 00 00 00 00 00 00      	nopb	;		nopa	;		nops	;		add	r1, r19, r18;		mov	dj0, r19;		nopv	
+     9e0: c0 03 00 28 4b 10 3a 10 26 00 00 38 00 c2 00 00      	nopb	;		lda.s8	r0, [p6, dj0];		nops	;		add	r1, r19, #0x1;		mov	dj0, r1;		nopv	
+
+000009f0 <.LBB1_25>:
+     9f0: c0 03 00 00 00 00 00 00 00 00 00 00 20 e2 00 00      	nopb	;		st.s8	r0, [p7, dj0];		nops	;		nopxm	;		nopv	
+     a00: c0 03 00 00 00 00 00 00 00 00 00 00 00 00 00 00      	nopb	;		nopa	;		nops	;		nopxm	;		nopv	
+     a10: 13 00 00 00 00 00 00 00      	nopa	;		nopb	;		nopx	
+     a18: 01 00        	nop	
+     a1a: 01 00        	nop	
+     a1c: 01 00        	nop	
+     a1e: 43 28 4b 10 06 39 02 00      	add	r3, r1, r18;		mov	dj0, r1
+     a26: bb 28 cb 10 3a 20 02 38 00 c2	lda.s8	r0, [p6, dj0];		add	r2, r1, #0x1;		mov	dj0, r3
+
+00000a30 <.L_LEnd1>:
+     a30: c0 03 00 28 8b 20 00 00 00 00 00 00 00 00 00 00      	nopb	;		nopa	;		nops	;		nopx	;		mov	r1, r2;		nopv	
+     a40: 1d 00 00 00 20 e2    	st.s8	r0, [p7, dj0];		nopx	
+     a46: 01 00        	nop	
+     a48: 01 00        	nop	
+     a4a: 01 00        	nop	
+     a4c: 01 00        	nop	
+     a4e: 01 00        	nop	
+     a50: 01 00        	nop	
+     a52: 01 00        	nop	
+     a54: 01 00        	nop	
+     a56: 79 86 78 1d  	add.nc	lc, r17, #0x0
+     a5a: 55 e0 f4 00 00 00    	movxm	ls, #0xa70
+     a60: c0 03 00 10 68 3d 02 00 00 00 00 08 00 00 00 00      	nopb	;		mova	r0, #0x0;		nops	;		movxm	le, #0xad0;		nopv	
+
+00000a70 <.LBB1_27>:
+     a70: c0 03 00 28 0b 10 3a 00 00 00 00 00 00 00 00 00      	nopb	;		nopa	;		nops	;		add	r0, r0, #0x1;		mov	dj0, r0;		nopv	
+     a80: c0 03 00 00 00 00 00 00 00 00 00 00 24 c2 00 00      	nopb	;		st.s8	r16, [p6, dj0];		nops	;		nopxm	;		nopv	
+     a90: c0 03 00 00 00 00 00 00 00 00 00 00 00 00 00 00      	nopb	;		nopa	;		nops	;		nopxm	;		nopv	
+     aa0: c0 03 00 00 00 00 00 00 00 00 00 00 00 00 00 00      	nopb	;		nopa	;		nops	;		nopxm	;		nopv	
+     ab0: c0 03 00 00 00 00 00 00 00 00 00 00 00 00 00 00      	nopb	;		nopa	;		nops	;		nopxm	;		nopv	
+     ac0: c0 03 00 00 00 00 00 00 00 00 00 00 00 00 00 00      	nopb	;		nopa	;		nops	;		nopxm	;		nopv	
+
+00000ad0 <.L_LEnd0>:
+     ad0: c0 03 00 00 00 00 00 00 00 00 00 00 00 00 00 00      	nopb	;		nopa	;		nops	;		nopxm	;		nopv	
+     ae0: 95 00 00 c0 02 00    	j	#0x580
+     ae6: 01 00        	nop	
+     ae8: 01 00        	nop	
+     aea: 01 00        	nop	
+     aec: 01 00        	nop	
+     aee: 01 00        	nop	
+===== W0 HELPER: STATE/SIGMA/SHAKE/136+56 PRF STAGING =====
+
+C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\elfs_main_core_0_2\elfs_main_core_0_2.elf:	file format elf32-aie
+
+Disassembly of section .text:
+
+00001140 <_ZN12_GLOBAL__N_119cbd3_ntt_store_dr2bEPKhhPh>:
+    1140: c0 03 00 28 3b 41 00 00 00 00 00 00 00 00 f8 02      	paddb	[sp], #0x5c0;		nopa	;		nops	;		nopx	;		mov	r2, p1;		nopv	
+    1150: 99 42 e2 0f  	st	lr, [sp, #-240]
+    1154: 19 62 e3 0f  	st	r17, [sp, #-232]
+    1158: 19 e4 e3 0f  	st	r18, [sp, #-228]
+    115c: 99 f6 e6 0f  	st	p6, [sp, #-204]
+    1160: 59 f6 3c 1e  	mov	p6, sp
+    1164: 99 7e e7 0f  	st	p7, [sp, #-200]
+    1168: 59 f6 3c 1f  	mov	p7, sp
+    116c: 4d f6 3c 0a 60 00    	mova	r0, #0x3;		mov	p2, sp
+    1172: bd 04 a0 00 5c fc    	st	r16, [sp, #-236];		and	r16, r2, r0
+    1178: 3b 61 00 10 2e 03 20 c0 8c fc	st	r19, [sp, #-224];		jnz	r16, #0x1970
+    1182: 19 e8 e4 0f  	st	r20, [sp, #-220]
+    1186: 19 6a e5 0f  	st	r21, [sp, #-216]
+    118a: 19 ec e5 0f  	st	r22, [sp, #-212]
+    118e: 19 6e e6 0f  	st	r23, [sp, #-208]
+    1192: 73 33 a4 f6 e7 77 16 56      	padda	[p2], #-1272;		paddb	[p7], #-196;		padds	[p6], #-1472
+    119a: 59 22 00 00  	mova	r17, #0x0
+    119e: bb c8 03 c0 0a 34 00 88 e0 03	mova	r2, #0x1f;		movx	r3, #0x20;		mov	r22, #0x1
+    11a8: bb 10 44 40 02 fc 3f 08 00 f0	mova	r0, #-0x80;		movxm	r18, #-0xfff78
+    11b2: bb 90 80 86 02 00 00 c8 c4 00	mova	r19, #0x6;		movxm	r20, #0xd01
+    11bc: bb 10 f0 38 04 00 00 c8 e5 00	mova	r23, #0x7;		movxm	ls, #0x11e0
+    11c6: bb 10 20 39 06 00 00 08 01 19	mova	r4, #0xc8;		movxm	le, #0x1240
+    11d0: c0 03 00 38 03 b9 0a 52 01 00 00 08 01 00 00 00      	nopb	;		mova	r4, #0x0;		nops	;		movx	r21, #0x10;		add.nc	lc, r4, #0x0;		nopv	
+
+000011e0 <.LBB1_2>:
+    11e0: c0 03 00 28 0b 11 3a 40 08 00 00 00 00 00 00 00      	nopb	;		nopa	;		nops	;		add	r4, r4, #0x1;		mov	dj0, r4;		nopv	
+    11f0: c0 03 00 00 00 00 00 00 00 00 00 40 24 c2 00 00      	nopb	;		st.s8	r17, [p6, dj0];		nops	;		nopxm	;		nopv	
+    1200: c0 03 00 00 00 00 00 00 00 00 00 00 00 00 00 00      	nopb	;		nopa	;		nops	;		nopxm	;		nopv	
+    1210: c0 03 00 00 00 00 00 00 00 00 00 00 00 00 00 00      	nopb	;		nopa	;		nops	;		nopxm	;		nopv	
+    1220: c0 03 00 00 00 00 00 00 00 00 00 00 00 00 00 00      	nopb	;		nopa	;		nops	;		nopxm	;		nopv	
+    1230: c0 03 00 00 00 00 00 00 00 00 00 00 00 00 00 00      	nopb	;		nopa	;		nops	;		nopxm	;		nopv	
+
+00001240 <.L_LEnd23>:
+    1240: c0 03 00 00 00 00 00 00 00 00 00 00 00 00 00 00      	nopb	;		nopa	;		nops	;		nopxm	;		nopv	
+    1250: 7f 00 00 00 65 89 02 00 00 00 00 00 00 00    	nopa	;		nopb	;		nopx	;		mov	m0, r17;		nops	
+    125e: 59 96 28 1c  	mov	dj0, r17
+    1262: 99 56 e1 0f  	st	p2, [sp, #-248]
+    1266: 59 76 3c 1a  	mov	p2, p6
+    126a: b7 10 48 39 04 00 00 08 0b 3a 01 02  	lda.s8	r4, [p0, dj0];		paddb	[p2], m0;		movxm	ls, #0x1290
+    1276: bb 10 78 39 06 00 00 78 81 41	lda.s8	r5, [p2, #0x0];		movxm	le, #0x12f0
+    1280: c0 03 00 f8 ff b8 3a 30 22 00 00 00 00 00 00 00      	nopb	;		nopa	;		nops	;		add	r3, r17, #0x1;		add.nc	lc, r3, #-0x1;		nopv	
+
+00001290 <.LBB1_4>:
+    1290: c0 03 00 00 00 00 00 00 00 00 00 00 a1 41 00 00      	nopb	;		st.s8	r4, [p2, #0x0];		nops	;		nopxm	;		nopv	
+    12a0: c0 03 00 00 00 00 00 00 00 00 00 00 00 00 00 00      	nopb	;		nopa	;		nops	;		nopxm	;		nopv	
+    12b0: c0 03 00 00 00 00 00 00 00 00 00 00 00 00 00 00      	nopb	;		nopa	;		nops	;		nopxm	;		nopv	
+    12c0: c0 03 00 00 00 00 00 00 00 00 00 00 00 00 00 00      	nopb	;		nopa	;		nops	;		nopxm	;		nopv	
+    12d0: bb 28 cb 10 00 00 00 00 00 00	nopa	;		nopx	;		mov	m0, r3
+    12da: 43 28 3b 1e 35 42 0a 00      	xor	r4, r5, r4;		mov	p2, p6
+    12e2: 59 96 21 1c  	mov	dj0, r3
+    12e6: 7d 08 0b 3a 01 02    	lda.s8	r4, [p0, dj0];		paddb	[p2], m0
+    12ec: d9 0b 0c 02  	lda.s8	r5, [p2, #0x0]
+
+000012f0 <.L_LEnd22>:
+    12f0: c0 03 00 88 03 00 38 30 06 00 00 00 00 00 00 00      	nopb	;		nopa	;		nops	;		add	r3, r3, #0x1;		nopm	;		nopv	
+    1300: c0 03 00 00 00 00 00 00 00 00 00 c0 a0 41 00 00      	nopb	;		st.s8	r3, [p2, #0x0];		nops	;		nopxm	;		nopv	
+    1310: 19 00 00 10  	nopx	
+    1314: 01 00        	nop	
+    1316: 01 00        	nop	
+    1318: 01 00        	nop	
+    131a: 99 46 46 11  	xor	r3, r5, r4
+    131e: 59 21 20 00  	mova	dj0, #0x20
+    1322: d9 07 10 06  	lda.s8	r3, [p6, dj0]
+    1326: 01 00        	nop	
+    1328: 19 02 11 06  	st.s8	r1, [p6, dj0]
+    132c: 01 00        	nop	
+    132e: 01 00        	nop	
+    1330: 01 00        	nop	
+    1332: 01 00        	nop	
+    1334: 99 16 c2 10  	xor	r1, r3, r1
+    1338: 59 21 21 00  	mova	dj0, #0x21
+    133c: d9 03 10 06  	lda.s8	r1, [p6, dj0]
+    1340: 01 00        	nop	
+    1342: 19 02 11 06  	st.s8	r1, [p6, dj0]
+    1346: 01 00        	nop	
+    1348: 01 00        	nop	
+    134a: 01 00        	nop	
+    134c: 01 00        	nop	
+    134e: 99 26 42 10  	xor	r1, r1, r2
+    1352: 59 21 87 00  	mova	dj0, #0x87
+    1356: d9 03 10 06  	lda.s8	r1, [p6, dj0]
+    135a: 99 ce e1 0f  	st	p1, [sp, #-244]
+    135e: 19 00 11 06  	st.s8	r0, [p6, dj0]
+    1362: 01 00        	nop	
+    1364: 01 00        	nop	
+    1366: 01 00        	nop	
+    1368: 01 00        	nop	
+    136a: 99 06 40 10  	xor	r0, r1, r0
+    136e: 15 01 00 d8 0c 00    	jl	#0x19b0
+    1374: 01 00        	nop	
+    1376: 01 00        	nop	
+    1378: 01 00        	nop	
+    137a: 01 00        	nop	
+    137c: 59 76 3c 18  	mov	p0, p6
+    1380: 55 40 e7 10 00 00    	movxm	ls, #0x13a0
+    1386: bb 10 00 3a 06 00 00 08 00 11	mova	r0, #0x88;		movxm	le, #0x1400
+    1390: c0 03 00 38 03 b8 02 00 00 00 00 08 00 00 00 00      	nopb	;		mova	r0, #0x0;		nops	;		nopx	;		add.nc	lc, r0, #0x0;		nopv	
+
+000013a0 <.LBB1_6>:
+    13a0: c0 03 00 00 00 00 00 00 00 00 00 00 00 00 00 00      	nopb	;		nopa	;		nops	;		nopxm	;		nopv	
+    13b0: c0 03 00 00 00 00 00 00 00 00 00 00 00 00 00 00      	nopb	;		nopa	;		nops	;		nopxm	;		nopv	
+    13c0: c0 03 00 00 00 00 00 00 00 00 00 00 00 00 00 00      	nopb	;		nopa	;		nops	;		nopxm	;		nopv	
+    13d0: c0 03 00 00 00 00 00 00 00 00 00 00 00 00 00 00      	nopb	;		nopa	;		nops	;		nopxm	;		nopv	
+    13e0: c0 03 00 28 0b 10 02 00 00 00 00 00 00 00 00 00      	nopb	;		nopa	;		nops	;		nopx	;		mov	dj0, r0;		nopv	
+    13f0: c0 03 00 00 00 00 00 00 00 00 00 78 00 c2 00 00      	nopb	;		lda.s8	r1, [p6, dj0];		nops	;		nopxm	;		nopv	
+
+00001400 <.L_LEnd21>:
+    1400: c0 03 00 88 03 00 38 00 00 00 00 40 20 e2 00 00      	nopb	;		st.s8	r1, [p7, dj0];		nops	;		add	r0, r0, #0x1;		nopm	;		nopv	
+    1410: 7f 00 00 00 00 00 00 00 00 00 00 00 00 00    	nopa	;		nopb	;		nopxm	;		nops	
+    141e: 15 01 00 d8 0c 00    	jl	#0x19b0
+    1424: 01 00        	nop	
+    1426: 01 00        	nop	
+    1428: 01 00        	nop	
+    142a: 01 00        	nop	
+    142c: 59 76 3c 18  	mov	p0, p6
+    1430: 1d 00 00 00 00 00    	nopa	;		nopx	
+    1436: 01 00        	nop	
+    1438: 55 e0 e8 10 00 00    	movxm	ls, #0x1470
+    143e: 55 80 e9 18 00 00    	movxm	le, #0x14c0
+    1444: 55 00 00 01 10 00    	movxm	r2, #0x100000
+    144a: 4d 16 21 0c 00 07    	mova	r0, #0x38;		mov	dj0, r2
+    1450: c0 03 00 f8 3f b8 06 19 04 00 00 38 00 c2 00 00      	nopb	;		lda.s8	r0, [p6, dj0];		nops	;		add	r1, r2, r18;		add.nc	lc, r0, #-0x1;		nopv	
+    1460: c0 03 00 28 4b 10 3a 10 04 00 00 d8 28 fc 00 00      	nopb	;		lda	p0, [sp, #-248];		nops	;		add	r1, r2, #0x1;		mov	dj0, r1;		nopv	
+
+00001470 <.LBB1_8>:
+    1470: c0 03 00 00 00 00 00 00 00 00 00 00 20 e2 00 00      	nopb	;		st.s8	r0, [p7, dj0];		nops	;		nopxm	;		nopv	
+    1480: c0 03 00 00 00 00 00 00 00 00 00 00 00 00 00 00      	nopb	;		nopa	;		nops	;		nopxm	;		nopv	
+    1490: c0 03 00 00 00 00 00 00 00 00 00 00 00 00 00 00      	nopb	;		nopa	;		nops	;		nopxm	;		nopv	
+    14a0: bb 00 00 00 00 00 00 00 00 00	nopa	;		nopxm	
+    14aa: 01 00        	nop	
+    14ac: 01 00        	nop	
+    14ae: 43 28 4b 10 06 39 02 00      	add	r3, r1, r18;		mov	dj0, r1
+    14b6: bb 28 cb 10 3a 20 02 38 00 c2	lda.s8	r0, [p6, dj0];		add	r2, r1, #0x1;		mov	dj0, r3
+
+000014c0 <.L_LEnd20>:
+    14c0: c0 03 00 28 8b 20 00 00 00 00 00 00 00 00 00 00      	nopb	;		nopa	;		nops	;		nopx	;		mov	r1, r2;		nopv	
+    14d0: 7f 00 00 00 00 00 00 00 00 00 00 00 20 e2    	st.s8	r0, [p7, dj0];		nopb	;		nopxm	;		nops	
+    14de: 01 00        	nop	
+    14e0: 01 00        	nop	
+    14e2: 01 00        	nop	
+    14e4: 01 00        	nop	
+    14e6: 01 00        	nop	
+    14e8: 01 00        	nop	
+    14ea: 01 00        	nop	
+===== PASSED DR2B PRF SOURCE LINES 41-60 =====
+41:     const uint8_t sigma[kSigmaBytes], const uint8_t descriptor[16], uint8_t out[kTokenBytes]
+42: ) {
+43:     const uint32_t request_id = load_le32(descriptor + 8);
+44:     if (!valid_descriptor(descriptor)) { write_header(out, request_id, kBadDescriptor); return; }
+45:     write_header(out, request_id, kOk);
+46:     alignas(8) uint8_t state[200];
+47:     clear(state, sizeof(state));
+48:     DR1_AIE_DISABLE_LOOP_UNROLL
+49:     for (uint32_t i = 0; i < kSigmaBytes; ++i) state[i] ^= sigma[i];
+50:     state[kSigmaBytes] ^= descriptor[4];
+51:     state[33] ^= 0x1f;
+52:     state[kRate - 1] ^= 0x80;
+53:     phoenix_sdr_dsp::pqc::dr1::keccak_f1600(state);
+54:     DR1_AIE_DISABLE_LOOP_UNROLL
+55:     for (uint32_t i = 0; i < kRate; ++i) out[kHeaderBytes + i] = state[i];
+56:     phoenix_sdr_dsp::pqc::dr1::keccak_f1600(state);
+57:     DR1_AIE_DISABLE_LOOP_UNROLL
+58:     for (uint32_t i = kRate; i < kPrfBytes; ++i) out[kHeaderBytes + i] = state[i - kRate];
+59:     clear(state, sizeof(state));
+60: }
+===== W0 HELPER SOURCE LINES 47-66 =====
+47: static bool cbd3_ntt_store_dr2b(const uint8_t sigma[32], uint8_t counter,
+48:                                  uint8_t out[2 * kN]) {
+49:   if (!word_aligned(out)) return false;
+50:   alignas(8) uint8_t state[200];
+51:   uint8_t prf[kPrfBytes];
+52:   uint32_t coefficients[kN];
+53:   clear_bytes(state, sizeof(state));
+54:   DR2D_DISABLE_UNROLL
+55:   for (uint32_t i = 0; i < 32; ++i) state[i] ^= sigma[i];
+56:   state[32] ^= counter;
+57:   state[33] ^= 0x1f;
+58:   state[kRate256 - 1] ^= 0x80;
+59:   phoenix_sdr_dsp::pqc::dr1::keccak_f1600(state);
+60:   DR2D_DISABLE_UNROLL
+61:   for (uint32_t i = 0; i < kRate256; ++i) prf[i] = state[i];
+62:   phoenix_sdr_dsp::pqc::dr1::keccak_f1600(state);
+63:   DR2D_DISABLE_UNROLL
+64:   for (uint32_t i = kRate256; i < kPrfBytes; ++i) prf[i] = state[i - kRate256];
+65:   cbd3(prf, coefficients);
+66:   ntt(coefficients);

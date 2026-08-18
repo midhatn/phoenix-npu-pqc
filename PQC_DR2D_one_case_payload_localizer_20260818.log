@@ -1,0 +1,147 @@
+UTC=2026-08-18T02:13:06.4558214Z
+DIAGNOSTIC_SCRIPT=C:\Users\midhat\AppData\Local\Temp\pqc_dr2d_one_case_payload_localizer_20260818.py
+DIAGNOSTIC_SCRIPT_SHA256=B6207420145B783D53DB332F65D59C20850E5D88AA59A9E48318B6749768DBAC
+PROTECTED_PRE_HASHES
+742591321AC5DC3069A51DED4E198905367F8DC6261DF8C3EBAE20B5E333FBAD  .\run_all_silicon_tests.py
+A6F44C68787905F6B4819598BAACAC59BF5BCC4A3125C8151B7863345E9FF4F4  .\phoenix_sdr_dsp\pqc\dr2d_mlkem512_kpke_keygen_abi.py
+E17E17B8481BC1FA8492A7E2BC9184FBAE095B55C5E175B015AA19A2BC999694  .\phoenix_sdr_dsp\pqc\dr2d_mlkem512_kpke_keygen_graph.py
+16D61E6ADA4D7DE384B3981CC76D3DE8319CE2BEC999727D4847567E7E1F3519  .\phoenix_sdr_dsp\pqc\kernels\dr2d_mlkem512_kpke_keygen_internal.hpp
+2F94E2995706AC5636F35C66167E5DD8F54AC54B618C200BF4EE45B8B754CEAF  .\phoenix_sdr_dsp\pqc\kernels\dr2d_mlkem512_kpke_keygen_seed.cc
+D95106C0F01A1A99AEE21CEF3FAB704B1E57BD6D1D4E066F7E421F0DD0B53986  .\phoenix_sdr_dsp\pqc\kernels\dr2d_mlkem512_kpke_keygen_row0_expand.cc
+A577360C6E24296576DAEDFDC537D04765AAEBFDC74EEADD34358437986E0622  .\phoenix_sdr_dsp\pqc\kernels\dr2d_mlkem512_kpke_keygen_row0_accumulate.cc
+C893D0158F85A00C6DFD6A7F20C6AA2C5259D397AC64C32D4C3F9E8CB82C13C8  .\phoenix_sdr_dsp\pqc\kernels\dr2d_mlkem512_kpke_keygen_row1_expand.cc
+235C69D008E7DB656C26053A404980B7DE139156C8C4671AC94A04C7FB1C9806  .\phoenix_sdr_dsp\pqc\kernels\dr2d_mlkem512_kpke_keygen_row1_accumulate.cc
+23F691BC40410F7BDF9573A14BC01C590A3E9D2A36B07E807E415B033D49780C  .\phoenix_sdr_dsp\pqc\kernels\dr2d_mlkem512_kpke_keygen_serialize.cc
+5D952F50A059F8B23AC818F09B7B2CFA1518DE5D910E71ED14729E4909982C84  .\tests\pqc_device_resident\test_dr2d_mlkem512_kpke_keygen.py
+0DA35A77EB4E8A8754ACB22404532953DE8F257B078E50C88B8E25363598DEA9  .\tests\pqc_device_resident\test_dr2d_mlkem512_kpke_keygen_silicon.py
+{
+  "actual_full_sha256": "e3af666e595033e4010115462744fc49763eb1d96754fcfa2d5c703b0405e755",
+  "backend": "dr2d-mlkem512-kpke-keygen:silicon",
+  "case": "acvp-tcId-01",
+  "expected_full_sha256": "82f988d32466c997c766fd95d6441844d00f0fc251a4c13538ad93f16a28d39c",
+  "first_mismatch_region": "t_hat[0]",
+  "full_byte_mismatches": 1532,
+  "native_calls": 1,
+  "regions": [
+    {
+      "actual_sha256": "37e1b2d5512eec7424df1d4915311a6cbdc2e76655db868c1c9d3043b9ebf0ab",
+      "all_coefficient_mismatches_high_part_only": false,
+      "base_offset": 0,
+      "byte_mismatches": 381,
+      "coefficient_mismatches": 256,
+      "expected_sha256": "dcb005dd32fea24a3e411cb216183b5dd2c61e87d32447c737e439174f5f14dc",
+      "first_byte_mismatch": {
+        "actual": 136,
+        "expected": 40,
+        "record_payload_offset": 0,
+        "region_offset": 0,
+        "terminal_record_offset": 20
+      },
+      "first_coefficient_mismatch": {
+        "actual": 3208,
+        "expected": 1576,
+        "high4_different": true,
+        "index": 0,
+        "low8_equal": false
+      },
+      "low8_equal_high4_different_count": 2,
+      "name": "t_hat[0]"
+    },
+    {
+      "actual_sha256": "cd2ecfb3b7be2d861355b386ecd2e4ad9e4e3b37a247b36fa6224ac977ea4c07",
+      "all_coefficient_mismatches_high_part_only": false,
+      "base_offset": 384,
+      "byte_mismatches": 384,
+      "coefficient_mismatches": 256,
+      "expected_sha256": "75e3d2269ef8770bcfdf904924217fcd354420e90e042f9aca6d489f0589cd91",
+      "first_byte_mismatch": {
+        "actual": 31,
+        "expected": 105,
+        "record_payload_offset": 384,
+        "region_offset": 0,
+        "terminal_record_offset": 404
+      },
+      "first_coefficient_mismatch": {
+        "actual": 287,
+        "expected": 1385,
+        "high4_different": true,
+        "index": 0,
+        "low8_equal": false
+      },
+      "low8_equal_high4_different_count": 0,
+      "name": "t_hat[1]"
+    },
+    {
+      "actual_sha256": "b6db3d7f30de11fc03d997d25208abd3d622d644c08fec75c40cf742a076a361",
+      "base_offset": 768,
+      "byte_mismatches": 0,
+      "expected_sha256": "b6db3d7f30de11fc03d997d25208abd3d622d644c08fec75c40cf742a076a361",
+      "first_byte_mismatch": null,
+      "name": "ek_rho",
+      "rho_equal": true
+    },
+    {
+      "actual_sha256": "0393b41530d64e3b61f848f8a13c2a0f099b232d2df40351bcc6c8d1c88637d2",
+      "all_coefficient_mismatches_high_part_only": false,
+      "base_offset": 800,
+      "byte_mismatches": 384,
+      "coefficient_mismatches": 256,
+      "expected_sha256": "67d5309d5b29897e3a75e89fb0bf57b674f451bd8b5938144401b1c381f27076",
+      "first_byte_mismatch": {
+        "actual": 233,
+        "expected": 137,
+        "record_payload_offset": 800,
+        "region_offset": 0,
+        "terminal_record_offset": 820
+      },
+      "first_coefficient_mismatch": {
+        "actual": 2281,
+        "expected": 905,
+        "high4_different": true,
+        "index": 0,
+        "low8_equal": false
+      },
+      "low8_equal_high4_different_count": 0,
+      "name": "s_hat[0]"
+    },
+    {
+      "actual_sha256": "a0974b6c746d33486ddaed255880f2aaeed88a6705d64813f1dd83e1e8cba96e",
+      "all_coefficient_mismatches_high_part_only": false,
+      "base_offset": 1184,
+      "byte_mismatches": 383,
+      "coefficient_mismatches": 256,
+      "expected_sha256": "939deabf90b556dae835e7d6fab6cb7e784f1b62f946daa4472cfcb107d073bd",
+      "first_byte_mismatch": {
+        "actual": 43,
+        "expected": 144,
+        "record_payload_offset": 1184,
+        "region_offset": 0,
+        "terminal_record_offset": 1204
+      },
+      "first_coefficient_mismatch": {
+        "actual": 1067,
+        "expected": 2192,
+        "high4_different": true,
+        "index": 0,
+        "low8_equal": false
+      },
+      "low8_equal_high4_different_count": 2,
+      "name": "s_hat[1]"
+    }
+  ],
+  "request_id": 3536846849
+}
+ONE_CASE_DIAGNOSTIC_EXIT_CODE=0
+PROTECTED_POST_HASHES
+742591321AC5DC3069A51DED4E198905367F8DC6261DF8C3EBAE20B5E333FBAD  .\run_all_silicon_tests.py
+A6F44C68787905F6B4819598BAACAC59BF5BCC4A3125C8151B7863345E9FF4F4  .\phoenix_sdr_dsp\pqc\dr2d_mlkem512_kpke_keygen_abi.py
+E17E17B8481BC1FA8492A7E2BC9184FBAE095B55C5E175B015AA19A2BC999694  .\phoenix_sdr_dsp\pqc\dr2d_mlkem512_kpke_keygen_graph.py
+16D61E6ADA4D7DE384B3981CC76D3DE8319CE2BEC999727D4847567E7E1F3519  .\phoenix_sdr_dsp\pqc\kernels\dr2d_mlkem512_kpke_keygen_internal.hpp
+2F94E2995706AC5636F35C66167E5DD8F54AC54B618C200BF4EE45B8B754CEAF  .\phoenix_sdr_dsp\pqc\kernels\dr2d_mlkem512_kpke_keygen_seed.cc
+D95106C0F01A1A99AEE21CEF3FAB704B1E57BD6D1D4E066F7E421F0DD0B53986  .\phoenix_sdr_dsp\pqc\kernels\dr2d_mlkem512_kpke_keygen_row0_expand.cc
+A577360C6E24296576DAEDFDC537D04765AAEBFDC74EEADD34358437986E0622  .\phoenix_sdr_dsp\pqc\kernels\dr2d_mlkem512_kpke_keygen_row0_accumulate.cc
+C893D0158F85A00C6DFD6A7F20C6AA2C5259D397AC64C32D4C3F9E8CB82C13C8  .\phoenix_sdr_dsp\pqc\kernels\dr2d_mlkem512_kpke_keygen_row1_expand.cc
+235C69D008E7DB656C26053A404980B7DE139156C8C4671AC94A04C7FB1C9806  .\phoenix_sdr_dsp\pqc\kernels\dr2d_mlkem512_kpke_keygen_row1_accumulate.cc
+23F691BC40410F7BDF9573A14BC01C590A3E9D2A36B07E807E415B033D49780C  .\phoenix_sdr_dsp\pqc\kernels\dr2d_mlkem512_kpke_keygen_serialize.cc
+5D952F50A059F8B23AC818F09B7B2CFA1518DE5D910E71ED14729E4909982C84  .\tests\pqc_device_resident\test_dr2d_mlkem512_kpke_keygen.py
+0DA35A77EB4E8A8754ACB22404532953DE8F257B078E50C88B8E25363598DEA9  .\tests\pqc_device_resident\test_dr2d_mlkem512_kpke_keygen_silicon.py

@@ -1,0 +1,131 @@
+ELF_SHA256=042D0CAD7591FF27B68212CB69016C39B24EE417A9A56F85E3DBB7CF89C2BC54
+SEED_SHA256=2F94E2995706AC5636F35C66167E5DD8F54AC54B618C200BF4EE45B8B754CEAF
+INTERNAL_SHA256=16D61E6ADA4D7DE384B3981CC76D3DE8319CE2BEC999727D4847567E7E1F3519
+===== SEED SOURCE: bit_at, CBD3, NTT, helper (lines 11-74) =====
+11: static uint32_t bit_at(const uint8_t *prf, uint32_t bit) {
+12:   return (prf[bit >> 3] >> (bit & 7)) & 1u;
+13: }
+14: 
+15: // Exact DR2b CBD3 arithmetic: retain this direct bit extraction rather than
+16: // the fixed-mask packed formulation so the active Phoenix noise path follows
+17: // the already physically validated implementation.
+18: static void cbd3(const uint8_t prf[kPrfBytes], uint32_t out[kN]) {
+19:   DR2D_DISABLE_UNROLL
+20:   for (uint32_t i = 0; i < kN; ++i) {
+21:     const uint32_t bit = 6 * i;
+22:     const int32_t value = static_cast<int32_t>(bit_at(prf, bit) + bit_at(prf, bit + 1) + bit_at(prf, bit + 2)) - static_cast<int32_t>(bit_at(prf, bit + 3) + bit_at(prf, bit + 4) + bit_at(prf, bit + 5));
+23:     out[i] = static_cast<uint32_t>(value) + (static_cast<uint32_t>(value) >> 31) * kQ;
+24:   }
+25: }
+26: 
+27: // Exact DR2b noinline uint32 NTT; kZetas is the frozen DR2c/DR2b table.
+28: __attribute__((noinline)) static void ntt(uint32_t r[kN]) {
+29:   uint32_t k = 1;
+30:   DR2D_DISABLE_UNROLL
+31:   for (uint32_t stage = 0; stage < 7; ++stage) {
+32:     const uint32_t length = 128u >> stage;
+33:     DR2D_DISABLE_UNROLL
+34:     for (uint32_t start = 0; start < kN; start += 2 * length) {
+35:       const uint32_t zeta = kZetas[k++];
+36:       DR2D_DISABLE_UNROLL
+37:       for (uint32_t j = start; j < start + length; ++j) {
+38:         const uint32_t t = mod_mul(zeta, r[j + length]);
+39:         r[j + length] = r[j] >= t ? r[j] - t : r[j] + kQ - t;
+40:         const uint32_t sum = r[j] + t;
+41:         r[j] = sum >= kQ ? sum - kQ : sum;
+42:       }
+43:     }
+44:   }
+45: }
+46: 
+47: static bool cbd3_ntt_store_dr2b(const uint8_t sigma[32], uint8_t counter,
+48:                                  uint8_t out[2 * kN]) {
+49:   if (!word_aligned(out)) return false;
+50:   alignas(8) uint8_t state[200];
+51:   uint8_t prf[kPrfBytes];
+52:   uint32_t coefficients[kN];
+53:   clear_bytes(state, sizeof(state));
+54:   DR2D_DISABLE_UNROLL
+55:   for (uint32_t i = 0; i < 32; ++i) state[i] ^= sigma[i];
+56:   state[32] ^= counter;
+57:   state[33] ^= 0x1f;
+58:   state[kRate256 - 1] ^= 0x80;
+59:   phoenix_sdr_dsp::pqc::dr1::keccak_f1600(state);
+60:   DR2D_DISABLE_UNROLL
+61:   for (uint32_t i = 0; i < kRate256; ++i) prf[i] = state[i];
+62:   phoenix_sdr_dsp::pqc::dr1::keccak_f1600(state);
+63:   DR2D_DISABLE_UNROLL
+64:   for (uint32_t i = kRate256; i < kPrfBytes; ++i) prf[i] = state[i - kRate256];
+65:   cbd3(prf, coefficients);
+66:   ntt(coefficients);
+67:   // One aligned 32-bit store per coefficient pair; never a 16-bit store.
+68:   DR2D_DISABLE_UNROLL
+69:   for (uint32_t pair = 0; pair < kN / 2; ++pair)
+70:     store_pair_word(out, pair, coefficients[2 * pair], coefficients[2 * pair + 1]);
+71:   clear_bytes(coefficients, sizeof(coefficients));
+72:   clear_bytes(prf, sizeof(prf));
+73:   clear_bytes(state, sizeof(state));
+74:   return true;
+===== INTERNAL SOURCE: zetas (lines 66-85) =====
+66: // FIPS 203 kZetas in 7-bit bit-reversed order, frozen from physically
+67: // validated DR2c.  No runtime bit reversal or modular exponentiation exists.
+68: constexpr uint16_t kZetas[128] = {
+69:     1u, 1729u, 2580u, 3289u, 2642u, 630u, 1897u, 848u,
+70:     1062u, 1919u, 193u, 797u, 2786u, 3260u, 569u, 1746u,
+71:     296u, 2447u, 1339u, 1476u, 3046u, 56u, 2240u, 1333u,
+72:     1426u, 2094u, 535u, 2882u, 2393u, 2879u, 1974u, 821u,
+73:     289u, 331u, 3253u, 1756u, 1197u, 2304u, 2277u, 2055u,
+74:     650u, 1977u, 2513u, 632u, 2865u, 33u, 1320u, 1915u,
+75:     2319u, 1435u, 807u, 452u, 1438u, 2868u, 1534u, 2402u,
+76:     2647u, 2617u, 1481u, 648u, 2474u, 3110u, 1227u, 910u,
+77:     17u, 2761u, 583u, 2649u, 1637u, 723u, 2288u, 1100u,
+78:     1409u, 2662u, 3281u, 233u, 756u, 2156u, 3015u, 3050u,
+79:     1703u, 1651u, 2789u, 1789u, 1847u, 952u, 1461u, 2687u,
+80:     939u, 2308u, 2437u, 2388u, 733u, 2337u, 268u, 641u,
+81:     1584u, 2298u, 2037u, 3220u, 375u, 2549u, 2090u, 1645u,
+82:     1063u, 319u, 2773u, 757u, 2099u, 561u, 2466u, 2594u,
+83:     2804u, 1092u, 403u, 1026u, 1143u, 2150u, 2775u, 886u,
+84:     1722u, 1212u, 1874u, 1029u, 2110u, 2935u, 885u, 2154u,
+85: };
+===== INTERNAL SOURCE: pair store (lines 130-148) =====
+130: static inline bool word_aligned(const void *address) {
+131:   constexpr uintptr_t kWordAlignmentMask = alignof(uint32_t) - 1u;
+132:   return (reinterpret_cast<uintptr_t>(address) & kWordAlignmentMask) == 0;
+133: }
+134: static inline void store_pair_word(uint8_t *out, uint32_t pair, uint32_t a,
+135:                                    uint32_t b) {
+136:   const uint32_t word = (a & 0xffffu) | ((b & 0xffffu) << 16);
+137:   ::new (static_cast<void *>(out + 4 * pair)) uint32_t(word);
+138: }
+139: static inline bool copy_words(uint8_t *destination, const uint8_t *source,
+140:                               uint32_t bytes) {
+141:   if ((bytes & 3u) != 0 || !word_aligned(destination) || !word_aligned(source))
+142:     return false;
+143:   const uint32_t words = bytes / 4u;
+144:   DR2D_DISABLE_UNROLL
+145:   for (uint32_t word = 0; word < words; ++word)
+146:     ::new (static_cast<void *>(destination + 4 * word))
+147:         uint32_t(load_le32(source + 4 * word));
+148:   return true;
+===== INTERNAL SOURCE: derive_g (lines 179-191) =====
+179: static inline uint32_t mod_mul(uint32_t a, uint32_t b) { return (a * b) % kQ; }
+180: 
+181: static inline void derive_g(const uint8_t d[32], uint8_t rho[32], uint8_t sigma[32]) {
+182:   alignas(8) uint8_t state[200];
+183:   clear_bytes(state, sizeof(state));
+184:   DR2D_DISABLE_UNROLL
+185:   for (uint32_t i = 0; i < 32; ++i) state[i] ^= d[i];
+186:   state[32] ^= 2; state[33] ^= 0x06; state[kRateG - 1] ^= 0x80;
+187:   phoenix_sdr_dsp::pqc::dr1::keccak_f1600(state);
+188:   DR2D_DISABLE_UNROLL
+189:   for (uint32_t i = 0; i < 32; ++i) { rho[i] = state[i]; sigma[i] = state[32 + i]; }
+190:   clear_bytes(state, sizeof(state));
+191: }
+===== UNFILTERED CBD TAIL + KECCAK + COMPLETE NTT =====
+
+C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\elfs_main_core_0_2\elfs_main_core_0_2.elf:	file format elf32-aie
+
+Disassembly of section .text:
+
+00001790 <.L_LEnd18>:
+    17c0: ef 10 00 00 55 80 f0 18 00 00 55 00 08 00    	<unknown>

@@ -1,0 +1,20 @@
+
+C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\elfs_main_core_0_2\elfs_main_core_0_2.elf:	file format elf32-aie
+
+Disassembly of section .text:
+
+00001140 <_ZN12_GLOBAL__N_119cbd3_ntt_store_dr2bEPKhhPh>:
+    1150: 99 42 e2 0f  	st	lr, [sp, #-240]
+    1154: 19 62 e3 0f  	st	r17, [sp, #-232]
+    1158: 19 e4 e3 0f  	st	r18, [sp, #-228]
+    115c: 99 f6 e6 0f  	st	p6, [sp, #-204]
+    1160: 59 f6 3c 1e  	mov	p6, sp
+    1164: 99 7e e7 0f  	st	p7, [sp, #-200]
+    1168: 59 f6 3c 1f  	mov	p7, sp
+    116c: 4d f6 3c 0a 60 00    	mova	r0, #0x3;		mov	p2, sp
+    1172: bd 04 a0 00 5c fc    	st	r16, [sp, #-236];		and	r16, r2, r0
+    1178: 3b 61 00 10 2e 03 20 c0 8c fc	st	r19, [sp, #-224];		jnz	r16, #0x1970
+    1182: 19 e8 e4 0f  	st	r20, [sp, #-220]
+    1186: 19 6a e5 0f  	st	r21, [sp, #-216]
+    118a: 19 ec e5 0f  	st	r22, [sp, #-212]
+    118e: 19 6e e6 0f  	st	r23, [sp, #-208]

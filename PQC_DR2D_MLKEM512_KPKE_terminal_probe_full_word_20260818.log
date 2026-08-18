@@ -1,0 +1,5 @@
+========================================================================
+PQC DR2d terminal probe - DIAGNOSTIC ONLY, NOT KeyGen validation
+Backend: dr2d-mlkem512-kpke-keygen:terminal-probe:diagnostic-only
+CASE1 PASS: known canonical final token reached exact 1,588-byte record
+NOT A DR2d KeyGen pass; production 25/25 remains required.

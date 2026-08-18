@@ -1,0 +1,74 @@
+diff --git a/phoenix_sdr_dsp/pqc/dr2d_mlkem512_kpke_keygen_w0_token_tap_graph.py b/phoenix_sdr_dsp/pqc/dr2d_mlkem512_kpke_keygen_w0_token_tap_graph.py
+--- a/phoenix_sdr_dsp/pqc/dr2d_mlkem512_kpke_keygen_w0_token_tap_graph.py
++++ b/phoenix_sdr_dsp/pqc/dr2d_mlkem512_kpke_keygen_w0_token_tap_graph.py
+@@ -5,8 +5,6 @@
+ runner.  It exposes the complete 2,096-byte W0 token before any downstream
+ worker or serializer can observe it.
+ """
+-
+-from __future__ import annotations
+ 
+ import hashlib
+ import os
+diff --git a/tests/pqc_device_resident/test_dr2d_mlkem512_kpke_w0_token_tap_contract.py b/tests/pqc_device_resident/test_dr2d_mlkem512_kpke_w0_token_tap_contract.py
+--- a/tests/pqc_device_resident/test_dr2d_mlkem512_kpke_w0_token_tap_contract.py
++++ b/tests/pqc_device_resident/test_dr2d_mlkem512_kpke_w0_token_tap_contract.py
+@@ -2,10 +2,13 @@
+ 
+ from __future__ import annotations
+ 
++import os
+ import struct
+ import sys
+ import unittest
+ from pathlib import Path
++
++import numpy as np
+ 
+ REPO_ROOT = Path(__file__).resolve().parents[2]
+ if str(REPO_ROOT) not in sys.path:
+@@ -24,6 +27,7 @@
+ 
+     def test_graph_is_one_worker_two_ingress_one_direct_egress(self) -> None:
+         source = Path(tap.__file__).read_text(encoding="utf-8")
++        self.assertNotIn("from __future__ import annotations", source)
+         self.assertEqual(source.count("ExternalFunction("), 1)
+         self.assertEqual(source.count("d_prod.fill(d)"), 1)
+         self.assertEqual(source.count("descriptor_prod.fill(descriptor)"), 1)
+@@ -39,6 +43,36 @@
+             "dr2d_reference",
+         ):
+             self.assertNotIn(forbidden, source)
++
++    def test_compiletime_specialization_generates_mlir_without_dispatch(self) -> None:
++        authorization_name = "PQC_DR2D_W0_TAP_NATIVE_AUTHORIZATION"
++        self.assertNotIn(authorization_name, os.environ)
++        try:
++            design = tap._program()
++        except tap.NativeBackendUnavailable:
++            if os.environ.get("PQC_DR2D_REQUIRE_IRON_MLIR_CONTRACT") == "1":
++                raise
++            self.skipTest("IRON is unavailable for the no-dispatch MLIR contract")
++        expected = {
++            "d_slots",
++            "descriptor_slots",
++            "secret_token_slots",
++            "element_type",
++        }
++        self.assertEqual(set(design.compilable.compile_params), expected)
++        specialized = design.specialize(
++            d_slots=abi.D_BYTES,
++            descriptor_slots=abi.DESCRIPTOR_BYTES,
++            secret_token_slots=abi.SECRET_TOKEN_BYTES,
++            element_type=np.uint8,
++        )
++        self.assertEqual(set(specialized.compilable.compile_kwargs), expected)
++        mlir = specialized.as_mlir()
++        self.assertIn("dr2d_kpke_keygen_seed_noise", mlir)
++        self.assertIn("dr2d_w0_tap_secret_token", mlir)
++        self.assertNotIn("dr2d_kpke_keygen_row0_expand", mlir)
++        self.assertNotIn("dr2d_kpke_keygen_serialize", mlir)
++        self.assertNotIn(authorization_name, os.environ)
+ 
+     def test_success_token_validation_is_complete_and_reference_free(self) -> None:
+         request_id = 0xD2D00001

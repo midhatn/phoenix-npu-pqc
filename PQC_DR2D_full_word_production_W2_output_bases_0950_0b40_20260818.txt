@@ -1,0 +1,113 @@
+
+C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\elfs_main_core_0_4\elfs_main_core_0_4.elf:	file format elf32-aie
+
+Disassembly of section .text:
+
+00000950 <.LBB0_40>:
+     950: bb 38 43 bc 02 00 00 00 00 00	nopa	;		nopx	;		add.nc	lc, r17, #0x0
+     95a: 55 e0 f2 00 00 00    	movxm	ls, #0x970
+     960: c0 03 00 10 e8 3c 02 00 00 00 00 08 00 00 00 00      	nopb	;		mova	r0, #0x0;		nops	;		movxm	le, #0x9d0;		nopv	
+
+00000970 <.LBB0_41>:
+     970: c0 03 00 28 0b 10 3a 00 00 00 00 00 00 00 00 00      	nopb	;		nopa	;		nops	;		add	r0, r0, #0x1;		mov	dj0, r0;		nopv	
+     980: c0 03 00 00 00 00 00 00 00 00 00 00 24 02 00 00      	nopb	;		st.s8	r16, [p0, dj0];		nops	;		nopxm	;		nopv	
+     990: c0 03 00 00 00 00 00 00 00 00 00 00 00 00 00 00      	nopb	;		nopa	;		nops	;		nopxm	;		nopv	
+     9a0: c0 03 00 00 00 00 00 00 00 00 00 00 00 00 00 00      	nopb	;		nopa	;		nops	;		nopxm	;		nopv	
+     9b0: c0 03 00 00 00 00 00 00 00 00 00 00 00 00 00 00      	nopb	;		nopa	;		nops	;		nopxm	;		nopv	
+     9c0: c0 03 00 00 00 00 00 00 00 00 00 00 00 00 00 00      	nopb	;		nopa	;		nops	;		nopxm	;		nopv	
+
+000009d0 <.L_LEnd0>:
+     9d0: c0 03 00 00 00 00 00 00 00 00 00 00 00 00 00 00      	nopb	;		nopa	;		nops	;		nopxm	;		nopv	
+     9e0: 19 00 00 10  	nopx	
+     9e4: d9 fe fc 07  	lda	p7, [sp, #-28]
+     9e8: d9 76 fc 07  	lda	p6, [sp, #-32]
+     9ec: 59 ee fb 07  	lda	r23, [sp, #-36]
+     9f0: 59 6c fb 07  	lda	r22, [sp, #-40]
+     9f4: d9 c2 f7 07  	lda	lr, [sp, #-68]
+     9f8: 59 ea fa 07  	lda	r21, [sp, #-44]
+     9fc: 59 68 fa 07  	lda	r20, [sp, #-48]
+     a00: 59 e6 f9 07  	lda	r19, [sp, #-52]
+     a04: 59 64 f9 07  	lda	r18, [sp, #-56]
+     a08: 59 e2 f8 07  	lda	r17, [sp, #-60]
+     a0c: 59 60 f8 07  	lda	r16, [sp, #-64]
+     a10: 19 18 00 10  	ret lr	
+     a14: 01 00        	nop	
+     a16: 01 00        	nop	
+     a18: 01 00        	nop	
+     a1a: 01 00        	nop	
+     a1c: 19 a0 ff 3f  	paddb	[sp], #-0x60
+
+00000a20 <.LBB0_43>:
+     a20: bb 38 c3 bd 02 00 00 00 00 00	nopa	;		nopx	;		add.nc	lc, r23, #0x0
+     a2a: 55 80 f4 00 00 00    	movxm	ls, #0xa40
+     a30: c0 03 00 10 50 3d 02 00 00 00 00 c8 00 00 00 00      	nopb	;		mova	r3, #0x0;		nops	;		movxm	le, #0xaa0;		nopv	
+
+00000a40 <.LBB0_44>:
+     a40: c0 03 00 28 cb 10 3a 30 06 00 00 00 00 00 00 00      	nopb	;		nopa	;		nops	;		add	r3, r3, #0x1;		mov	dj0, r3;		nopv	
+     a50: c0 03 00 00 00 00 00 00 00 00 00 00 24 22 00 00      	nopb	;		st.s8	r16, [p1, dj0];		nops	;		nopxm	;		nopv	
+     a60: c0 03 00 00 00 00 00 00 00 00 00 00 00 00 00 00      	nopb	;		nopa	;		nops	;		nopxm	;		nopv	
+     a70: c0 03 00 00 00 00 00 00 00 00 00 00 00 00 00 00      	nopb	;		nopa	;		nops	;		nopxm	;		nopv	
+     a80: c0 03 00 00 00 00 00 00 00 00 00 00 00 00 00 00      	nopb	;		nopa	;		nops	;		nopxm	;		nopv	
+     a90: c0 03 00 00 00 00 00 00 00 00 00 00 00 00 00 00      	nopb	;		nopa	;		nops	;		nopxm	;		nopv	
+
+00000aa0 <.L_LEnd3>:
+     aa0: c0 03 00 00 00 00 00 00 00 00 00 00 00 00 00 00      	nopb	;		nopa	;		nops	;		nopxm	;		nopv	
+     ab0: 4d 76 32 02 00 00    	nopa	;		mov	p2, p1
+     ab6: 99 ee f6 0f  	st	p5, [sp, #-76]
+     aba: 99 66 f6 0f  	st	p4, [sp, #-80]
+     abe: 99 de f5 0f  	st	p3, [sp, #-84]
+     ac2: 19 2a 15 02  	st.s8	r21, [p2], #0x1
+     ac6: 01 00        	nop	
+     ac8: 01 00        	nop	
+     aca: 01 00        	nop	
+     acc: 01 00        	nop	
+     ace: 01 00        	nop	
+     ad0: 01 00        	nop	
+     ad2: 19 28 15 02  	st.s8	r20, [p2], #0x1
+     ad6: 01 00        	nop	
+     ad8: 01 00        	nop	
+     ada: 01 00        	nop	
+     adc: 01 00        	nop	
+     ade: 01 00        	nop	
+     ae0: 01 00        	nop	
+     ae2: 19 26 15 02  	st.s8	r19, [p2], #0x1
+     ae6: 01 00        	nop	
+     ae8: 01 00        	nop	
+     aea: 01 00        	nop	
+     aec: 01 00        	nop	
+     aee: 01 00        	nop	
+     af0: 01 00        	nop	
+     af2: 19 24 15 02  	st.s8	r18, [p2], #0x1
+     af6: 01 00        	nop	
+     af8: 01 00        	nop	
+     afa: 01 00        	nop	
+     afc: 01 00        	nop	
+     afe: 01 00        	nop	
+     b00: 01 00        	nop	
+     b02: 19 20 15 02  	st.s8	r16, [p2], #0x1
+     b06: 01 00        	nop	
+     b08: 01 00        	nop	
+     b0a: 01 00        	nop	
+     b0c: 01 00        	nop	
+     b0e: 01 00        	nop	
+     b10: 01 00        	nop	
+     b12: 19 20 15 02  	st.s8	r16, [p2], #0x1
+     b16: 01 00        	nop	
+     b18: 01 00        	nop	
+     b1a: 01 00        	nop	
+     b1c: 01 00        	nop	
+     b1e: 01 00        	nop	
+     b20: 01 00        	nop	
+     b22: 19 20 15 02  	st.s8	r16, [p2], #0x1
+     b26: 01 00        	nop	
+     b28: 01 00        	nop	
+     b2a: 01 00        	nop	
+     b2c: 01 00        	nop	
+     b2e: 01 00        	nop	
+     b30: 01 00        	nop	
+     b32: 19 20 0d 02  	st.s8	r16, [p2, #0x0]
+     b36: 01 00        	nop	
+     b38: 01 00        	nop	
+     b3a: 01 00        	nop	
+     b3c: 01 00        	nop	
+     b3e: 01 00        	nop	

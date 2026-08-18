@@ -55,6 +55,13 @@ Makefile text eol=lf
 docs/pqc_dr2_evidence_20260818/*.txt binary
 docs/pqc_dr2_evidence_20260818/**/*.txt binary
 
+# Preserve recovered root-level PQC research evidence byte-for-byte.
+/PQC_DR*.log binary
+/PQC_DR*.txt binary
+/PQC_DR*.ps1 binary
+/PQC_DR*.patch binary
+/PQC_DR*.sha256 binary
+
 # --- Linguist hints for GitHub's language stats ---
 # Treat vendored third-party code as "not our code" for language %.
 third_party/**  linguist-vendored

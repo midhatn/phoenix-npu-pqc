@@ -1,0 +1,690 @@
+UTC=2026-08-18T01:53:55.2128426Z
+CACHE=C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6
+LLVM_SIZE=.\third_party\mlir-aie\ironenv\Lib\site-packages\llvm-aie\bin\llvm-size.exe
+--- CANDIDATE ARTIFACT INVENTORY ---
+9476  2026-08-18T00:36:55.0095876Z  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\aie.mlir
+41248  2026-08-18T00:36:55.4728050Z  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\cdo_main\main_aie_cdo_elfs.bin
+144  2026-08-18T00:36:55.4738783Z  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\cdo_main\main_aie_cdo_enable.bin
+3464  2026-08-18T00:36:55.4728050Z  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\cdo_main\main_aie_cdo_init.bin
+20601  2026-08-18T00:36:55.5912391Z  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\deps.json
+13028  2026-08-18T00:36:55.4100859Z  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\elfs_main_core_0_2\elfs_main_core_0_2.elf
+10308  2026-08-18T00:36:55.4100859Z  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\elfs_main_core_0_3\elfs_main_core_0_3.elf
+8436  2026-08-18T00:36:55.4090800Z  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\elfs_main_core_0_4\elfs_main_core_0_4.elf
+10072  2026-08-18T00:36:55.4100859Z  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\elfs_main_core_0_5\elfs_main_core_0_5.elf
+8680  2026-08-18T00:36:55.4100859Z  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\elfs_main_core_1_2\elfs_main_core_1_2.elf
+7300  2026-08-18T00:36:55.4100859Z  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\elfs_main_core_1_3\elfs_main_core_1_3.elf
+50712  2026-08-18T00:36:55.5045378Z  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\final.xclbin
+53517  2026-08-18T00:36:55.5215103Z  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\input_with_addresses.mlir
+1850  2026-08-18T00:36:55.4860498Z  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\kernels_main.json
+1553  2026-08-18T00:36:55.3436693Z  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\ldScripts_main_core_0_2.ld.script
+1623  2026-08-18T00:36:55.3436693Z  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\ldScripts_main_core_0_3.ld.script
+1415  2026-08-18T00:36:55.3426688Z  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\ldScripts_main_core_0_4.ld.script
+1337  2026-08-18T00:36:55.3426688Z  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\ldScripts_main_core_0_5.ld.script
+1740  2026-08-18T00:36:55.3416688Z  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\ldScripts_main_core_1_2.ld.script
+1448  2026-08-18T00:36:55.3416688Z  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\ldScripts_main_core_1_3.ld.script
+399  2026-08-18T00:36:55.4850417Z  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\memTopology_main.json
+1412  2026-08-18T00:36:55.3350987Z  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\objects_main_core_0_2\objects_main_core_0_2.o
+1196  2026-08-18T00:36:55.3340988Z  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\objects_main_core_0_3\objects_main_core_0_3.o
+1196  2026-08-18T00:36:55.3340988Z  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\objects_main_core_0_4\objects_main_core_0_4.o
+1192  2026-08-18T00:36:55.3340988Z  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\objects_main_core_0_5\objects_main_core_0_5.o
+1208  2026-08-18T00:36:55.3340988Z  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\objects_main_core_1_2\objects_main_core_1_2.o
+1184  2026-08-18T00:36:55.3340988Z  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\objects_main_core_1_3\objects_main_core_1_3.o
+3516  2026-08-18T00:36:55.2970264Z  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\opted_main_core_0_2.ll
+2701  2026-08-18T00:36:55.3019894Z  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\opted_main_core_0_3.ll
+2697  2026-08-18T00:36:55.3009886Z  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\opted_main_core_0_4.ll
+2689  2026-08-18T00:36:55.2970264Z  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\opted_main_core_0_5.ll
+2727  2026-08-18T00:36:55.2970264Z  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\opted_main_core_1_2.ll
+2673  2026-08-18T00:36:55.2980242Z  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\opted_main_core_1_3.ll
+717  2026-08-18T00:36:55.4860498Z  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\partition_main.json
+6806  2026-08-18T00:36:55.2640674Z  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\peano-compat_main_core_0_2.ll
+5463  2026-08-18T00:36:55.2652735Z  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\peano-compat_main_core_0_3.ll
+5458  2026-08-18T00:36:55.2652735Z  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\peano-compat_main_core_0_4.ll
+5454  2026-08-18T00:36:55.2652735Z  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\peano-compat_main_core_0_5.ll
+5481  2026-08-18T00:36:55.2662785Z  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\peano-compat_main_core_1_2.ll
+5443  2026-08-18T00:36:55.2684080Z  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\peano-compat_main_core_1_3.ll
+6806  2026-08-18T00:36:55.2662785Z  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\peano-linked_main_core_0_2.ll
+5463  2026-08-18T00:36:55.2766995Z  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\peano-linked_main_core_0_3.ll
+5458  2026-08-18T00:36:55.2766995Z  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\peano-linked_main_core_0_4.ll
+5454  2026-08-18T00:36:55.2684080Z  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\peano-linked_main_core_0_5.ll
+5481  2026-08-18T00:36:55.2693842Z  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\peano-linked_main_core_1_2.ll
+5443  2026-08-18T00:36:55.2693842Z  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\peano-linked_main_core_1_3.ll
+--- PER-CORE ELF SECTION / PROGRAM SIZE ---
+=== C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\elfs_main_core_0_2\elfs_main_core_0_2.elf ===
+C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\elfs_main_core_0_2\elfs_main_core_0_2.elf  :
+section        size      addr
+.text        0x2450         0
+.data         0x100   0x7c020
+.comment       0xc5         0
+Total        0x2615
+
+
+=== C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\elfs_main_core_0_3\elfs_main_core_0_3.elf ===
+C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\elfs_main_core_0_3\elfs_main_core_0_3.elf  :
+section        size   addr
+.text        0x1b80      0
+.comment       0xc5      0
+Total        0x1c45
+
+
+=== C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\elfs_main_core_0_4\elfs_main_core_0_4.elf ===
+C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\elfs_main_core_0_4\elfs_main_core_0_4.elf  :
+section        size      addr
+.text        0x1510         0
+.data         0x100   0x78008
+.comment       0xc5         0
+Total        0x16d5
+
+
+=== C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\elfs_main_core_0_5\elfs_main_core_0_5.elf ===
+C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\elfs_main_core_0_5\elfs_main_core_0_5.elf  :
+section        size   addr
+.text        0x1ba0      0
+.comment       0xc5      0
+Total        0x1c65
+
+
+=== C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\elfs_main_core_1_2\elfs_main_core_1_2.elf ===
+C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\elfs_main_core_1_2\elfs_main_core_1_2.elf  :
+section        size      addr
+.text        0x1510         0
+.data         0x100   0x78840
+.comment       0xc5         0
+Total        0x16d5
+
+
+=== C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\elfs_main_core_1_3\elfs_main_core_1_3.elf ===
+C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\elfs_main_core_1_3\elfs_main_core_1_3.elf  :
+section        size   addr
+.text        0x1370      0
+.comment       0xc5      0
+Total        0x1435
+
+
+--- MEMORY / STACK / TILE / FIFO EVIDENCE ---
+=== FILE: C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\aie.mlir ===
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\aie.mlir:1:module {
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\aie.mlir:2:  aie.device(npu1) {
+> C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\aie.mlir:3:    %logical_core = aie.logical_tile<CoreTile>(?, ?)
+> C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\aie.mlir:4:    %logical_core_0 = aie.logical_tile<CoreTile>(?, ?)
+> C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\aie.mlir:5:    %logical_core_1 = aie.logical_tile<CoreTile>(?, ?)
+> C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\aie.mlir:6:    %logical_core_2 = aie.logical_tile<CoreTile>(?, ?)
+> C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\aie.mlir:7:    %logical_core_3 = aie.logical_tile<CoreTile>(?, ?)
+> C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\aie.mlir:8:    %logical_core_4 = aie.logical_tile<CoreTile>(?, ?)
+> C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\aie.mlir:9:    %logical_shim_noc = aie.logical_tile<ShimNOCTile>(?, ?)
+> C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\aie.mlir:10:    %logical_shim_noc_5 = aie.logical_tile<ShimNOCTile>(?, ?)
+> C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\aie.mlir:11:    %logical_shim_noc_6 = aie.logical_tile<ShimNOCTile>(?, ?)
+> C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\aie.mlir:12:    aie.objectfifo @dr2d_d(%logical_shim_noc, {%logical_core}, 2 : i32) : !aie.objectfifo<memref<32xui8>>  
+> C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\aie.mlir:13:    aie.objectfifo @dr2d_descriptor(%logical_shim_noc_5, {%logical_core}, 2 : i32) : !aie.objectfifo<memref<16xui8>>  
+> C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\aie.mlir:14:    aie.objectfifo @dr2d_final_token(%logical_core_3, {%logical_core_4}, 2 : i32) : !aie.objectfifo<memref<2112xui8>>  
+> C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\aie.mlir:15:    aie.objectfifo @dr2d_result(%logical_core_4, {%logical_shim_noc_6}, 2 : i32) : !aie.objectfifo<memref<1588xui8>>  
+> C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\aie.mlir:16:    aie.objectfifo @dr2d_row0_matrix(%logical_core_0, {%logical_core_1}, 2 : i32) : !aie.objectfifo<memref<3120xui8>>  
+> C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\aie.mlir:17:    aie.objectfifo @dr2d_row1_matrix(%logical_core_2, {%logical_core_3}, 2 : i32) : !aie.objectfifo<memref<3120xui8>>  
+> C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\aie.mlir:18:    aie.objectfifo @dr2d_row_state(%logical_core_1, {%logical_core_2}, 2 : i32) : !aie.objectfifo<memref<2096xui8>>  
+> C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\aie.mlir:19:    aie.objectfifo @dr2d_secret_token(%logical_core, {%logical_core_0}, 2 : i32) : !aie.objectfifo<memref<2096xui8>>  
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\aie.mlir:20:    func.func private @dr2d_kpke_keygen_seed_noise(memref<32xui8>, memref<16xui8>, memref<2096xui8>) attributes {link_with = "dr2d_kpke_keygen_seed_noise.o"}
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\aie.mlir:21:    func.func private @dr2d_kpke_keygen_row0_expand(memref<2096xui8>, memref<3120xui8>) attributes {link_with = "dr2d_kpke_keygen_row0_expand.o"}
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\aie.mlir:22:    func.func private @dr2d_kpke_keygen_row0_accumulate(memref<3120xui8>, memref<2096xui8>) attributes {link_with = "dr2d_kpke_keygen_row0_accumulate.o"}
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\aie.mlir:23:    func.func private @dr2d_kpke_keygen_row1_expand(memref<2096xui8>, memref<3120xui8>) attributes {link_with = "dr2d_kpke_keygen_row1_expand.o"}
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\aie.mlir:24:    func.func private @dr2d_kpke_keygen_row1_accumulate(memref<3120xui8>, memref<2112xui8>) attributes {link_with = "dr2d_kpke_keygen_row1_accumulate.o"}
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\aie.mlir:28:      %c9223372036854775807 = arith.constant 9223372036854775807 : index
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\aie.mlir:29:      %c1 = arith.constant 1 : index
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\aie.mlir:30:      scf.for %arg0 = %c0 to %c9223372036854775807 step %c1 {
+> C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\aie.mlir:31:        %6 = aie.objectfifo.acquire @dr2d_d(Consume, 1) : !aie.objectfifosubview<memref<32xui8>>
+> C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\aie.mlir:32:        %7 = aie.objectfifo.subview.access %6[0] : !aie.objectfifosubview<memref<32xui8>> -> memref<32xui8>
+> C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\aie.mlir:33:        %8 = aie.objectfifo.acquire @dr2d_descriptor(Consume, 1) : !aie.objectfifosubview<memref<16xui8>>
+> C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\aie.mlir:34:        %9 = aie.objectfifo.subview.access %8[0] : !aie.objectfifosubview<memref<16xui8>> -> memref<16xui8>
+> C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\aie.mlir:35:        %10 = aie.objectfifo.acquire @dr2d_secret_token(Produce, 1) : !aie.objectfifosubview<memref<2096xui8>>
+> C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\aie.mlir:36:        %11 = aie.objectfifo.subview.access %10[0] : !aie.objectfifosubview<memref<2096xui8>> -> memref<2096xui8>
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\aie.mlir:37:        func.call @dr2d_kpke_keygen_seed_noise(%7, %9, %11) : (memref<32xui8>, memref<16xui8>, memref<2096xui8>) -> ()
+> C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\aie.mlir:38:        aie.objectfifo.release @dr2d_secret_token(Produce, 1)
+> C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\aie.mlir:39:        aie.objectfifo.release @dr2d_d(Consume, 1)
+> C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\aie.mlir:40:        aie.objectfifo.release @dr2d_descriptor(Consume, 1)
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\aie.mlir:41:      }
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\aie.mlir:42:      aie.end
+> C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\aie.mlir:43:    } {stack_size = 4096 : i32}
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\aie.mlir:44:    %1 = aie.core(%logical_core_0) {
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\aie.mlir:45:      %c0 = arith.constant 0 : index
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\aie.mlir:46:      %c9223372036854775807 = arith.constant 9223372036854775807 : index
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\aie.mlir:47:      %c1 = arith.constant 1 : index
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\aie.mlir:48:      scf.for %arg0 = %c0 to %c9223372036854775807 step %c1 {
+> C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\aie.mlir:49:        %6 = aie.objectfifo.acquire @dr2d_secret_token(Consume, 1) : !aie.objectfifosubview<memref<2096xui8>>
+> C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\aie.mlir:50:        %7 = aie.objectfifo.subview.access %6[0] : !aie.objectfifosubview<memref<2096xui8>> -> memref<2096xui8>
+> C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\aie.mlir:51:        %8 = aie.objectfifo.acquire @dr2d_row0_matrix(Produce, 1) : !aie.objectfifosubview<memref<3120xui8>>
+> C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\aie.mlir:52:        %9 = aie.objectfifo.subview.access %8[0] : !aie.objectfifosubview<memref<3120xui8>> -> memref<3120xui8>
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\aie.mlir:53:        func.call @dr2d_kpke_keygen_row0_expand(%7, %9) : (memref<2096xui8>, memref<3120xui8>) -> ()
+> C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\aie.mlir:54:        aie.objectfifo.release @dr2d_row0_matrix(Produce, 1)
+> C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\aie.mlir:55:        aie.objectfifo.release @dr2d_secret_token(Consume, 1)
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\aie.mlir:56:      }
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\aie.mlir:57:      aie.end
+> C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\aie.mlir:58:    } {stack_size = 2048 : i32}
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\aie.mlir:59:    %2 = aie.core(%logical_core_1) {
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\aie.mlir:60:      %c0 = arith.constant 0 : index
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\aie.mlir:61:      %c9223372036854775807 = arith.constant 9223372036854775807 : index
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\aie.mlir:62:      %c1 = arith.constant 1 : index
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\aie.mlir:63:      scf.for %arg0 = %c0 to %c9223372036854775807 step %c1 {
+> C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\aie.mlir:64:        %6 = aie.objectfifo.acquire @dr2d_row0_matrix(Consume, 1) : !aie.objectfifosubview<memref<3120xui8>>
+> C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\aie.mlir:65:        %7 = aie.objectfifo.subview.access %6[0] : !aie.objectfifosubview<memref<3120xui8>> -> memref<3120xui8>
+> C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\aie.mlir:66:        %8 = aie.objectfifo.acquire @dr2d_row_state(Produce, 1) : !aie.objectfifosubview<memref<2096xui8>>
+> C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\aie.mlir:67:        %9 = aie.objectfifo.subview.access %8[0] : !aie.objectfifosubview<memref<2096xui8>> -> memref<2096xui8>
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\aie.mlir:68:        func.call @dr2d_kpke_keygen_row0_accumulate(%7, %9) : (memref<3120xui8>, memref<2096xui8>) -> ()
+> C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\aie.mlir:69:        aie.objectfifo.release @dr2d_row_state(Produce, 1)
+> C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\aie.mlir:70:        aie.objectfifo.release @dr2d_row0_matrix(Consume, 1)
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\aie.mlir:71:      }
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\aie.mlir:72:      aie.end
+> C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\aie.mlir:73:    } {stack_size = 2048 : i32}
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\aie.mlir:74:    %3 = aie.core(%logical_core_2) {
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\aie.mlir:75:      %c0 = arith.constant 0 : index
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\aie.mlir:76:      %c9223372036854775807 = arith.constant 9223372036854775807 : index
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\aie.mlir:77:      %c1 = arith.constant 1 : index
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\aie.mlir:78:      scf.for %arg0 = %c0 to %c9223372036854775807 step %c1 {
+> C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\aie.mlir:79:        %6 = aie.objectfifo.acquire @dr2d_row_state(Consume, 1) : !aie.objectfifosubview<memref<2096xui8>>
+> C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\aie.mlir:80:        %7 = aie.objectfifo.subview.access %6[0] : !aie.objectfifosubview<memref<2096xui8>> -> memref<2096xui8>
+> C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\aie.mlir:81:        %8 = aie.objectfifo.acquire @dr2d_row1_matrix(Produce, 1) : !aie.objectfifosubview<memref<3120xui8>>
+> C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\aie.mlir:82:        %9 = aie.objectfifo.subview.access %8[0] : !aie.objectfifosubview<memref<3120xui8>> -> memref<3120xui8>
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\aie.mlir:83:        func.call @dr2d_kpke_keygen_row1_expand(%7, %9) : (memref<2096xui8>, memref<3120xui8>) -> ()
+> C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\aie.mlir:84:        aie.objectfifo.release @dr2d_row1_matrix(Produce, 1)
+> C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\aie.mlir:85:        aie.objectfifo.release @dr2d_row_state(Consume, 1)
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\aie.mlir:86:      }
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\aie.mlir:87:      aie.end
+> C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\aie.mlir:88:    } {stack_size = 2048 : i32}
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\aie.mlir:89:    %4 = aie.core(%logical_core_3) {
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\aie.mlir:90:      %c0 = arith.constant 0 : index
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\aie.mlir:91:      %c9223372036854775807 = arith.constant 9223372036854775807 : index
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\aie.mlir:92:      %c1 = arith.constant 1 : index
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\aie.mlir:93:      scf.for %arg0 = %c0 to %c9223372036854775807 step %c1 {
+> C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\aie.mlir:94:        %6 = aie.objectfifo.acquire @dr2d_row1_matrix(Consume, 1) : !aie.objectfifosubview<memref<3120xui8>>
+> C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\aie.mlir:95:        %7 = aie.objectfifo.subview.access %6[0] : !aie.objectfifosubview<memref<3120xui8>> -> memref<3120xui8>
+> C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\aie.mlir:96:        %8 = aie.objectfifo.acquire @dr2d_final_token(Produce, 1) : !aie.objectfifosubview<memref<2112xui8>>
+> C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\aie.mlir:97:        %9 = aie.objectfifo.subview.access %8[0] : !aie.objectfifosubview<memref<2112xui8>> -> memref<2112xui8>
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\aie.mlir:98:        func.call @dr2d_kpke_keygen_row1_accumulate(%7, %9) : (memref<3120xui8>, memref<2112xui8>) -> ()
+> C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\aie.mlir:99:        aie.objectfifo.release @dr2d_final_token(Produce, 1)
+> C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\aie.mlir:100:        aie.objectfifo.release @dr2d_row1_matrix(Consume, 1)
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\aie.mlir:101:      }
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\aie.mlir:102:      aie.end
+> C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\aie.mlir:103:    } {stack_size = 2048 : i32}
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\aie.mlir:104:    %5 = aie.core(%logical_core_4) {
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\aie.mlir:105:      %c0 = arith.constant 0 : index
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\aie.mlir:106:      %c9223372036854775807 = arith.constant 9223372036854775807 : index
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\aie.mlir:107:      %c1 = arith.constant 1 : index
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\aie.mlir:108:      scf.for %arg0 = %c0 to %c9223372036854775807 step %c1 {
+> C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\aie.mlir:109:        %6 = aie.objectfifo.acquire @dr2d_final_token(Consume, 1) : !aie.objectfifosubview<memref<2112xui8>>
+> C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\aie.mlir:110:        %7 = aie.objectfifo.subview.access %6[0] : !aie.objectfifosubview<memref<2112xui8>> -> memref<2112xui8>
+> C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\aie.mlir:111:        %8 = aie.objectfifo.acquire @dr2d_result(Produce, 1) : !aie.objectfifosubview<memref<1588xui8>>
+> C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\aie.mlir:112:        %9 = aie.objectfifo.subview.access %8[0] : !aie.objectfifosubview<memref<1588xui8>> -> memref<1588xui8>
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\aie.mlir:113:        func.call @dr2d_kpke_keygen_serialize(%7, %9) : (memref<2112xui8>, memref<1588xui8>) -> ()
+> C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\aie.mlir:114:        aie.objectfifo.release @dr2d_result(Produce, 1)
+> C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\aie.mlir:115:        aie.objectfifo.release @dr2d_final_token(Consume, 1)
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\aie.mlir:116:      }
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\aie.mlir:117:      aie.end
+> C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\aie.mlir:118:    } {stack_size = 2048 : i32}
+> C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\aie.mlir:119:    aie.runtime_sequence(%arg0: memref<32xui8>, %arg1: memref<16xui8>, %arg2: memref<1588xui8>) {
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\aie.mlir:120:      %6 = aiex.dma_configure_task_for @dr2d_d {
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\aie.mlir:121:        aie.dma_bd(%arg0 : memref<32xui8> offset = 0 len = 32 sizes = [1, 1, 1, 32] strides = [0, 0, 0, 1])
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\aie.mlir:122:        aie.end
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\aie.mlir:123:      }
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\aie.mlir:124:      aiex.dma_start_task(%6)
+=== FILE: C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\input_with_addresses.mlir ===
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\input_with_addresses.mlir:28:#loc95 = loc("C:\\Users\\midhat\\.npu\\cache\\04f147d54cb01d160974a6e6\\aie.mlir":119:72)
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\input_with_addresses.mlir:29:module {
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\input_with_addresses.mlir:30:  aie.device(npu1) {
+> C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\input_with_addresses.mlir:31:    %shim_noc_tile_1_0 = aie.tile(1, 0) {controller_id = #aie.packet_info<pkt_type = 0, pkt_id = 15>} loc(#loc1)
+> C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\input_with_addresses.mlir:32:    %shim_noc_tile_0_0 = aie.tile(0, 0) {controller_id = #aie.packet_info<pkt_type = 0, pkt_id = 15>} loc(#loc1)
+> C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\input_with_addresses.mlir:33:    %tile_1_3 = aie.tile(1, 3) {controller_id = #aie.packet_info<pkt_type = 0, pkt_id = 29>} loc(#loc1)
+> C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\input_with_addresses.mlir:34:    %tile_1_2 = aie.tile(1, 2) {controller_id = #aie.packet_info<pkt_type = 0, pkt_id = 27>} loc(#loc1)
+> C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\input_with_addresses.mlir:35:    %tile_0_5 = aie.tile(0, 5) {controller_id = #aie.packet_info<pkt_type = 0, pkt_id = 31>} loc(#loc1)
+> C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\input_with_addresses.mlir:36:    %tile_0_4 = aie.tile(0, 4) {controller_id = #aie.packet_info<pkt_type = 0, pkt_id = 30>} loc(#loc1)
+> C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\input_with_addresses.mlir:37:    %tile_0_3 = aie.tile(0, 3) {controller_id = #aie.packet_info<pkt_type = 0, pkt_id = 29>} loc(#loc1)
+> C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\input_with_addresses.mlir:38:    %tile_0_2 = aie.tile(0, 2) {controller_id = #aie.packet_info<pkt_type = 0, pkt_id = 27>} loc(#loc1)
+> C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\input_with_addresses.mlir:39:    %dr2d_secret_token_buff_0 = aie.buffer(%tile_0_2) {address = 4096 : i32, mem_bank = 0 : i32, sym_name = "dr2d_secret_token_buff_0"} : memref<2096xui8>  loc(#loc2)
+> C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\input_with_addresses.mlir:40:    %dr2d_secret_token_buff_1 = aie.buffer(%tile_0_2) {address = 16384 : i32, mem_bank = 1 : i32, sym_name = "dr2d_secret_token_buff_1"} : memref<2096xui8>  loc(#loc2)
+> C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\input_with_addresses.mlir:41:    %dr2d_secret_token_prod_lock_0 = aie.lock(%tile_0_2, 4) {init = 2 : i32, sym_name = "dr2d_secret_token_prod_lock_0"} loc(#loc2)
+> C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\input_with_addresses.mlir:42:    %dr2d_secret_token_cons_lock_0 = aie.lock(%tile_0_2, 5) {init = 0 : i32, sym_name = "dr2d_secret_token_cons_lock_0"} loc(#loc2)
+> C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\input_with_addresses.mlir:43:    %dr2d_row_state_buff_0 = aie.buffer(%tile_0_4) {address = 2048 : i32, mem_bank = 0 : i32, sym_name = "dr2d_row_state_buff_0"} : memref<2096xui8>  loc(#loc3)
+> C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\input_with_addresses.mlir:44:    %dr2d_row_state_buff_1 = aie.buffer(%tile_0_4) {address = 16384 : i32, mem_bank = 1 : i32, sym_name = "dr2d_row_state_buff_1"} : memref<2096xui8>  loc(#loc3)
+> C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\input_with_addresses.mlir:45:    %dr2d_row_state_prod_lock_0 = aie.lock(%tile_0_4, 0) {init = 2 : i32, sym_name = "dr2d_row_state_prod_lock_0"} loc(#loc3)
+> C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\input_with_addresses.mlir:46:    %dr2d_row_state_cons_lock_0 = aie.lock(%tile_0_4, 1) {init = 0 : i32, sym_name = "dr2d_row_state_cons_lock_0"} loc(#loc3)
+> C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\input_with_addresses.mlir:47:    %dr2d_row1_matrix_cons_buff_0 = aie.buffer(%tile_1_2) {address = 2048 : i32, mem_bank = 0 : i32, sym_name = "dr2d_row1_matrix_cons_buff_0"} : memref<3120xui8>  loc(#loc4)
+> C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\input_with_addresses.mlir:48:    %dr2d_row1_matrix_cons_buff_1 = aie.buffer(%tile_1_2) {address = 16384 : i32, mem_bank = 1 : i32, sym_name = "dr2d_row1_matrix_cons_buff_1"} : memref<3120xui8>  loc(#loc4)
+> C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\input_with_addresses.mlir:49:    %dr2d_row1_matrix_cons_prod_lock_0 = aie.lock(%tile_1_2, 2) {init = 2 : i32, sym_name = "dr2d_row1_matrix_cons_prod_lock_0"} loc(#loc4)
+> C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\input_with_addresses.mlir:50:    %dr2d_row1_matrix_cons_cons_lock_0 = aie.lock(%tile_1_2, 3) {init = 0 : i32, sym_name = "dr2d_row1_matrix_cons_cons_lock_0"} loc(#loc4)
+> C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\input_with_addresses.mlir:51:    %dr2d_row1_matrix_buff_0 = aie.buffer(%tile_0_5) {address = 2048 : i32, mem_bank = 0 : i32, sym_name = "dr2d_row1_matrix_buff_0"} : memref<3120xui8>  loc(#loc4)
+> C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\input_with_addresses.mlir:52:    %dr2d_row1_matrix_buff_1 = aie.buffer(%tile_0_5) {address = 16384 : i32, mem_bank = 1 : i32, sym_name = "dr2d_row1_matrix_buff_1"} : memref<3120xui8>  loc(#loc4)
+> C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\input_with_addresses.mlir:53:    %dr2d_row1_matrix_prod_lock_0 = aie.lock(%tile_0_5, 0) {init = 2 : i32, sym_name = "dr2d_row1_matrix_prod_lock_0"} loc(#loc4)
+> C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\input_with_addresses.mlir:54:    %dr2d_row1_matrix_cons_lock_0 = aie.lock(%tile_0_5, 1) {init = 0 : i32, sym_name = "dr2d_row1_matrix_cons_lock_0"} loc(#loc4)
+> C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\input_with_addresses.mlir:55:    %dr2d_row0_matrix_buff_0 = aie.buffer(%tile_0_3) {address = 2048 : i32, mem_bank = 0 : i32, sym_name = "dr2d_row0_matrix_buff_0"} : memref<3120xui8>  loc(#loc5)
+> C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\input_with_addresses.mlir:56:    %dr2d_row0_matrix_buff_1 = aie.buffer(%tile_0_3) {address = 16384 : i32, mem_bank = 1 : i32, sym_name = "dr2d_row0_matrix_buff_1"} : memref<3120xui8>  loc(#loc5)
+> C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\input_with_addresses.mlir:57:    %dr2d_row0_matrix_prod_lock_0 = aie.lock(%tile_0_3, 0) {init = 2 : i32, sym_name = "dr2d_row0_matrix_prod_lock_0"} loc(#loc5)
+> C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\input_with_addresses.mlir:58:    %dr2d_row0_matrix_cons_lock_0 = aie.lock(%tile_0_3, 1) {init = 0 : i32, sym_name = "dr2d_row0_matrix_cons_lock_0"} loc(#loc5)
+> C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\input_with_addresses.mlir:59:    %dr2d_result_cons_prod_lock_0 = aie.lock(%shim_noc_tile_1_0, 0) {init = 0 : i32, sym_name = "dr2d_result_cons_prod_lock_0"} loc(#loc6)
+> C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\input_with_addresses.mlir:60:    %dr2d_result_cons_cons_lock_0 = aie.lock(%shim_noc_tile_1_0, 1) {init = 0 : i32, sym_name = "dr2d_result_cons_cons_lock_0"} loc(#loc6)
+> C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\input_with_addresses.mlir:61:    %dr2d_result_buff_0 = aie.buffer(%tile_1_3) {address = 2048 : i32, mem_bank = 0 : i32, sym_name = "dr2d_result_buff_0"} : memref<1588xui8>  loc(#loc6)
+> C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\input_with_addresses.mlir:62:    %dr2d_result_buff_1 = aie.buffer(%tile_1_3) {address = 16384 : i32, mem_bank = 1 : i32, sym_name = "dr2d_result_buff_1"} : memref<1588xui8>  loc(#loc6)
+> C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\input_with_addresses.mlir:63:    %dr2d_result_prod_lock_0 = aie.lock(%tile_1_3, 0) {init = 2 : i32, sym_name = "dr2d_result_prod_lock_0"} loc(#loc6)
+> C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\input_with_addresses.mlir:64:    %dr2d_result_cons_lock_0 = aie.lock(%tile_1_3, 1) {init = 0 : i32, sym_name = "dr2d_result_cons_lock_0"} loc(#loc6)
+> C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\input_with_addresses.mlir:65:    %dr2d_final_token_buff_0 = aie.buffer(%tile_1_2) {address = 32768 : i32, mem_bank = 2 : i32, sym_name = "dr2d_final_token_buff_0"} : memref<2112xui8>  loc(#loc7)
+> C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\input_with_addresses.mlir:66:    %dr2d_final_token_buff_1 = aie.buffer(%tile_1_2) {address = 49152 : i32, mem_bank = 3 : i32, sym_name = "dr2d_final_token_buff_1"} : memref<2112xui8>  loc(#loc7)
+> C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\input_with_addresses.mlir:67:    %dr2d_final_token_prod_lock_0 = aie.lock(%tile_1_2, 0) {init = 2 : i32, sym_name = "dr2d_final_token_prod_lock_0"} loc(#loc7)
+> C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\input_with_addresses.mlir:68:    %dr2d_final_token_cons_lock_0 = aie.lock(%tile_1_2, 1) {init = 0 : i32, sym_name = "dr2d_final_token_cons_lock_0"} loc(#loc7)
+> C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\input_with_addresses.mlir:69:    %dr2d_descriptor_cons_buff_0 = aie.buffer(%tile_0_2) {address = 6208 : i32, mem_bank = 0 : i32, sym_name = "dr2d_descriptor_cons_buff_0"} : memref<16xui8>  loc(#loc8)
+> C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\input_with_addresses.mlir:70:    %dr2d_descriptor_cons_buff_1 = aie.buffer(%tile_0_2) {address = 18496 : i32, mem_bank = 1 : i32, sym_name = "dr2d_descriptor_cons_buff_1"} : memref<16xui8>  loc(#loc8)
+> C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\input_with_addresses.mlir:71:    %dr2d_descriptor_cons_prod_lock_0 = aie.lock(%tile_0_2, 2) {init = 2 : i32, sym_name = "dr2d_descriptor_cons_prod_lock_0"} loc(#loc8)
+> C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\input_with_addresses.mlir:72:    %dr2d_descriptor_cons_cons_lock_0 = aie.lock(%tile_0_2, 3) {init = 0 : i32, sym_name = "dr2d_descriptor_cons_cons_lock_0"} loc(#loc8)
+> C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\input_with_addresses.mlir:73:    %dr2d_descriptor_prod_lock_0 = aie.lock(%shim_noc_tile_0_0, 2) {init = 0 : i32, sym_name = "dr2d_descriptor_prod_lock_0"} loc(#loc8)
+> C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\input_with_addresses.mlir:74:    %dr2d_descriptor_cons_lock_0 = aie.lock(%shim_noc_tile_0_0, 3) {init = 0 : i32, sym_name = "dr2d_descriptor_cons_lock_0"} loc(#loc8)
+> C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\input_with_addresses.mlir:75:    %dr2d_d_cons_buff_0 = aie.buffer(%tile_0_2) {address = 32768 : i32, mem_bank = 2 : i32, sym_name = "dr2d_d_cons_buff_0"} : memref<32xui8>  loc(#loc9)
+> C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\input_with_addresses.mlir:76:    %dr2d_d_cons_buff_1 = aie.buffer(%tile_0_2) {address = 49152 : i32, mem_bank = 3 : i32, sym_name = "dr2d_d_cons_buff_1"} : memref<32xui8>  loc(#loc9)
+> C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\input_with_addresses.mlir:77:    %dr2d_d_cons_prod_lock_0 = aie.lock(%tile_0_2, 0) {init = 2 : i32, sym_name = "dr2d_d_cons_prod_lock_0"} loc(#loc9)
+> C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\input_with_addresses.mlir:78:    %dr2d_d_cons_cons_lock_0 = aie.lock(%tile_0_2, 1) {init = 0 : i32, sym_name = "dr2d_d_cons_cons_lock_0"} loc(#loc9)
+> C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\input_with_addresses.mlir:79:    %dr2d_d_prod_lock_0 = aie.lock(%shim_noc_tile_0_0, 0) {init = 0 : i32, sym_name = "dr2d_d_prod_lock_0"} loc(#loc9)
+> C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\input_with_addresses.mlir:80:    %dr2d_d_cons_lock_0 = aie.lock(%shim_noc_tile_0_0, 1) {init = 0 : i32, sym_name = "dr2d_d_cons_lock_0"} loc(#loc9)
+> C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\input_with_addresses.mlir:81:    aie.flow(%shim_noc_tile_0_0, DMA : 0, %tile_0_2, DMA : 0) loc(#loc9)
+> C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\input_with_addresses.mlir:82:    aie.flow(%shim_noc_tile_0_0, DMA : 1, %tile_0_2, DMA : 1) loc(#loc8)
+> C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\input_with_addresses.mlir:83:    aie.flow(%tile_1_3, DMA : 0, %shim_noc_tile_1_0, DMA : 0) loc(#loc6)
+> C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\input_with_addresses.mlir:84:    aie.flow(%tile_0_5, DMA : 0, %tile_1_2, DMA : 0) loc(#loc4)
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\input_with_addresses.mlir:85:    func.func private @dr2d_kpke_keygen_seed_noise(memref<32xui8>, memref<16xui8>, memref<2096xui8>) attributes {link_with = "dr2d_kpke_keygen_seed_noise.o"} loc(#loc10)
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\input_with_addresses.mlir:86:    func.func private @dr2d_kpke_keygen_row0_expand(memref<2096xui8>, memref<3120xui8>) attributes {link_with = "dr2d_kpke_keygen_row0_expand.o"} loc(#loc11)
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\input_with_addresses.mlir:87:    func.func private @dr2d_kpke_keygen_row0_accumulate(memref<3120xui8>, memref<2096xui8>) attributes {link_with = "dr2d_kpke_keygen_row0_accumulate.o"} loc(#loc12)
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\input_with_addresses.mlir:88:    func.func private @dr2d_kpke_keygen_row1_expand(memref<2096xui8>, memref<3120xui8>) attributes {link_with = "dr2d_kpke_keygen_row1_expand.o"} loc(#loc13)
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\input_with_addresses.mlir:89:    func.func private @dr2d_kpke_keygen_row1_accumulate(memref<3120xui8>, memref<2112xui8>) attributes {link_with = "dr2d_kpke_keygen_row1_accumulate.o"} loc(#loc14)
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\input_with_addresses.mlir:90:    func.func private @dr2d_kpke_keygen_serialize(memref<2112xui8>, memref<1588xui8>) attributes {link_with = "dr2d_kpke_keygen_serialize.o"} loc(#loc15)
+> C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\input_with_addresses.mlir:91:    %_anonymous0 = aie.buffer(%tile_0_2) {address = 32800 : i32, mem_bank = 2 : i32, sym_name = "_anonymous0"} : memref<3xi32>  loc(#loc16)
+> C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\input_with_addresses.mlir:92:    %core_0_2 = aie.core(%tile_0_2) {
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\input_with_addresses.mlir:93:      %c1_i32 = arith.constant 1 : i32 loc(#loc17)
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\input_with_addresses.mlir:94:      %c9223372036854775807 = arith.constant 9223372036854775807 : index loc(#loc18)
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\input_with_addresses.mlir:95:      %c2 = arith.constant 2 : index loc(#loc16)
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\input_with_addresses.mlir:96:      %c1 = arith.constant 1 : index loc(#loc17)
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\input_with_addresses.mlir:97:      %c0_i32 = arith.constant 0 : i32 loc(#loc17)
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\input_with_addresses.mlir:191:      cf.br ^bb1(%44, %32, %38, %26 : index, i32, i32, i32) loc(#loc19)
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\input_with_addresses.mlir:192:    ^bb15:  // pred: ^bb1
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\input_with_addresses.mlir:193:      aie.end loc(#loc31)
+> C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\input_with_addresses.mlir:194:    } {link_files = ["dr2d_kpke_keygen_seed_noise.o"], stack_size = 4096 : i32} loc(#loc16)
+> C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\input_with_addresses.mlir:195:    %_anonymous1 = aie.buffer(%tile_0_3) {address = 32768 : i32, mem_bank = 2 : i32, sym_name = "_anonymous1"} : memref<2xi32>  loc(#loc32)
+> C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\input_with_addresses.mlir:196:    %core_0_3 = aie.core(%tile_0_3) {
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\input_with_addresses.mlir:197:      %c1_i32 = arith.constant 1 : i32 loc(#loc17)
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\input_with_addresses.mlir:198:      %c9223372036854775807 = arith.constant 9223372036854775807 : index loc(#loc33)
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\input_with_addresses.mlir:199:      %c1 = arith.constant 1 : index loc(#loc17)
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\input_with_addresses.mlir:200:      %c0_i32 = arith.constant 0 : i32 loc(#loc17)
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\input_with_addresses.mlir:201:      %c0 = arith.constant 0 : index loc(#loc17)
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\input_with_addresses.mlir:266:      cf.br ^bb1(%30, %24, %18 : index, i32, i32) loc(#loc34)
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\input_with_addresses.mlir:267:    ^bb11:  // pred: ^bb1
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\input_with_addresses.mlir:268:      aie.end loc(#loc43)
+> C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\input_with_addresses.mlir:269:    } {link_files = ["dr2d_kpke_keygen_row0_expand.o"], stack_size = 2048 : i32} loc(#loc32)
+> C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\input_with_addresses.mlir:270:    %_anonymous2 = aie.buffer(%tile_0_4) {address = 32768 : i32, mem_bank = 2 : i32, sym_name = "_anonymous2"} : memref<2xi32>  loc(#loc44)
+> C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\input_with_addresses.mlir:271:    %core_0_4 = aie.core(%tile_0_4) {
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\input_with_addresses.mlir:272:      %c1_i32 = arith.constant 1 : i32 loc(#loc17)
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\input_with_addresses.mlir:273:      %c9223372036854775807 = arith.constant 9223372036854775807 : index loc(#loc45)
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\input_with_addresses.mlir:274:      %c1 = arith.constant 1 : index loc(#loc17)
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\input_with_addresses.mlir:275:      %c0_i32 = arith.constant 0 : i32 loc(#loc17)
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\input_with_addresses.mlir:276:      %c0 = arith.constant 0 : index loc(#loc17)
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\input_with_addresses.mlir:341:      cf.br ^bb1(%30, %24, %18 : index, i32, i32) loc(#loc46)
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\input_with_addresses.mlir:342:    ^bb11:  // pred: ^bb1
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\input_with_addresses.mlir:343:      aie.end loc(#loc55)
+> C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\input_with_addresses.mlir:344:    } {link_files = ["dr2d_kpke_keygen_row0_accumulate.o"], stack_size = 2048 : i32} loc(#loc44)
+> C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\input_with_addresses.mlir:345:    %_anonymous3 = aie.buffer(%tile_0_5) {address = 32768 : i32, mem_bank = 2 : i32, sym_name = "_anonymous3"} : memref<2xi32>  loc(#loc56)
+> C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\input_with_addresses.mlir:346:    %core_0_5 = aie.core(%tile_0_5) {
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\input_with_addresses.mlir:347:      %c1_i32 = arith.constant 1 : i32 loc(#loc17)
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\input_with_addresses.mlir:348:      %c9223372036854775807 = arith.constant 9223372036854775807 : index loc(#loc57)
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\input_with_addresses.mlir:349:      %c1 = arith.constant 1 : index loc(#loc17)
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\input_with_addresses.mlir:350:      %c0_i32 = arith.constant 0 : i32 loc(#loc17)
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\input_with_addresses.mlir:351:      %c0 = arith.constant 0 : index loc(#loc17)
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\input_with_addresses.mlir:416:      cf.br ^bb1(%30, %24, %18 : index, i32, i32) loc(#loc58)
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\input_with_addresses.mlir:417:    ^bb11:  // pred: ^bb1
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\input_with_addresses.mlir:418:      aie.end loc(#loc67)
+> C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\input_with_addresses.mlir:419:    } {link_files = ["dr2d_kpke_keygen_row1_expand.o"], stack_size = 2048 : i32} loc(#loc56)
+> C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\input_with_addresses.mlir:420:    %_anonymous4 = aie.buffer(%tile_1_2) {address = 5184 : i32, mem_bank = 0 : i32, sym_name = "_anonymous4"} : memref<2xi32>  loc(#loc68)
+> C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\input_with_addresses.mlir:421:    %core_1_2 = aie.core(%tile_1_2) {
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\input_with_addresses.mlir:422:      %c1_i32 = arith.constant 1 : i32 loc(#loc17)
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\input_with_addresses.mlir:423:      %c9223372036854775807 = arith.constant 9223372036854775807 : index loc(#loc69)
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\input_with_addresses.mlir:424:      %c1 = arith.constant 1 : index loc(#loc17)
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\input_with_addresses.mlir:425:      %c0_i32 = arith.constant 0 : i32 loc(#loc17)
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\input_with_addresses.mlir:426:      %c0 = arith.constant 0 : index loc(#loc17)
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\input_with_addresses.mlir:491:      cf.br ^bb1(%30, %24, %18 : index, i32, i32) loc(#loc70)
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\input_with_addresses.mlir:492:    ^bb11:  // pred: ^bb1
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\input_with_addresses.mlir:493:      aie.end loc(#loc79)
+> C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\input_with_addresses.mlir:494:    } {link_files = ["dr2d_kpke_keygen_row1_accumulate.o"], stack_size = 2048 : i32} loc(#loc68)
+> C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\input_with_addresses.mlir:495:    %_anonymous5 = aie.buffer(%tile_1_3) {address = 32768 : i32, mem_bank = 2 : i32, sym_name = "_anonymous5"} : memref<2xi32>  loc(#loc80)
+> C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\input_with_addresses.mlir:496:    %core_1_3 = aie.core(%tile_1_3) {
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\input_with_addresses.mlir:497:      %c1_i32 = arith.constant 1 : i32 loc(#loc17)
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\input_with_addresses.mlir:498:      %c9223372036854775807 = arith.constant 9223372036854775807 : index loc(#loc81)
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\input_with_addresses.mlir:499:      %c1 = arith.constant 1 : index loc(#loc17)
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\input_with_addresses.mlir:500:      %c0_i32 = arith.constant 0 : i32 loc(#loc17)
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\input_with_addresses.mlir:501:      %c0 = arith.constant 0 : index loc(#loc17)
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\input_with_addresses.mlir:566:      cf.br ^bb1(%30, %24, %18 : index, i32, i32) loc(#loc82)
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\input_with_addresses.mlir:567:    ^bb11:  // pred: ^bb1
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\input_with_addresses.mlir:568:      aie.end loc(#loc91)
+> C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\input_with_addresses.mlir:569:    } {link_files = ["dr2d_kpke_keygen_serialize.o"], stack_size = 2048 : i32} loc(#loc80)
+> C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\input_with_addresses.mlir:570:    aie.runtime_sequence(%arg0: memref<32xui8> loc("C:\\Users\\midhat\\.npu\\cache\\04f147d54cb01d160974a6e6\\aie.mlir":119:26), %arg1: memref<16xui8> loc("C:\\Users\\midhat\\.npu\\cache\\04f147d54cb01d160974a6e6\\aie.mlir":119:49), %arg2: memref<1588xui8> loc("C:\\Users\\midhat\\.npu\\cache\\04f147d54cb01d160974a6e6\\aie.mlir":119:72)) {
+> C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\input_with_addresses.mlir:571:      %0 = aiex.dma_configure_task_for @dr2d_d_shim_alloc {
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\input_with_addresses.mlir:572:        aie.dma_bd(%arg0 : memref<32xui8> offset = 0 len = 32 sizes = [1, 1, 1, 32] strides = [0, 0, 0, 1]) loc(#loc97)
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\input_with_addresses.mlir:573:        aie.end loc(#loc98)
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\input_with_addresses.mlir:574:      } loc(#loc96)
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\input_with_addresses.mlir:575:      aiex.dma_start_task(%0) loc(#loc99)
+> C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\input_with_addresses.mlir:576:      %1 = aiex.dma_configure_task_for @dr2d_descriptor_shim_alloc {
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\input_with_addresses.mlir:577:        aie.dma_bd(%arg1 : memref<16xui8> offset = 0 len = 16 sizes = [1, 1, 1, 16] strides = [0, 0, 0, 1]) loc(#loc101)
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\input_with_addresses.mlir:578:        aie.end loc(#loc102)
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\input_with_addresses.mlir:579:      } loc(#loc100)
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\input_with_addresses.mlir:580:      aiex.dma_start_task(%1) loc(#loc103)
+> C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\input_with_addresses.mlir:581:      %2 = aiex.dma_configure_task_for @dr2d_result_shim_alloc {
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\input_with_addresses.mlir:582:        aie.dma_bd(%arg2 : memref<1588xui8> offset = 0 len = 1588 sizes = [1, 1, 1, 1588] strides = [0, 0, 0, 1]) loc(#loc105)
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\input_with_addresses.mlir:583:        aie.end loc(#loc106)
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\input_with_addresses.mlir:584:      } {issue_token = true} loc(#loc104)
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\input_with_addresses.mlir:585:      aiex.dma_start_task(%2) loc(#loc107)
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\input_with_addresses.mlir:586:      aiex.dma_await_task(%2) loc(#loc108)
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\input_with_addresses.mlir:588:      aiex.dma_free_task(%1) loc(#loc110)
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\input_with_addresses.mlir:589:      aiex.dma_free_task(%2) loc(#loc111)
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\input_with_addresses.mlir:590:    } loc(#loc92)
+> C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\input_with_addresses.mlir:591:    aie.shim_dma_allocation @dr2d_d_shim_alloc(%shim_noc_tile_0_0, MM2S, 0) loc(#loc9)
+> C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\input_with_addresses.mlir:592:    %mem_0_2 = aie.mem(%tile_0_2) {
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\input_with_addresses.mlir:593:      %c1_i32 = arith.constant 1 : i32 loc(#loc17)
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\input_with_addresses.mlir:594:      %0 = aie.dma_start(S2MM, 0, ^bb1, ^bb3) loc(#loc9)
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\input_with_addresses.mlir:595:    ^bb1:  // 2 preds: ^bb0, ^bb2
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\input_with_addresses.mlir:596:      aie.use_lock(%dr2d_d_cons_prod_lock_0, AcquireGreaterEqual, %c1_i32) loc(#loc9)
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\input_with_addresses.mlir:597:      aie.dma_bd(%dr2d_d_cons_buff_0 : memref<32xui8> offset = 0 len = 32) {bd_id = 0 : i32, next_bd_id = 1 : i32} loc(#loc9)
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\input_with_addresses.mlir:617:    ^bb6:  // pred: ^bb3
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\input_with_addresses.mlir:618:      aie.end loc(#loc9)
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\input_with_addresses.mlir:619:    } loc(#loc9)
+> C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\input_with_addresses.mlir:620:    aie.shim_dma_allocation @dr2d_descriptor_shim_alloc(%shim_noc_tile_0_0, MM2S, 1) loc(#loc8)
+> C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\input_with_addresses.mlir:621:    %mem_1_3 = aie.mem(%tile_1_3) {
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\input_with_addresses.mlir:622:      %c1_i32 = arith.constant 1 : i32 loc(#loc17)
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\input_with_addresses.mlir:623:      %0 = aie.dma_start(MM2S, 0, ^bb1, ^bb3) loc(#loc6)
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\input_with_addresses.mlir:624:    ^bb1:  // 2 preds: ^bb0, ^bb2
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\input_with_addresses.mlir:625:      aie.use_lock(%dr2d_result_cons_lock_0, AcquireGreaterEqual, %c1_i32) loc(#loc6)
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\input_with_addresses.mlir:626:      aie.dma_bd(%dr2d_result_buff_0 : memref<1588xui8> offset = 0 len = 1588) {bd_id = 0 : i32, next_bd_id = 1 : i32} loc(#loc6)
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\input_with_addresses.mlir:634:    ^bb3:  // pred: ^bb0
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\input_with_addresses.mlir:635:      aie.end loc(#loc6)
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\input_with_addresses.mlir:636:    } loc(#loc6)
+> C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\input_with_addresses.mlir:637:    aie.shim_dma_allocation @dr2d_result_shim_alloc(%shim_noc_tile_1_0, S2MM, 0) loc(#loc6)
+> C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\input_with_addresses.mlir:638:    %mem_0_5 = aie.mem(%tile_0_5) {
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\input_with_addresses.mlir:639:      %c1_i32 = arith.constant 1 : i32 loc(#loc17)
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\input_with_addresses.mlir:640:      %0 = aie.dma_start(MM2S, 0, ^bb1, ^bb3) loc(#loc4)
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\input_with_addresses.mlir:641:    ^bb1:  // 2 preds: ^bb0, ^bb2
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\input_with_addresses.mlir:642:      aie.use_lock(%dr2d_row1_matrix_cons_lock_0, AcquireGreaterEqual, %c1_i32) loc(#loc4)
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\input_with_addresses.mlir:643:      aie.dma_bd(%dr2d_row1_matrix_buff_0 : memref<3120xui8> offset = 0 len = 3120) {bd_id = 0 : i32, next_bd_id = 1 : i32} loc(#loc4)
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\input_with_addresses.mlir:651:    ^bb3:  // pred: ^bb0
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\input_with_addresses.mlir:652:      aie.end loc(#loc4)
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\input_with_addresses.mlir:653:    } loc(#loc4)
+> C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\input_with_addresses.mlir:654:    %mem_1_2 = aie.mem(%tile_1_2) {
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\input_with_addresses.mlir:655:      %c1_i32 = arith.constant 1 : i32 loc(#loc17)
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\input_with_addresses.mlir:656:      %0 = aie.dma_start(S2MM, 0, ^bb1, ^bb3) loc(#loc4)
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\input_with_addresses.mlir:657:    ^bb1:  // 2 preds: ^bb0, ^bb2
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\input_with_addresses.mlir:658:      aie.use_lock(%dr2d_row1_matrix_cons_prod_lock_0, AcquireGreaterEqual, %c1_i32) loc(#loc4)
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\input_with_addresses.mlir:659:      aie.dma_bd(%dr2d_row1_matrix_cons_buff_0 : memref<3120xui8> offset = 0 len = 3120) {bd_id = 0 : i32, next_bd_id = 1 : i32} loc(#loc4)
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\input_with_addresses.mlir:668:      aie.end loc(#loc4)
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\input_with_addresses.mlir:669:    } loc(#loc4)
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\input_with_addresses.mlir:670:    aie.packet_flow(15) {
+> C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\input_with_addresses.mlir:671:      aie.packet_source<%shim_noc_tile_1_0, TileControl : 0> loc(#loc1)
+> C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\input_with_addresses.mlir:672:      aie.packet_dest<%shim_noc_tile_1_0, South : 0> loc(#loc1)
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\input_with_addresses.mlir:673:    } {keep_pkt_header = true, priority_route = true} loc(#loc1)
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\input_with_addresses.mlir:674:    aie.packet_flow(15) {
+> C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\input_with_addresses.mlir:675:      aie.packet_source<%shim_noc_tile_0_0, TileControl : 0> loc(#loc1)
+> C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\input_with_addresses.mlir:676:      aie.packet_dest<%shim_noc_tile_0_0, South : 0> loc(#loc1)
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\input_with_addresses.mlir:677:    } {keep_pkt_header = true, priority_route = true} loc(#loc1)
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\input_with_addresses.mlir:678:  } loc(#loc1)
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\input_with_addresses.mlir:679:} loc(#loc)
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\input_with_addresses.mlir:680:#loc = loc("C:\\Users\\midhat\\.npu\\cache\\04f147d54cb01d160974a6e6\\aie.mlir":1:1)
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\input_with_addresses.mlir:681:#loc1 = loc("C:\\Users\\midhat\\.npu\\cache\\04f147d54cb01d160974a6e6\\aie.mlir":2:3)
+=== FILE: C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\kernels_main.json ===
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\kernels_main.json:24:          },
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\kernels_main.json:25:          {
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\kernels_main.json:26:            "address-qualifier": "GLOBAL",
+> C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\kernels_main.json:27:            "memory-connection": "HOST",
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\kernels_main.json:28:            "name": "bo0",
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\kernels_main.json:29:            "offset": "0x14",
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\kernels_main.json:30:            "type": "void*"
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\kernels_main.json:31:          },
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\kernels_main.json:32:          {
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\kernels_main.json:33:            "address-qualifier": "GLOBAL",
+> C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\kernels_main.json:34:            "memory-connection": "HOST",
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\kernels_main.json:35:            "name": "bo1",
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\kernels_main.json:36:            "offset": "0x1C",
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\kernels_main.json:37:            "type": "void*"
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\kernels_main.json:38:          },
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\kernels_main.json:39:          {
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\kernels_main.json:40:            "address-qualifier": "GLOBAL",
+> C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\kernels_main.json:41:            "memory-connection": "HOST",
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\kernels_main.json:42:            "name": "bo2",
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\kernels_main.json:43:            "offset": "0x24",
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\kernels_main.json:44:            "type": "void*"
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\kernels_main.json:45:          },
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\kernels_main.json:46:          {
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\kernels_main.json:47:            "address-qualifier": "GLOBAL",
+> C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\kernels_main.json:48:            "memory-connection": "HOST",
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\kernels_main.json:49:            "name": "bo3",
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\kernels_main.json:50:            "offset": "0x2C",
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\kernels_main.json:51:            "type": "void*"
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\kernels_main.json:52:          },
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\kernels_main.json:53:          {
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\kernels_main.json:54:            "address-qualifier": "GLOBAL",
+> C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\kernels_main.json:55:            "memory-connection": "HOST",
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\kernels_main.json:56:            "name": "bo4",
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\kernels_main.json:57:            "offset": "0x34",
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\kernels_main.json:58:            "type": "void*"
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\kernels_main.json:59:          }
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\kernels_main.json:60:        ],
+=== FILE: C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\memTopology_main.json ===
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\memTopology_main.json:4:    "m_mem_data": [
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\memTopology_main.json:5:      {
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\memTopology_main.json:6:        "m_base_address": "0x4000000",
+> C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\memTopology_main.json:7:        "m_sizeKB": "0x10000",
+> C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\memTopology_main.json:8:        "m_tag": "HOST",
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\memTopology_main.json:9:        "m_type": "MEM_DRAM",
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\memTopology_main.json:10:        "m_used": "1"
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\memTopology_main.json:11:      },
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\memTopology_main.json:12:      {
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\memTopology_main.json:13:        "m_base_address": "0x4000000",
+=== FILE: C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\opted_main_core_0_2.ll ===
+> C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\opted_main_core_0_2.ll:1:; ModuleID = 'C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\peano-linked_main_core_0_2.ll'
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\opted_main_core_0_2.ll:2:source_filename = "LLVMDialectModule"
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\opted_main_core_0_2.ll:3:target datalayout = "e-m:e-p:20:32-i1:8:32-i8:8:32-i16:16:32-i32:32:32-f32:32:32-i64:32-f64:32-a:0:32-n32"
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\opted_main_core_0_2.ll:4:target triple = "aie2"
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\opted_main_core_0_2.ll:5:
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\opted_main_core_0_2.ll:6:@_anonymous0 = external local_unnamed_addr global [3 x i32]
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\opted_main_core_0_2.ll:19:
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\opted_main_core_0_2.ll:20:declare void @dr2d_kpke_keygen_seed_noise(ptr, ptr, ptr) local_unnamed_addr
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\opted_main_core_0_2.ll:21:
+> C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\opted_main_core_0_2.ll:22:define void @core_0_2() local_unnamed_addr {
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\opted_main_core_0_2.ll:23:  store i32 0, ptr @_anonymous0, align 4
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\opted_main_core_0_2.ll:24:  store i32 0, ptr getelementptr inbounds nuw (i8, ptr @_anonymous0, i20 4), align 4
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\opted_main_core_0_2.ll:25:  store i32 0, ptr getelementptr inbounds nuw (i8, ptr @_anonymous0, i20 8), align 4
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\opted_main_core_0_2.ll:26:  br label %1
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\opted_main_core_0_2.ll:27:
+=== FILE: C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\opted_main_core_0_3.ll ===
+> C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\opted_main_core_0_3.ll:1:; ModuleID = 'C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\peano-linked_main_core_0_3.ll'
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\opted_main_core_0_3.ll:2:source_filename = "LLVMDialectModule"
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\opted_main_core_0_3.ll:3:target datalayout = "e-m:e-p:20:32-i1:8:32-i8:8:32-i16:16:32-i32:32:32-f32:32:32-i64:32-f64:32-a:0:32-n32"
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\opted_main_core_0_3.ll:4:target triple = "aie2"
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\opted_main_core_0_3.ll:5:
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\opted_main_core_0_3.ll:6:@_anonymous1 = external local_unnamed_addr global [2 x i32]
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\opted_main_core_0_3.ll:17:
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\opted_main_core_0_3.ll:18:declare void @dr2d_kpke_keygen_row0_expand(ptr, ptr) local_unnamed_addr
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\opted_main_core_0_3.ll:19:
+> C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\opted_main_core_0_3.ll:20:define void @core_0_3() local_unnamed_addr {
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\opted_main_core_0_3.ll:21:  store i32 0, ptr @_anonymous1, align 4
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\opted_main_core_0_3.ll:22:  store i32 0, ptr getelementptr inbounds nuw (i8, ptr @_anonymous1, i20 4), align 4
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\opted_main_core_0_3.ll:23:  br label %1
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\opted_main_core_0_3.ll:24:
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\opted_main_core_0_3.ll:25:1:                                                ; preds = %0, %1
+=== FILE: C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\opted_main_core_0_4.ll ===
+> C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\opted_main_core_0_4.ll:1:; ModuleID = 'C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\peano-linked_main_core_0_4.ll'
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\opted_main_core_0_4.ll:2:source_filename = "LLVMDialectModule"
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\opted_main_core_0_4.ll:3:target datalayout = "e-m:e-p:20:32-i1:8:32-i8:8:32-i16:16:32-i32:32:32-f32:32:32-i64:32-f64:32-a:0:32-n32"
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\opted_main_core_0_4.ll:4:target triple = "aie2"
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\opted_main_core_0_4.ll:5:
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\opted_main_core_0_4.ll:6:@_anonymous2 = external local_unnamed_addr global [2 x i32]
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\opted_main_core_0_4.ll:17:
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\opted_main_core_0_4.ll:18:declare void @dr2d_kpke_keygen_row0_accumulate(ptr, ptr) local_unnamed_addr
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\opted_main_core_0_4.ll:19:
+> C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\opted_main_core_0_4.ll:20:define void @core_0_4() local_unnamed_addr {
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\opted_main_core_0_4.ll:21:  store i32 0, ptr @_anonymous2, align 4
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\opted_main_core_0_4.ll:22:  store i32 0, ptr getelementptr inbounds nuw (i8, ptr @_anonymous2, i20 4), align 4
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\opted_main_core_0_4.ll:23:  br label %1
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\opted_main_core_0_4.ll:24:
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\opted_main_core_0_4.ll:25:1:                                                ; preds = %0, %1
+=== FILE: C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\opted_main_core_0_5.ll ===
+> C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\opted_main_core_0_5.ll:1:; ModuleID = 'C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\peano-linked_main_core_0_5.ll'
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\opted_main_core_0_5.ll:2:source_filename = "LLVMDialectModule"
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\opted_main_core_0_5.ll:3:target datalayout = "e-m:e-p:20:32-i1:8:32-i8:8:32-i16:16:32-i32:32:32-f32:32:32-i64:32-f64:32-a:0:32-n32"
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\opted_main_core_0_5.ll:4:target triple = "aie2"
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\opted_main_core_0_5.ll:5:
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\opted_main_core_0_5.ll:6:@_anonymous3 = external local_unnamed_addr global [2 x i32]
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\opted_main_core_0_5.ll:17:
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\opted_main_core_0_5.ll:18:declare void @dr2d_kpke_keygen_row1_expand(ptr, ptr) local_unnamed_addr
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\opted_main_core_0_5.ll:19:
+> C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\opted_main_core_0_5.ll:20:define void @core_0_5() local_unnamed_addr {
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\opted_main_core_0_5.ll:21:  store i32 0, ptr @_anonymous3, align 4
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\opted_main_core_0_5.ll:22:  store i32 0, ptr getelementptr inbounds nuw (i8, ptr @_anonymous3, i20 4), align 4
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\opted_main_core_0_5.ll:23:  br label %1
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\opted_main_core_0_5.ll:24:
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\opted_main_core_0_5.ll:25:1:                                                ; preds = %0, %1
+=== FILE: C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\opted_main_core_1_2.ll ===
+> C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\opted_main_core_1_2.ll:1:; ModuleID = 'C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\peano-linked_main_core_1_2.ll'
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\opted_main_core_1_2.ll:2:source_filename = "LLVMDialectModule"
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\opted_main_core_1_2.ll:3:target datalayout = "e-m:e-p:20:32-i1:8:32-i8:8:32-i16:16:32-i32:32:32-f32:32:32-i64:32-f64:32-a:0:32-n32"
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\opted_main_core_1_2.ll:4:target triple = "aie2"
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\opted_main_core_1_2.ll:5:
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\opted_main_core_1_2.ll:6:@_anonymous4 = external local_unnamed_addr global [2 x i32]
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\opted_main_core_1_2.ll:17:
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\opted_main_core_1_2.ll:18:declare void @dr2d_kpke_keygen_row1_accumulate(ptr, ptr) local_unnamed_addr
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\opted_main_core_1_2.ll:19:
+> C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\opted_main_core_1_2.ll:20:define void @core_1_2() local_unnamed_addr {
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\opted_main_core_1_2.ll:21:  store i32 0, ptr @_anonymous4, align 4
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\opted_main_core_1_2.ll:22:  store i32 0, ptr getelementptr inbounds nuw (i8, ptr @_anonymous4, i20 4), align 4
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\opted_main_core_1_2.ll:23:  br label %1
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\opted_main_core_1_2.ll:24:
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\opted_main_core_1_2.ll:25:1:                                                ; preds = %0, %1
+=== FILE: C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\opted_main_core_1_3.ll ===
+> C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\opted_main_core_1_3.ll:1:; ModuleID = 'C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\peano-linked_main_core_1_3.ll'
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\opted_main_core_1_3.ll:2:source_filename = "LLVMDialectModule"
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\opted_main_core_1_3.ll:3:target datalayout = "e-m:e-p:20:32-i1:8:32-i8:8:32-i16:16:32-i32:32:32-f32:32:32-i64:32-f64:32-a:0:32-n32"
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\opted_main_core_1_3.ll:4:target triple = "aie2"
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\opted_main_core_1_3.ll:5:
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\opted_main_core_1_3.ll:6:@_anonymous5 = external local_unnamed_addr global [2 x i32]
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\opted_main_core_1_3.ll:17:
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\opted_main_core_1_3.ll:18:declare void @dr2d_kpke_keygen_serialize(ptr, ptr) local_unnamed_addr
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\opted_main_core_1_3.ll:19:
+> C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\opted_main_core_1_3.ll:20:define void @core_1_3() local_unnamed_addr {
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\opted_main_core_1_3.ll:21:  store i32 0, ptr @_anonymous5, align 4
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\opted_main_core_1_3.ll:22:  store i32 0, ptr getelementptr inbounds nuw (i8, ptr @_anonymous5, i20 4), align 4
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\opted_main_core_1_3.ll:23:  br label %1
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\opted_main_core_1_3.ll:24:
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\opted_main_core_1_3.ll:25:1:                                                ; preds = %0, %1
+=== FILE: C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\peano-compat_main_core_0_2.ll ===
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\peano-compat_main_core_0_2.ll:65:
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\peano-compat_main_core_0_2.ll:66:declare void @dr2d_kpke_keygen_serialize(ptr, ptr)
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\peano-compat_main_core_0_2.ll:67:
+> C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\peano-compat_main_core_0_2.ll:68:define void @core_0_2() {
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\peano-compat_main_core_0_2.ll:69:  store i32 0, ptr @_anonymous0
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\peano-compat_main_core_0_2.ll:70:  store i32 0, ptr getelementptr inbounds (i8, ptr @_anonymous0, i64 4)
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\peano-compat_main_core_0_2.ll:71:  store i32 0, ptr getelementptr inbounds (i8, ptr @_anonymous0, i64 8)
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\peano-compat_main_core_0_2.ll:72:  br label %1
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\peano-compat_main_core_0_2.ll:73:
+=== FILE: C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\peano-compat_main_core_0_3.ll ===
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\peano-compat_main_core_0_3.ll:65:
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\peano-compat_main_core_0_3.ll:66:declare void @dr2d_kpke_keygen_serialize(ptr, ptr)
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\peano-compat_main_core_0_3.ll:67:
+> C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\peano-compat_main_core_0_3.ll:68:define void @core_0_3() {
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\peano-compat_main_core_0_3.ll:69:  store i32 0, ptr @_anonymous1
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\peano-compat_main_core_0_3.ll:70:  store i32 0, ptr getelementptr inbounds (i8, ptr @_anonymous1, i64 4)
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\peano-compat_main_core_0_3.ll:71:  br label %1
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\peano-compat_main_core_0_3.ll:72:
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\peano-compat_main_core_0_3.ll:73:1:                                                ; preds = %26, %0
+=== FILE: C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\peano-compat_main_core_0_4.ll ===
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\peano-compat_main_core_0_4.ll:65:
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\peano-compat_main_core_0_4.ll:66:declare void @dr2d_kpke_keygen_serialize(ptr, ptr)
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\peano-compat_main_core_0_4.ll:67:
+> C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\peano-compat_main_core_0_4.ll:68:define void @core_0_4() {
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\peano-compat_main_core_0_4.ll:69:  store i32 0, ptr @_anonymous2
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\peano-compat_main_core_0_4.ll:70:  store i32 0, ptr getelementptr inbounds (i8, ptr @_anonymous2, i64 4)
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\peano-compat_main_core_0_4.ll:71:  br label %1
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\peano-compat_main_core_0_4.ll:72:
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\peano-compat_main_core_0_4.ll:73:1:                                                ; preds = %26, %0
+=== FILE: C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\peano-compat_main_core_0_5.ll ===
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\peano-compat_main_core_0_5.ll:65:
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\peano-compat_main_core_0_5.ll:66:declare void @dr2d_kpke_keygen_serialize(ptr, ptr)
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\peano-compat_main_core_0_5.ll:67:
+> C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\peano-compat_main_core_0_5.ll:68:define void @core_0_5() {
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\peano-compat_main_core_0_5.ll:69:  store i32 0, ptr @_anonymous3
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\peano-compat_main_core_0_5.ll:70:  store i32 0, ptr getelementptr inbounds (i8, ptr @_anonymous3, i64 4)
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\peano-compat_main_core_0_5.ll:71:  br label %1
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\peano-compat_main_core_0_5.ll:72:
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\peano-compat_main_core_0_5.ll:73:1:                                                ; preds = %26, %0
+=== FILE: C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\peano-compat_main_core_1_2.ll ===
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\peano-compat_main_core_1_2.ll:65:
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\peano-compat_main_core_1_2.ll:66:declare void @dr2d_kpke_keygen_serialize(ptr, ptr)
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\peano-compat_main_core_1_2.ll:67:
+> C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\peano-compat_main_core_1_2.ll:68:define void @core_1_2() {
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\peano-compat_main_core_1_2.ll:69:  store i32 0, ptr @_anonymous4
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\peano-compat_main_core_1_2.ll:70:  store i32 0, ptr getelementptr inbounds (i8, ptr @_anonymous4, i64 4)
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\peano-compat_main_core_1_2.ll:71:  br label %1
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\peano-compat_main_core_1_2.ll:72:
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\peano-compat_main_core_1_2.ll:73:1:                                                ; preds = %26, %0
+=== FILE: C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\peano-compat_main_core_1_3.ll ===
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\peano-compat_main_core_1_3.ll:65:
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\peano-compat_main_core_1_3.ll:66:declare void @dr2d_kpke_keygen_serialize(ptr, ptr)
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\peano-compat_main_core_1_3.ll:67:
+> C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\peano-compat_main_core_1_3.ll:68:define void @core_1_3() {
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\peano-compat_main_core_1_3.ll:69:  store i32 0, ptr @_anonymous5
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\peano-compat_main_core_1_3.ll:70:  store i32 0, ptr getelementptr inbounds (i8, ptr @_anonymous5, i64 4)
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\peano-compat_main_core_1_3.ll:71:  br label %1
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\peano-compat_main_core_1_3.ll:72:
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\peano-compat_main_core_1_3.ll:73:1:                                                ; preds = %26, %0
+=== FILE: C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\peano-linked_main_core_0_2.ll ===
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\peano-linked_main_core_0_2.ll:65:
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\peano-linked_main_core_0_2.ll:66:declare void @dr2d_kpke_keygen_serialize(ptr, ptr)
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\peano-linked_main_core_0_2.ll:67:
+> C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\peano-linked_main_core_0_2.ll:68:define void @core_0_2() {
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\peano-linked_main_core_0_2.ll:69:  store i32 0, ptr @_anonymous0
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\peano-linked_main_core_0_2.ll:70:  store i32 0, ptr getelementptr inbounds (i8, ptr @_anonymous0, i64 4)
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\peano-linked_main_core_0_2.ll:71:  store i32 0, ptr getelementptr inbounds (i8, ptr @_anonymous0, i64 8)
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\peano-linked_main_core_0_2.ll:72:  br label %1
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\peano-linked_main_core_0_2.ll:73:
+=== FILE: C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\peano-linked_main_core_0_3.ll ===
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\peano-linked_main_core_0_3.ll:65:
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\peano-linked_main_core_0_3.ll:66:declare void @dr2d_kpke_keygen_serialize(ptr, ptr)
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\peano-linked_main_core_0_3.ll:67:
+> C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\peano-linked_main_core_0_3.ll:68:define void @core_0_3() {
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\peano-linked_main_core_0_3.ll:69:  store i32 0, ptr @_anonymous1
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\peano-linked_main_core_0_3.ll:70:  store i32 0, ptr getelementptr inbounds (i8, ptr @_anonymous1, i64 4)
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\peano-linked_main_core_0_3.ll:71:  br label %1
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\peano-linked_main_core_0_3.ll:72:
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\peano-linked_main_core_0_3.ll:73:1:                                                ; preds = %26, %0
+=== FILE: C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\peano-linked_main_core_0_4.ll ===
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\peano-linked_main_core_0_4.ll:65:
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\peano-linked_main_core_0_4.ll:66:declare void @dr2d_kpke_keygen_serialize(ptr, ptr)
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\peano-linked_main_core_0_4.ll:67:
+> C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\peano-linked_main_core_0_4.ll:68:define void @core_0_4() {
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\peano-linked_main_core_0_4.ll:69:  store i32 0, ptr @_anonymous2
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\peano-linked_main_core_0_4.ll:70:  store i32 0, ptr getelementptr inbounds (i8, ptr @_anonymous2, i64 4)
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\peano-linked_main_core_0_4.ll:71:  br label %1
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\peano-linked_main_core_0_4.ll:72:
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\peano-linked_main_core_0_4.ll:73:1:                                                ; preds = %26, %0
+=== FILE: C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\peano-linked_main_core_0_5.ll ===
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\peano-linked_main_core_0_5.ll:65:
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\peano-linked_main_core_0_5.ll:66:declare void @dr2d_kpke_keygen_serialize(ptr, ptr)
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\peano-linked_main_core_0_5.ll:67:
+> C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\peano-linked_main_core_0_5.ll:68:define void @core_0_5() {
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\peano-linked_main_core_0_5.ll:69:  store i32 0, ptr @_anonymous3
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\peano-linked_main_core_0_5.ll:70:  store i32 0, ptr getelementptr inbounds (i8, ptr @_anonymous3, i64 4)
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\peano-linked_main_core_0_5.ll:71:  br label %1
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\peano-linked_main_core_0_5.ll:72:
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\peano-linked_main_core_0_5.ll:73:1:                                                ; preds = %26, %0
+=== FILE: C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\peano-linked_main_core_1_2.ll ===
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\peano-linked_main_core_1_2.ll:65:
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\peano-linked_main_core_1_2.ll:66:declare void @dr2d_kpke_keygen_serialize(ptr, ptr)
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\peano-linked_main_core_1_2.ll:67:
+> C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\peano-linked_main_core_1_2.ll:68:define void @core_1_2() {
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\peano-linked_main_core_1_2.ll:69:  store i32 0, ptr @_anonymous4
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\peano-linked_main_core_1_2.ll:70:  store i32 0, ptr getelementptr inbounds (i8, ptr @_anonymous4, i64 4)
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\peano-linked_main_core_1_2.ll:71:  br label %1
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\peano-linked_main_core_1_2.ll:72:
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\peano-linked_main_core_1_2.ll:73:1:                                                ; preds = %26, %0
+=== FILE: C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\peano-linked_main_core_1_3.ll ===
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\peano-linked_main_core_1_3.ll:65:
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\peano-linked_main_core_1_3.ll:66:declare void @dr2d_kpke_keygen_serialize(ptr, ptr)
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\peano-linked_main_core_1_3.ll:67:
+> C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\peano-linked_main_core_1_3.ll:68:define void @core_1_3() {
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\peano-linked_main_core_1_3.ll:69:  store i32 0, ptr @_anonymous5
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\peano-linked_main_core_1_3.ll:70:  store i32 0, ptr getelementptr inbounds (i8, ptr @_anonymous5, i64 4)
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\peano-linked_main_core_1_3.ll:71:  br label %1
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\peano-linked_main_core_1_3.ll:72:
+  C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\peano-linked_main_core_1_3.ll:73:1:                                                ; preds = %26, %0

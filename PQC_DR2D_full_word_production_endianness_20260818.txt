@@ -1,0 +1,198 @@
+=== C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\elfs_main_core_0_2\elfs_main_core_0_2.elf ===
+
+File: C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\elfs_main_core_0_2\elfs_main_core_0_2.elf
+Format: elf32-aie
+Arch: aie2
+AddressSize: 32bit
+LoadName: <Not found>
+ElfHeader {
+  Ident {
+    Magic: (7F 45 4C 46)
+    Class: 32-bit (0x1)
+    DataEncoding: LittleEndian (0x1)
+    FileVersion: 1
+    OS/ABI: SystemV (0x0)
+    ABIVersion: 0
+    Unused: (00 00 00 00 00 00 00)
+  }
+  Type: Executable (0x2)
+  Machine: EM_AIE (0x108)
+  Version: 1
+  Entry: 0x0
+  ProgramHeaderOffset: 0x34
+  SectionHeaderOffset: 0x31CC
+  Flags [ (0x2)
+    0x2
+  ]
+  HeaderSize: 52
+  ProgramHeaderEntrySize: 32
+  ProgramHeaderCount: 3
+  SectionHeaderEntrySize: 40
+  SectionHeaderCount: 7
+  StringTableSectionIndex: 5
+}
+=== C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\elfs_main_core_0_3\elfs_main_core_0_3.elf ===
+
+File: C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\elfs_main_core_0_3\elfs_main_core_0_3.elf
+Format: elf32-aie
+Arch: aie2
+AddressSize: 32bit
+LoadName: <Not found>
+ElfHeader {
+  Ident {
+    Magic: (7F 45 4C 46)
+    Class: 32-bit (0x1)
+    DataEncoding: LittleEndian (0x1)
+    FileVersion: 1
+    OS/ABI: SystemV (0x0)
+    ABIVersion: 0
+    Unused: (00 00 00 00 00 00 00)
+  }
+  Type: Executable (0x2)
+  Machine: EM_AIE (0x108)
+  Version: 1
+  Entry: 0x0
+  ProgramHeaderOffset: 0x34
+  SectionHeaderOffset: 0x2754
+  Flags [ (0x2)
+    0x2
+  ]
+  HeaderSize: 52
+  ProgramHeaderEntrySize: 32
+  ProgramHeaderCount: 2
+  SectionHeaderEntrySize: 40
+  SectionHeaderCount: 6
+  StringTableSectionIndex: 4
+}
+=== C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\elfs_main_core_0_4\elfs_main_core_0_4.elf ===
+
+File: C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\elfs_main_core_0_4\elfs_main_core_0_4.elf
+Format: elf32-aie
+Arch: aie2
+AddressSize: 32bit
+LoadName: <Not found>
+ElfHeader {
+  Ident {
+    Magic: (7F 45 4C 46)
+    Class: 32-bit (0x1)
+    DataEncoding: LittleEndian (0x1)
+    FileVersion: 1
+    OS/ABI: SystemV (0x0)
+    ABIVersion: 0
+    Unused: (00 00 00 00 00 00 00)
+  }
+  Type: Executable (0x2)
+  Machine: EM_AIE (0x108)
+  Version: 1
+  Entry: 0x0
+  ProgramHeaderOffset: 0x34
+  SectionHeaderOffset: 0x1FDC
+  Flags [ (0x2)
+    0x2
+  ]
+  HeaderSize: 52
+  ProgramHeaderEntrySize: 32
+  ProgramHeaderCount: 3
+  SectionHeaderEntrySize: 40
+  SectionHeaderCount: 7
+  StringTableSectionIndex: 5
+}
+=== C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\elfs_main_core_0_5\elfs_main_core_0_5.elf ===
+
+File: C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\elfs_main_core_0_5\elfs_main_core_0_5.elf
+Format: elf32-aie
+Arch: aie2
+AddressSize: 32bit
+LoadName: <Not found>
+ElfHeader {
+  Ident {
+    Magic: (7F 45 4C 46)
+    Class: 32-bit (0x1)
+    DataEncoding: LittleEndian (0x1)
+    FileVersion: 1
+    OS/ABI: SystemV (0x0)
+    ABIVersion: 0
+    Unused: (00 00 00 00 00 00 00)
+  }
+  Type: Executable (0x2)
+  Machine: EM_AIE (0x108)
+  Version: 1
+  Entry: 0x0
+  ProgramHeaderOffset: 0x34
+  SectionHeaderOffset: 0x2668
+  Flags [ (0x2)
+    0x2
+  ]
+  HeaderSize: 52
+  ProgramHeaderEntrySize: 32
+  ProgramHeaderCount: 2
+  SectionHeaderEntrySize: 40
+  SectionHeaderCount: 6
+  StringTableSectionIndex: 4
+}
+=== C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\elfs_main_core_1_2\elfs_main_core_1_2.elf ===
+
+File: C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\elfs_main_core_1_2\elfs_main_core_1_2.elf
+Format: elf32-aie
+Arch: aie2
+AddressSize: 32bit
+LoadName: <Not found>
+ElfHeader {
+  Ident {
+    Magic: (7F 45 4C 46)
+    Class: 32-bit (0x1)
+    DataEncoding: LittleEndian (0x1)
+    FileVersion: 1
+    OS/ABI: SystemV (0x0)
+    ABIVersion: 0
+    Unused: (00 00 00 00 00 00 00)
+  }
+  Type: Executable (0x2)
+  Machine: EM_AIE (0x108)
+  Version: 1
+  Entry: 0x0
+  ProgramHeaderOffset: 0x34
+  SectionHeaderOffset: 0x20D0
+  Flags [ (0x2)
+    0x2
+  ]
+  HeaderSize: 52
+  ProgramHeaderEntrySize: 32
+  ProgramHeaderCount: 3
+  SectionHeaderEntrySize: 40
+  SectionHeaderCount: 7
+  StringTableSectionIndex: 5
+}
+=== C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\elfs_main_core_1_3\elfs_main_core_1_3.elf ===
+
+File: C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\elfs_main_core_1_3\elfs_main_core_1_3.elf
+Format: elf32-aie
+Arch: aie2
+AddressSize: 32bit
+LoadName: <Not found>
+ElfHeader {
+  Ident {
+    Magic: (7F 45 4C 46)
+    Class: 32-bit (0x1)
+    DataEncoding: LittleEndian (0x1)
+    FileVersion: 1
+    OS/ABI: SystemV (0x0)
+    ABIVersion: 0
+    Unused: (00 00 00 00 00 00 00)
+  }
+  Type: Executable (0x2)
+  Machine: EM_AIE (0x108)
+  Version: 1
+  Entry: 0x0
+  ProgramHeaderOffset: 0x34
+  SectionHeaderOffset: 0x1B94
+  Flags [ (0x2)
+    0x2
+  ]
+  HeaderSize: 52
+  ProgramHeaderEntrySize: 32
+  ProgramHeaderCount: 2
+  SectionHeaderEntrySize: 40
+  SectionHeaderCount: 6
+  StringTableSectionIndex: 4
+}

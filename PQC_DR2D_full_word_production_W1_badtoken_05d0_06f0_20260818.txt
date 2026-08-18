@@ -1,0 +1,75 @@
+
+C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\elfs_main_core_0_3\elfs_main_core_0_3.elf:	file format elf32-aie
+
+Disassembly of section .text:
+
+000005d0 <.LBB0_26>:
+     5d0: bb 38 83 bd 02 00 00 00 00 00	nopa	;		nopx	;		add.nc	lc, r22, #0x0
+     5da: 55 e0 eb 00 00 00    	movxm	ls, #0x5f0
+     5e0: c0 03 00 10 28 3b 02 00 00 00 00 08 00 00 00 00      	nopb	;		mova	r0, #0x0;		nops	;		movxm	le, #0x650;		nopv	
+
+000005f0 <.LBB0_27>:
+     5f0: c0 03 00 28 0b 10 3a 00 00 00 00 00 00 00 00 00      	nopb	;		nopa	;		nops	;		add	r0, r0, #0x1;		mov	dj0, r0;		nopv	
+     600: c0 03 00 00 00 00 00 00 00 00 00 00 24 22 00 00      	nopb	;		st.s8	r16, [p1, dj0];		nops	;		nopxm	;		nopv	
+     610: c0 03 00 00 00 00 00 00 00 00 00 00 00 00 00 00      	nopb	;		nopa	;		nops	;		nopxm	;		nopv	
+     620: c0 03 00 00 00 00 00 00 00 00 00 00 00 00 00 00      	nopb	;		nopa	;		nops	;		nopxm	;		nopv	
+     630: c0 03 00 00 00 00 00 00 00 00 00 00 00 00 00 00      	nopb	;		nopa	;		nops	;		nopxm	;		nopv	
+     640: c0 03 00 00 00 00 00 00 00 00 00 00 00 00 00 00      	nopb	;		nopa	;		nops	;		nopxm	;		nopv	
+
+00000650 <.L_LEnd4>:
+     650: c0 03 00 00 00 00 00 00 00 00 00 00 00 00 00 00      	nopb	;		nopa	;		nops	;		nopxm	;		nopv	
+     660: c0 03 00 00 00 00 00 00 00 00 00 00 00 00 00 00      	nopb	;		nopa	;		nops	;		nopxm	;		nopv	
+     670: 19 2a 15 01  	st.s8	r21, [p1], #0x1
+     674: 01 00        	nop	
+     676: 01 00        	nop	
+     678: 01 00        	nop	
+     67a: 01 00        	nop	
+     67c: 01 00        	nop	
+     67e: 01 00        	nop	
+     680: 19 28 15 01  	st.s8	r20, [p1], #0x1
+     684: 01 00        	nop	
+     686: 01 00        	nop	
+     688: 01 00        	nop	
+     68a: 01 00        	nop	
+     68c: 01 00        	nop	
+     68e: 01 00        	nop	
+     690: 19 26 15 01  	st.s8	r19, [p1], #0x1
+     694: 01 00        	nop	
+     696: 01 00        	nop	
+     698: 01 00        	nop	
+     69a: 01 00        	nop	
+     69c: 01 00        	nop	
+     69e: 01 00        	nop	
+     6a0: 19 24 15 01  	st.s8	r18, [p1], #0x1
+     6a4: 01 00        	nop	
+     6a6: 01 00        	nop	
+     6a8: 01 00        	nop	
+     6aa: 01 00        	nop	
+     6ac: 01 00        	nop	
+     6ae: 01 00        	nop	
+     6b0: 19 02 15 01  	st.s8	r1, [p1], #0x1
+     6b4: 01 00        	nop	
+     6b6: 01 00        	nop	
+     6b8: 01 00        	nop	
+     6ba: 01 00        	nop	
+     6bc: 01 00        	nop	
+     6be: 01 00        	nop	
+     6c0: 19 20 15 01  	st.s8	r16, [p1], #0x1
+     6c4: 01 00        	nop	
+     6c6: 01 00        	nop	
+     6c8: 01 00        	nop	
+     6ca: 01 00        	nop	
+     6cc: 01 00        	nop	
+     6ce: 01 00        	nop	
+     6d0: 19 20 0d 01  	st.s8	r16, [p1, #0x0]
+     6d4: 01 00        	nop	
+     6d6: 01 00        	nop	
+     6d8: 01 00        	nop	
+     6da: 01 00        	nop	
+     6dc: 01 00        	nop	
+     6de: 95 00 00 00 04 00    	j	#0x800
+     6e4: 19 20 2d 01  	st.s8	r16, [p1, #0x1]
+     6e8: 01 00        	nop	
+     6ea: 01 00        	nop	
+     6ec: 01 00        	nop	
+     6ee: 01 00        	nop	

@@ -1,0 +1,31 @@
+========================================================================
+PQC DR2d - complete ML-KEM-512 K-PKE.KeyGen closure
+Backend: dr2d-mlkem512-kpke-keygen:silicon
+  acvp-tcId-01                     ERROR (NativeBackendUnavailable: DR2d native MLIR-AIE dispatch failed; no K-PKE.KeyGen fallback ran.)
+  acvp-tcId-02                     ERROR (NativeBackendUnavailable: DR2d native MLIR-AIE dispatch failed; no K-PKE.KeyGen fallback ran.)
+  acvp-tcId-03                     ERROR (NativeBackendUnavailable: DR2d native MLIR-AIE dispatch failed; no K-PKE.KeyGen fallback ran.)
+  acvp-tcId-04                     ERROR (NativeBackendUnavailable: DR2d native MLIR-AIE dispatch failed; no K-PKE.KeyGen fallback ran.)
+  acvp-tcId-05                     ERROR (NativeBackendUnavailable: DR2d native MLIR-AIE dispatch failed; no K-PKE.KeyGen fallback ran.)
+  acvp-tcId-06                     ERROR (NativeBackendUnavailable: DR2d native MLIR-AIE dispatch failed; no K-PKE.KeyGen fallback ran.)
+  acvp-tcId-07                     ERROR (NativeBackendUnavailable: DR2d native MLIR-AIE dispatch failed; no K-PKE.KeyGen fallback ran.)
+  acvp-tcId-08                     ERROR (NativeBackendUnavailable: DR2d native MLIR-AIE dispatch failed; no K-PKE.KeyGen fallback ran.)
+  acvp-tcId-09                     ERROR (NativeBackendUnavailable: DR2d native MLIR-AIE dispatch failed; no K-PKE.KeyGen fallback ran.)
+  acvp-tcId-10                     ERROR (NativeBackendUnavailable: DR2d native MLIR-AIE dispatch failed; no K-PKE.KeyGen fallback ran.)
+  acvp-tcId-11                     ERROR (NativeBackendUnavailable: DR2d native MLIR-AIE dispatch failed; no K-PKE.KeyGen fallback ran.)
+  acvp-tcId-12                     ERROR (NativeBackendUnavailable: DR2d native MLIR-AIE dispatch failed; no K-PKE.KeyGen fallback ran.)
+  acvp-tcId-13                     ERROR (NativeBackendUnavailable: DR2d native MLIR-AIE dispatch failed; no K-PKE.KeyGen fallback ran.)
+  acvp-tcId-14                     ERROR (NativeBackendUnavailable: DR2d native MLIR-AIE dispatch failed; no K-PKE.KeyGen fallback ran.)
+  acvp-tcId-15                     ERROR (NativeBackendUnavailable: DR2d native MLIR-AIE dispatch failed; no K-PKE.KeyGen fallback ran.)
+  acvp-tcId-16                     ERROR (NativeBackendUnavailable: DR2d native MLIR-AIE dispatch failed; no K-PKE.KeyGen fallback ran.)
+  acvp-tcId-17                     ERROR (NativeBackendUnavailable: DR2d native MLIR-AIE dispatch failed; no K-PKE.KeyGen fallback ran.)
+  acvp-tcId-18                     ERROR (NativeBackendUnavailable: DR2d native MLIR-AIE dispatch failed; no K-PKE.KeyGen fallback ran.)
+  acvp-tcId-19                     ERROR (NativeBackendUnavailable: DR2d native MLIR-AIE dispatch failed; no K-PKE.KeyGen fallback ran.)
+  acvp-tcId-20                     ERROR (NativeBackendUnavailable: DR2d native MLIR-AIE dispatch failed; no K-PKE.KeyGen fallback ran.)
+  acvp-tcId-21                     ERROR (NativeBackendUnavailable: DR2d native MLIR-AIE dispatch failed; no K-PKE.KeyGen fallback ran.)
+  acvp-tcId-22                     ERROR (NativeBackendUnavailable: DR2d native MLIR-AIE dispatch failed; no K-PKE.KeyGen fallback ran.)
+  acvp-tcId-23                     ERROR (NativeBackendUnavailable: DR2d native MLIR-AIE dispatch failed; no K-PKE.KeyGen fallback ran.)
+  acvp-tcId-24                     ERROR (NativeBackendUnavailable: DR2d native MLIR-AIE dispatch failed; no K-PKE.KeyGen fallback ran.)
+  acvp-tcId-25                     ERROR (NativeBackendUnavailable: DR2d native MLIR-AIE dispatch failed; no K-PKE.KeyGen fallback ran.)
+------------------------------------------------------------------------
+TOTAL 0/25 FAIL
+========================================================================

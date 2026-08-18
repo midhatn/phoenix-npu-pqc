@@ -1,0 +1,156 @@
+===== PATCH HASH =====
+PATCH_SHA256=0FC227A8DEAED9B45B4DAF39FAE0E9E966886B549666FFD87F3C142818F61F5C
+===== APPLY CHECK =====
+ ...dr2d_mlkem512_kpke_keygen_w0_token_tap_graph.py |  395 ++++++++++++++++++++
+ .../diagnose_dr2d_mlkem512_kpke_w0_token_tap.py    |   83 ++++
+ ...est_dr2d_mlkem512_kpke_w0_token_tap_contract.py |   89 +++++
+ 3 files changed, 567 insertions(+)
+===== APPLY PATCH =====
+===== CHANGED FILES =====
+ M .gitignore
+?? 04-Complex_FIR_on_Ryzen_AI_NPU_with_IRON/
+?? 05-Polyphase_Resampler_on_Ryzen_AI_NPU_with_IRON/
+?? M33_full_suite_20260817.log
+?? M33_full_suite_final_20260817.log
+?? PQC_DR0_DR1_DR2A_DR2B_DR2C_complete_host_zero_skip_20260817.log
+?? PQC_DR0_DR1_DR2A_DR2B_complete_host_zero_skip_20260817.log
+?? PQC_DR0_DR1_DR2A_complete_host_zero_skip_20260817.log
+?? PQC_DR0_DR1_complete_host_zero_skip_20260817.log
+?? PQC_DR0_M33_first_failure_trace_20260817.log
+?? PQC_DR0_M33_silicon_20260817.log
+?? PQC_DR0_M33_silicon_definitive_20260817.log
+?? PQC_DR0_M33_silicon_final_20260817.log
+?? PQC_DR0_M33_zero_vector_after_callback_fix_20260817.log
+?? PQC_DR1_MLDSA44_first_physical_20260817.log
+?? PQC_DR1_MLDSA44_silicon_mismatch_diagnostic_20260817.log
+?? PQC_DR1_MLDSA44_single_entrypoint_physical_20260817.log
+?? PQC_DR1_MLDSA44_v3_physical_corpus_20260817.log
+?? PQC_DR1_MLDSA44_v3_physical_exact_20260817.log
+?? PQC_DR2A_MLKEM512_SAMPLENTT_physical_20260817.log
+?? PQC_DR2B_MLKEM512_NOISE_NTT_physical_20260817.log
+?? PQC_DR2C_MLKEM512_KEYGEN_ROW_first_physical_20260817.log
+?? PQC_DR2C_MLKEM512_KEYGEN_ROW_repeated_physical_20260817.log
+?? PQC_DR2D_MLKEM512_KPKE_KEYGEN_AIE2_fix_case01_20260818.log
+?? PQC_DR2D_MLKEM512_KPKE_KEYGEN_dr2b_noise_fix_case01_20260818.log
+?? PQC_DR2D_MLKEM512_KPKE_KEYGEN_dr2b_noise_fix_case01_mismatch_20260818.log
+?? PQC_DR2D_MLKEM512_KPKE_KEYGEN_first_failure_trace_20260817.log
+?? PQC_DR2D_MLKEM512_KPKE_KEYGEN_first_physical_20260817.log
+?? PQC_DR2D_MLKEM512_KPKE_KEYGEN_partition_case01_20260818.log
+?? PQC_DR2D_MLKEM512_KPKE_KEYGEN_partition_case01_mismatch_20260818.log
+?? PQC_DR2D_MLKEM512_KPKE_KEYGEN_zeta_fix_case01_20260818.log
+?? PQC_DR2D_MLKEM512_KPKE_full_word_production_compile_20260818.log
+?? PQC_DR2D_MLKEM512_KPKE_terminal_probe_byteencode_fix_20260818.log
+?? PQC_DR2D_MLKEM512_KPKE_terminal_probe_byteencode_fix_mismatch_20260818.log
+?? PQC_DR2D_MLKEM512_KPKE_terminal_probe_full_word_20260818.log
+?? PQC_DR2D_MLKEM512_KPKE_terminal_probe_mismatch_20260818.log
+?? PQC_DR2D_MLKEM512_KPKE_terminal_probe_physical_20260818.log
+?? PQC_DR2D_MLKEM512_KPKE_terminal_probe_raw_byte_fix_20260818.log
+?? PQC_DR2D_W0_CBD_tail_Keccak_NTT_20260818.txt
+?? PQC_DR2D_W0_CBD_tail_Keccak_NTT_aligned_20260818.txt
+?? PQC_DR2D_W0_SHAKE_staging_vs_passed_DR2B_PRF_20260818.txt
+?? PQC_DR2D_W0_TOKEN_TAP_DIAGNOSTIC_20260818.patch
+?? PQC_DR2D_W0_compile_invocation_and_intermediates_20260818.txt
+?? PQC_DR2D_W0_complete_IR_metadata_objects_20260818.txt
+?? PQC_DR2D_W0_full_arithmetic_disassembly_20260818.txt
+?? PQC_DR2D_W0_inlined_CBD_vs_passed_DR2B_CBD_20260818.txt
+?? PQC_DR2D_W0_pair_pack_vs_passed_terminal_probe_20260818.txt
+?? PQC_DR2D_W0_relocations_and_final_link_20260818.txt
+?? PQC_DR2D_W0_token_tap_apply_host_validation_20260818.txt
+?? PQC_DR2D_W0_vs_cached_DR2B_NTT_20260818.txt
+?? PQC_DR2D_W0_vs_passed_DR2B_Keccak_20260818.txt
+?? PQC_DR2D_derive_sigma_and_copy_words_20260818.txt
+?? PQC_DR2D_first_native_failure_classification_20260818.txt
+?? PQC_DR2D_full_word_production_W0_call_sites_20260818.txt
+?? PQC_DR2D_full_word_production_W0_guard_window_20260818.txt
+?? PQC_DR2D_full_word_production_W0_pair_loop_20260818.txt
+?? PQC_DR2D_full_word_production_W1_badtoken_05d0_06f0_20260818.txt
+?? PQC_DR2D_full_word_production_W1_copy_words_20260818.txt
+?? PQC_DR2D_full_word_production_W1_entry_20260818.txt
+?? PQC_DR2D_full_word_production_W1_mid_03c0_05d0_20260818.txt
+?? PQC_DR2D_full_word_production_W1_provenance_20260818.txt
+?? PQC_DR2D_full_word_production_W1_sampleNTT_0d90_1270_20260818.txt
+?? PQC_DR2D_full_word_production_W2_add_product_0f70_13e0_20260818.txt
+?? PQC_DR2D_full_word_production_W2_entry_mid_01a0_0950_20260818.txt
+?? PQC_DR2D_full_word_production_W2_main_copy_calls_0b40_0f70_20260818.txt
+?? PQC_DR2D_full_word_production_W2_output_bases_0950_0b40_20260818.txt
+?? PQC_DR2D_full_word_production_W3_badtoken_output_rho_05d0_0a80_20260818.txt
+?? PQC_DR2D_full_word_production_W3_callers_copy_0a70_0da0_20260818.txt
+?? PQC_DR2D_full_word_production_W3_entry_mid_01a0_05d0_20260818.txt
+?? PQC_DR2D_full_word_production_W3_sampleNTT_0d90_1290_20260818.txt
+?? PQC_DR2D_full_word_production_W4_full_01a0_13e0_20260818.txt
+?? PQC_DR2D_full_word_production_accumulate_guard_windows_20260818.txt
+?? PQC_DR2D_full_word_production_core_0_2_disassembly_20260818.txt
+?? PQC_DR2D_full_word_production_core_0_3_disassembly_20260818.txt
+?? PQC_DR2D_full_word_production_core_0_4_disassembly_20260818.txt
+?? PQC_DR2D_full_word_production_core_0_5_disassembly_20260818.txt
+?? PQC_DR2D_full_word_production_core_1_2_disassembly_20260818.txt
+?? PQC_DR2D_full_word_production_endianness_20260818.txt
+?? PQC_DR2D_full_word_production_linker_memory_20260818.txt
+?? PQC_DR2D_full_word_production_memory_topology_inventory_20260818.txt
+?? PQC_DR2D_full_word_production_native_25of25_first_20260818.log
+?? PQC_DR2D_full_word_production_provenance_20260818.txt
+?? PQC_DR2D_full_word_production_store_map_20260818.txt
+?? PQC_DR2D_one_case_payload_localizer_20260818.log
+?? PQC_DR2D_one_case_payload_localizer_20260818.sha256
+?? PQC_DR2D_passed_DR2B_Keccak_corrected_20260818.txt
+?? PQC_DR2D_tcId01_sigma_PRF_hypotheses_20260818.txt
+?? PQC_DR2D_terminal_probe_core_0_2_disassembly_20260818.txt
+?? PQC_DR2D_terminal_probe_full_word_compile_20260818.log
+?? PQC_DR2D_terminal_probe_full_word_core_0_2_disassembly_20260818.txt
+?? RELEASE_NOTES_v1.0.0.md
+?? "Tutorial README.md (top-level).md"
+?? Tutorial/
+?? docs/PQC_DR2D_DESIGN.md
+?? docs/PQC_DR2D_SILICON_VALIDATION_PENDING.md
+?? phoenix_sdr_dsp/pqc/dr2d_mlkem512_kpke_keygen_abi.py
+?? phoenix_sdr_dsp/pqc/dr2d_mlkem512_kpke_keygen_graph.py
+?? phoenix_sdr_dsp/pqc/dr2d_mlkem512_kpke_keygen_terminal_probe_graph.py
+?? phoenix_sdr_dsp/pqc/dr2d_mlkem512_kpke_keygen_w0_token_tap_graph.py
+?? phoenix_sdr_dsp/pqc/kernels/dr2d_mlkem512_kpke_keygen_derive.cc
+?? phoenix_sdr_dsp/pqc/kernels/dr2d_mlkem512_kpke_keygen_internal.hpp
+?? phoenix_sdr_dsp/pqc/kernels/dr2d_mlkem512_kpke_keygen_row0_accumulate.cc
+?? phoenix_sdr_dsp/pqc/kernels/dr2d_mlkem512_kpke_keygen_row0_expand.cc
+?? phoenix_sdr_dsp/pqc/kernels/dr2d_mlkem512_kpke_keygen_row1_accumulate.cc
+?? phoenix_sdr_dsp/pqc/kernels/dr2d_mlkem512_kpke_keygen_row1_expand.cc
+?? phoenix_sdr_dsp/pqc/kernels/dr2d_mlkem512_kpke_keygen_seed.cc
+?? phoenix_sdr_dsp/pqc/kernels/dr2d_mlkem512_kpke_keygen_serialize.cc
+?? phoenix_sdr_dsp/pqc/kernels/dr2d_mlkem512_kpke_keygen_terminal_probe.cc
+?? tests/pqc_device_resident/data/
+?? tests/pqc_device_resident/diagnose_dr2d_mlkem512_kpke_w0_token_tap.py
+?? tests/pqc_device_resident/dr2d_reference.py
+?? tests/pqc_device_resident/test_dr2d_mlkem512_kpke_keygen.py
+?? tests/pqc_device_resident/test_dr2d_mlkem512_kpke_keygen_silicon.py
+?? tests/pqc_device_resident/test_dr2d_mlkem512_kpke_terminal_probe.py
+?? tests/pqc_device_resident/test_dr2d_mlkem512_kpke_terminal_probe_silicon.py
+?? tests/pqc_device_resident/test_dr2d_mlkem512_kpke_w0_token_tap_contract.py
+?? tests/test_pqc_dr2d_contract.py
+?? tools/extract_dr2d_acvp_vectors.py
+?? tutorial_m19.tar.gz
+?? tutorial_m20.tar.gz
+===== PYTHON COMPILE =====
+===== RUFF CHECK =====
+All checks passed!
+===== RUFF FORMAT CHECK =====
+3 files already formatted
+===== HOST-ONLY CONTRACTS =====
+test_error_token_requires_fixed_zero_payload (tests.pqc_device_resident.test_dr2d_mlkem512_kpke_w0_token_tap_contract.W0TokenTapContractTests.test_error_token_requires_fixed_zero_payload) ... ok
+test_graph_is_one_worker_two_ingress_one_direct_egress (tests.pqc_device_resident.test_dr2d_mlkem512_kpke_w0_token_tap_contract.W0TokenTapContractTests.test_graph_is_one_worker_two_ingress_one_direct_egress) ... ok
+test_native_entrypoint_has_an_explicit_authorization_guard (tests.pqc_device_resident.test_dr2d_mlkem512_kpke_w0_token_tap_contract.W0TokenTapContractTests.test_native_entrypoint_has_an_explicit_authorization_guard) ... ok
+test_pinned_production_sources_are_unchanged (tests.pqc_device_resident.test_dr2d_mlkem512_kpke_w0_token_tap_contract.W0TokenTapContractTests.test_pinned_production_sources_are_unchanged) ... ok
+test_success_token_validation_is_complete_and_reference_free (tests.pqc_device_resident.test_dr2d_mlkem512_kpke_w0_token_tap_contract.W0TokenTapContractTests.test_success_token_validation_is_complete_and_reference_free) ... ok
+test_unwritten_sentinel_and_noncanonical_lane_fail_closed (tests.pqc_device_resident.test_dr2d_mlkem512_kpke_w0_token_tap_contract.W0TokenTapContractTests.test_unwritten_sentinel_and_noncanonical_lane_fail_closed) ... ok
+
+----------------------------------------------------------------------
+Ran 6 tests in 0.051s
+
+OK
+===== PRODUCTION HASH PREFLIGHT =====
+w0_source=2f94e2995706ac5636f35c66167e5dd8f54ac54b618c200bf4ee45b8b754ceaf
+internal_header=16d61e6ada4d7de384b3981cc76d3de8319ce2bec999727d4847567e7e1f3519
+production_graph=e17e17b8481bc1fa8492a7e2bc9184fbae095b55c5e175b015aa19a2bc999694
+production_abi=a6f44c68787905f6b4819598baacac59bf5bcc4a3125c8151b7863345e9ff4f4
+canonical_runner=742591321ac5dc3069a51ded4e198905367f8dc6261df8c3ebae20b5e333fbad
+retained_w0_object=7ea27cc5f6bb905253a161acd98988c62afc54855bcfd1c4530a55c441e28b70
+===== AUTHORIZATION REFUSAL TEST =====
+REFUSED: no post-compile-only W0 token-tap native authorization is present.
+HOST_ONLY_TOKEN_TAP_VALIDATION=PASS

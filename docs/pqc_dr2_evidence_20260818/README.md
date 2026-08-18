@@ -24,6 +24,25 @@ The binary is a diagnostic W0 token, not a key or a production result. Its parse
 
 The evidence contains Windows user/cache paths, toolchain paths, local build metadata, hashes, deterministic test material, and a raw intermediate token. Treat it as restricted engineering evidence: do not publish it broadly, upload it to an unapproved service, or infer that absence of an obvious secret string makes it public. Preserve line endings, binary contents, filenames, and relative paths. Record any derivative artifact separately with its source file, command, environment, time, and checksum.
 
+## Laptop forensic recovery
+
+The later laptop export recovered the full local DR2 Git lineage and 159
+DR2-named working files. The transport ZIP matched SHA-256
+`068e94f869aa9038dfc33b324b498ca79d96feb67e2fa94a89ea8ad8253cf6ed`,
+and all 11 entries in its internal checksum manifest verified. The absent
+`staged-index.patch` was an expected empty capture: the preserved porcelain-v2
+status contained no staged or unmerged entries, while the original exporter
+used a pipeline that emitted no file for an empty staged diff.
+
+Recovered files were restored byte-for-byte to their original
+repository-relative paths. Their aggregate manifest is
+[`RECOVERED_LOCAL_SOURCE_SHA256SUMS`](RECOVERED_LOCAL_SOURCE_SHA256SUMS);
+the recovery method, branch identities, and publication exclusions are in
+[`../PQC_DR2_LOCAL_FORENSIC_RECOVERY_20260818.md`](../PQC_DR2_LOCAL_FORENSIC_RECOVERY_20260818.md).
+The complete `.git` capture and transport ZIP are intentionally excluded from
+GitHub because they contain unrelated repository history and duplicate
+transport material.
+
 ## Top-level evidence classification
 
 | File | Classification | Safe interpretation |
@@ -76,6 +95,8 @@ Every artifact below is preserved to explain the chronology. **Only retry6 compl
 - Integrated production audit: [`../PQC_DR2D_FULLWORD_PRODUCTION_ELF_AUDIT_20260818.md`](../PQC_DR2D_FULLWORD_PRODUCTION_ELF_AUDIT_20260818.md)
 - W0 V2 diagnostic boundary: [`../PQC_DR2D_W0_TOKEN_TAP_DIAGNOSTIC_V2_20260818_HANDOFF.md`](../PQC_DR2D_W0_TOKEN_TAP_DIAGNOSTIC_V2_20260818_HANDOFF.md)
 - Research roadmap: [`../PQC_DEVICE_RESIDENCY_ROADMAP.md`](../PQC_DEVICE_RESIDENCY_ROADMAP.md)
+- Laptop forensic recovery: [`../PQC_DR2_LOCAL_FORENSIC_RECOVERY_20260818.md`](../PQC_DR2_LOCAL_FORENSIC_RECOVERY_20260818.md)
+- Recovered working-file manifest: [`RECOVERED_LOCAL_SOURCE_SHA256SUMS`](RECOVERED_LOCAL_SOURCE_SHA256SUMS)
 
 ## References
 

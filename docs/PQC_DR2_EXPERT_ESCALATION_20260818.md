@@ -141,9 +141,32 @@ Retry6 compiled into cache `337a8cdc94914d464c109ced`; its generated MLIR SHA-25
 - No evidence establishes a compiler, runtime, XRT, driver, firmware, hardware, or operating-system defect.
 - No production modification, production-branch merge, release package, or claim expansion is authorized. Publication of this clearly marked research/escalation branch is a documentation and evidence-preservation action only.
 
-### Source-recovery limitation
+### Recovered source and Git lineage
 
-This escalation branch is based on the recoverable withdrawn DR2a PR lineage and contains the preserved DR2c handoffs, DR2d audit/evidence, and final additive sigma/PRF diagnostic sources. The complete local DR2b, DR2c, and DR2d production source trees and their historical local commits were not recoverable as Git objects in the publication workspace. Their recorded local identifiers (`d033a8d`, `8b1bff2`, `c0a7390`, and the reconstructed DR2a identifier `99c80ac`) are provenance leads, not objects guaranteed to resolve from this branch. The Windows research checkout that produced the evidence may still contain those files and should be preserved before cleanup, reset, cache deletion, or branch switching. Experts must not reconstruct missing production source from prose and then treat it as byte-identical to the tested tree.
+The 2026-08-18 laptop forensic export removed the earlier source-recovery
+limitation. The uploaded transport archive matched SHA-256
+`068e94f869aa9038dfc33b324b498ca79d96feb67e2fa94a89ea8ad8253cf6ed`;
+all 11 internal manifest entries verified. The all-refs bundle exposed the
+complete ordered local feature lineage:
+
+| Stage | Original local commit | Tree | Parent |
+|---|---|---|---|
+| DR2a | `99c80ac34e78c39f66280c64b2109db5d25c0dd9` | `fcc5b85d20ef339bc9051a67d4c32bff9de75e6f` | `7b38973789fafb950a26551bc947f4fcaa91ec25` |
+| DR2b | `8b1bff209b691f013420648dff3f2a022380a918` | `131aa54d43705f1ed465d6aff8bb9156fd197dc3` | `99c80ac34e78c39f66280c64b2109db5d25c0dd9` |
+| lineage record | `c0a739090ba73ec700074c8ba6876abbb14bb0a4` | `78e8fd16c3deb0dba09ee7ef3fa2c3c9d7540d39` | `8b1bff209b691f013420648dff3f2a022380a918` |
+| DR2c | `74c735b089b1e66ee5ff1a49b8abf1222cce8057` | `91134a06597f8197bc0766aaa904764b0bf87f7c` | `c0a739090ba73ec700074c8ba6876abbb14bb0a4` |
+| accepted roadmap | `48b5e25e42ec63d5b8b79e67791c02d3420e8353` | `cdfca290ee0490ac2c5ed129beca8590134b93c8` | `74c735b089b1e66ee5ff1a49b8abf1222cce8057` |
+
+The export also preserved safety commits
+`d033a8d5165bdea0ab3ab1cceaed99c42b856544` and
+`53e7b0e5c827bd015ccf5055c69ded2dc2e6c5bc`, 159 byte-exact
+DR2-named working files, the tracked worktree patch, refs, reflogs,
+unreachable-object inventory, and complete `.git` capture. The source and
+evidence needed for expert continuation are now present on this branch. The
+complete `.git` transport was intentionally not published because it includes
+unrelated repository history; its verified identity and extracted DR2
+provenance are recorded in
+[`PQC_DR2_LOCAL_FORENSIC_RECOVERY_20260818.md`](PQC_DR2_LOCAL_FORENSIC_RECOVERY_20260818.md).
 
 ## 9. Expert reproduction sequence (read-only first)
 
@@ -169,6 +192,8 @@ This escalation branch is based on the recoverable withdrawn DR2a PR lineage and
 - W0 V2 diagnostic handoff: [`PQC_DR2D_W0_TOKEN_TAP_DIAGNOSTIC_V2_20260818_HANDOFF.md`](PQC_DR2D_W0_TOKEN_TAP_DIAGNOSTIC_V2_20260818_HANDOFF.md)
 - Evidence guide and safety classification: [`pqc_dr2_evidence_20260818/README.md`](pqc_dr2_evidence_20260818/README.md)
 - Checksum manifest: [`pqc_dr2_evidence_20260818/SHA256SUMS`](pqc_dr2_evidence_20260818/SHA256SUMS)
+- Laptop source-forensic recovery: [`PQC_DR2_LOCAL_FORENSIC_RECOVERY_20260818.md`](PQC_DR2_LOCAL_FORENSIC_RECOVERY_20260818.md)
+- Recovered working-file checksum manifest: [`pqc_dr2_evidence_20260818/RECOVERED_LOCAL_SOURCE_SHA256SUMS`](pqc_dr2_evidence_20260818/RECOVERED_LOCAL_SOURCE_SHA256SUMS)
 
 ## References
 

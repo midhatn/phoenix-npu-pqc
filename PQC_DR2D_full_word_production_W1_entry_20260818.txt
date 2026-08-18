@@ -1,0 +1,68 @@
+
+C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\elfs_main_core_0_3\elfs_main_core_0_3.elf:	file format elf32-aie
+
+Disassembly of section .text:
+
+000001a0 <dr2d_kpke_keygen_row0_expand>:
+     1a0: 13 00 00 00 00 28 84 00      	mova	dj0, #0x4;		nopb	;		nopx	
+     1a8: d9 0d 11 00  	lda.u8	r6, [p0, dj0]
+     1ac: 59 21 05 00  	mova	dj0, #0x5
+     1b0: d9 0f 11 00  	lda.u8	r7, [p0, dj0]
+     1b4: 59 21 06 00  	mova	dj0, #0x6
+     1b8: d9 11 11 00  	lda.u8	r8, [p0, dj0]
+     1bc: 01 00        	nop	
+     1be: 59 21 07 00  	mova	dj0, #0x7
+     1c2: d9 13 11 00  	lda.u8	r9, [p0, dj0]
+     1c6: 01 00        	nop	
+     1c8: 4d 76 30 ca 00 01    	mova	r3, #0x8;		mov	p2, p0
+     1ce: 43 48 23 00 ec 11 0e 00      	lshl	r1, r7, r3;		mov	r0, #0x10
+     1d6: 93 0d 08 42 03 78 85 42      	lda.s8	r21, [p2], #0x1;		paddb	[sp], #0x40;		lshl	r4, r8, r0
+     1de: fb 65 42 00 00 6c fc 3f 85 42	lda.s8	r20, [p2], #0x1;		st	r22, [sp, #-32];		or	r1, r1, r6
+     1e8: 77 48 33 40 2c 12 02 60 f9 ff 84 42  	lda.s8	r19, [p2], #0x1;		st	r16, [sp, #-56];		or	r1, r1, r4;		mov	r2, #0x18
+     1f4: fb 2d 44 02 00 e2 f9 bf 84 41	lda.s8	r18, [p2, #0x0];		st	r17, [sp, #-52];		lshl	r2, r9, r2
+     1fe: fb 25 54 00 80 c2 f8 0f 81 00	mova	r4, #0x4;		st	lr, [sp, #-60];		or	r10, r1, r2
+     208: bd 4b 84 c2 9d ff    	st	r23, [sp, #-28];		geu	r2, r10, r4
+     20e: 3b 61 00 10 de 00 04 40 7d ff	st	r21, [sp, #-36];		jnz	r2, #0x6f0
+     218: 19 68 fb 0f  	st	r20, [sp, #-40]
+     21c: 19 e6 fa 0f  	st	r19, [sp, #-44]
+     220: 19 64 fa 0f  	st	r18, [sp, #-48]
+     224: 77 10 18 c6 02 00 80 76 fd 0f 04 00  	mova	r16, #0x0;		st	p6, [sp, #-24];		movxm	r22, #0xc30
+     230: 77 10 18 24 02 00 80 fe fd 4f 60 00  	mova	r1, #0x3;		st	p7, [sp, #-20];		movxm	r17, #0x830
+     23c: bb 90 80 86 00 00 00 48 c1 3f	mova	r5, #0x1fe;		movxm	r4, #0xd01
+     246: bb 48 43 40 28 70 01 c8 02 01	mova	r11, #0x8;		movx	r23, #0x1;		mov	r2, #0x20
+
+00000250 <.LBB0_2>:
+     250: 7f 00 00 00 65 59 42 00 00 00 00 00 00 00    	nopa	;		nopb	;		nopx	;		mov	dj0, r11;		nops	
+     25e: d9 19 11 00  	lda.u8	r12, [p0, dj0]
+     262: 01 00        	nop	
+     264: 01 00        	nop	
+     266: 01 00        	nop	
+     268: 01 00        	nop	
+     26a: 01 00        	nop	
+     26c: 01 00        	nop	
+     26e: 95 01 40 78 03 60    	jnz	r12, #0x6f0
+     274: 01 00        	nop	
+     276: 01 00        	nop	
+     278: 01 00        	nop	
+     27a: 01 00        	nop	
+     27c: 01 00        	nop	
+     27e: 19 07 d6 12  	add	r11, r11, #0x1
+     282: 99 07 d8 12  	eq	r12, r11, r0
+     286: 95 01 00 28 01 60    	jz	r12, #0x250
+     28c: 01 00        	nop	
+     28e: 01 00        	nop	
+     290: 01 00        	nop	
+     292: 01 00        	nop	
+     294: 01 00        	nop	
+     296: 95 01 00 e0 01 50    	jz	r10, #0x3c0
+     29c: 01 00        	nop	
+     29e: 01 00        	nop	
+     2a0: 01 00        	nop	
+     2a2: 01 00        	nop	
+     2a4: 01 00        	nop	
+     2a6: 79 06 7b 1d  	add.nc	lc, r22, #0x0
+     2aa: 55 80 e5 00 00 00    	movxm	ls, #0x2c0
+     2b0: c0 03 00 10 90 39 02 00 00 00 00 08 00 00 00 00      	nopb	;		mova	r0, #0x0;		nops	;		movxm	le, #0x320;		nopv	
+
+000002c0 <.LBB0_6>:
+     2c0: c0 03 00 28 0b 10 3a 00 00 00 00 00 00 00 00 00      	nopb	;		nopa	;		nops	;		add	r0, r0, #0x1;		mov	dj0, r0;		nopv	

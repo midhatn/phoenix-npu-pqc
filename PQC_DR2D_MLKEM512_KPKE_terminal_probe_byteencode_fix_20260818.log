@@ -1,0 +1,4 @@
+========================================================================
+PQC DR2d terminal probe - DIAGNOSTIC ONLY, NOT KeyGen validation
+Backend: dr2d-mlkem512-kpke-keygen:terminal-probe:diagnostic-only
+CASE1 FAIL: complete final-token/serializer terminal record mismatch

@@ -1,0 +1,187 @@
+DR2B_SOURCE_SHA256=479895185D0A78688066681FA856EC7209BF5F0FB606AA99620AD6635F8B8CDE
+DR2B_MATCHING_ELF_COUNT=1
+===== DR2B ELF: C:\Users\midhat\.npu\cache\4311961d4f3a43976aa5a60d\elfs_main_core_0_3\elfs_main_core_0_3.elf =====
+SHA256=0F1E4F9563A6716C3076BDC8AD4C8D43DC6DFD566CF0DE2FD67B14D937261125
+UTC=2026-08-17T18:21:29.1466630Z SIZE=5908
+
+C:\Users\midhat\.npu\cache\4311961d4f3a43976aa5a60d\elfs_main_core_0_3\elfs_main_core_0_3.elf:	file format elf32-aie
+
+SYMBOL TABLE:
+00000000 l    df *ABS*	00000000 LLVMDialectModule
+00000080 l       .text	00000000 .LBB0_1
+00000000 l    df *ABS*	00000000 dr2b_cbd3_ntt_consume.cc
+000001b0 l     F .text	00000460 _ZN12_GLOBAL__N_17consumeEPKhPh
+00000300 l       .text	00000000 .LBB1_7
+000004f0 l       .text	00000000 .LBB1_11
+00000340 l       .text	00000000 .LBB1_8
+000003a0 l       .text	00000000 .L_LEnd0
+000004c0 l       .text	00000000 .LBB1_10
+000008a0 l     F .text	00000210 _ZN12_GLOBAL__N_14cbd3EPKhPj
+00000ab0 l     F .text	000001d0 _ZN12_GLOBAL__N_13nttEPj
+00000610 l     F .text	00000290 _ZN12_GLOBAL__N_112write_resultEPhjjPKj
+000005d0 l       .text	00000000 .LBB1_12
+000005e0 l       .text	00000000 .L_LEnd1
+00000650 l       .text	00000000 .LBB2_1
+000006b0 l       .text	00000000 .L_LEnd3
+00000830 l       .text	00000000 .LBB2_3
+00000870 l       .text	00000000 .L_LEnd2
+000008e0 l       .text	00000000 .LBB3_1
+000009b0 l       .text	00000000 .L_LEnd4
+00000b00 l       .text	00000000 .LBB4_1
+00000b20 l       .text	00000000 .LBB4_2
+0007c008 l     O .data	00000100 _ZN12_GLOBAL__N_16kZetasE
+00000b40 l       .text	00000000 .LBB4_3
+00000000 l    df *ABS*	00000000 umodsi3.c
+00000000 l    df *ABS*	00000000 crt1.cc
+00000020 g     F .text	00000180 core_0_3
+0007c000 g       .strtab	00000000 _anonymous1
+00048000 g       .strtab	00000000 dr2b_prf_token_buff_1
+00044000 g       .strtab	00000000 dr2b_prf_token_buff_0
+00078000 g       .strtab	00000000 dr2b_result_buff_1
+00074000 g       .strtab	00000000 dr2b_result_buff_0
+000001a0 g     F .text	00000010 dr2b_cbd3_ntt_consume
+00000c80 g     F .text	00000090 __umodsi3
+00000000 g     F .text	00000020 __start
+00070000 g       .strtab	00000000 _sp_start_value_DM_stack
+00000d10 g     F .text	00000050 _main_init
+00000020 g     F .text	00000000 main
+00000020 g       .text	00000000 _ctors_start
+00000020 g       .text	00000000 _init_array_start
+00000020 g       .text	00000000 _ctors_end
+00000020 g       .text	00000000 _init_array_end
+00000020 g       .text	00000000 _dtors_start
+00000020 g       .text	00000000 _dtors_end
+0004c000 g       .strtab	00000000 dr2b_sigma_cons_buff_0
+000440e0 g       .strtab	00000000 dr2b_sigma_cons_buff_1
+000480e0 g       .strtab	00000000 dr2b_descriptor_cons_buff_0
+0004c020 g       .strtab	00000000 dr2b_descriptor_cons_buff_1
+00044100 g       .strtab	00000000 _anonymous0
+NTT_RANGE=0xab0-0xc80
+
+C:\Users\midhat\.npu\cache\4311961d4f3a43976aa5a60d\elfs_main_core_0_3\elfs_main_core_0_3.elf:	file format elf32-aie
+
+Disassembly of section .text:
+
+00000ab0 <_ZN12_GLOBAL__N_13nttEPj>:
+     ab0: 13 00 00 40 03 00 00 00      	nopa	;		paddb	[sp], #0x40;		nopx	
+     ab8: 19 e0 fa 0f  	st	r16, [sp, #-44]
+     abc: 19 e4 fb 0f  	st	r18, [sp, #-36]
+     ac0: 19 e8 fc 0f  	st	r20, [sp, #-28]
+     ac4: 19 62 fb 0f  	st	r17, [sp, #-40]
+     ac8: 99 7e ff 0f  	st	p7, [sp, #-8]
+     acc: 59 76 30 1f  	mov	p7, p0
+     ad0: 99 42 fa 0f  	st	lr, [sp, #-48]
+     ad4: 19 66 fc 0f  	st	r19, [sp, #-32]
+     ad8: 19 6a fd 0f  	st	r21, [sp, #-24]
+     adc: 77 90 80 06 02 00 00 ec fd 8f 20 00  	mova	r2, #0x1;		st	r22, [sp, #-20];		movxm	r16, #0xd01
+     ae8: 77 10 80 46 02 00 00 6e fe 4f 00 00  	mova	r1, #0x0;		st	r23, [sp, #-16];		movxm	r18, #0xd00
+     af4: 77 90 7f 81 fe ff bf f6 fe 4f 44 00  	mova	r17, #0x2;		st	p6, [sp, #-12];		movxm	r20, #-0xd01
+
+00000b00 <.LBB4_1>:
+     b00: 1d 00 00 08 00 00    	mova	r0, #0x0;		nopx	
+     b06: fb 11 00 00 00 c2 f9 4f 00 10	mova	r1, #0x80;		st	r1, [sp, #-52];		sub	r0, r0, r1
+     b10: 9d 0d 6e 08 20 00    	mova	r0, #0x1;		lshl	r23, r1, r0
+     b16: 99 0d c0 15  	lshl	r0, r23, r0
+     b1a: 35 40 f9 cf 04 00    	mova	r19, #0x0;		st	r0, [sp, #-56]
+
+00000b20 <.LBB4_2>:
+     b20: b7 10 04 18 f0 01 00 00 00 08 20 00  	mova	r0, #0x1;		nopb	;		movxm	p0, #0x7c008
+     b2c: bd 0d 80 80 08 ff    	st	r2, [sp, #-64];		lshl	r0, r2, r0
+     b32: 59 16 20 1c  	mov	dj0, r0
+     b36: fb 30 ed 05 00 e6 f8 7f 65 02	lda.u16	r21, [p0, dj0];		st	r19, [sp, #-60];		add	r22, r23, r19
+
+00000b40 <.LBB4_3>:
+     b40: 99 30 c1 15  	add	r0, r23, r19
+     b44: 43 28 3b 1f ef 08 00 00      	lshl	r0, r0, r17;		mov	p6, p7
+     b4c: 59 16 20 18  	mov	m0, r0
+     b50: 19 08 0b 3e  	paddb	[p6], m0
+     b54: 59 80 02 06  	lda	r0, [p6, #0]
+     b58: 01 00        	nop	
+     b5a: 01 00        	nop	
+     b5c: 15 01 00 40 06 00    	jl	#0xc80
+     b62: 01 00        	nop	
+     b64: 01 00        	nop	
+     b66: 01 00        	nop	
+     b68: 99 5f 03 10  	mul	r1, r0, r21
+     b6c: 59 16 88 18  	mov	r2, r16
+     b70: c0 03 00 28 3b 1f ec 18 26 00 00 00 00 00 00 00      	nopb	;		nopa	;		nops	;		lshl	r1, r19, r17;		mov	p0, p7;		nopv	
+     b80: 43 28 4b 10 00 00 00 00      	nopx	;		mov	m0, r1
+     b88: 19 08 0b 38  	paddb	[p0], m0
+     b8c: 59 82 02 00  	lda	r1, [p0, #0]
+     b90: 01 00        	nop	
+     b92: 01 00        	nop	
+     b94: 01 00        	nop	
+     b96: 01 00        	nop	
+     b98: 01 00        	nop	
+     b9a: 01 00        	nop	
+     b9c: 99 00 45 10  	add	r2, r1, r16
+     ba0: 99 0c 76 10  	ltu	r27, r1, r0
+     ba4: 19 1e 82 10  	sel.nez	r1, r2, r1, r27
+     ba8: 99 01 42 10  	sub	r1, r1, r0
+     bac: 19 82 02 0e  	st	r1, [p6, #0]
+     bb0: 59 82 02 00  	lda	r1, [p0, #0]
+     bb4: 01 00        	nop	
+     bb6: 01 00        	nop	
+     bb8: 01 00        	nop	
+     bba: 01 00        	nop	
+     bbc: 01 00        	nop	
+     bbe: 19 07 e6 14  	add	r19, r19, #0x1
+     bc2: 99 00 40 10  	add	r0, r1, r0
+     bc6: 99 40 03 10  	add	r1, r0, r20
+     bca: 99 0c b6 14  	ltu	r27, r18, r0
+     bce: 19 0e 40 10  	sel.nez	r0, r1, r0, r27
+     bd2: 99 6c c3 14  	ltu	r1, r19, r22
+     bd6: 95 01 40 a0 05 08    	jnz	r1, #0xb40
+     bdc: 01 00        	nop	
+     bde: 01 00        	nop	
+     be0: 01 00        	nop	
+     be2: 01 00        	nop	
+     be4: 19 80 02 08  	st	r0, [p0, #0]
+     be8: 59 40 f9 07  	lda	r0, [sp, #-56]
+     bec: 59 e6 f8 07  	lda	r19, [sp, #-60]
+     bf0: 01 00        	nop	
+     bf2: 01 00        	nop	
+     bf4: 01 00        	nop	
+     bf6: 01 00        	nop	
+     bf8: 01 00        	nop	
+     bfa: 59 44 f8 07  	lda	r2, [sp, #-64]
+     bfe: 9d 00 e6 0c 00 20    	mova	r0, #0x100;		add	r19, r19, r0
+     c04: 99 0c c0 14  	ltu	r0, r19, r0
+     c08: 95 01 40 90 05 00    	jnz	r0, #0xb20
+     c0e: 01 00        	nop	
+     c10: 01 00        	nop	
+     c12: 01 00        	nop	
+     c14: 01 00        	nop	
+     c16: 19 07 84 10  	add	r2, r2, #0x1
+     c1a: 59 c2 f9 07  	lda	r1, [sp, #-52]
+     c1e: 01 00        	nop	
+     c20: 01 00        	nop	
+     c22: 01 00        	nop	
+     c24: 01 00        	nop	
+     c26: 01 00        	nop	
+     c28: 01 00        	nop	
+     c2a: 1d 07 42 08 e0 00    	mova	r0, #0x7;		add	r1, r1, #0x1
+     c30: 99 07 40 10  	eq	r0, r1, r0
+     c34: 95 01 00 80 05 00    	jz	r0, #0xb00
+     c3a: 01 00        	nop	
+     c3c: 01 00        	nop	
+     c3e: 01 00        	nop	
+     c40: 01 00        	nop	
+     c42: 01 00        	nop	
+     c44: d9 7e ff 07  	lda	p7, [sp, #-8]
+     c48: d9 f6 fe 07  	lda	p6, [sp, #-12]
+     c4c: 59 6e fe 07  	lda	r23, [sp, #-16]
+     c50: 59 ec fd 07  	lda	r22, [sp, #-20]
+     c54: d9 42 fa 07  	lda	lr, [sp, #-48]
+     c58: 59 6a fd 07  	lda	r21, [sp, #-24]
+     c5c: 59 e8 fc 07  	lda	r20, [sp, #-28]
+     c60: 59 66 fc 07  	lda	r19, [sp, #-32]
+     c64: 59 e4 fb 07  	lda	r18, [sp, #-36]
+     c68: 59 62 fb 07  	lda	r17, [sp, #-40]
+     c6c: 59 e0 fa 07  	lda	r16, [sp, #-44]
+     c70: 19 18 00 10  	ret lr	
+     c74: 01 00        	nop	
+     c76: 01 00        	nop	
+     c78: 01 00        	nop	
+     c7a: 01 00        	nop	
+     c7c: 19 c0 ff 3f  	paddb	[sp], #-0x40
