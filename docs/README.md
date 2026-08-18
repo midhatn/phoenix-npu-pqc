@@ -21,6 +21,8 @@ Read [M0–M33 Milestones and Mathematics](MILESTONES_AND_MATHEMATICS.md) for th
 
 - [ROADMAP.md](ROADMAP.md) — current status, milestone table, next-step planning, and toolchain events.
 - [PQC_COMPLETE_V1.md](PQC_COMPLETE_V1.md) — v1.0.0 Post-Quantum Cryptography release summary (M32 ML-KEM + M33 ML-DSA closure).
+- [PQC_DEVICE_RESIDENCY_ROADMAP.md](PQC_DEVICE_RESIDENCY_ROADMAP.md) — DR0–DR15 device-residency research sequence, completion gates, and the current DR2 block.
+- [PQC_DR2_EXPERT_ESCALATION_20260818.md](PQC_DR2_EXPERT_ESCALATION_20260818.md) — expert handoff for the DR2d integrated physical failure, including the DR2a/DR2b/DR2c completed sub-milestones and the preserved diagnostic evidence.
 - [M32_FIPS203_MLKEM.md](M32_FIPS203_MLKEM.md) — FIPS 203 ML-KEM milestone entry point (M32a–M32e gates, all ✅).
 - [CITATION_AUDIT.md](CITATION_AUDIT.md) — 2026-08-15 whole-repo citation pass.
 - Root [Installation](../README.md#installation) — new-user path: clone, then `py .\install.py` (Xilinx XRT, Xilinx MLIR-AIE / IRON, LLVM Peano).

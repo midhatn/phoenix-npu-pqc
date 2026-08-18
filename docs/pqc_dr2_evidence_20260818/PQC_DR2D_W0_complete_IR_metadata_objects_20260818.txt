@@ -1,0 +1,2029 @@
+CACHE=C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6
+===== RAW FILE BEGIN: opted_main_core_0_2.ll =====
+PATH=C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\opted_main_core_0_2.ll
+SIZE=3516
+SHA256=F17F0A6012867C163FBAE5BDFA6E6C9A9686781F73796E19065F4342F7ABA998
+; ModuleID = 'C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\peano-linked_main_core_0_2.ll'
+source_filename = "LLVMDialectModule"
+target datalayout = "e-m:e-p:20:32-i1:8:32-i8:8:32-i16:16:32-i32:32:32-f32:32:32-i64:32-f64:32-a:0:32-n32"
+target triple = "aie2"
+
+@_anonymous0 = external local_unnamed_addr global [3 x i32]
+@dr2d_d_cons_buff_1 = external global [32 x i8]
+@dr2d_d_cons_buff_0 = external global [32 x i8]
+@dr2d_descriptor_cons_buff_1 = external global [16 x i8]
+@dr2d_descriptor_cons_buff_0 = external global [16 x i8]
+@dr2d_secret_token_buff_1 = external global [2096 x i8]
+@dr2d_secret_token_buff_0 = external global [2096 x i8]
+
+; Function Attrs: mustprogress nocallback nofree nosync nounwind willreturn
+declare void @llvm.aie2.acquire(i32, i32) #0
+
+; Function Attrs: mustprogress nocallback nofree nosync nounwind willreturn
+declare void @llvm.aie2.release(i32, i32) #0
+
+declare void @dr2d_kpke_keygen_seed_noise(ptr, ptr, ptr) local_unnamed_addr
+
+define void @core_0_2() local_unnamed_addr {
+  store i32 0, ptr @_anonymous0, align 4
+  store i32 0, ptr getelementptr inbounds nuw (i8, ptr @_anonymous0, i20 4), align 4
+  store i32 0, ptr getelementptr inbounds nuw (i8, ptr @_anonymous0, i20 8), align 4
+  br label %1
+
+1:                                                ; preds = %0, %1
+  %2 = phi i64 [ 0, %0 ], [ %23, %1 ]
+  tail call void @llvm.aie2.acquire(i32 49, i32 -1)
+  %3 = load i32, ptr @_anonymous0, align 4
+  %cond = icmp eq i32 %3, 1
+  %spec.select = select i1 %cond, ptr @dr2d_d_cons_buff_1, ptr @dr2d_d_cons_buff_0
+  tail call void @llvm.aie2.acquire(i32 51, i32 -1)
+  %4 = load i32, ptr getelementptr inbounds nuw (i8, ptr @_anonymous0, i20 4), align 4
+  %cond1 = icmp eq i32 %4, 1
+  %5 = select i1 %cond1, ptr @dr2d_descriptor_cons_buff_1, ptr @dr2d_descriptor_cons_buff_0
+  tail call void @llvm.aie2.acquire(i32 52, i32 -1)
+  %6 = load i32, ptr getelementptr inbounds nuw (i8, ptr @_anonymous0, i20 8), align 4
+  %cond2 = icmp eq i32 %6, 1
+  %7 = select i1 %cond2, ptr @dr2d_secret_token_buff_1, ptr @dr2d_secret_token_buff_0
+  tail call void @dr2d_kpke_keygen_seed_noise(ptr nonnull %spec.select, ptr nonnull %5, ptr nonnull %7)
+  tail call void @llvm.aie2.release(i32 53, i32 1)
+  %8 = load i32, ptr getelementptr inbounds nuw (i8, ptr @_anonymous0, i20 8), align 4
+  %9 = add i32 %8, 1
+  %10 = icmp sgt i32 %9, 1
+  %11 = add i32 %8, -1
+  %12 = select i1 %10, i32 %11, i32 %9
+  store i32 %12, ptr getelementptr inbounds nuw (i8, ptr @_anonymous0, i20 8), align 4
+  tail call void @llvm.aie2.release(i32 48, i32 1)
+  %13 = load i32, ptr @_anonymous0, align 4
+  %14 = add i32 %13, 1
+  %15 = icmp sgt i32 %14, 1
+  %16 = add i32 %13, -1
+  %17 = select i1 %15, i32 %16, i32 %14
+  store i32 %17, ptr @_anonymous0, align 4
+  tail call void @llvm.aie2.release(i32 50, i32 1)
+  %18 = load i32, ptr getelementptr inbounds nuw (i8, ptr @_anonymous0, i20 4), align 4
+  %19 = add i32 %18, 1
+  %20 = icmp sgt i32 %19, 1
+  %21 = add i32 %18, -1
+  %22 = select i1 %20, i32 %21, i32 %19
+  store i32 %22, ptr getelementptr inbounds nuw (i8, ptr @_anonymous0, i20 4), align 4
+  %23 = add nuw nsw i64 %2, 1
+  %.not = icmp eq i64 %23, 9223372036854775807
+  br i1 %.not, label %24, label %1
+
+24:                                               ; preds = %1
+  ret void
+}
+
+attributes #0 = { mustprogress nocallback nofree nosync nounwind willreturn }
+
+!llvm.module.flags = !{!0}
+
+!0 = !{i32 2, !"Debug Info Version", i32 3}
+
+===== RAW FILE END: opted_main_core_0_2.ll =====
+===== RAW FILE BEGIN: peano-compat_main_core_0_2.ll =====
+PATH=C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\peano-compat_main_core_0_2.ll
+SIZE=6806
+SHA256=EC419DFBEB3B9666DA3F23AC3D241BEDE6B966D8BC6607D1D0AC47EF93FBF188
+; ModuleID = 'LLVMDialectModule'
+source_filename = "LLVMDialectModule"
+target triple = "aie2"
+
+@_anonymous5 = external global [2 x i32]
+@_anonymous4 = external global [2 x i32]
+@_anonymous3 = external global [2 x i32]
+@_anonymous2 = external global [2 x i32]
+@_anonymous1 = external global [2 x i32]
+@_anonymous0 = external global [3 x i32]
+@dr2d_d_cons_buff_1 = external global [32 x i8]
+@dr2d_d_cons_buff_0 = external global [32 x i8]
+@dr2d_descriptor_cons_buff_1 = external global [16 x i8]
+@dr2d_descriptor_cons_buff_0 = external global [16 x i8]
+@dr2d_final_token_buff_1 = external global [2112 x i8]
+@dr2d_final_token_buff_0 = external global [2112 x i8]
+@dr2d_result_buff_1 = external global [1588 x i8]
+@dr2d_result_buff_0 = external global [1588 x i8]
+@dr2d_row0_matrix_buff_1 = external global [3120 x i8]
+@dr2d_row0_matrix_buff_0 = external global [3120 x i8]
+@dr2d_row1_matrix_buff_1 = external global [3120 x i8]
+@dr2d_row1_matrix_buff_0 = external global [3120 x i8]
+@dr2d_row1_matrix_cons_buff_1 = external global [3120 x i8]
+@dr2d_row1_matrix_cons_buff_0 = external global [3120 x i8]
+@dr2d_row_state_buff_1 = external global [2096 x i8]
+@dr2d_row_state_buff_0 = external global [2096 x i8]
+@dr2d_secret_token_buff_1 = external global [2096 x i8]
+@dr2d_secret_token_buff_0 = external global [2096 x i8]
+
+declare void @debug_i32(i32)
+
+; Unknown intrinsic
+declare void @llvm.aie2.event(i32)
+
+; Unknown intrinsic
+declare void @llvm.aie2.put.ms(i32, i32)
+
+; Unknown intrinsic
+declare { i32, i32 } @llvm.aie2.get.ss()
+
+; Unknown intrinsic
+declare void @llvm.aie2.mcd.write.vec(<16 x i32>, i32)
+
+; Unknown intrinsic
+declare <16 x i32> @llvm.aie2.scd.read.vec(i32)
+
+; Unknown intrinsic
+declare void @llvm.aie2.acquire(i32, i32)
+
+; Unknown intrinsic
+declare void @llvm.aie2.release(i32, i32)
+
+; Unknown intrinsic
+declare void @llvm.aie2.set.ctrl.reg(i32, i32)
+
+declare void @dr2d_kpke_keygen_seed_noise(ptr, ptr, ptr)
+
+declare void @dr2d_kpke_keygen_row0_expand(ptr, ptr)
+
+declare void @dr2d_kpke_keygen_row0_accumulate(ptr, ptr)
+
+declare void @dr2d_kpke_keygen_row1_expand(ptr, ptr)
+
+declare void @dr2d_kpke_keygen_row1_accumulate(ptr, ptr)
+
+declare void @dr2d_kpke_keygen_serialize(ptr, ptr)
+
+define void @core_0_2() {
+  store i32 0, ptr @_anonymous0
+  store i32 0, ptr getelementptr inbounds (i8, ptr @_anonymous0, i64 4)
+  store i32 0, ptr getelementptr inbounds (i8, ptr @_anonymous0, i64 8)
+  br label %1
+
+1:                                                ; preds = %37, %0
+  %2 = phi i64 [ %56, %37 ], [ 0, %0 ]
+  %3 = phi i32 [ %44, %37 ], [ 0, %0 ]
+  %4 = phi i32 [ %50, %37 ], [ 0, %0 ]
+  %5 = phi i32 [ %38, %37 ], [ 0, %0 ]
+  %6 = icmp slt i64 %2, 9223372036854775807
+  br i1 %6, label %7, label %57
+
+7:                                                ; preds = %1
+  %8 = sub i32 1, %3
+  %9 = call i32 @llvm.smax.i32(i32 %8, i32 0)
+  %10 = sub i32 0, %9
+  call void @llvm.aie2.acquire(i32 49, i32 %10)
+  %11 = add i32 %3, %9
+  %12 = load i32, ptr @_anonymous0
+  %13 = sext i32 %12 to i64
+  switch i64 %13, label %14 [
+    i64 0, label %58
+    i64 1, label %60
+  ]
+
+14:                                               ; preds = %58, %60, %7
+  %15 = phi ptr [ %61, %60 ], [ %59, %58 ], [ @dr2d_d_cons_buff_0, %7 ]
+  %16 = getelementptr [32 x i8], ptr %15, i32 0, i32 0
+  br label %17
+
+17:                                               ; preds = %14
+  %18 = sub i32 1, %4
+  %19 = call i32 @llvm.smax.i32(i32 %18, i32 0)
+  %20 = sub i32 0, %19
+  call void @llvm.aie2.acquire(i32 51, i32 %20)
+  %21 = add i32 %4, %19
+  %22 = load i32, ptr getelementptr inbounds (i8, ptr @_anonymous0, i64 4)
+  %23 = sext i32 %22 to i64
+  switch i64 %23, label %24 [
+    i64 0, label %62
+    i64 1, label %64
+  ]
+
+24:                                               ; preds = %62, %64, %17
+  %25 = phi ptr [ %65, %64 ], [ %63, %62 ], [ @dr2d_descriptor_cons_buff_0, %17 ]
+  %26 = getelementptr [16 x i8], ptr %25, i32 0, i32 0
+  br label %27
+
+27:                                               ; preds = %24
+  %28 = sub i32 1, %5
+  %29 = call i32 @llvm.smax.i32(i32 %28, i32 0)
+  %30 = sub i32 0, %29
+  call void @llvm.aie2.acquire(i32 52, i32 %30)
+  %31 = add i32 %5, %29
+  %32 = load i32, ptr getelementptr inbounds (i8, ptr @_anonymous0, i64 8)
+  %33 = sext i32 %32 to i64
+  switch i64 %33, label %34 [
+    i64 0, label %66
+    i64 1, label %68
+  ]
+
+34:                                               ; preds = %66, %68, %27
+  %35 = phi ptr [ %69, %68 ], [ %67, %66 ], [ @dr2d_secret_token_buff_0, %27 ]
+  %36 = getelementptr [2096 x i8], ptr %35, i32 0, i32 0
+  br label %37
+
+37:                                               ; preds = %34
+  call void @dr2d_kpke_keygen_seed_noise(ptr %16, ptr %26, ptr %36)
+  call void @llvm.aie2.release(i32 53, i32 1)
+  %38 = sub i32 %31, 1
+  %39 = load i32, ptr getelementptr inbounds (i8, ptr @_anonymous0, i64 8)
+  %40 = add i32 %39, 1
+  %41 = icmp sge i32 %40, 2
+  %42 = add i32 %39, -1
+  %43 = select i1 %41, i32 %42, i32 %40
+  store i32 %43, ptr getelementptr inbounds (i8, ptr @_anonymous0, i64 8)
+  call void @llvm.aie2.release(i32 48, i32 1)
+  %44 = sub i32 %11, 1
+  %45 = load i32, ptr @_anonymous0
+  %46 = add i32 %45, 1
+  %47 = icmp sge i32 %46, 2
+  %48 = add i32 %45, -1
+  %49 = select i1 %47, i32 %48, i32 %46
+  store i32 %49, ptr @_anonymous0
+  call void @llvm.aie2.release(i32 50, i32 1)
+  %50 = sub i32 %21, 1
+  %51 = load i32, ptr getelementptr inbounds (i8, ptr @_anonymous0, i64 4)
+  %52 = add i32 %51, 1
+  %53 = icmp sge i32 %52, 2
+  %54 = add i32 %51, -1
+  %55 = select i1 %53, i32 %54, i32 %52
+  store i32 %55, ptr getelementptr inbounds (i8, ptr @_anonymous0, i64 4)
+  %56 = add i64 %2, 1
+  br label %1
+
+57:                                               ; preds = %1
+  ret void
+
+58:                                               ; preds = %7
+  %59 = phi ptr [ @dr2d_d_cons_buff_0, %7 ]
+  br label %14
+
+60:                                               ; preds = %7
+  %61 = phi ptr [ @dr2d_d_cons_buff_1, %7 ]
+  br label %14
+
+62:                                               ; preds = %17
+  %63 = phi ptr [ @dr2d_descriptor_cons_buff_0, %17 ]
+  br label %24
+
+64:                                               ; preds = %17
+  %65 = phi ptr [ @dr2d_descriptor_cons_buff_1, %17 ]
+  br label %24
+
+66:                                               ; preds = %27
+  %67 = phi ptr [ @dr2d_secret_token_buff_0, %27 ]
+  br label %34
+
+68:                                               ; preds = %27
+  %69 = phi ptr [ @dr2d_secret_token_buff_1, %27 ]
+  br label %34
+}
+
+; Function Attrs: nocallback nofree nosync nounwind speculatable willreturn memory(none)
+declare i32 @llvm.smax.i32(i32, i32) #0
+
+attributes #0 = { nocallback nofree nosync nounwind speculatable willreturn memory(none) }
+
+!llvm.module.flags = !{!0}
+
+!0 = !{i32 2, !"Debug Info Version", i32 3}
+
+===== RAW FILE END: peano-compat_main_core_0_2.ll =====
+===== RAW FILE BEGIN: peano-linked_main_core_0_2.ll =====
+PATH=C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\peano-linked_main_core_0_2.ll
+SIZE=6806
+SHA256=EC419DFBEB3B9666DA3F23AC3D241BEDE6B966D8BC6607D1D0AC47EF93FBF188
+; ModuleID = 'LLVMDialectModule'
+source_filename = "LLVMDialectModule"
+target triple = "aie2"
+
+@_anonymous5 = external global [2 x i32]
+@_anonymous4 = external global [2 x i32]
+@_anonymous3 = external global [2 x i32]
+@_anonymous2 = external global [2 x i32]
+@_anonymous1 = external global [2 x i32]
+@_anonymous0 = external global [3 x i32]
+@dr2d_d_cons_buff_1 = external global [32 x i8]
+@dr2d_d_cons_buff_0 = external global [32 x i8]
+@dr2d_descriptor_cons_buff_1 = external global [16 x i8]
+@dr2d_descriptor_cons_buff_0 = external global [16 x i8]
+@dr2d_final_token_buff_1 = external global [2112 x i8]
+@dr2d_final_token_buff_0 = external global [2112 x i8]
+@dr2d_result_buff_1 = external global [1588 x i8]
+@dr2d_result_buff_0 = external global [1588 x i8]
+@dr2d_row0_matrix_buff_1 = external global [3120 x i8]
+@dr2d_row0_matrix_buff_0 = external global [3120 x i8]
+@dr2d_row1_matrix_buff_1 = external global [3120 x i8]
+@dr2d_row1_matrix_buff_0 = external global [3120 x i8]
+@dr2d_row1_matrix_cons_buff_1 = external global [3120 x i8]
+@dr2d_row1_matrix_cons_buff_0 = external global [3120 x i8]
+@dr2d_row_state_buff_1 = external global [2096 x i8]
+@dr2d_row_state_buff_0 = external global [2096 x i8]
+@dr2d_secret_token_buff_1 = external global [2096 x i8]
+@dr2d_secret_token_buff_0 = external global [2096 x i8]
+
+declare void @debug_i32(i32)
+
+; Unknown intrinsic
+declare void @llvm.aie2.event(i32)
+
+; Unknown intrinsic
+declare void @llvm.aie2.put.ms(i32, i32)
+
+; Unknown intrinsic
+declare { i32, i32 } @llvm.aie2.get.ss()
+
+; Unknown intrinsic
+declare void @llvm.aie2.mcd.write.vec(<16 x i32>, i32)
+
+; Unknown intrinsic
+declare <16 x i32> @llvm.aie2.scd.read.vec(i32)
+
+; Unknown intrinsic
+declare void @llvm.aie2.acquire(i32, i32)
+
+; Unknown intrinsic
+declare void @llvm.aie2.release(i32, i32)
+
+; Unknown intrinsic
+declare void @llvm.aie2.set.ctrl.reg(i32, i32)
+
+declare void @dr2d_kpke_keygen_seed_noise(ptr, ptr, ptr)
+
+declare void @dr2d_kpke_keygen_row0_expand(ptr, ptr)
+
+declare void @dr2d_kpke_keygen_row0_accumulate(ptr, ptr)
+
+declare void @dr2d_kpke_keygen_row1_expand(ptr, ptr)
+
+declare void @dr2d_kpke_keygen_row1_accumulate(ptr, ptr)
+
+declare void @dr2d_kpke_keygen_serialize(ptr, ptr)
+
+define void @core_0_2() {
+  store i32 0, ptr @_anonymous0
+  store i32 0, ptr getelementptr inbounds (i8, ptr @_anonymous0, i64 4)
+  store i32 0, ptr getelementptr inbounds (i8, ptr @_anonymous0, i64 8)
+  br label %1
+
+1:                                                ; preds = %37, %0
+  %2 = phi i64 [ %56, %37 ], [ 0, %0 ]
+  %3 = phi i32 [ %44, %37 ], [ 0, %0 ]
+  %4 = phi i32 [ %50, %37 ], [ 0, %0 ]
+  %5 = phi i32 [ %38, %37 ], [ 0, %0 ]
+  %6 = icmp slt i64 %2, 9223372036854775807
+  br i1 %6, label %7, label %57
+
+7:                                                ; preds = %1
+  %8 = sub i32 1, %3
+  %9 = call i32 @llvm.smax.i32(i32 %8, i32 0)
+  %10 = sub i32 0, %9
+  call void @llvm.aie2.acquire(i32 49, i32 %10)
+  %11 = add i32 %3, %9
+  %12 = load i32, ptr @_anonymous0
+  %13 = sext i32 %12 to i64
+  switch i64 %13, label %14 [
+    i64 0, label %58
+    i64 1, label %60
+  ]
+
+14:                                               ; preds = %58, %60, %7
+  %15 = phi ptr [ %61, %60 ], [ %59, %58 ], [ @dr2d_d_cons_buff_0, %7 ]
+  %16 = getelementptr [32 x i8], ptr %15, i32 0, i32 0
+  br label %17
+
+17:                                               ; preds = %14
+  %18 = sub i32 1, %4
+  %19 = call i32 @llvm.smax.i32(i32 %18, i32 0)
+  %20 = sub i32 0, %19
+  call void @llvm.aie2.acquire(i32 51, i32 %20)
+  %21 = add i32 %4, %19
+  %22 = load i32, ptr getelementptr inbounds (i8, ptr @_anonymous0, i64 4)
+  %23 = sext i32 %22 to i64
+  switch i64 %23, label %24 [
+    i64 0, label %62
+    i64 1, label %64
+  ]
+
+24:                                               ; preds = %62, %64, %17
+  %25 = phi ptr [ %65, %64 ], [ %63, %62 ], [ @dr2d_descriptor_cons_buff_0, %17 ]
+  %26 = getelementptr [16 x i8], ptr %25, i32 0, i32 0
+  br label %27
+
+27:                                               ; preds = %24
+  %28 = sub i32 1, %5
+  %29 = call i32 @llvm.smax.i32(i32 %28, i32 0)
+  %30 = sub i32 0, %29
+  call void @llvm.aie2.acquire(i32 52, i32 %30)
+  %31 = add i32 %5, %29
+  %32 = load i32, ptr getelementptr inbounds (i8, ptr @_anonymous0, i64 8)
+  %33 = sext i32 %32 to i64
+  switch i64 %33, label %34 [
+    i64 0, label %66
+    i64 1, label %68
+  ]
+
+34:                                               ; preds = %66, %68, %27
+  %35 = phi ptr [ %69, %68 ], [ %67, %66 ], [ @dr2d_secret_token_buff_0, %27 ]
+  %36 = getelementptr [2096 x i8], ptr %35, i32 0, i32 0
+  br label %37
+
+37:                                               ; preds = %34
+  call void @dr2d_kpke_keygen_seed_noise(ptr %16, ptr %26, ptr %36)
+  call void @llvm.aie2.release(i32 53, i32 1)
+  %38 = sub i32 %31, 1
+  %39 = load i32, ptr getelementptr inbounds (i8, ptr @_anonymous0, i64 8)
+  %40 = add i32 %39, 1
+  %41 = icmp sge i32 %40, 2
+  %42 = add i32 %39, -1
+  %43 = select i1 %41, i32 %42, i32 %40
+  store i32 %43, ptr getelementptr inbounds (i8, ptr @_anonymous0, i64 8)
+  call void @llvm.aie2.release(i32 48, i32 1)
+  %44 = sub i32 %11, 1
+  %45 = load i32, ptr @_anonymous0
+  %46 = add i32 %45, 1
+  %47 = icmp sge i32 %46, 2
+  %48 = add i32 %45, -1
+  %49 = select i1 %47, i32 %48, i32 %46
+  store i32 %49, ptr @_anonymous0
+  call void @llvm.aie2.release(i32 50, i32 1)
+  %50 = sub i32 %21, 1
+  %51 = load i32, ptr getelementptr inbounds (i8, ptr @_anonymous0, i64 4)
+  %52 = add i32 %51, 1
+  %53 = icmp sge i32 %52, 2
+  %54 = add i32 %51, -1
+  %55 = select i1 %53, i32 %54, i32 %52
+  store i32 %55, ptr getelementptr inbounds (i8, ptr @_anonymous0, i64 4)
+  %56 = add i64 %2, 1
+  br label %1
+
+57:                                               ; preds = %1
+  ret void
+
+58:                                               ; preds = %7
+  %59 = phi ptr [ @dr2d_d_cons_buff_0, %7 ]
+  br label %14
+
+60:                                               ; preds = %7
+  %61 = phi ptr [ @dr2d_d_cons_buff_1, %7 ]
+  br label %14
+
+62:                                               ; preds = %17
+  %63 = phi ptr [ @dr2d_descriptor_cons_buff_0, %17 ]
+  br label %24
+
+64:                                               ; preds = %17
+  %65 = phi ptr [ @dr2d_descriptor_cons_buff_1, %17 ]
+  br label %24
+
+66:                                               ; preds = %27
+  %67 = phi ptr [ @dr2d_secret_token_buff_0, %27 ]
+  br label %34
+
+68:                                               ; preds = %27
+  %69 = phi ptr [ @dr2d_secret_token_buff_1, %27 ]
+  br label %34
+}
+
+; Function Attrs: nocallback nofree nosync nounwind speculatable willreturn memory(none)
+declare i32 @llvm.smax.i32(i32, i32) #0
+
+attributes #0 = { nocallback nofree nosync nounwind speculatable willreturn memory(none) }
+
+!llvm.module.flags = !{!0}
+
+!0 = !{i32 2, !"Debug Info Version", i32 3}
+
+===== RAW FILE END: peano-linked_main_core_0_2.ll =====
+===== RAW FILE BEGIN: deps.json =====
+PATH=C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\deps.json
+SIZE=20601
+SHA256=44553C157965681D141B93FA1F26651C88AFF9DC0FC587462B68F725EEE684DE
+{"version": 1, "complete": true, "inputs": [{"path": "C:\\Users\\midhat\\.npu\\cache\\04f147d54cb01d160974a6e6\\dr2d_kpke_keygen_row0_accumulate.cc", "size": 2359, "mtime": 1787013343.2043927, "sha256": "a577360c6e24296576daedfdc537d04765aaebfdc74eeadd34358437986e0622"}, {"path": "C:\\Users\\midhat\\.npu\\cache\\04f147d54cb01d160974a6e6\\dr2d_kpke_keygen_row0_expand.cc", "size": 2032, "mtime": 1787013343.2043927, "sha256": "d95106c0f01a1a99aee21cef3fab704b1e57bd6d1d4e066f7e421f0dd0b53986"}, {"path": "C:\\Users\\midhat\\.npu\\cache\\04f147d54cb01d160974a6e6\\dr2d_kpke_keygen_row1_accumulate.cc", "size": 2451, "mtime": 1787013343.2053926, "sha256": "235c69d008e7db656c26053a404980b7de139156c8c4671ac94a04c7fb1c9806"}, {"path": "C:\\Users\\midhat\\.npu\\cache\\04f147d54cb01d160974a6e6\\dr2d_kpke_keygen_row1_expand.cc", "size": 1985, "mtime": 1787013343.2043927, "sha256": "c893d0158f85a00c6dfd6a7f20c6aa2c5259d397ac64c32d4c3f9e8cb82c13c8"}, {"path": "C:\\Users\\midhat\\.npu\\cache\\04f147d54cb01d160974a6e6\\dr2d_kpke_keygen_seed_noise.cc", "size": 4753, "mtime": 1787013343.2033951, "sha256": "2f94e2995706ac5636f35c66167e5dd8f54ac54b618c200bf4ee45b8b754ceaf"}, {"path": "C:\\Users\\midhat\\.npu\\cache\\04f147d54cb01d160974a6e6\\dr2d_kpke_keygen_serialize.cc", "size": 4318, "mtime": 1787007181.181919, "sha256": "23f691bc40410f7bdf9573a14bc01c590a3e9d2a36b07e807e415b033d49780c"}, {"path": "C:\\phoenix-sdr-dsp\\phoenix_sdr_dsp\\pqc\\kernels\\dr1_keccak_f1600.hpp", "size": 4717, "mtime": 1786986773.1075926, "sha256": "0470fb39277478a368004a49e551a3411d8f9185b492ac01f85d2297bcea3c1f"}, {"path": "C:\\phoenix-sdr-dsp\\phoenix_sdr_dsp\\pqc\\kernels\\dr2d_mlkem512_kpke_keygen_internal.hpp", "size": 13607, "mtime": 1787013343.2033951, "sha256": "16d61e6ada4d7de384b3981cc76d3de8319ce2bec999727d4847567e7e1f3519"}, {"path": "C:\\phoenix-sdr-dsp\\phoenix_sdr_dsp\\pqc\\kernels\\dr2d_mlkem512_kpke_keygen_row0_accumulate.cc", "size": 2359, "mtime": 1787013343.2043927, "sha256": "a577360c6e24296576daedfdc537d04765aaebfdc74eeadd34358437986e0622"}, {"path": "C:\\phoenix-sdr-dsp\\phoenix_sdr_dsp\\pqc\\kernels\\dr2d_mlkem512_kpke_keygen_row0_expand.cc", "size": 2032, "mtime": 1787013343.2043927, "sha256": "d95106c0f01a1a99aee21cef3fab704b1e57bd6d1d4e066f7e421f0dd0b53986"}, {"path": "C:\\phoenix-sdr-dsp\\phoenix_sdr_dsp\\pqc\\kernels\\dr2d_mlkem512_kpke_keygen_row1_accumulate.cc", "size": 2451, "mtime": 1787013343.2053926, "sha256": "235c69d008e7db656c26053a404980b7de139156c8c4671ac94a04c7fb1c9806"}, {"path": "C:\\phoenix-sdr-dsp\\phoenix_sdr_dsp\\pqc\\kernels\\dr2d_mlkem512_kpke_keygen_row1_expand.cc", "size": 1985, "mtime": 1787013343.2043927, "sha256": "c893d0158f85a00c6dfd6a7f20c6aa2c5259d397ac64c32d4c3f9e8cb82c13c8"}, {"path": "C:\\phoenix-sdr-dsp\\phoenix_sdr_dsp\\pqc\\kernels\\dr2d_mlkem512_kpke_keygen_seed.cc", "size": 4753, "mtime": 1787013343.2033951, "sha256": "2f94e2995706ac5636f35c66167e5dd8f54ac54b618c200bf4ee45b8b754ceaf"}, {"path": "C:\\phoenix-sdr-dsp\\phoenix_sdr_dsp\\pqc\\kernels\\dr2d_mlkem512_kpke_keygen_serialize.cc", "size": 4318, "mtime": 1787007181.181919, "sha256": "23f691bc40410f7bdf9573a14bc01c590a3e9d2a36b07e807e415b033d49780c"}, {"path": "C:\\phoenix-sdr-dsp\\third_party\\mlir-aie\\ironenv\\Lib\\site-packages\\llvm-aie\\include\\aie2-none-unknown-elf\\c++\\v1\\__config_site", "size": 1937, "mtime": 1786734055.6726668, "sha256": "39be01d9c2f14669596f5511cef24068b7a78365bba3068f08706f6fd29453ce"}, {"path": "C:\\phoenix-sdr-dsp\\third_party\\mlir-aie\\ironenv\\Lib\\site-packages\\llvm-aie\\include\\aie2-none-unknown-elf\\llvm-libc-macros\\stdint-macros.h", "size": 27951, "mtime": 1786734055.679709, "sha256": "2de52e163a2bf0251a5ebde3777dfa7b4cc39a3baa94b9830f4bef81b7a53f77"}, {"path": "C:\\phoenix-sdr-dsp\\third_party\\mlir-aie\\ironenv\\Lib\\site-packages\\llvm-aie\\include\\aie2-none-unknown-elf\\stdint.h", "size": 513, "mtime": 1786734055.6696694, "sha256": "33e39e9498af5cd38bd43149adadf2fce5b7e6e58fac6b08c9c9ae4f22ba273e"}, {"path": "C:\\phoenix-sdr-dsp\\third_party\\mlir-aie\\ironenv\\Lib\\site-packages\\llvm-aie\\include\\c++\\v1\\__config", "size": 53890, "mtime": 1786734055.7612412, "sha256": "8e88c77bcfc12525c67519936748de04c3f227572cc7309655204e635f0f07c7"}, {"path": "C:\\phoenix-sdr-dsp\\third_party\\mlir-aie\\ironenv\\Lib\\site-packages\\llvm-aie\\include\\c++\\v1\\__configuration\\abi.h", "size": 11252, "mtime": 1786734055.9715557, "sha256": "fbfead96b75fac7757abe3864b01d098e83c1228288f4bc9c4b2ee47da8c42c1"}, {"path": "C:\\phoenix-sdr-dsp\\third_party\\mlir-aie\\ironenv\\Lib\\site-packages\\llvm-aie\\include\\c++\\v1\\__configuration\\availability.h", "size": 24081, "mtime": 1786734055.9715557, "sha256": "098ae5848d7415e089507f038c5bc39f72e09fd0f0da40f2ed1dc8600851e1e8"}, {"path": "C:\\phoenix-sdr-dsp\\third_party\\mlir-aie\\ironenv\\Lib\\site-packages\\llvm-aie\\include\\c++\\v1\\__configuration\\compiler.h", "size": 1693, "mtime": 1786734055.9725542, "sha256": "d7238c6e075cce2ff302e947fc4f22f62a619efb6d5218b185edca66a3e70160"}, {"path": "C:\\phoenix-sdr-dsp\\third_party\\mlir-aie\\ironenv\\Lib\\site-packages\\llvm-aie\\include\\c++\\v1\\__configuration\\language.h", "size": 1417, "mtime": 1786734055.9725542, "sha256": "1af2851db226ce3368438339d9ba2f66dce8209e2388eb515a68b5bce5413481"}, {"path": "C:\\phoenix-sdr-dsp\\third_party\\mlir-aie\\ironenv\\Lib\\site-packages\\llvm-aie\\include\\c++\\v1\\__configuration\\platform.h", "size": 2213, "mtime": 1786734055.9725542, "sha256": "efc95e88b9724b38387256a7b8b889f6fbb3b854f31edc5571bef2cdbf1ba1dc"}, {"path": "C:\\phoenix-sdr-dsp\\third_party\\mlir-aie\\ironenv\\Lib\\site-packages\\llvm-aie\\include\\c++\\v1\\__cstddef\\max_align_t.h", "size": 760, "mtime": 1786734055.97603, "sha256": "5d1eb26e300760b356991bd88e735ef1d9bf6cf62007470e49fbc02eedf465a1"}, {"path": "C:\\phoenix-sdr-dsp\\third_party\\mlir-aie\\ironenv\\Lib\\site-packages\\llvm-aie\\include\\c++\\v1\\__cstddef\\size_t.h", "size": 678, "mtime": 1786734055.9780312, "sha256": "24fcce5e6d3c4a731254461a28148abe1f571c2e8790ab50442446ded352846b"}, {"path": "C:\\phoenix-sdr-dsp\\third_party\\mlir-aie\\ironenv\\Lib\\site-packages\\llvm-aie\\include\\c++\\v1\\__exception\\exception.h", "size": 3295, "mtime": 1786734055.9800267, "sha256": "35f5ba4cc29997ca90f616f38692d6792980171efb8466f624bb4cdf4dc9d579"}, {"path": "C:\\phoenix-sdr-dsp\\third_party\\mlir-aie\\ironenv\\Lib\\site-packages\\llvm-aie\\include\\c++\\v1\\__new\\align_val_t.h", "size": 917, "mtime": 1786734056.1048813, "sha256": "386b47afc9d4facd51a7fa5fb450e6ffc7b25999c1293454d213af4cbd780c4b"}, {"path": "C:\\phoenix-sdr-dsp\\third_party\\mlir-aie\\ironenv\\Lib\\site-packages\\llvm-aie\\include\\c++\\v1\\__new\\allocate.h", "size": 3723, "mtime": 1786734056.1048813, "sha256": "7eadb665700798ee14106e58397e1732638ea3582460bd01ba1533a6548fba05"}, {"path": "C:\\phoenix-sdr-dsp\\third_party\\mlir-aie\\ironenv\\Lib\\site-packages\\llvm-aie\\include\\c++\\v1\\__new\\destroying_delete_t.h", "size": 946, "mtime": 1786734056.105881, "sha256": "9ebf03678c03cdda1621fa2940086cab2a3ebb56f0658fa64572d0a24a7cbb25"}, {"path": "C:\\phoenix-sdr-dsp\\third_party\\mlir-aie\\ironenv\\Lib\\site-packages\\llvm-aie\\include\\c++\\v1\\__new\\exceptions.h", "size": 2544, "mtime": 1786734056.1063516, "sha256": "0a553f0d4476c94b767d71f598eb31fcb48170ad8d7d9504d6b0166f34fc0673"}, {"path": "C:\\phoenix-sdr-dsp\\third_party\\mlir-aie\\ironenv\\Lib\\site-packages\\llvm-aie\\include\\c++\\v1\\__new\\global_new_delete.h", "size": 3522, "mtime": 1786734056.1074455, "sha256": "85bd11b4943da45518d3f7e24a2232907eddd137e1d841ce99223415ed9b50ea"}, {"path": "C:\\phoenix-sdr-dsp\\third_party\\mlir-aie\\ironenv\\Lib\\site-packages\\llvm-aie\\include\\c++\\v1\\__new\\interference_size.h", "size": 1090, "mtime": 1786734056.1074455, "sha256": "0ee589e64b68c34db4f328a3ec11215cf0b661fb898a49645116ba2a67e7514f"}, {"path": "C:\\phoenix-sdr-dsp\\third_party\\mlir-aie\\ironenv\\Lib\\site-packages\\llvm-aie\\include\\c++\\v1\\__new\\launder.h", "size": 1173, "mtime": 1786734056.1074455, "sha256": "f2dac329b1b88611d97b00117de3dd6d940ff3a4629230ed9f29ecffd2b7c4e3"}, {"path": "C:\\phoenix-sdr-dsp\\third_party\\mlir-aie\\ironenv\\Lib\\site-packages\\llvm-aie\\include\\c++\\v1\\__new\\new_handler.h", "size": 935, "mtime": 1786734056.1084435, "sha256": "ecc23b162e0c91fc86f8e8f236a9ccf07e9bbed2f0adcc77c06602f288c8802a"}, {"path": "C:\\phoenix-sdr-dsp\\third_party\\mlir-aie\\ironenv\\Lib\\site-packages\\llvm-aie\\include\\c++\\v1\\__new\\nothrow_t.h", "size": 893, "mtime": 1786734056.1084435, "sha256": "fb66f7f8a222ac48866363394ad4ff663b161a35b9d504b8c5ae30329a4ed869"}, {"path": "C:\\phoenix-sdr-dsp\\third_party\\mlir-aie\\ironenv\\Lib\\site-packages\\llvm-aie\\include\\c++\\v1\\__new\\placement_new_delete.h", "size": 1167, "mtime": 1786734056.1084435, "sha256": "1d4af0082dd3253fd23aad4b3c9f926848dc7bee4aef0ff092b3f88d156e8af1"}, {"path": "C:\\phoenix-sdr-dsp\\third_party\\mlir-aie\\ironenv\\Lib\\site-packages\\llvm-aie\\include\\c++\\v1\\__type_traits\\integral_constant.h", "size": 1412, "mtime": 1786734056.1959567, "sha256": "bc1a92ae8550e3c480d90ea583b79524d6c0ba0ef5faa4c3abf4afd1378437ea"}, {"path": "C:\\phoenix-sdr-dsp\\third_party\\mlir-aie\\ironenv\\Lib\\site-packages\\llvm-aie\\include\\c++\\v1\\__type_traits\\is_function.h", "size": 977, "mtime": 1786734056.2076263, "sha256": "14bf2b3e55c908a02312f75098868b2781f93a8059696a9ceeed4072c1c061f1"}, {"path": "C:\\phoenix-sdr-dsp\\third_party\\mlir-aie\\ironenv\\Lib\\site-packages\\llvm-aie\\include\\c++\\v1\\__type_traits\\is_void.h", "size": 971, "mtime": 1786734056.2291973, "sha256": "81f028d7d85b44bd98897ec0b8ba48ea7775a09fa7fc7f79cb08598ea9bebcac"}, {"path": "C:\\phoenix-sdr-dsp\\third_party\\mlir-aie\\ironenv\\Lib\\site-packages\\llvm-aie\\include\\c++\\v1\\__type_traits\\type_identity.h", "size": 1053, "mtime": 1786734056.2396965, "sha256": "f537ef1527bb8c00132137e8c59b5a8ca9e4e1e735f61de9f0e792db1c39fac5"}, {"path": "C:\\phoenix-sdr-dsp\\third_party\\mlir-aie\\ironenv\\Lib\\site-packages\\llvm-aie\\include\\c++\\v1\\__utility\\element_count.h", "size": 862, "mtime": 1786734056.2453747, "sha256": "bba1d71f39d5f96a42593d6c7b26240359d48de4274dc9272c89276933ce284e"}, {"path": "C:\\phoenix-sdr-dsp\\third_party\\mlir-aie\\ironenv\\Lib\\site-packages\\llvm-aie\\include\\c++\\v1\\__verbose_abort", "size": 2226, "mtime": 1786734055.765917, "sha256": "6983d7b621cc322b4145e45a64cf8b8a15ca3824d55409f4da3efae4ac947bd5"}, {"path": "C:\\phoenix-sdr-dsp\\third_party\\mlir-aie\\ironenv\\Lib\\site-packages\\llvm-aie\\include\\c++\\v1\\cstdint", "size": 3737, "mtime": 1786734055.7808323, "sha256": "5df941a16c69b0ceab18c14d3ca9a59fabe25f42bed98eba74a7a1315eb2badb"}, {"path": "C:\\phoenix-sdr-dsp\\third_party\\mlir-aie\\ironenv\\Lib\\site-packages\\llvm-aie\\include\\c++\\v1\\new", "size": 5073, "mtime": 1786734055.8030665, "sha256": "439fd7592e8754600ef53a53e0ba592300e6a16914cd10ea35ad899d8f75c31f"}, {"path": "C:\\phoenix-sdr-dsp\\third_party\\mlir-aie\\ironenv\\Lib\\site-packages\\llvm-aie\\include\\c++\\v1\\stdbool.h", "size": 1132, "mtime": 1786734055.8116322, "sha256": "802dba16f0aa1b816e6483b3beeb487d82838b3c9ce450e2bafec1868d5fbb7c"}, {"path": "C:\\phoenix-sdr-dsp\\third_party\\mlir-aie\\ironenv\\Lib\\site-packages\\llvm-aie\\include\\c++\\v1\\stddef.h", "size": 1271, "mtime": 1786734055.8126304, "sha256": "31d900d6916b90696290f7191b6135d397e1a0fc6f3218b408b9f2abd87ffa48"}, {"path": "C:\\phoenix-sdr-dsp\\third_party\\mlir-aie\\ironenv\\Lib\\site-packages\\llvm-aie\\include\\c++\\v1\\version", "size": 38268, "mtime": 1786734055.8236694, "sha256": "a905372d45f92ace43b2b6419dc5cc3f1768a8b4f227a6c9a13ee86d75bee2eb"}, {"path": "C:\\phoenix-sdr-dsp\\third_party\\mlir-aie\\ironenv\\Lib\\site-packages\\llvm-aie\\lib\\clang\\21\\include\\__stddef_header_macro.h", "size": 417, "mtime": 1786734056.280083, "sha256": "4cf46e8fbb809df048eecbbd63686fa741da27afa8db4245bd1f61c1fb1611dc"}, {"path": "C:\\phoenix-sdr-dsp\\third_party\\mlir-aie\\ironenv\\Lib\\site-packages\\llvm-aie\\lib\\clang\\21\\include\\__stddef_max_align_t.h", "size": 857, "mtime": 1786734056.2810836, "sha256": "3c1e4de47f4f06b35e2c5890d670052e84f716760505ff51b022fc8b21a9400f"}, {"path": "C:\\phoenix-sdr-dsp\\third_party\\mlir-aie\\ironenv\\Lib\\site-packages\\llvm-aie\\lib\\clang\\21\\include\\__stddef_null.h", "size": 875, "mtime": 1786734056.2810836, "sha256": "b1d71b08563ab3d2c22a1e4f8ddf4d9a1111c89e9404b859a45c307e8ebc6c69"}, {"path": "C:\\phoenix-sdr-dsp\\third_party\\mlir-aie\\ironenv\\Lib\\site-packages\\llvm-aie\\lib\\clang\\21\\include\\__stddef_nullptr_t.h", "size": 958, "mtime": 1786734056.2820864, "sha256": "898b4465c5d3040d27e760e82983a751b1b0cae23ba280b18a1b81451841f9eb"}, {"path": "C:\\phoenix-sdr-dsp\\third_party\\mlir-aie\\ironenv\\Lib\\site-packages\\llvm-aie\\lib\\clang\\21\\include\\__stddef_offsetof.h", "size": 708, "mtime": 1786734056.2820864, "sha256": "e5f0f4ff8ff5fc6a1cc8b535f5065f1728eadd2bf1e1401f021f803ec7b4222f"}, {"path": "C:\\phoenix-sdr-dsp\\third_party\\mlir-aie\\ironenv\\Lib\\site-packages\\llvm-aie\\lib\\clang\\21\\include\\__stddef_ptrdiff_t.h", "size": 717, "mtime": 1786734056.2830853, "sha256": "b4178a57f3711b7013cba747a72a2f178c29fa9364e77d75b2159754072ced43"}, {"path": "C:\\phoenix-sdr-dsp\\third_party\\mlir-aie\\ironenv\\Lib\\site-packages\\llvm-aie\\lib\\clang\\21\\include\\__stddef_size_t.h", "size": 708, "mtime": 1786734056.2840843, "sha256": "d86ddc0238da09b385846ebef814ffc50a44e40cf85d4e3793f485952b7e73ad"}, {"path": "C:\\phoenix-sdr-dsp\\third_party\\mlir-aie\\ironenv\\Lib\\site-packages\\llvm-aie\\lib\\clang\\21\\include\\__stddef_wchar_t.h", "size": 853, "mtime": 1786734056.2840843, "sha256": "1900d4998aef3698b06399ed686db0c21e26509b08638a25734fb97ae89b1001"}, {"path": "C:\\phoenix-sdr-dsp\\third_party\\mlir-aie\\ironenv\\Lib\\site-packages\\llvm-aie\\lib\\clang\\21\\include\\aie_addlog.h", "size": 1323, "mtime": 1786734056.2875576, "sha256": "fd6bf423e6e5d8223886764accad073f5b8ccab8b3238df8b8cd9d4a0a16f36d"}, {"path": "C:\\phoenix-sdr-dsp\\third_party\\mlir-aie\\ironenv\\Lib\\site-packages\\llvm-aie\\lib\\clang\\21\\include\\aiebase_chess.h", "size": 1904, "mtime": 1786734056.2885668, "sha256": "9a8c780026be9e0630ae18eed7d66b3b64739a57e8e35a7f929e143aca73bfad"}, {"path": "C:\\phoenix-sdr-dsp\\third_party\\mlir-aie\\ironenv\\Lib\\site-packages\\llvm-aie\\lib\\clang\\21\\include\\aiebase_typedefs.h", "size": 25294, "mtime": 1786734056.289565, "sha256": "32055fd49fcf2b62be29a8916514f0c250667beba1cd0b41f927299a231f8808"}, {"path": "C:\\phoenix-sdr-dsp\\third_party\\mlir-aie\\ironenv\\Lib\\site-packages\\llvm-aie\\lib\\clang\\21\\include\\aiev2\\aiev2_addlog.h", "size": 553, "mtime": 1786734056.3873048, "sha256": "a4feca84929db03e4608582ba618f37b93c5d6cf502d3f4ac14a3383d73ace57"}, {"path": "C:\\phoenix-sdr-dsp\\third_party\\mlir-aie\\ironenv\\Lib\\site-packages\\llvm-aie\\lib\\clang\\21\\include\\aiev2\\aiev2_addr.h", "size": 11620, "mtime": 1786734056.3873048, "sha256": "16767b8147c6a28453c30c1ec1a6670d42270bc4c2c19a6a9fa033fa738e6a69"}, {"path": "C:\\phoenix-sdr-dsp\\third_party\\mlir-aie\\ironenv\\Lib\\site-packages\\llvm-aie\\lib\\clang\\21\\include\\aiev2\\aiev2_aie_api_compat.h", "size": 139568, "mtime": 1786734056.3873048, "sha256": "9f26bfa97a580cc32131e06e5d39e396f1d3000abae3462872abb4a19e2361dd"}, {"path": "C:\\phoenix-sdr-dsp\\third_party\\mlir-aie\\ironenv\\Lib\\site-packages\\llvm-aie\\lib\\clang\\21\\include\\aiev2\\aiev2_core.h", "size": 82233, "mtime": 1786734056.3883052, "sha256": "f9af82a3aff0724b63271f3df39a395625834f3223c4d5eeac623696777f0476"}, {"path": "C:\\phoenix-sdr-dsp\\third_party\\mlir-aie\\ironenv\\Lib\\site-packages\\llvm-aie\\lib\\clang\\21\\include\\aiev2\\aiev2_defines.h", "size": 1972, "mtime": 1786734056.3883052, "sha256": "f2d1b7806dc113954de334b7404ffbd20db425ffedab425b0d9fa24d89e34129"}, {"path": "C:\\phoenix-sdr-dsp\\third_party\\mlir-aie\\ironenv\\Lib\\site-packages\\llvm-aie\\lib\\clang\\21\\include\\aiev2\\aiev2_enums.h", "size": 2589, "mtime": 1786734056.3894155, "sha256": "9cf5e9ec78dd370e73fcaf9c99344db014c1dd81dca8ebd42f3ef18e249b84b5"}, {"path": "C:\\phoenix-sdr-dsp\\third_party\\mlir-aie\\ironenv\\Lib\\site-packages\\llvm-aie\\lib\\clang\\21\\include\\aiev2\\aiev2_ldst.h", "size": 2146, "mtime": 1786734056.3894155, "sha256": "900e7651dd0a595c78619162c7c5fe38cbb1f98f3d6f9f94e04f6ef1bd2e804d"}, {"path": "C:\\phoenix-sdr-dsp\\third_party\\mlir-aie\\ironenv\\Lib\\site-packages\\llvm-aie\\lib\\clang\\21\\include\\aiev2\\aiev2_locks.h", "size": 2142, "mtime": 1786734056.3894155, "sha256": "bc6e6e5dbc1d8e75db30e681fb44afa9470253204b645652afb2e941d413ff5a"}, {"path": "C:\\phoenix-sdr-dsp\\third_party\\mlir-aie\\ironenv\\Lib\\site-packages\\llvm-aie\\lib\\clang\\21\\include\\aiev2\\aiev2_pckt_header.h", "size": 2363, "mtime": 1786734056.3894155, "sha256": "57ee588b3dc5420e626fa6731b52bf5fc4bb230676c5e43c12e2428f0b713273"}, {"path": "C:\\phoenix-sdr-dsp\\third_party\\mlir-aie\\ironenv\\Lib\\site-packages\\llvm-aie\\lib\\clang\\21\\include\\aiev2\\aiev2_scalar.h", "size": 906, "mtime": 1786734056.3908107, "sha256": "38774ca25f766279df56582679947010491299947db46504673f809b4f035e0a"}, {"path": "C:\\phoenix-sdr-dsp\\third_party\\mlir-aie\\ironenv\\Lib\\site-packages\\llvm-aie\\lib\\clang\\21\\include\\aiev2\\aiev2_scl2vec.h", "size": 52051, "mtime": 1786734056.3908107, "sha256": "8988c386ac0821bcebf45f9963eb92c879cc68bf748517ef454ea2297ffa5bea"}, {"path": "C:\\phoenix-sdr-dsp\\third_party\\mlir-aie\\ironenv\\Lib\\site-packages\\llvm-aie\\lib\\clang\\21\\include\\aiev2\\aiev2_set_mode.h", "size": 1841, "mtime": 1786734056.3919847, "sha256": "d878e34cc36c28cf77f70b0f83c01f9bf109237f904b2d51130fc7945c0a394b"}, {"path": "C:\\phoenix-sdr-dsp\\third_party\\mlir-aie\\ironenv\\Lib\\site-packages\\llvm-aie\\lib\\clang\\21\\include\\aiev2\\aiev2_srs.h", "size": 19312, "mtime": 1786734056.3919847, "sha256": "d17044ec7fba9ba1f08e261bacb1625f47bcbbd4ac3b55a92d61a2009d85c976"}, {"path": "C:\\phoenix-sdr-dsp\\third_party\\mlir-aie\\ironenv\\Lib\\site-packages\\llvm-aie\\lib\\clang\\21\\include\\aiev2\\aiev2_streams.h", "size": 18068, "mtime": 1786734056.3919847, "sha256": "c62c03bcb56fed1acba3bafcc4fab470380aad795a70634ec9c573edc1cd2d42"}, {"path": "C:\\phoenix-sdr-dsp\\third_party\\mlir-aie\\ironenv\\Lib\\site-packages\\llvm-aie\\lib\\clang\\21\\include\\aiev2\\aiev2_undef.h", "size": 4217, "mtime": 1786734056.3929925, "sha256": "c90632fbecb0aaed3d0629855eb626ce0305b8eb9e173c33c7f917ad3f3f3237"}, {"path": "C:\\phoenix-sdr-dsp\\third_party\\mlir-aie\\ironenv\\Lib\\site-packages\\llvm-aie\\lib\\clang\\21\\include\\aiev2\\aiev2_upd_ext.h", "size": 88494, "mtime": 1786734056.3929925, "sha256": "82be925ac2398078e1ef252051897284c639720e7b03ea1a3a242173fb8ee0ef"}, {"path": "C:\\phoenix-sdr-dsp\\third_party\\mlir-aie\\ironenv\\Lib\\site-packages\\llvm-aie\\lib\\clang\\21\\include\\aiev2\\aiev2_ups.h", "size": 9126, "mtime": 1786734056.3939922, "sha256": "57bf58e60ba283fcb1396317b5334b15ca444a31c0a18e16bb0d2641d76ae529"}, {"path": "C:\\phoenix-sdr-dsp\\third_party\\mlir-aie\\ironenv\\Lib\\site-packages\\llvm-aie\\lib\\clang\\21\\include\\aiev2\\aiev2_vadd.h", "size": 37695, "mtime": 1786734056.3939922, "sha256": "518044afa30ba41556d7b2962de6c4d0afa386f988ce7c455d50867a3d42229c"}, {"path": "C:\\phoenix-sdr-dsp\\third_party\\mlir-aie\\ironenv\\Lib\\site-packages\\llvm-aie\\lib\\clang\\21\\include\\aiev2\\aiev2_vld_sparse.h", "size": 19863, "mtime": 1786734056.394998, "sha256": "32b5b679e484f967db93edfb5cd037daa606d498a64cbca91771bcf48912df94"}, {"path": "C:\\phoenix-sdr-dsp\\third_party\\mlir-aie\\ironenv\\Lib\\site-packages\\llvm-aie\\lib\\clang\\21\\include\\aiev2\\aiev2_vmult.h", "size": 1697623, "mtime": 1786734056.3969972, "sha256": "685cf91053f20e7d051550e65cb718836a299115b2bf982178c5eac8a2fe5c6e"}, {"path": "C:\\phoenix-sdr-dsp\\third_party\\mlir-aie\\ironenv\\Lib\\site-packages\\llvm-aie\\lib\\clang\\21\\include\\aiev2intrin.h", "size": 2893, "mtime": 1786734056.289565, "sha256": "b606d0563fa45f4cce17380cfd8b17dde304a583d9b4fc16a5dbee355477278c"}, {"path": "C:\\phoenix-sdr-dsp\\third_party\\mlir-aie\\ironenv\\Lib\\site-packages\\llvm-aie\\lib\\clang\\21\\include\\stdbool.h", "size": 1172, "mtime": 1786734056.34763, "sha256": "48655faf4ebd4ca0af26a1ee8e3e16f8dc68385c9cd550ffb3629320681305b3"}, {"path": "C:\\phoenix-sdr-dsp\\third_party\\mlir-aie\\ironenv\\Lib\\site-packages\\llvm-aie\\lib\\clang\\21\\include\\stddef.h", "size": 5053, "mtime": 1786734056.3486345, "sha256": "b3e62a046ddf28d09eedebe6eb9461cb7060e47cad2c69964b222c4eea10347e"}]}
+===== RAW FILE END: deps.json =====
+===== RAW FILE BEGIN: kernels_main.json =====
+PATH=C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\kernels_main.json
+SIZE=1850
+SHA256=464FC9FE6D66EE78736B4EA3248A0910CBA83ADAF4CEFC6E67EE49C3B0EDAB86
+{
+  "ps-kernels": {
+    "kernels": [
+      {
+        "arguments": [
+          {
+            "address-qualifier": "SCALAR",
+            "name": "opcode",
+            "offset": "0x00",
+            "type": "uint64_t"
+          },
+          {
+            "address-qualifier": "GLOBAL",
+            "memory-connection": "SRAM",
+            "name": "instr",
+            "offset": "0x08",
+            "type": "char *"
+          },
+          {
+            "address-qualifier": "SCALAR",
+            "name": "ninstr",
+            "offset": "0x10",
+            "type": "uint32_t"
+          },
+          {
+            "address-qualifier": "GLOBAL",
+            "memory-connection": "HOST",
+            "name": "bo0",
+            "offset": "0x14",
+            "type": "void*"
+          },
+          {
+            "address-qualifier": "GLOBAL",
+            "memory-connection": "HOST",
+            "name": "bo1",
+            "offset": "0x1C",
+            "type": "void*"
+          },
+          {
+            "address-qualifier": "GLOBAL",
+            "memory-connection": "HOST",
+            "name": "bo2",
+            "offset": "0x24",
+            "type": "void*"
+          },
+          {
+            "address-qualifier": "GLOBAL",
+            "memory-connection": "HOST",
+            "name": "bo3",
+            "offset": "0x2C",
+            "type": "void*"
+          },
+          {
+            "address-qualifier": "GLOBAL",
+            "memory-connection": "HOST",
+            "name": "bo4",
+            "offset": "0x34",
+            "type": "void*"
+          }
+        ],
+        "extended-data": {
+          "dpu_kernel_id": "0x901",
+          "functional": "0",
+          "subtype": "DPU"
+        },
+        "instances": [
+          {
+            "name": "MLIRAIE"
+          }
+        ],
+        "name": "MLIR_AIE",
+        "type": "dpu"
+      }
+    ]
+  }
+}
+===== RAW FILE END: kernels_main.json =====
+===== RAW FILE BEGIN: partition_main.json =====
+PATH=C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\partition_main.json
+SIZE=717
+SHA256=AB61611D57E57474FB34AC57237CA21BECDFB65E8B57E1B760031A5D8F018D04
+{
+  "aie_partition": {
+    "PDIs": [
+      {
+        "cdo_groups": [
+          {
+            "dpu_kernel_ids": [
+              "0x901"
+            ],
+            "name": "DPU",
+            "pdi_id": "0x01",
+            "pre_cdo_groups": [
+              "0xC1"
+            ],
+            "type": "PRIMARY"
+          }
+        ],
+        "file_name": "C:\\Users\\midhat\\.npu\\cache\\04f147d54cb01d160974a6e6\\main.pdi",
+        "uuid": "5d01d04f-7e8e-46c8-b1d0-f882cfa6f4bd"
+      }
+    ],
+    "inference_fingerprint": "23423",
+    "name": "QoS",
+    "operations_per_cycle": "2048",
+    "partition": {
+      "column_width": 4,
+      "start_columns": [
+        0
+      ]
+    },
+    "pre_post_fingerprint": "12345"
+  }
+}
+===== RAW FILE END: partition_main.json =====
+===== RAW FILE BEGIN: memTopology_main.json =====
+PATH=C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\memTopology_main.json
+SIZE=399
+SHA256=638D0D287B2E7427CE3DC86A4926216E8370D3E7783256498A67768B89D2BBC6
+{
+  "mem_topology": {
+    "m_count": "2",
+    "m_mem_data": [
+      {
+        "m_base_address": "0x4000000",
+        "m_sizeKB": "0x10000",
+        "m_tag": "HOST",
+        "m_type": "MEM_DRAM",
+        "m_used": "1"
+      },
+      {
+        "m_base_address": "0x4000000",
+        "m_sizeKB": "0xc000",
+        "m_tag": "SRAM",
+        "m_type": "MEM_DRAM",
+        "m_used": "1"
+      }
+    ]
+  }
+}
+===== RAW FILE END: memTopology_main.json =====
+===== DEPS PARSED INPUTS =====
+VERSION=1 COMPLETE=True INPUT_COUNT=81
+INPUT path=C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\dr2d_kpke_keygen_row0_accumulate.cc size=2359 mtime=1787013343.20439 sha256=a577360c6e24296576daedfdc537d04765aaebfdc74eeadd34358437986e0622
+INPUT path=C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\dr2d_kpke_keygen_row0_expand.cc size=2032 mtime=1787013343.20439 sha256=d95106c0f01a1a99aee21cef3fab704b1e57bd6d1d4e066f7e421f0dd0b53986
+INPUT path=C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\dr2d_kpke_keygen_row1_accumulate.cc size=2451 mtime=1787013343.20539 sha256=235c69d008e7db656c26053a404980b7de139156c8c4671ac94a04c7fb1c9806
+INPUT path=C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\dr2d_kpke_keygen_row1_expand.cc size=1985 mtime=1787013343.20439 sha256=c893d0158f85a00c6dfd6a7f20c6aa2c5259d397ac64c32d4c3f9e8cb82c13c8
+INPUT path=C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\dr2d_kpke_keygen_seed_noise.cc size=4753 mtime=1787013343.2034 sha256=2f94e2995706ac5636f35c66167e5dd8f54ac54b618c200bf4ee45b8b754ceaf
+INPUT path=C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\dr2d_kpke_keygen_serialize.cc size=4318 mtime=1787007181.18192 sha256=23f691bc40410f7bdf9573a14bc01c590a3e9d2a36b07e807e415b033d49780c
+INPUT path=C:\phoenix-sdr-dsp\phoenix_sdr_dsp\pqc\kernels\dr1_keccak_f1600.hpp size=4717 mtime=1786986773.10759 sha256=0470fb39277478a368004a49e551a3411d8f9185b492ac01f85d2297bcea3c1f
+INPUT path=C:\phoenix-sdr-dsp\phoenix_sdr_dsp\pqc\kernels\dr2d_mlkem512_kpke_keygen_internal.hpp size=13607 mtime=1787013343.2034 sha256=16d61e6ada4d7de384b3981cc76d3de8319ce2bec999727d4847567e7e1f3519
+INPUT path=C:\phoenix-sdr-dsp\phoenix_sdr_dsp\pqc\kernels\dr2d_mlkem512_kpke_keygen_row0_accumulate.cc size=2359 mtime=1787013343.20439 sha256=a577360c6e24296576daedfdc537d04765aaebfdc74eeadd34358437986e0622
+INPUT path=C:\phoenix-sdr-dsp\phoenix_sdr_dsp\pqc\kernels\dr2d_mlkem512_kpke_keygen_row0_expand.cc size=2032 mtime=1787013343.20439 sha256=d95106c0f01a1a99aee21cef3fab704b1e57bd6d1d4e066f7e421f0dd0b53986
+INPUT path=C:\phoenix-sdr-dsp\phoenix_sdr_dsp\pqc\kernels\dr2d_mlkem512_kpke_keygen_row1_accumulate.cc size=2451 mtime=1787013343.20539 sha256=235c69d008e7db656c26053a404980b7de139156c8c4671ac94a04c7fb1c9806
+INPUT path=C:\phoenix-sdr-dsp\phoenix_sdr_dsp\pqc\kernels\dr2d_mlkem512_kpke_keygen_row1_expand.cc size=1985 mtime=1787013343.20439 sha256=c893d0158f85a00c6dfd6a7f20c6aa2c5259d397ac64c32d4c3f9e8cb82c13c8
+INPUT path=C:\phoenix-sdr-dsp\phoenix_sdr_dsp\pqc\kernels\dr2d_mlkem512_kpke_keygen_seed.cc size=4753 mtime=1787013343.2034 sha256=2f94e2995706ac5636f35c66167e5dd8f54ac54b618c200bf4ee45b8b754ceaf
+INPUT path=C:\phoenix-sdr-dsp\phoenix_sdr_dsp\pqc\kernels\dr2d_mlkem512_kpke_keygen_serialize.cc size=4318 mtime=1787007181.18192 sha256=23f691bc40410f7bdf9573a14bc01c590a3e9d2a36b07e807e415b033d49780c
+INPUT path=C:\phoenix-sdr-dsp\third_party\mlir-aie\ironenv\Lib\site-packages\llvm-aie\include\aie2-none-unknown-elf\c++\v1\__config_site size=1937 mtime=1786734055.67267 sha256=39be01d9c2f14669596f5511cef24068b7a78365bba3068f08706f6fd29453ce
+INPUT path=C:\phoenix-sdr-dsp\third_party\mlir-aie\ironenv\Lib\site-packages\llvm-aie\include\aie2-none-unknown-elf\llvm-libc-macros\stdint-macros.h size=27951 mtime=1786734055.67971 sha256=2de52e163a2bf0251a5ebde3777dfa7b4cc39a3baa94b9830f4bef81b7a53f77
+INPUT path=C:\phoenix-sdr-dsp\third_party\mlir-aie\ironenv\Lib\site-packages\llvm-aie\include\aie2-none-unknown-elf\stdint.h size=513 mtime=1786734055.66967 sha256=33e39e9498af5cd38bd43149adadf2fce5b7e6e58fac6b08c9c9ae4f22ba273e
+INPUT path=C:\phoenix-sdr-dsp\third_party\mlir-aie\ironenv\Lib\site-packages\llvm-aie\include\c++\v1\__config size=53890 mtime=1786734055.76124 sha256=8e88c77bcfc12525c67519936748de04c3f227572cc7309655204e635f0f07c7
+INPUT path=C:\phoenix-sdr-dsp\third_party\mlir-aie\ironenv\Lib\site-packages\llvm-aie\include\c++\v1\__configuration\abi.h size=11252 mtime=1786734055.97156 sha256=fbfead96b75fac7757abe3864b01d098e83c1228288f4bc9c4b2ee47da8c42c1
+INPUT path=C:\phoenix-sdr-dsp\third_party\mlir-aie\ironenv\Lib\site-packages\llvm-aie\include\c++\v1\__configuration\availability.h size=24081 mtime=1786734055.97156 sha256=098ae5848d7415e089507f038c5bc39f72e09fd0f0da40f2ed1dc8600851e1e8
+INPUT path=C:\phoenix-sdr-dsp\third_party\mlir-aie\ironenv\Lib\site-packages\llvm-aie\include\c++\v1\__configuration\compiler.h size=1693 mtime=1786734055.97255 sha256=d7238c6e075cce2ff302e947fc4f22f62a619efb6d5218b185edca66a3e70160
+INPUT path=C:\phoenix-sdr-dsp\third_party\mlir-aie\ironenv\Lib\site-packages\llvm-aie\include\c++\v1\__configuration\language.h size=1417 mtime=1786734055.97255 sha256=1af2851db226ce3368438339d9ba2f66dce8209e2388eb515a68b5bce5413481
+INPUT path=C:\phoenix-sdr-dsp\third_party\mlir-aie\ironenv\Lib\site-packages\llvm-aie\include\c++\v1\__configuration\platform.h size=2213 mtime=1786734055.97255 sha256=efc95e88b9724b38387256a7b8b889f6fbb3b854f31edc5571bef2cdbf1ba1dc
+INPUT path=C:\phoenix-sdr-dsp\third_party\mlir-aie\ironenv\Lib\site-packages\llvm-aie\include\c++\v1\__cstddef\max_align_t.h size=760 mtime=1786734055.97603 sha256=5d1eb26e300760b356991bd88e735ef1d9bf6cf62007470e49fbc02eedf465a1
+INPUT path=C:\phoenix-sdr-dsp\third_party\mlir-aie\ironenv\Lib\site-packages\llvm-aie\include\c++\v1\__cstddef\size_t.h size=678 mtime=1786734055.97803 sha256=24fcce5e6d3c4a731254461a28148abe1f571c2e8790ab50442446ded352846b
+INPUT path=C:\phoenix-sdr-dsp\third_party\mlir-aie\ironenv\Lib\site-packages\llvm-aie\include\c++\v1\__exception\exception.h size=3295 mtime=1786734055.98003 sha256=35f5ba4cc29997ca90f616f38692d6792980171efb8466f624bb4cdf4dc9d579
+INPUT path=C:\phoenix-sdr-dsp\third_party\mlir-aie\ironenv\Lib\site-packages\llvm-aie\include\c++\v1\__new\align_val_t.h size=917 mtime=1786734056.10488 sha256=386b47afc9d4facd51a7fa5fb450e6ffc7b25999c1293454d213af4cbd780c4b
+INPUT path=C:\phoenix-sdr-dsp\third_party\mlir-aie\ironenv\Lib\site-packages\llvm-aie\include\c++\v1\__new\allocate.h size=3723 mtime=1786734056.10488 sha256=7eadb665700798ee14106e58397e1732638ea3582460bd01ba1533a6548fba05
+INPUT path=C:\phoenix-sdr-dsp\third_party\mlir-aie\ironenv\Lib\site-packages\llvm-aie\include\c++\v1\__new\destroying_delete_t.h size=946 mtime=1786734056.10588 sha256=9ebf03678c03cdda1621fa2940086cab2a3ebb56f0658fa64572d0a24a7cbb25
+INPUT path=C:\phoenix-sdr-dsp\third_party\mlir-aie\ironenv\Lib\site-packages\llvm-aie\include\c++\v1\__new\exceptions.h size=2544 mtime=1786734056.10635 sha256=0a553f0d4476c94b767d71f598eb31fcb48170ad8d7d9504d6b0166f34fc0673
+INPUT path=C:\phoenix-sdr-dsp\third_party\mlir-aie\ironenv\Lib\site-packages\llvm-aie\include\c++\v1\__new\global_new_delete.h size=3522 mtime=1786734056.10745 sha256=85bd11b4943da45518d3f7e24a2232907eddd137e1d841ce99223415ed9b50ea
+INPUT path=C:\phoenix-sdr-dsp\third_party\mlir-aie\ironenv\Lib\site-packages\llvm-aie\include\c++\v1\__new\interference_size.h size=1090 mtime=1786734056.10745 sha256=0ee589e64b68c34db4f328a3ec11215cf0b661fb898a49645116ba2a67e7514f
+INPUT path=C:\phoenix-sdr-dsp\third_party\mlir-aie\ironenv\Lib\site-packages\llvm-aie\include\c++\v1\__new\launder.h size=1173 mtime=1786734056.10745 sha256=f2dac329b1b88611d97b00117de3dd6d940ff3a4629230ed9f29ecffd2b7c4e3
+INPUT path=C:\phoenix-sdr-dsp\third_party\mlir-aie\ironenv\Lib\site-packages\llvm-aie\include\c++\v1\__new\new_handler.h size=935 mtime=1786734056.10844 sha256=ecc23b162e0c91fc86f8e8f236a9ccf07e9bbed2f0adcc77c06602f288c8802a
+INPUT path=C:\phoenix-sdr-dsp\third_party\mlir-aie\ironenv\Lib\site-packages\llvm-aie\include\c++\v1\__new\nothrow_t.h size=893 mtime=1786734056.10844 sha256=fb66f7f8a222ac48866363394ad4ff663b161a35b9d504b8c5ae30329a4ed869
+INPUT path=C:\phoenix-sdr-dsp\third_party\mlir-aie\ironenv\Lib\site-packages\llvm-aie\include\c++\v1\__new\placement_new_delete.h size=1167 mtime=1786734056.10844 sha256=1d4af0082dd3253fd23aad4b3c9f926848dc7bee4aef0ff092b3f88d156e8af1
+INPUT path=C:\phoenix-sdr-dsp\third_party\mlir-aie\ironenv\Lib\site-packages\llvm-aie\include\c++\v1\__type_traits\integral_constant.h size=1412 mtime=1786734056.19596 sha256=bc1a92ae8550e3c480d90ea583b79524d6c0ba0ef5faa4c3abf4afd1378437ea
+INPUT path=C:\phoenix-sdr-dsp\third_party\mlir-aie\ironenv\Lib\site-packages\llvm-aie\include\c++\v1\__type_traits\is_function.h size=977 mtime=1786734056.20763 sha256=14bf2b3e55c908a02312f75098868b2781f93a8059696a9ceeed4072c1c061f1
+INPUT path=C:\phoenix-sdr-dsp\third_party\mlir-aie\ironenv\Lib\site-packages\llvm-aie\include\c++\v1\__type_traits\is_void.h size=971 mtime=1786734056.2292 sha256=81f028d7d85b44bd98897ec0b8ba48ea7775a09fa7fc7f79cb08598ea9bebcac
+INPUT path=C:\phoenix-sdr-dsp\third_party\mlir-aie\ironenv\Lib\site-packages\llvm-aie\include\c++\v1\__type_traits\type_identity.h size=1053 mtime=1786734056.2397 sha256=f537ef1527bb8c00132137e8c59b5a8ca9e4e1e735f61de9f0e792db1c39fac5
+INPUT path=C:\phoenix-sdr-dsp\third_party\mlir-aie\ironenv\Lib\site-packages\llvm-aie\include\c++\v1\__utility\element_count.h size=862 mtime=1786734056.24537 sha256=bba1d71f39d5f96a42593d6c7b26240359d48de4274dc9272c89276933ce284e
+INPUT path=C:\phoenix-sdr-dsp\third_party\mlir-aie\ironenv\Lib\site-packages\llvm-aie\include\c++\v1\__verbose_abort size=2226 mtime=1786734055.76592 sha256=6983d7b621cc322b4145e45a64cf8b8a15ca3824d55409f4da3efae4ac947bd5
+INPUT path=C:\phoenix-sdr-dsp\third_party\mlir-aie\ironenv\Lib\site-packages\llvm-aie\include\c++\v1\cstdint size=3737 mtime=1786734055.78083 sha256=5df941a16c69b0ceab18c14d3ca9a59fabe25f42bed98eba74a7a1315eb2badb
+INPUT path=C:\phoenix-sdr-dsp\third_party\mlir-aie\ironenv\Lib\site-packages\llvm-aie\include\c++\v1\new size=5073 mtime=1786734055.80307 sha256=439fd7592e8754600ef53a53e0ba592300e6a16914cd10ea35ad899d8f75c31f
+INPUT path=C:\phoenix-sdr-dsp\third_party\mlir-aie\ironenv\Lib\site-packages\llvm-aie\include\c++\v1\stdbool.h size=1132 mtime=1786734055.81163 sha256=802dba16f0aa1b816e6483b3beeb487d82838b3c9ce450e2bafec1868d5fbb7c
+INPUT path=C:\phoenix-sdr-dsp\third_party\mlir-aie\ironenv\Lib\site-packages\llvm-aie\include\c++\v1\stddef.h size=1271 mtime=1786734055.81263 sha256=31d900d6916b90696290f7191b6135d397e1a0fc6f3218b408b9f2abd87ffa48
+INPUT path=C:\phoenix-sdr-dsp\third_party\mlir-aie\ironenv\Lib\site-packages\llvm-aie\include\c++\v1\version size=38268 mtime=1786734055.82367 sha256=a905372d45f92ace43b2b6419dc5cc3f1768a8b4f227a6c9a13ee86d75bee2eb
+INPUT path=C:\phoenix-sdr-dsp\third_party\mlir-aie\ironenv\Lib\site-packages\llvm-aie\lib\clang\21\include\__stddef_header_macro.h size=417 mtime=1786734056.28008 sha256=4cf46e8fbb809df048eecbbd63686fa741da27afa8db4245bd1f61c1fb1611dc
+INPUT path=C:\phoenix-sdr-dsp\third_party\mlir-aie\ironenv\Lib\site-packages\llvm-aie\lib\clang\21\include\__stddef_max_align_t.h size=857 mtime=1786734056.28108 sha256=3c1e4de47f4f06b35e2c5890d670052e84f716760505ff51b022fc8b21a9400f
+INPUT path=C:\phoenix-sdr-dsp\third_party\mlir-aie\ironenv\Lib\site-packages\llvm-aie\lib\clang\21\include\__stddef_null.h size=875 mtime=1786734056.28108 sha256=b1d71b08563ab3d2c22a1e4f8ddf4d9a1111c89e9404b859a45c307e8ebc6c69
+INPUT path=C:\phoenix-sdr-dsp\third_party\mlir-aie\ironenv\Lib\site-packages\llvm-aie\lib\clang\21\include\__stddef_nullptr_t.h size=958 mtime=1786734056.28209 sha256=898b4465c5d3040d27e760e82983a751b1b0cae23ba280b18a1b81451841f9eb
+INPUT path=C:\phoenix-sdr-dsp\third_party\mlir-aie\ironenv\Lib\site-packages\llvm-aie\lib\clang\21\include\__stddef_offsetof.h size=708 mtime=1786734056.28209 sha256=e5f0f4ff8ff5fc6a1cc8b535f5065f1728eadd2bf1e1401f021f803ec7b4222f
+INPUT path=C:\phoenix-sdr-dsp\third_party\mlir-aie\ironenv\Lib\site-packages\llvm-aie\lib\clang\21\include\__stddef_ptrdiff_t.h size=717 mtime=1786734056.28309 sha256=b4178a57f3711b7013cba747a72a2f178c29fa9364e77d75b2159754072ced43
+INPUT path=C:\phoenix-sdr-dsp\third_party\mlir-aie\ironenv\Lib\site-packages\llvm-aie\lib\clang\21\include\__stddef_size_t.h size=708 mtime=1786734056.28408 sha256=d86ddc0238da09b385846ebef814ffc50a44e40cf85d4e3793f485952b7e73ad
+INPUT path=C:\phoenix-sdr-dsp\third_party\mlir-aie\ironenv\Lib\site-packages\llvm-aie\lib\clang\21\include\__stddef_wchar_t.h size=853 mtime=1786734056.28408 sha256=1900d4998aef3698b06399ed686db0c21e26509b08638a25734fb97ae89b1001
+INPUT path=C:\phoenix-sdr-dsp\third_party\mlir-aie\ironenv\Lib\site-packages\llvm-aie\lib\clang\21\include\aie_addlog.h size=1323 mtime=1786734056.28756 sha256=fd6bf423e6e5d8223886764accad073f5b8ccab8b3238df8b8cd9d4a0a16f36d
+INPUT path=C:\phoenix-sdr-dsp\third_party\mlir-aie\ironenv\Lib\site-packages\llvm-aie\lib\clang\21\include\aiebase_chess.h size=1904 mtime=1786734056.28857 sha256=9a8c780026be9e0630ae18eed7d66b3b64739a57e8e35a7f929e143aca73bfad
+INPUT path=C:\phoenix-sdr-dsp\third_party\mlir-aie\ironenv\Lib\site-packages\llvm-aie\lib\clang\21\include\aiebase_typedefs.h size=25294 mtime=1786734056.28957 sha256=32055fd49fcf2b62be29a8916514f0c250667beba1cd0b41f927299a231f8808
+INPUT path=C:\phoenix-sdr-dsp\third_party\mlir-aie\ironenv\Lib\site-packages\llvm-aie\lib\clang\21\include\aiev2\aiev2_addlog.h size=553 mtime=1786734056.3873 sha256=a4feca84929db03e4608582ba618f37b93c5d6cf502d3f4ac14a3383d73ace57
+INPUT path=C:\phoenix-sdr-dsp\third_party\mlir-aie\ironenv\Lib\site-packages\llvm-aie\lib\clang\21\include\aiev2\aiev2_addr.h size=11620 mtime=1786734056.3873 sha256=16767b8147c6a28453c30c1ec1a6670d42270bc4c2c19a6a9fa033fa738e6a69
+INPUT path=C:\phoenix-sdr-dsp\third_party\mlir-aie\ironenv\Lib\site-packages\llvm-aie\lib\clang\21\include\aiev2\aiev2_aie_api_compat.h size=139568 mtime=1786734056.3873 sha256=9f26bfa97a580cc32131e06e5d39e396f1d3000abae3462872abb4a19e2361dd
+INPUT path=C:\phoenix-sdr-dsp\third_party\mlir-aie\ironenv\Lib\site-packages\llvm-aie\lib\clang\21\include\aiev2\aiev2_core.h size=82233 mtime=1786734056.38831 sha256=f9af82a3aff0724b63271f3df39a395625834f3223c4d5eeac623696777f0476
+INPUT path=C:\phoenix-sdr-dsp\third_party\mlir-aie\ironenv\Lib\site-packages\llvm-aie\lib\clang\21\include\aiev2\aiev2_defines.h size=1972 mtime=1786734056.38831 sha256=f2d1b7806dc113954de334b7404ffbd20db425ffedab425b0d9fa24d89e34129
+INPUT path=C:\phoenix-sdr-dsp\third_party\mlir-aie\ironenv\Lib\site-packages\llvm-aie\lib\clang\21\include\aiev2\aiev2_enums.h size=2589 mtime=1786734056.38942 sha256=9cf5e9ec78dd370e73fcaf9c99344db014c1dd81dca8ebd42f3ef18e249b84b5
+INPUT path=C:\phoenix-sdr-dsp\third_party\mlir-aie\ironenv\Lib\site-packages\llvm-aie\lib\clang\21\include\aiev2\aiev2_ldst.h size=2146 mtime=1786734056.38942 sha256=900e7651dd0a595c78619162c7c5fe38cbb1f98f3d6f9f94e04f6ef1bd2e804d
+INPUT path=C:\phoenix-sdr-dsp\third_party\mlir-aie\ironenv\Lib\site-packages\llvm-aie\lib\clang\21\include\aiev2\aiev2_locks.h size=2142 mtime=1786734056.38942 sha256=bc6e6e5dbc1d8e75db30e681fb44afa9470253204b645652afb2e941d413ff5a
+INPUT path=C:\phoenix-sdr-dsp\third_party\mlir-aie\ironenv\Lib\site-packages\llvm-aie\lib\clang\21\include\aiev2\aiev2_pckt_header.h size=2363 mtime=1786734056.38942 sha256=57ee588b3dc5420e626fa6731b52bf5fc4bb230676c5e43c12e2428f0b713273
+INPUT path=C:\phoenix-sdr-dsp\third_party\mlir-aie\ironenv\Lib\site-packages\llvm-aie\lib\clang\21\include\aiev2\aiev2_scalar.h size=906 mtime=1786734056.39081 sha256=38774ca25f766279df56582679947010491299947db46504673f809b4f035e0a
+INPUT path=C:\phoenix-sdr-dsp\third_party\mlir-aie\ironenv\Lib\site-packages\llvm-aie\lib\clang\21\include\aiev2\aiev2_scl2vec.h size=52051 mtime=1786734056.39081 sha256=8988c386ac0821bcebf45f9963eb92c879cc68bf748517ef454ea2297ffa5bea
+INPUT path=C:\phoenix-sdr-dsp\third_party\mlir-aie\ironenv\Lib\site-packages\llvm-aie\lib\clang\21\include\aiev2\aiev2_set_mode.h size=1841 mtime=1786734056.39198 sha256=d878e34cc36c28cf77f70b0f83c01f9bf109237f904b2d51130fc7945c0a394b
+INPUT path=C:\phoenix-sdr-dsp\third_party\mlir-aie\ironenv\Lib\site-packages\llvm-aie\lib\clang\21\include\aiev2\aiev2_srs.h size=19312 mtime=1786734056.39198 sha256=d17044ec7fba9ba1f08e261bacb1625f47bcbbd4ac3b55a92d61a2009d85c976
+INPUT path=C:\phoenix-sdr-dsp\third_party\mlir-aie\ironenv\Lib\site-packages\llvm-aie\lib\clang\21\include\aiev2\aiev2_streams.h size=18068 mtime=1786734056.39198 sha256=c62c03bcb56fed1acba3bafcc4fab470380aad795a70634ec9c573edc1cd2d42
+INPUT path=C:\phoenix-sdr-dsp\third_party\mlir-aie\ironenv\Lib\site-packages\llvm-aie\lib\clang\21\include\aiev2\aiev2_undef.h size=4217 mtime=1786734056.39299 sha256=c90632fbecb0aaed3d0629855eb626ce0305b8eb9e173c33c7f917ad3f3f3237
+INPUT path=C:\phoenix-sdr-dsp\third_party\mlir-aie\ironenv\Lib\site-packages\llvm-aie\lib\clang\21\include\aiev2\aiev2_upd_ext.h size=88494 mtime=1786734056.39299 sha256=82be925ac2398078e1ef252051897284c639720e7b03ea1a3a242173fb8ee0ef
+INPUT path=C:\phoenix-sdr-dsp\third_party\mlir-aie\ironenv\Lib\site-packages\llvm-aie\lib\clang\21\include\aiev2\aiev2_ups.h size=9126 mtime=1786734056.39399 sha256=57bf58e60ba283fcb1396317b5334b15ca444a31c0a18e16bb0d2641d76ae529
+INPUT path=C:\phoenix-sdr-dsp\third_party\mlir-aie\ironenv\Lib\site-packages\llvm-aie\lib\clang\21\include\aiev2\aiev2_vadd.h size=37695 mtime=1786734056.39399 sha256=518044afa30ba41556d7b2962de6c4d0afa386f988ce7c455d50867a3d42229c
+INPUT path=C:\phoenix-sdr-dsp\third_party\mlir-aie\ironenv\Lib\site-packages\llvm-aie\lib\clang\21\include\aiev2\aiev2_vld_sparse.h size=19863 mtime=1786734056.395 sha256=32b5b679e484f967db93edfb5cd037daa606d498a64cbca91771bcf48912df94
+INPUT path=C:\phoenix-sdr-dsp\third_party\mlir-aie\ironenv\Lib\site-packages\llvm-aie\lib\clang\21\include\aiev2\aiev2_vmult.h size=1697623 mtime=1786734056.397 sha256=685cf91053f20e7d051550e65cb718836a299115b2bf982178c5eac8a2fe5c6e
+INPUT path=C:\phoenix-sdr-dsp\third_party\mlir-aie\ironenv\Lib\site-packages\llvm-aie\lib\clang\21\include\aiev2intrin.h size=2893 mtime=1786734056.28957 sha256=b606d0563fa45f4cce17380cfd8b17dde304a583d9b4fc16a5dbee355477278c
+INPUT path=C:\phoenix-sdr-dsp\third_party\mlir-aie\ironenv\Lib\site-packages\llvm-aie\lib\clang\21\include\stdbool.h size=1172 mtime=1786734056.34763 sha256=48655faf4ebd4ca0af26a1ee8e3e16f8dc68385c9cd550ffb3629320681305b3
+INPUT path=C:\phoenix-sdr-dsp\third_party\mlir-aie\ironenv\Lib\site-packages\llvm-aie\lib\clang\21\include\stddef.h size=5053 mtime=1786734056.34863 sha256=b3e62a046ddf28d09eedebe6eb9461cb7060e47cad2c69964b222c4eea10347e
+===== OBJECT BEGIN: dr2d_kpke_keygen_seed_noise.o =====
+PATH=C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\dr2d_kpke_keygen_seed_noise.o
+SHA256=7EA27CC5F6BB905253A161ACD98988C62AFC54855BCFD1C4530A55C441E28B70
+----- FILE/SECTION/SYMBOL DETAIL -----
+
+File: C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\dr2d_kpke_keygen_seed_noise.o
+Format: elf32-aie
+Arch: aie2
+AddressSize: 32bit
+LoadName: <Not found>
+ElfHeader {
+  Ident {
+    Magic: (7F 45 4C 46)
+    Class: 32-bit (0x1)
+    DataEncoding: LittleEndian (0x1)
+    FileVersion: 1
+    OS/ABI: SystemV (0x0)
+    ABIVersion: 0
+    Unused: (00 00 00 00 00 00 00)
+  }
+  Type: Relocatable (0x1)
+  Machine: EM_AIE (0x108)
+  Version: 1
+  Entry: 0x0
+  ProgramHeaderOffset: 0x0
+  SectionHeaderOffset: 0x2F74
+  Flags [ (0x2)
+    0x2
+  ]
+  HeaderSize: 52
+  ProgramHeaderEntrySize: 0
+  ProgramHeaderCount: 0
+  SectionHeaderEntrySize: 40
+  SectionHeaderCount: 17
+  StringTableSectionIndex: 1
+}
+Sections [
+  Section {
+    Index: 0
+    Name:  (0)
+    Type: SHT_NULL (0x0)
+    Flags [ (0x0)
+    ]
+    Address: 0x0
+    Offset: 0x0
+    Size: 0
+    Link: 0
+    Info: 0
+    AddressAlignment: 0
+    EntrySize: 0
+  }
+  Section {
+    Index: 1
+    Name: .strtab (283)
+    Type: SHT_STRTAB (0x3)
+    Flags [ (0x0)
+    ]
+    Address: 0x0
+    Offset: 0x2BC0
+    Size: 946
+    Link: 0
+    Info: 0
+    AddressAlignment: 1
+    EntrySize: 0
+  }
+  Section {
+    Index: 2
+    Name: .text (1)
+    Type: SHT_PROGBITS (0x1)
+    Flags [ (0x6)
+      SHF_ALLOC (0x2)
+      SHF_EXECINSTR (0x4)
+    ]
+    Address: 0x0
+    Offset: 0x40
+    Size: 0
+    Link: 0
+    Info: 0
+    AddressAlignment: 16
+    EntrySize: 0
+  }
+  Section {
+    Index: 3
+    Name: .text.dr2d_kpke_keygen_seed_noise (218)
+    Type: SHT_PROGBITS (0x1)
+    Flags [ (0x6)
+      SHF_ALLOC (0x2)
+      SHF_EXECINSTR (0x4)
+    ]
+    Address: 0x0
+    Offset: 0x40
+    Size: 3888
+    Link: 0
+    Info: 0
+    AddressAlignment: 16
+    EntrySize: 0
+  }
+  Section {
+    Index: 4
+    Name: .rela.text.dr2d_kpke_keygen_seed_noise (213)
+    Type: SHT_RELA (0x4)
+    Flags [ (0x40)
+      SHF_INFO_LINK (0x40)
+    ]
+    Address: 0x0
+    Offset: 0x2794
+    Size: 660
+    Link: 16
+    Info: 3
+    AddressAlignment: 4
+    EntrySize: 12
+  }
+  Section {
+    Index: 5
+    Name: .text._ZN12_GLOBAL__N_119cbd3_ntt_store_dr2bEPKhhPh (89)
+    Type: SHT_PROGBITS (0x1)
+    Flags [ (0x6)
+      SHF_ALLOC (0x2)
+      SHF_EXECINSTR (0x4)
+    ]
+    Address: 0x0
+    Offset: 0xF70
+    Size: 2160
+    Link: 0
+    Info: 0
+    AddressAlignment: 16
+    EntrySize: 0
+  }
+  Section {
+    Index: 6
+    Name: .rela.text._ZN12_GLOBAL__N_119cbd3_ntt_store_dr2bEPKhhPh (84)
+    Type: SHT_RELA (0x4)
+    Flags [ (0x40)
+      SHF_INFO_LINK (0x40)
+    ]
+    Address: 0x0
+    Offset: 0x2A28
+    Size: 264
+    Link: 16
+    Info: 5
+    AddressAlignment: 4
+    EntrySize: 12
+  }
+  Section {
+    Index: 7
+    Name: .text._ZN15phoenix_sdr_dsp3pqc3dr1L12keccak_f1600EPh (146)
+    Type: SHT_PROGBITS (0x1)
+    Flags [ (0x6)
+      SHF_ALLOC (0x2)
+      SHF_EXECINSTR (0x4)
+    ]
+    Address: 0x0
+    Offset: 0x17E0
+    Size: 2032
+    Link: 0
+    Info: 0
+    AddressAlignment: 16
+    EntrySize: 0
+  }
+  Section {
+    Index: 8
+    Name: .rela.text._ZN15phoenix_sdr_dsp3pqc3dr1L12keccak_f1600EPh (141)
+    Type: SHT_RELA (0x4)
+    Flags [ (0x40)
+      SHF_INFO_LINK (0x40)
+    ]
+    Address: 0x0
+    Offset: 0x2B30
+    Size: 84
+    Link: 16
+    Info: 7
+    AddressAlignment: 4
+    EntrySize: 12
+  }
+  Section {
+    Index: 9
+    Name: .text._ZN12_GLOBAL__N_13nttEPj (53)
+    Type: SHT_PROGBITS (0x1)
+    Flags [ (0x6)
+      SHF_ALLOC (0x2)
+      SHF_EXECINSTR (0x4)
+    ]
+    Address: 0x0
+    Offset: 0x1FD0
+    Size: 464
+    Link: 0
+    Info: 0
+    AddressAlignment: 16
+    EntrySize: 0
+  }
+  Section {
+    Index: 10
+    Name: .rela.text._ZN12_GLOBAL__N_13nttEPj (48)
+    Type: SHT_RELA (0x4)
+    Flags [ (0x40)
+      SHF_INFO_LINK (0x40)
+    ]
+    Address: 0x0
+    Offset: 0x2B84
+    Size: 60
+    Link: 16
+    Info: 9
+    AddressAlignment: 4
+    EntrySize: 12
+  }
+  Section {
+    Index: 11
+    Name: .rodata._ZN15phoenix_sdr_dsp3pqc4dr2dL6kZetasE (299)
+    Type: SHT_PROGBITS (0x1)
+    Flags [ (0x2)
+      SHF_ALLOC (0x2)
+    ]
+    Address: 0x0
+    Offset: 0x21A0
+    Size: 256
+    Link: 0
+    Info: 0
+    AddressAlignment: 2
+    EntrySize: 0
+  }
+  Section {
+    Index: 12
+    Name: .linker-options (16)
+    Type: SHT_LLVM_LINKER_OPTIONS (0x6FFF4C01)
+    Flags [ (0x80000000)
+      SHF_EXCLUDE (0x80000000)
+    ]
+    Address: 0x0
+    Offset: 0x22A0
+    Size: 0
+    Link: 0
+    Info: 0
+    AddressAlignment: 1
+    EntrySize: 0
+  }
+  Section {
+    Index: 13
+    Name: .comment (7)
+    Type: SHT_PROGBITS (0x1)
+    Flags [ (0x30)
+      SHF_MERGE (0x10)
+      SHF_STRINGS (0x20)
+    ]
+    Address: 0x0
+    Offset: 0x22A0
+    Size: 100
+    Link: 0
+    Info: 0
+    AddressAlignment: 1
+    EntrySize: 1
+  }
+  Section {
+    Index: 14
+    Name: .note.GNU-stack (32)
+    Type: SHT_PROGBITS (0x1)
+    Flags [ (0x0)
+    ]
+    Address: 0x0
+    Offset: 0x2304
+    Size: 0
+    Link: 0
+    Info: 0
+    AddressAlignment: 1
+    EntrySize: 0
+  }
+  Section {
+    Index: 15
+    Name: .llvm_addrsig (199)
+    Type: SHT_LLVM_ADDRSIG (0x6FFF4C03)
+    Flags [ (0x80000000)
+      SHF_EXCLUDE (0x80000000)
+    ]
+    Address: 0x0
+    Offset: 0x2BC0
+    Size: 0
+    Link: 16
+    Info: 0
+    AddressAlignment: 1
+    EntrySize: 0
+  }
+  Section {
+    Index: 16
+    Name: .symtab (291)
+    Type: SHT_SYMTAB (0x2)
+    Flags [ (0x0)
+    ]
+    Address: 0x0
+    Offset: 0x2304
+    Size: 1168
+    Link: 1
+    Info: 71
+    AddressAlignment: 4
+    EntrySize: 16
+  }
+]
+Symbols [
+  Symbol {
+    Name:  (0)
+    Value: 0x0
+    Size: 0
+    Binding: Local (0x0)
+    Type: None (0x0)
+    Other: 0
+    Section: Undefined (0x0)
+  }
+  Symbol {
+    Name: dr2d_kpke_keygen_seed_noise.cc (252)
+    Value: 0x0
+    Size: 0
+    Binding: Local (0x0)
+    Type: File (0x4)
+    Other: 0
+    Section: Absolute (0xFFF1)
+  }
+  Symbol {
+    Name: .LBB0_12 (809)
+    Value: 0x210
+    Size: 0
+    Binding: Local (0x0)
+    Type: None (0x0)
+    Other: 0
+    Section: .text.dr2d_kpke_keygen_seed_noise (0x3)
+  }
+  Symbol {
+    Name: .LBB0_20 (918)
+    Value: 0x480
+    Size: 0
+    Binding: Local (0x0)
+    Type: None (0x0)
+    Other: 0
+    Section: .text.dr2d_kpke_keygen_seed_noise (0x3)
+  }
+  Symbol {
+    Name: .LBB0_13 (711)
+    Value: 0x230
+    Size: 0
+    Binding: Local (0x0)
+    Type: None (0x0)
+    Other: 0
+    Section: .text.dr2d_kpke_keygen_seed_noise (0x3)
+  }
+  Symbol {
+    Name: .L_LEnd14 (636)
+    Value: 0x290
+    Size: 0
+    Binding: Local (0x0)
+    Type: None (0x0)
+    Other: 0
+    Section: .text.dr2d_kpke_keygen_seed_noise (0x3)
+  }
+  Symbol {
+    Name: .LBB0_15 (574)
+    Value: 0x320
+    Size: 0
+    Binding: Local (0x0)
+    Type: None (0x0)
+    Other: 0
+    Section: .text.dr2d_kpke_keygen_seed_noise (0x3)
+  }
+  Symbol {
+    Name: .LBB0_16 (509)
+    Value: 0x340
+    Size: 0
+    Binding: Local (0x0)
+    Type: None (0x0)
+    Other: 0
+    Section: .text.dr2d_kpke_keygen_seed_noise (0x3)
+  }
+  Symbol {
+    Name: .L_LEnd1 (818)
+    Value: 0x3A0
+    Size: 0
+    Binding: Local (0x0)
+    Type: None (0x0)
+    Other: 0
+    Section: .text.dr2d_kpke_keygen_seed_noise (0x3)
+  }
+  Symbol {
+    Name: .LBB0_18 (419)
+    Value: 0x3D0
+    Size: 0
+    Binding: Local (0x0)
+    Type: None (0x0)
+    Other: 0
+    Section: .text.dr2d_kpke_keygen_seed_noise (0x3)
+  }
+  Symbol {
+    Name: .L_LEnd0 (872)
+    Value: 0x430
+    Size: 0
+    Binding: Local (0x0)
+    Type: None (0x0)
+    Other: 0
+    Section: .text.dr2d_kpke_keygen_seed_noise (0x3)
+  }
+  Symbol {
+    Name: .LBB0_24 (627)
+    Value: 0x5D0
+    Size: 0
+    Binding: Local (0x0)
+    Type: None (0x0)
+    Other: 0
+    Section: .text.dr2d_kpke_keygen_seed_noise (0x3)
+  }
+  Symbol {
+    Name: .LBB0_22 (781)
+    Value: 0x4E0
+    Size: 0
+    Binding: Local (0x0)
+    Type: None (0x0)
+    Other: 0
+    Section: .text.dr2d_kpke_keygen_seed_noise (0x3)
+  }
+  Symbol {
+    Name: .L_LEnd13 (701)
+    Value: 0x530
+    Size: 0
+    Binding: Local (0x0)
+    Type: None (0x0)
+    Other: 0
+    Section: .text.dr2d_kpke_keygen_seed_noise (0x3)
+  }
+  Symbol {
+    Name: .LBB0_25 (555)
+    Value: 0x600
+    Size: 0
+    Binding: Local (0x0)
+    Type: None (0x0)
+    Other: 0
+    Section: .text.dr2d_kpke_keygen_seed_noise (0x3)
+  }
+  Symbol {
+    Name: .L_LEnd12 (790)
+    Value: 0x660
+    Size: 0
+    Binding: Local (0x0)
+    Type: None (0x0)
+    Other: 0
+    Section: .text.dr2d_kpke_keygen_seed_noise (0x3)
+  }
+  Symbol {
+    Name: .LBB0_27 (446)
+    Value: 0x6B0
+    Size: 0
+    Binding: Local (0x0)
+    Type: None (0x0)
+    Other: 0
+    Section: .text.dr2d_kpke_keygen_seed_noise (0x3)
+  }
+  Symbol {
+    Name: .L_LEnd11 (862)
+    Value: 0x710
+    Size: 0
+    Binding: Local (0x0)
+    Type: None (0x0)
+    Other: 0
+    Section: .text.dr2d_kpke_keygen_seed_noise (0x3)
+  }
+  Symbol {
+    Name: _ZN15phoenix_sdr_dsp3pqc3dr1L12keccak_f1600EPh (152)
+    Value: 0x0
+    Size: 2032
+    Binding: Local (0x0)
+    Type: Function (0x2)
+    Other: 0
+    Section: .text._ZN15phoenix_sdr_dsp3pqc3dr1L12keccak_f1600EPh (0x7)
+  }
+  Symbol {
+    Name: .LBB0_29 (364)
+    Value: 0x7D0
+    Size: 0
+    Binding: Local (0x0)
+    Type: None (0x0)
+    Other: 0
+    Section: .text.dr2d_kpke_keygen_seed_noise (0x3)
+  }
+  Symbol {
+    Name: .L_LEnd10 (927)
+    Value: 0x820
+    Size: 0
+    Binding: Local (0x0)
+    Type: None (0x0)
+    Other: 0
+    Section: .text.dr2d_kpke_keygen_seed_noise (0x3)
+  }
+  Symbol {
+    Name: .LBB0_31 (843)
+    Value: 0x860
+    Size: 0
+    Binding: Local (0x0)
+    Type: None (0x0)
+    Other: 0
+    Section: .text.dr2d_kpke_keygen_seed_noise (0x3)
+  }
+  Symbol {
+    Name: .L_LEnd9 (346)
+    Value: 0x8C0
+    Size: 0
+    Binding: Local (0x0)
+    Type: None (0x0)
+    Other: 0
+    Section: .text.dr2d_kpke_keygen_seed_noise (0x3)
+  }
+  Symbol {
+    Name: .LBB0_33 (682)
+    Value: 0x910
+    Size: 0
+    Binding: Local (0x0)
+    Type: None (0x0)
+    Other: 0
+    Section: .text.dr2d_kpke_keygen_seed_noise (0x3)
+  }
+  Symbol {
+    Name: .L_LEnd8 (383)
+    Value: 0x960
+    Size: 0
+    Binding: Local (0x0)
+    Type: None (0x0)
+    Other: 0
+    Section: .text.dr2d_kpke_keygen_seed_noise (0x3)
+  }
+  Symbol {
+    Name: .LBB0_35 (536)
+    Value: 0xA20
+    Size: 0
+    Binding: Local (0x0)
+    Type: None (0x0)
+    Other: 0
+    Section: .text.dr2d_kpke_keygen_seed_noise (0x3)
+  }
+  Symbol {
+    Name: .L_LEnd7 (428)
+    Value: 0xA70
+    Size: 0
+    Binding: Local (0x0)
+    Type: None (0x0)
+    Other: 0
+    Section: .text.dr2d_kpke_keygen_seed_noise (0x3)
+  }
+  Symbol {
+    Name: _ZN12_GLOBAL__N_119cbd3_ntt_store_dr2bEPKhhPh (95)
+    Value: 0x0
+    Size: 2160
+    Binding: Local (0x0)
+    Type: Function (0x2)
+    Other: 0
+    Section: .text._ZN12_GLOBAL__N_119cbd3_ntt_store_dr2bEPKhhPh (0x5)
+  }
+  Symbol {
+    Name: .LBB0_44 (608)
+    Value: 0xCB0
+    Size: 0
+    Binding: Local (0x0)
+    Type: None (0x0)
+    Other: 0
+    Section: .text.dr2d_kpke_keygen_seed_noise (0x3)
+  }
+  Symbol {
+    Name: .LBB0_40 (890)
+    Value: 0xB80
+    Size: 0
+    Binding: Local (0x0)
+    Type: None (0x0)
+    Other: 0
+    Section: .text.dr2d_kpke_keygen_seed_noise (0x3)
+  }
+  Symbol {
+    Name: .L_LEnd4 (583)
+    Value: 0xBE0
+    Size: 0
+    Binding: Local (0x0)
+    Type: None (0x0)
+    Other: 0
+    Section: .text.dr2d_kpke_keygen_seed_noise (0x3)
+  }
+  Symbol {
+    Name: .LBB0_42 (762)
+    Value: 0xC30
+    Size: 0
+    Binding: Local (0x0)
+    Type: None (0x0)
+    Other: 0
+    Section: .text.dr2d_kpke_keygen_seed_noise (0x3)
+  }
+  Symbol {
+    Name: .L_LEnd3 (665)
+    Value: 0xC80
+    Size: 0
+    Binding: Local (0x0)
+    Type: None (0x0)
+    Other: 0
+    Section: .text.dr2d_kpke_keygen_seed_noise (0x3)
+  }
+  Symbol {
+    Name: .LBB0_52 (753)
+    Value: 0xF10
+    Size: 0
+    Binding: Local (0x0)
+    Type: None (0x0)
+    Other: 0
+    Section: .text.dr2d_kpke_keygen_seed_noise (0x3)
+  }
+  Symbol {
+    Name: .LBB0_49 (355)
+    Value: 0xDE0
+    Size: 0
+    Binding: Local (0x0)
+    Type: None (0x0)
+    Other: 0
+    Section: .text.dr2d_kpke_keygen_seed_noise (0x3)
+  }
+  Symbol {
+    Name: .LBB0_45 (527)
+    Value: 0xCD0
+    Size: 0
+    Binding: Local (0x0)
+    Type: None (0x0)
+    Other: 0
+    Section: .text.dr2d_kpke_keygen_seed_noise (0x3)
+  }
+  Symbol {
+    Name: .L_LEnd6 (465)
+    Value: 0xD30
+    Size: 0
+    Binding: Local (0x0)
+    Type: None (0x0)
+    Other: 0
+    Section: .text.dr2d_kpke_keygen_seed_noise (0x3)
+  }
+  Symbol {
+    Name: .LBB0_47 (437)
+    Value: 0xD80
+    Size: 0
+    Binding: Local (0x0)
+    Type: None (0x0)
+    Other: 0
+    Section: .text.dr2d_kpke_keygen_seed_noise (0x3)
+  }
+  Symbol {
+    Name: .L_LEnd5 (518)
+    Value: 0xDD0
+    Size: 0
+    Binding: Local (0x0)
+    Type: None (0x0)
+    Other: 0
+    Section: .text.dr2d_kpke_keygen_seed_noise (0x3)
+  }
+  Symbol {
+    Name: .LBB0_50 (881)
+    Value: 0xE20
+    Size: 0
+    Binding: Local (0x0)
+    Type: None (0x0)
+    Other: 0
+    Section: .text.dr2d_kpke_keygen_seed_noise (0x3)
+  }
+  Symbol {
+    Name: .L_LEnd2 (720)
+    Value: 0xE70
+    Size: 0
+    Binding: Local (0x0)
+    Type: None (0x0)
+    Other: 0
+    Section: .text.dr2d_kpke_keygen_seed_noise (0x3)
+  }
+  Symbol {
+    Name: .LBB1_20 (909)
+    Value: 0x830
+    Size: 0
+    Binding: Local (0x0)
+    Type: None (0x0)
+    Other: 0
+    Section: .text._ZN12_GLOBAL__N_119cbd3_ntt_store_dr2bEPKhhPh (0x5)
+  }
+  Symbol {
+    Name: .LBB1_2 (745)
+    Value: 0xA0
+    Size: 0
+    Binding: Local (0x0)
+    Type: None (0x0)
+    Other: 0
+    Section: .text._ZN12_GLOBAL__N_119cbd3_ntt_store_dr2bEPKhhPh (0x5)
+  }
+  Symbol {
+    Name: .L_LEnd23 (691)
+    Value: 0x100
+    Size: 0
+    Binding: Local (0x0)
+    Type: None (0x0)
+    Other: 0
+    Section: .text._ZN12_GLOBAL__N_119cbd3_ntt_store_dr2bEPKhhPh (0x5)
+  }
+  Symbol {
+    Name: .LBB1_4 (600)
+    Value: 0x150
+    Size: 0
+    Binding: Local (0x0)
+    Type: None (0x0)
+    Other: 0
+    Section: .text._ZN12_GLOBAL__N_119cbd3_ntt_store_dr2bEPKhhPh (0x5)
+  }
+  Symbol {
+    Name: .L_LEnd22 (771)
+    Value: 0x1B0
+    Size: 0
+    Binding: Local (0x0)
+    Type: None (0x0)
+    Other: 0
+    Section: .text._ZN12_GLOBAL__N_119cbd3_ntt_store_dr2bEPKhhPh (0x5)
+  }
+  Symbol {
+    Name: .LBB1_6 (482)
+    Value: 0x260
+    Size: 0
+    Binding: Local (0x0)
+    Type: None (0x0)
+    Other: 0
+    Section: .text._ZN12_GLOBAL__N_119cbd3_ntt_store_dr2bEPKhhPh (0x5)
+  }
+  Symbol {
+    Name: .L_LEnd21 (852)
+    Value: 0x2C0
+    Size: 0
+    Binding: Local (0x0)
+    Type: None (0x0)
+    Other: 0
+    Section: .text._ZN12_GLOBAL__N_119cbd3_ntt_store_dr2bEPKhhPh (0x5)
+  }
+  Symbol {
+    Name: .LBB1_8 (392)
+    Value: 0x330
+    Size: 0
+    Binding: Local (0x0)
+    Type: None (0x0)
+    Other: 0
+    Section: .text._ZN12_GLOBAL__N_119cbd3_ntt_store_dr2bEPKhhPh (0x5)
+  }
+  Symbol {
+    Name: .L_LEnd20 (899)
+    Value: 0x380
+    Size: 0
+    Binding: Local (0x0)
+    Type: None (0x0)
+    Other: 0
+    Section: .text._ZN12_GLOBAL__N_119cbd3_ntt_store_dr2bEPKhhPh (0x5)
+  }
+  Symbol {
+    Name: .LBB1_10 (937)
+    Value: 0x3D0
+    Size: 0
+    Binding: Local (0x0)
+    Type: None (0x0)
+    Other: 0
+    Section: .text._ZN12_GLOBAL__N_119cbd3_ntt_store_dr2bEPKhhPh (0x5)
+  }
+  Symbol {
+    Name: .L_LEnd19 (373)
+    Value: 0x4A0
+    Size: 0
+    Binding: Local (0x0)
+    Type: None (0x0)
+    Other: 0
+    Section: .text._ZN12_GLOBAL__N_119cbd3_ntt_store_dr2bEPKhhPh (0x5)
+  }
+  Symbol {
+    Name: _ZN12_GLOBAL__N_13nttEPj (59)
+    Value: 0x0
+    Size: 464
+    Binding: Local (0x0)
+    Type: Function (0x2)
+    Other: 0
+    Section: .text._ZN12_GLOBAL__N_13nttEPj (0x9)
+  }
+  Symbol {
+    Name: .LBB1_12 (800)
+    Value: 0x610
+    Size: 0
+    Binding: Local (0x0)
+    Type: None (0x0)
+    Other: 0
+    Section: .text._ZN12_GLOBAL__N_119cbd3_ntt_store_dr2bEPKhhPh (0x5)
+  }
+  Symbol {
+    Name: .L_LEnd18 (400)
+    Value: 0x650
+    Size: 0
+    Binding: Local (0x0)
+    Type: None (0x0)
+    Other: 0
+    Section: .text._ZN12_GLOBAL__N_119cbd3_ntt_store_dr2bEPKhhPh (0x5)
+  }
+  Symbol {
+    Name: .LBB1_14 (646)
+    Value: 0x6A0
+    Size: 0
+    Binding: Local (0x0)
+    Type: None (0x0)
+    Other: 0
+    Section: .text._ZN12_GLOBAL__N_119cbd3_ntt_store_dr2bEPKhhPh (0x5)
+  }
+  Symbol {
+    Name: .L_LEnd17 (455)
+    Value: 0x700
+    Size: 0
+    Binding: Local (0x0)
+    Type: None (0x0)
+    Other: 0
+    Section: .text._ZN12_GLOBAL__N_119cbd3_ntt_store_dr2bEPKhhPh (0x5)
+  }
+  Symbol {
+    Name: .LBB1_16 (500)
+    Value: 0x730
+    Size: 0
+    Binding: Local (0x0)
+    Type: None (0x0)
+    Other: 0
+    Section: .text._ZN12_GLOBAL__N_119cbd3_ntt_store_dr2bEPKhhPh (0x5)
+  }
+  Symbol {
+    Name: .L_LEnd16 (490)
+    Value: 0x790
+    Size: 0
+    Binding: Local (0x0)
+    Type: None (0x0)
+    Other: 0
+    Section: .text._ZN12_GLOBAL__N_119cbd3_ntt_store_dr2bEPKhhPh (0x5)
+  }
+  Symbol {
+    Name: .LBB1_18 (410)
+    Value: 0x7C0
+    Size: 0
+    Binding: Local (0x0)
+    Type: None (0x0)
+    Other: 0
+    Section: .text._ZN12_GLOBAL__N_119cbd3_ntt_store_dr2bEPKhhPh (0x5)
+  }
+  Symbol {
+    Name: .L_LEnd15 (564)
+    Value: 0x820
+    Size: 0
+    Binding: Local (0x0)
+    Type: None (0x0)
+    Other: 0
+    Section: .text._ZN12_GLOBAL__N_119cbd3_ntt_store_dr2bEPKhhPh (0x5)
+  }
+  Symbol {
+    Name: .LBB2_1 (835)
+    Value: 0x50
+    Size: 0
+    Binding: Local (0x0)
+    Type: None (0x0)
+    Other: 0
+    Section: .text._ZN15phoenix_sdr_dsp3pqc3dr1L12keccak_f1600EPh (0x7)
+  }
+  Symbol {
+    Name: .LBB2_2 (737)
+    Value: 0x4A0
+    Size: 0
+    Binding: Local (0x0)
+    Type: None (0x0)
+    Other: 0
+    Section: .text._ZN15phoenix_sdr_dsp3pqc3dr1L12keccak_f1600EPh (0x7)
+  }
+  Symbol {
+    Name: .LBB2_4 (592)
+    Value: 0x5C0
+    Size: 0
+    Binding: Local (0x0)
+    Type: None (0x0)
+    Other: 0
+    Section: .text._ZN15phoenix_sdr_dsp3pqc3dr1L12keccak_f1600EPh (0x7)
+  }
+  Symbol {
+    Name: .L_LEnd25 (545)
+    Value: 0x6B0
+    Size: 0
+    Binding: Local (0x0)
+    Type: None (0x0)
+    Other: 0
+    Section: .text._ZN15phoenix_sdr_dsp3pqc3dr1L12keccak_f1600EPh (0x7)
+  }
+  Symbol {
+    Name: .LBB2_6 (474)
+    Value: 0x700
+    Size: 0
+    Binding: Local (0x0)
+    Type: None (0x0)
+    Other: 0
+    Section: .text._ZN15phoenix_sdr_dsp3pqc3dr1L12keccak_f1600EPh (0x7)
+  }
+  Symbol {
+    Name: .L_LEnd24 (617)
+    Value: 0x770
+    Size: 0
+    Binding: Local (0x0)
+    Type: None (0x0)
+    Other: 0
+    Section: .text._ZN15phoenix_sdr_dsp3pqc3dr1L12keccak_f1600EPh (0x7)
+  }
+  Symbol {
+    Name: .LBB3_1 (827)
+    Value: 0x50
+    Size: 0
+    Binding: Local (0x0)
+    Type: None (0x0)
+    Other: 0
+    Section: .text._ZN12_GLOBAL__N_13nttEPj (0x9)
+  }
+  Symbol {
+    Name: .LBB3_2 (729)
+    Value: 0x70
+    Size: 0
+    Binding: Local (0x0)
+    Type: None (0x0)
+    Other: 0
+    Section: .text._ZN12_GLOBAL__N_13nttEPj (0x9)
+  }
+  Symbol {
+    Name: _ZN15phoenix_sdr_dsp3pqc4dr2dL6kZetasE (307)
+    Value: 0x0
+    Size: 256
+    Binding: Local (0x0)
+    Type: Object (0x1)
+    Other: 0
+    Section: .rodata._ZN15phoenix_sdr_dsp3pqc4dr2dL6kZetasE (0xB)
+  }
+  Symbol {
+    Name: .LBB3_3 (674)
+    Value: 0x90
+    Size: 0
+    Binding: Local (0x0)
+    Type: None (0x0)
+    Other: 0
+    Section: .text._ZN12_GLOBAL__N_13nttEPj (0x9)
+  }
+  Symbol {
+    Name: dr2d_kpke_keygen_seed_noise (224)
+    Value: 0x0
+    Size: 3888
+    Binding: Global (0x1)
+    Type: Function (0x2)
+    Other: 0
+    Section: .text.dr2d_kpke_keygen_seed_noise (0x3)
+  }
+  Symbol {
+    Name: __umodsi3 (655)
+    Value: 0x0
+    Size: 0
+    Binding: Global (0x1)
+    Type: None (0x0)
+    Other: 0
+    Section: Undefined (0x0)
+  }
+]
+----- OBJDUMP SYMBOL TABLE -----
+
+C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\dr2d_kpke_keygen_seed_noise.o:	file format elf32-aie
+
+SYMBOL TABLE:
+00000000 l    df *ABS*	00000000 dr2d_kpke_keygen_seed_noise.cc
+00000210 l       .text.dr2d_kpke_keygen_seed_noise	00000000 .LBB0_12
+00000480 l       .text.dr2d_kpke_keygen_seed_noise	00000000 .LBB0_20
+00000230 l       .text.dr2d_kpke_keygen_seed_noise	00000000 .LBB0_13
+00000290 l       .text.dr2d_kpke_keygen_seed_noise	00000000 .L_LEnd14
+00000320 l       .text.dr2d_kpke_keygen_seed_noise	00000000 .LBB0_15
+00000340 l       .text.dr2d_kpke_keygen_seed_noise	00000000 .LBB0_16
+000003a0 l       .text.dr2d_kpke_keygen_seed_noise	00000000 .L_LEnd1
+000003d0 l       .text.dr2d_kpke_keygen_seed_noise	00000000 .LBB0_18
+00000430 l       .text.dr2d_kpke_keygen_seed_noise	00000000 .L_LEnd0
+000005d0 l       .text.dr2d_kpke_keygen_seed_noise	00000000 .LBB0_24
+000004e0 l       .text.dr2d_kpke_keygen_seed_noise	00000000 .LBB0_22
+00000530 l       .text.dr2d_kpke_keygen_seed_noise	00000000 .L_LEnd13
+00000600 l       .text.dr2d_kpke_keygen_seed_noise	00000000 .LBB0_25
+00000660 l       .text.dr2d_kpke_keygen_seed_noise	00000000 .L_LEnd12
+000006b0 l       .text.dr2d_kpke_keygen_seed_noise	00000000 .LBB0_27
+00000710 l       .text.dr2d_kpke_keygen_seed_noise	00000000 .L_LEnd11
+00000000 l     F .text._ZN15phoenix_sdr_dsp3pqc3dr1L12keccak_f1600EPh	000007f0 _ZN15phoenix_sdr_dsp3pqc3dr1L12keccak_f1600EPh
+000007d0 l       .text.dr2d_kpke_keygen_seed_noise	00000000 .LBB0_29
+00000820 l       .text.dr2d_kpke_keygen_seed_noise	00000000 .L_LEnd10
+00000860 l       .text.dr2d_kpke_keygen_seed_noise	00000000 .LBB0_31
+000008c0 l       .text.dr2d_kpke_keygen_seed_noise	00000000 .L_LEnd9
+00000910 l       .text.dr2d_kpke_keygen_seed_noise	00000000 .LBB0_33
+00000960 l       .text.dr2d_kpke_keygen_seed_noise	00000000 .L_LEnd8
+00000a20 l       .text.dr2d_kpke_keygen_seed_noise	00000000 .LBB0_35
+00000a70 l       .text.dr2d_kpke_keygen_seed_noise	00000000 .L_LEnd7
+00000000 l     F .text._ZN12_GLOBAL__N_119cbd3_ntt_store_dr2bEPKhhPh	00000870 _ZN12_GLOBAL__N_119cbd3_ntt_store_dr2bEPKhhPh
+00000cb0 l       .text.dr2d_kpke_keygen_seed_noise	00000000 .LBB0_44
+00000b80 l       .text.dr2d_kpke_keygen_seed_noise	00000000 .LBB0_40
+00000be0 l       .text.dr2d_kpke_keygen_seed_noise	00000000 .L_LEnd4
+00000c30 l       .text.dr2d_kpke_keygen_seed_noise	00000000 .LBB0_42
+00000c80 l       .text.dr2d_kpke_keygen_seed_noise	00000000 .L_LEnd3
+00000f10 l       .text.dr2d_kpke_keygen_seed_noise	00000000 .LBB0_52
+00000de0 l       .text.dr2d_kpke_keygen_seed_noise	00000000 .LBB0_49
+00000cd0 l       .text.dr2d_kpke_keygen_seed_noise	00000000 .LBB0_45
+00000d30 l       .text.dr2d_kpke_keygen_seed_noise	00000000 .L_LEnd6
+00000d80 l       .text.dr2d_kpke_keygen_seed_noise	00000000 .LBB0_47
+00000dd0 l       .text.dr2d_kpke_keygen_seed_noise	00000000 .L_LEnd5
+00000e20 l       .text.dr2d_kpke_keygen_seed_noise	00000000 .LBB0_50
+00000e70 l       .text.dr2d_kpke_keygen_seed_noise	00000000 .L_LEnd2
+00000830 l       .text._ZN12_GLOBAL__N_119cbd3_ntt_store_dr2bEPKhhPh	00000000 .LBB1_20
+000000a0 l       .text._ZN12_GLOBAL__N_119cbd3_ntt_store_dr2bEPKhhPh	00000000 .LBB1_2
+00000100 l       .text._ZN12_GLOBAL__N_119cbd3_ntt_store_dr2bEPKhhPh	00000000 .L_LEnd23
+00000150 l       .text._ZN12_GLOBAL__N_119cbd3_ntt_store_dr2bEPKhhPh	00000000 .LBB1_4
+000001b0 l       .text._ZN12_GLOBAL__N_119cbd3_ntt_store_dr2bEPKhhPh	00000000 .L_LEnd22
+00000260 l       .text._ZN12_GLOBAL__N_119cbd3_ntt_store_dr2bEPKhhPh	00000000 .LBB1_6
+000002c0 l       .text._ZN12_GLOBAL__N_119cbd3_ntt_store_dr2bEPKhhPh	00000000 .L_LEnd21
+00000330 l       .text._ZN12_GLOBAL__N_119cbd3_ntt_store_dr2bEPKhhPh	00000000 .LBB1_8
+00000380 l       .text._ZN12_GLOBAL__N_119cbd3_ntt_store_dr2bEPKhhPh	00000000 .L_LEnd20
+000003d0 l       .text._ZN12_GLOBAL__N_119cbd3_ntt_store_dr2bEPKhhPh	00000000 .LBB1_10
+000004a0 l       .text._ZN12_GLOBAL__N_119cbd3_ntt_store_dr2bEPKhhPh	00000000 .L_LEnd19
+00000000 l     F .text._ZN12_GLOBAL__N_13nttEPj	000001d0 _ZN12_GLOBAL__N_13nttEPj
+00000610 l       .text._ZN12_GLOBAL__N_119cbd3_ntt_store_dr2bEPKhhPh	00000000 .LBB1_12
+00000650 l       .text._ZN12_GLOBAL__N_119cbd3_ntt_store_dr2bEPKhhPh	00000000 .L_LEnd18
+000006a0 l       .text._ZN12_GLOBAL__N_119cbd3_ntt_store_dr2bEPKhhPh	00000000 .LBB1_14
+00000700 l       .text._ZN12_GLOBAL__N_119cbd3_ntt_store_dr2bEPKhhPh	00000000 .L_LEnd17
+00000730 l       .text._ZN12_GLOBAL__N_119cbd3_ntt_store_dr2bEPKhhPh	00000000 .LBB1_16
+00000790 l       .text._ZN12_GLOBAL__N_119cbd3_ntt_store_dr2bEPKhhPh	00000000 .L_LEnd16
+000007c0 l       .text._ZN12_GLOBAL__N_119cbd3_ntt_store_dr2bEPKhhPh	00000000 .LBB1_18
+00000820 l       .text._ZN12_GLOBAL__N_119cbd3_ntt_store_dr2bEPKhhPh	00000000 .L_LEnd15
+00000050 l       .text._ZN15phoenix_sdr_dsp3pqc3dr1L12keccak_f1600EPh	00000000 .LBB2_1
+000004a0 l       .text._ZN15phoenix_sdr_dsp3pqc3dr1L12keccak_f1600EPh	00000000 .LBB2_2
+000005c0 l       .text._ZN15phoenix_sdr_dsp3pqc3dr1L12keccak_f1600EPh	00000000 .LBB2_4
+000006b0 l       .text._ZN15phoenix_sdr_dsp3pqc3dr1L12keccak_f1600EPh	00000000 .L_LEnd25
+00000700 l       .text._ZN15phoenix_sdr_dsp3pqc3dr1L12keccak_f1600EPh	00000000 .LBB2_6
+00000770 l       .text._ZN15phoenix_sdr_dsp3pqc3dr1L12keccak_f1600EPh	00000000 .L_LEnd24
+00000050 l       .text._ZN12_GLOBAL__N_13nttEPj	00000000 .LBB3_1
+00000070 l       .text._ZN12_GLOBAL__N_13nttEPj	00000000 .LBB3_2
+00000000 l     O .rodata._ZN15phoenix_sdr_dsp3pqc4dr2dL6kZetasE	00000100 _ZN15phoenix_sdr_dsp3pqc4dr2dL6kZetasE
+00000090 l       .text._ZN12_GLOBAL__N_13nttEPj	00000000 .LBB3_3
+00000000 g     F .text.dr2d_kpke_keygen_seed_noise	00000f30 dr2d_kpke_keygen_seed_noise
+00000000         *UND*	00000000 __umodsi3
+===== OBJECT END: dr2d_kpke_keygen_seed_noise.o =====
+===== OBJECT BEGIN: objects_main_core_0_2\objects_main_core_0_2.o =====
+PATH=C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\objects_main_core_0_2\objects_main_core_0_2.o
+SHA256=DC58F2B1A79B5F71C8983CC8EDA6F58FA8C9047B07D76E4048EEB8856A9E8D83
+----- FILE/SECTION/SYMBOL DETAIL -----
+
+File: C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\objects_main_core_0_2\objects_main_core_0_2.o
+Format: elf32-aie
+Arch: aie2
+AddressSize: 32bit
+LoadName: <Not found>
+ElfHeader {
+  Ident {
+    Magic: (7F 45 4C 46)
+    Class: 32-bit (0x1)
+    DataEncoding: LittleEndian (0x1)
+    FileVersion: 1
+    OS/ABI: SystemV (0x0)
+    ABIVersion: 0
+    Unused: (00 00 00 00 00 00 00)
+  }
+  Type: Relocatable (0x1)
+  Machine: EM_AIE (0x108)
+  Version: 1
+  Entry: 0x0
+  ProgramHeaderOffset: 0x0
+  SectionHeaderOffset: 0x46C
+  Flags [ (0x2)
+    0x2
+  ]
+  HeaderSize: 52
+  ProgramHeaderEntrySize: 0
+  ProgramHeaderCount: 0
+  SectionHeaderEntrySize: 40
+  SectionHeaderCount: 7
+  StringTableSectionIndex: 1
+}
+Sections [
+  Section {
+    Index: 0
+    Name:  (0)
+    Type: SHT_NULL (0x0)
+    Flags [ (0x0)
+    ]
+    Address: 0x0
+    Offset: 0x0
+    Size: 0
+    Link: 0
+    Info: 0
+    AddressAlignment: 0
+    EntrySize: 0
+  }
+  Section {
+    Index: 1
+    Name: .strtab (69)
+    Type: SHT_STRTAB (0x3)
+    Flags [ (0x0)
+    ]
+    Address: 0x0
+    Offset: 0x35C
+    Size: 269
+    Link: 0
+    Info: 0
+    AddressAlignment: 1
+    EntrySize: 0
+  }
+  Section {
+    Index: 2
+    Name: .text (1)
+    Type: SHT_PROGBITS (0x1)
+    Flags [ (0x6)
+      SHF_ALLOC (0x2)
+      SHF_EXECINSTR (0x4)
+    ]
+    Address: 0x0
+    Offset: 0x40
+    Size: 0
+    Link: 0
+    Info: 0
+    AddressAlignment: 16
+    EntrySize: 0
+  }
+  Section {
+    Index: 3
+    Name: .text.core_0_2 (90)
+    Type: SHT_PROGBITS (0x1)
+    Flags [ (0x6)
+      SHF_ALLOC (0x2)
+      SHF_EXECINSTR (0x4)
+    ]
+    Address: 0x0
+    Offset: 0x40
+    Size: 496
+    Link: 0
+    Info: 0
+    AddressAlignment: 16
+    EntrySize: 0
+  }
+  Section {
+    Index: 4
+    Name: .rela.text.core_0_2 (85)
+    Type: SHT_RELA (0x4)
+    Flags [ (0x40)
+      SHF_INFO_LINK (0x40)
+    ]
+    Address: 0x0
+    Offset: 0x2F0
+    Size: 108
+    Link: 6
+    Info: 3
+    AddressAlignment: 4
+    EntrySize: 12
+  }
+  Section {
+    Index: 5
+    Name: .note.GNU-stack (7)
+    Type: SHT_PROGBITS (0x1)
+    Flags [ (0x0)
+    ]
+    Address: 0x0
+    Offset: 0x230
+    Size: 0
+    Link: 0
+    Info: 0
+    AddressAlignment: 1
+    EntrySize: 0
+  }
+  Section {
+    Index: 6
+    Name: .symtab (77)
+    Type: SHT_SYMTAB (0x2)
+    Flags [ (0x0)
+    ]
+    Address: 0x0
+    Offset: 0x230
+    Size: 192
+    Link: 1
+    Info: 3
+    AddressAlignment: 4
+    EntrySize: 16
+  }
+]
+Symbols [
+  Symbol {
+    Name:  (0)
+    Value: 0x0
+    Size: 0
+    Binding: Local (0x0)
+    Type: None (0x0)
+    Other: 0
+    Section: Undefined (0x0)
+  }
+  Symbol {
+    Name: LLVMDialectModule (51)
+    Value: 0x0
+    Size: 0
+    Binding: Local (0x0)
+    Type: File (0x4)
+    Other: 0
+    Section: Absolute (0xFFF1)
+  }
+  Symbol {
+    Name: .LBB0_1 (177)
+    Value: 0x80
+    Size: 0
+    Binding: Local (0x0)
+    Type: None (0x0)
+    Other: 0
+    Section: .text.core_0_2 (0x3)
+  }
+  Symbol {
+    Name: core_0_2 (96)
+    Value: 0x0
+    Size: 496
+    Binding: Global (0x1)
+    Type: Function (0x2)
+    Other: 0
+    Section: .text.core_0_2 (0x3)
+  }
+  Symbol {
+    Name: dr2d_d_cons_buff_0 (225)
+    Value: 0x0
+    Size: 0
+    Binding: Global (0x1)
+    Type: None (0x0)
+    Other: 0
+    Section: Undefined (0x0)
+  }
+  Symbol {
+    Name: dr2d_d_cons_buff_1 (133)
+    Value: 0x0
+    Size: 0
+    Binding: Global (0x1)
+    Type: None (0x0)
+    Other: 0
+    Section: Undefined (0x0)
+  }
+  Symbol {
+    Name: _anonymous0 (185)
+    Value: 0x0
+    Size: 0
+    Binding: Global (0x1)
+    Type: None (0x0)
+    Other: 0
+    Section: Undefined (0x0)
+  }
+  Symbol {
+    Name: dr2d_descriptor_cons_buff_1 (105)
+    Value: 0x0
+    Size: 0
+    Binding: Global (0x1)
+    Type: None (0x0)
+    Other: 0
+    Section: Undefined (0x0)
+  }
+  Symbol {
+    Name: dr2d_descriptor_cons_buff_0 (197)
+    Value: 0x0
+    Size: 0
+    Binding: Global (0x1)
+    Type: None (0x0)
+    Other: 0
+    Section: Undefined (0x0)
+  }
+  Symbol {
+    Name: dr2d_secret_token_buff_1 (152)
+    Value: 0x0
+    Size: 0
+    Binding: Global (0x1)
+    Type: None (0x0)
+    Other: 0
+    Section: Undefined (0x0)
+  }
+  Symbol {
+    Name: dr2d_secret_token_buff_0 (244)
+    Value: 0x0
+    Size: 0
+    Binding: Global (0x1)
+    Type: None (0x0)
+    Other: 0
+    Section: Undefined (0x0)
+  }
+  Symbol {
+    Name: dr2d_kpke_keygen_seed_noise (23)
+    Value: 0x0
+    Size: 0
+    Binding: Global (0x1)
+    Type: None (0x0)
+    Other: 0
+    Section: Undefined (0x0)
+  }
+]
+----- OBJDUMP SYMBOL TABLE -----
+
+C:\Users\midhat\.npu\cache\04f147d54cb01d160974a6e6\objects_main_core_0_2\objects_main_core_0_2.o:	file format elf32-aie
+
+SYMBOL TABLE:
+00000000 l    df *ABS*	00000000 LLVMDialectModule
+00000080 l       .text.core_0_2	00000000 .LBB0_1
+00000000 g     F .text.core_0_2	000001f0 core_0_2
+00000000         *UND*	00000000 dr2d_d_cons_buff_0
+00000000         *UND*	00000000 dr2d_d_cons_buff_1
+00000000         *UND*	00000000 _anonymous0
+00000000         *UND*	00000000 dr2d_descriptor_cons_buff_1
+00000000         *UND*	00000000 dr2d_descriptor_cons_buff_0
+00000000         *UND*	00000000 dr2d_secret_token_buff_1
+00000000         *UND*	00000000 dr2d_secret_token_buff_0
+00000000         *UND*	00000000 dr2d_kpke_keygen_seed_noise
+===== OBJECT END: objects_main_core_0_2\objects_main_core_0_2.o =====

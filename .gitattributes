@@ -51,6 +51,10 @@ Makefile text eol=lf
 *.gif    binary
 *.pdf    binary
 
+# Preserve captured DR2 forensic text byte-for-byte (including CRLF and tabs).
+docs/pqc_dr2_evidence_20260818/*.txt binary
+docs/pqc_dr2_evidence_20260818/**/*.txt binary
+
 # --- Linguist hints for GitHub's language stats ---
 # Treat vendored third-party code as "not our code" for language %.
 third_party/**  linguist-vendored

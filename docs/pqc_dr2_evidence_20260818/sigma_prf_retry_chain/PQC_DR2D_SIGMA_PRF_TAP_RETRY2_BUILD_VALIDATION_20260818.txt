@@ -1,0 +1,15 @@
+DR2d sigma-plus-PRF tap retry2 validation
+PATCH_SHA256=c1e09ebfd8b5a854547bb4b1be83c75a3c6ba2e59ab1c562ab4db541f08700dd
+RETRY2_SCRIPT_SHA256=44dba1b1cdf2117b4fb587274b5bff307767f3131f1593eb4b64c44aa6fe10c4
+CURRENT_STATE=original 3 additive files at exact original hashes; corrective patch unapplied
+ORIGINAL_EVIDENCE_REQUIRED=PQC_DR2D_sigma_prf_tap_apply_compile_only_evidence_20260818.txt
+RETRY1_EVIDENCE_REQUIRED=PQC_DR2D_sigma_prf_tap_apply_compile_only_retry1_evidence_20260818.txt
+RETRY2_EVIDENCE_OUTPUT=PQC_DR2D_sigma_prf_tap_apply_compile_only_retry2_evidence_20260818.txt
+ORIGINAL_REGEX=(?s-i)missing\s+(?:a\s+)?required\s+keyword-only\s+argument\s*:?\s*['\"]?d_slots['\"]?
+REPRESENTATIVE_CURRENT_EVIDENCE_GATES=PASS
+RETRY2_STATIC_AND_EMBEDDED_PYTHON=PASS
+RETRY2_RECONSTRUCTED_PATCH_AND_PYTHON=PASS
+NATIVE_AUTHORIZATION_ASSIGNMENT=ABSENT
+NATIVE_RUNNER_INVOCATION=ABSENT
+ORIGINAL_AND_RETRY1_EVIDENCE_REMOVAL=ABSENT
+NATIVE_NPU_CALLS_THIS_TASK=0

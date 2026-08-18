@@ -1,0 +1,367 @@
+diff --git a/phoenix_sdr_dsp/pqc/kernels/dr2d_mlkem512_kpke_sigma_prf_tap.cc b/phoenix_sdr_dsp/pqc/kernels/dr2d_mlkem512_kpke_sigma_prf_tap.cc
+new file mode 100644
+index 000000000000..7a63433e2245
+--- /dev/null
++++ b/phoenix_sdr_dsp/pqc/kernels/dr2d_mlkem512_kpke_sigma_prf_tap.cc
+@@ -0,0 +1,67 @@
++// Diagnostic-only predecessor trace for the DR2d W0 ML-KEM-512 noise path.
++// It is additive and must never replace or be linked into production KeyGen.
++#include <stdint.h>
++
++#include "dr1_keccak_f1600.hpp"
++
++namespace {
++
++constexpr uint32_t kStateBytes = 200u;
++constexpr uint32_t kSigmaBytes = 32u;
++constexpr uint32_t kPrfBytes = 192u;
++constexpr uint32_t kPrfCount = 4u;
++constexpr uint32_t kTraceBytes = kSigmaBytes + kPrfCount * kPrfBytes;
++constexpr uint32_t kRateG = 72u;
++constexpr uint32_t kRateShake256 = 136u;
++
++static inline void clear_bytes(uint8_t *destination, uint32_t bytes) {
++  for (uint32_t index = 0; index < bytes; ++index) destination[index] = 0u;
++}
++
++// Exact byte staging evidenced for derive_g: SHA3-512(D || 0x02), first 64 bytes.
++static inline void derive_sigma(const uint8_t d[kSigmaBytes],
++                                uint8_t sigma[kSigmaBytes]) {
++  alignas(8) uint8_t state[kStateBytes];
++  clear_bytes(state, kStateBytes);
++  for (uint32_t index = 0; index < kSigmaBytes; ++index) state[index] ^= d[index];
++  state[32] ^= 2u;
++  state[33] ^= 0x06u;
++  state[kRateG - 1u] ^= 0x80u;
++  phoenix_sdr_dsp::pqc::dr1::keccak_f1600(state);
++  for (uint32_t index = 0; index < kSigmaBytes; ++index)
++    sigma[index] = state[32u + index];
++  clear_bytes(state, kStateBytes);
++}
++
++// Exact byte staging evidenced for the W0 SHAKE256 PRF: sigma || nonce,
++// SHAKE domain 0x1f at byte 33, pad bit at byte 135, and a 136+56 squeeze.
++static inline void shake256_prf_192(const uint8_t sigma[kSigmaBytes],
++                                    uint8_t nonce, uint8_t output[kPrfBytes]) {
++  alignas(8) uint8_t state[kStateBytes];
++  clear_bytes(state, kStateBytes);
++  for (uint32_t index = 0; index < kSigmaBytes; ++index)
++    state[index] ^= sigma[index];
++  state[32] ^= nonce;
++  state[33] ^= 0x1fu;
++  state[kRateShake256 - 1u] ^= 0x80u;
++  phoenix_sdr_dsp::pqc::dr1::keccak_f1600(state);
++  for (uint32_t index = 0; index < kRateShake256; ++index)
++    output[index] = state[index];
++  phoenix_sdr_dsp::pqc::dr1::keccak_f1600(state);
++  for (uint32_t index = 0; index < (kPrfBytes - kRateShake256); ++index)
++    output[kRateShake256 + index] = state[index];
++  clear_bytes(state, kStateBytes);
++}
++
++}  // namespace
++
++extern "C" void dr2d_kpke_sigma_prf_tap(
++    const uint8_t d[kSigmaBytes], uint8_t trace[kTraceBytes]) {
++  uint8_t sigma[kSigmaBytes];
++  derive_sigma(d, sigma);
++  for (uint32_t index = 0; index < kSigmaBytes; ++index) trace[index] = sigma[index];
++  for (uint32_t nonce = 0; nonce < kPrfCount; ++nonce)
++    shake256_prf_192(sigma, static_cast<uint8_t>(nonce),
++                     trace + kSigmaBytes + nonce * kPrfBytes);
++  clear_bytes(sigma, kSigmaBytes);
++}
+diff --git a/phoenix_sdr_dsp/pqc/dr2d_mlkem512_kpke_sigma_prf_tap_graph.py b/phoenix_sdr_dsp/pqc/dr2d_mlkem512_kpke_sigma_prf_tap_graph.py
+new file mode 100644
+index 000000000000..eb294b88c698
+--- /dev/null
++++ b/phoenix_sdr_dsp/pqc/dr2d_mlkem512_kpke_sigma_prf_tap_graph.py
+@@ -0,0 +1,151 @@
++"""Additive, one-core, no-dispatch DR2d sigma-plus-PRF trace graph."""
++
++import hashlib
++import os
++from pathlib import Path
++
++import numpy as np
++from aie import iron
++from aie.iron import (
++    CompileTime,
++    ExternalFunction,
++    In,
++    ObjectFifo,
++    Out,
++    Program,
++    Runtime,
++    Worker,
++)
++from aie.utils.config import cxx_header_path
++
++D_BYTES = 32
++SIGMA_BYTES = 32
++PRF_BYTES = 192
++PRF_COUNT = 4
++TRACE_BYTES = SIGMA_BYTES + PRF_COUNT * PRF_BYTES
++
++_REPO_ROOT = Path(__file__).resolve().parents[2]
++_KERNEL = _REPO_ROOT / "phoenix_sdr_dsp" / "pqc" / "kernels" / (
++    "dr2d_mlkem512_kpke_sigma_prf_tap.cc"
++)
++_RETAINED_W0_OBJECT = (
++    Path.home()
++    / ".npu"
++    / "cache"
++    / "04f147d54cb01d160974a6e6"
++    / "dr2d_kpke_keygen_seed_noise.o"
++)
++
++_PRODUCTION_HASHES = {
++    "canonical_runner": (
++        _REPO_ROOT / "run_all_silicon_tests.py",
++        "742591321ac5dc3069a51ded4e198905367f8dc6261df8c3ebae20b5e333fbad",
++    ),
++    "production_abi": (
++        _REPO_ROOT / "phoenix_sdr_dsp" / "pqc" / "dr2d_mlkem512_kpke_keygen_abi.py",
++        "a6f44c68787905f6b4819598baacac59bf5bcc4a3125c8151b7863345e9ff4f4",
++    ),
++    "production_graph": (
++        _REPO_ROOT / "phoenix_sdr_dsp" / "pqc" / "dr2d_mlkem512_kpke_keygen_graph.py",
++        "e17e17b8481bc1fa8492a7e2bc9184fbae095b55c5e175b015aa19a2bc999694",
++    ),
++    "internal_header": (
++        _REPO_ROOT
++        / "phoenix_sdr_dsp"
++        / "pqc"
++        / "kernels"
++        / "dr2d_mlkem512_kpke_keygen_internal.hpp",
++        "16d61e6ada4d7de384b3981cc76d3de8319ce2bec999727d4847567e7e1f3519",
++    ),
++    "keccak_header": (
++        _REPO_ROOT / "phoenix_sdr_dsp" / "pqc" / "kernels" / "dr1_keccak_f1600.hpp",
++        "0470fb39277478a368004a49e551a3411d8f9185b492ac01f85d2297bcea3c1f",
++    ),
++    "w0_source": (
++        _REPO_ROOT
++        / "phoenix_sdr_dsp"
++        / "pqc"
++        / "kernels"
++        / "dr2d_mlkem512_kpke_keygen_seed.cc",
++        "2f94e2995706ac5636f35c66167e5dd8f54ac54b618c200bf4ee45b8b754ceaf",
++    ),
++}
++_RETAINED_W0_SHA256 = "7ea27cc5f6bb905253a161acd98988c62afc54855bcfd1c4530a55c441e28b70"
++
++
++def _sha256(path: Path) -> str:
++    if not path.is_file():
++        raise RuntimeError(f"REFUSED: required pinned input is missing: {path}")
++    return hashlib.sha256(path.read_bytes()).hexdigest()
++
++
++def verify_production_hashes() -> dict[str, str]:
++    """Require unchanged production inputs and the retained W0 witness object."""
++    observed: dict[str, str] = {}
++    for name, (path, expected) in _PRODUCTION_HASHES.items():
++        digest = _sha256(path)
++        if digest != expected:
++            raise RuntimeError(
++                f"REFUSED: protected hash mismatch for {name}: "
++                f"expected={expected} observed={digest}"
++            )
++        observed[name] = digest
++    retained = Path(os.environ.get("PQC_DR2D_W0_RETAINED_OBJECT", _RETAINED_W0_OBJECT))
++    digest = _sha256(retained)
++    if digest != _RETAINED_W0_SHA256:
++        raise RuntimeError(
++            "REFUSED: retained W0 comparison object hash mismatch: "
++            f"expected={_RETAINED_W0_SHA256} observed={digest}"
++        )
++    observed["retained_w0_object"] = digest
++    return observed
++
++
++@iron.jit
++def _program(
++    d: In,
++    trace: Out,
++    *,
++    d_slots: CompileTime[int],
++    trace_slots: CompileTime[int],
++    element_type: CompileTime[type],
++):
++    if d_slots != D_BYTES:
++        raise ValueError(f"d_slots must be {D_BYTES}, got {d_slots}")
++    if trace_slots != TRACE_BYTES:
++        raise ValueError(f"trace_slots must be {TRACE_BYTES}, got {trace_slots}")
++    if element_type is not np.uint8:
++        raise TypeError("sigma-plus-PRF trace requires numpy.uint8")
++
++    d_type = np.ndarray[(d_slots,), np.dtype[element_type]]
++    trace_type = np.ndarray[(trace_slots,), np.dtype[element_type]]
++    d_fifo = ObjectFifo(d_type, name="dr2d_sigma_prf_tap_d")
++    trace_fifo = ObjectFifo(trace_type, name="dr2d_sigma_prf_tap_trace")
++    tap = ExternalFunction(
++        "dr2d_kpke_sigma_prf_tap",
++        source_file=str(_KERNEL),
++        arg_types=[d_type, trace_type],
++        include_dirs=[cxx_header_path(), str(_KERNEL.parent)],
++    )
++
++    def core_body(d_cons, trace_prod, tap_fn):
++        d_item = d_cons.acquire(1)
++        trace_item = trace_prod.acquire(1)
++        tap_fn(d_item, trace_item)
++        d_cons.release(1)
++        trace_prod.release(1)
++
++    worker = Worker(
++        core_body,
++        fn_args=[d_fifo.cons(), trace_fifo.prod(), tap],
++    )
++
++    def sequence(d_input, trace_output, d_prod, trace_cons):
++        d_prod.fill(d_input)
++        trace_cons.drain(trace_output, wait=True)
++
++    runtime = Runtime(
++        sequence,
++        [d_type, trace_type, d_fifo.prod(), trace_fifo.cons()],
++    )
++    return Program(iron.get_current_device(), runtime, workers=[worker]).resolve_program()
+diff --git a/tests/pqc_device_resident/test_dr2d_mlkem512_kpke_sigma_prf_tap_contract.py b/tests/pqc_device_resident/test_dr2d_mlkem512_kpke_sigma_prf_tap_contract.py
+new file mode 100644
+index 000000000000..af4bcf75a980
+--- /dev/null
++++ b/tests/pqc_device_resident/test_dr2d_mlkem512_kpke_sigma_prf_tap_contract.py
+@@ -0,0 +1,131 @@
++"""Host-only and no-dispatch contracts for the additive sigma-plus-PRF tap."""
++
++import hashlib
++import os
++import unittest
++from pathlib import Path
++
++D_HEX = "47b893474672ba92e4b12ee44fb32953af8e8503b5fb471d1614fb8a021a660a"
++EXPECTED_SIGMA = "5d3628d3edbeb81cde94bd2adc989020343cb2c5ab8f3c922e66d1cde54ef3a0"
++EXPECTED_PRF_SHA256 = (
++    "7be3f7375be9880cd97047361def65c0154f99d05781c7fdd6dbda3079ea6db3",
++    "1921bf3ea11ad75a9430a85204d8fb7f185fdfc26af02953d18dbe74a6a59d34",
++    "966fdd0b608b6bf671a67974ab25befa727908d592a000f0f13dc5b0df175761",
++    "f2f858451147d532310d7a10727164c7f0685afeae8b7fe6cfa42463e03c2d61",
++)
++ROOT = Path(__file__).resolve().parents[2]
++KERNEL = ROOT / "phoenix_sdr_dsp" / "pqc" / "kernels" / (
++    "dr2d_mlkem512_kpke_sigma_prf_tap.cc"
++)
++GRAPH = ROOT / "phoenix_sdr_dsp" / "pqc" / "dr2d_mlkem512_kpke_sigma_prf_tap_graph.py"
++
++
++def expected_trace(d: bytes) -> bytes:
++    digest = hashlib.sha3_512(d + b"\x02").digest()
++    sigma = digest[32:64]
++    streams = b"".join(
++        hashlib.shake_256(sigma + bytes((nonce,))).digest(192)
++        for nonce in range(4)
++    )
++    return sigma + streams
++
++
++class SigmaPrfTapContracts(unittest.TestCase):
++    def test_known_tc_id_01_reference_trace(self) -> None:
++        trace = expected_trace(bytes.fromhex(D_HEX))
++        self.assertEqual(len(trace), 800)
++        self.assertEqual(trace[:32].hex(), EXPECTED_SIGMA)
++        for nonce, expected_digest in enumerate(EXPECTED_PRF_SHA256):
++            start = 32 + nonce * 192
++            self.assertEqual(
++                hashlib.sha256(trace[start : start + 192]).hexdigest(), expected_digest
++            )
++
++    def test_kernel_has_exact_evidenced_staging_and_pre_cbd_layout(self) -> None:
++        source = KERNEL.read_text(encoding="utf-8")
++        for required in (
++            "dr2d_kpke_sigma_prf_tap",
++            "state[32] ^= 2u;",
++            "state[33] ^= 0x06u;",
++            "state[kRateG - 1u] ^= 0x80u;",
++            "state[32] ^= nonce;",
++            "state[33] ^= 0x1fu;",
++            "state[kRateShake256 - 1u] ^= 0x80u;",
++            "output[index] = state[index];",
++            "output[kRateShake256 + index] = state[index];",
++            "kTraceBytes = kSigmaBytes + kPrfCount * kPrfBytes",
++        ):
++            self.assertIn(required, source)
++        self.assertNotIn("cbd3", source.lower())
++        self.assertNotIn("ntt", source.lower())
++
++    def test_graph_is_one_worker_one_input_one_direct_trace_egress(self) -> None:
++        source = GRAPH.read_text(encoding="utf-8")
++        topology_source = source.replace("dr2d_kpke_keygen_seed_noise.o", "")
++        self.assertIn('name="dr2d_sigma_prf_tap_d"', source)
++        self.assertIn('name="dr2d_sigma_prf_tap_trace"', source)
++        self.assertIn('"dr2d_kpke_sigma_prf_tap"', source)
++        self.assertEqual(source.count("ObjectFifo("), 2)
++        self.assertEqual(source.count("Worker("), 1)
++        for forbidden in (
++            "dr2d_kpke_keygen_seed_noise",
++            "dr2d_kpke_keygen_row0_expand",
++            "dr2d_kpke_keygen_row0_accumulate",
++            "dr2d_kpke_keygen_row1_expand",
++            "dr2d_kpke_keygen_row1_accumulate",
++            "dr2d_kpke_keygen_serialize",
++        ):
++            self.assertNotIn(forbidden, topology_source)
++
++    def test_graph_protects_pinned_production_inputs(self) -> None:
++        source = GRAPH.read_text(encoding="utf-8")
++        for digest in (
++            "742591321ac5dc3069a51ded4e198905367f8dc6261df8c3ebae20b5e333fbad",
++            "a6f44c68787905f6b4819598baacac59bf5bcc4a3125c8151b7863345e9ff4f4",
++            "e17e17b8481bc1fa8492a7e2bc9184fbae095b55c5e175b015aa19a2bc999694",
++            "16d61e6ada4d7de384b3981cc76d3de8319ce2bec999727d4847567e7e1f3519",
++            "0470fb39277478a368004a49e551a3411d8f9185b492ac01f85d2297bcea3c1f",
++            "2f94e2995706ac5636f35c66167e5dd8f54ac54b618c200bf4ee45b8b754ceaf",
++            "7ea27cc5f6bb905253a161acd98988c62afc54855bcfd1c4530a55c441e28b70",
++        ):
++            self.assertIn(digest, source)
++
++    @unittest.skipUnless(
++        os.environ.get("PQC_DR2D_REQUIRE_IRON_MLIR_CONTRACT") == "1",
++        "requires the checkout-local Windows IRON environment",
++    )
++    def test_specialization_generates_mlir_without_compile_or_dispatch(self) -> None:
++        import numpy as np
++
++        from phoenix_sdr_dsp.pqc import dr2d_mlkem512_kpke_sigma_prf_tap_graph as tap
++
++        design = tap._program()
++        self.assertEqual(
++            set(design.compilable.compile_params),
++            {"d_slots", "trace_slots", "element_type"},
++        )
++        specialized = design.specialize(
++            d_slots=32,
++            trace_slots=800,
++            element_type=np.uint8,
++        )
++        self.assertEqual(
++            set(specialized.compilable.compile_kwargs),
++            {"d_slots", "trace_slots", "element_type"},
++        )
++        mlir_text = specialized.as_mlir()
++        self.assertIn("dr2d_kpke_sigma_prf_tap", mlir_text)
++        self.assertIn("dr2d_sigma_prf_tap_trace", mlir_text)
++        for forbidden in (
++            "dr2d_kpke_keygen_seed_noise",
++            "dr2d_kpke_keygen_row0_expand",
++            "dr2d_kpke_keygen_row0_accumulate",
++            "dr2d_kpke_keygen_row1_expand",
++            "dr2d_kpke_keygen_row1_accumulate",
++            "dr2d_kpke_keygen_serialize",
++        ):
++            self.assertNotIn(forbidden, mlir_text)
++
++
++if __name__ == "__main__":
++    unittest.main()
