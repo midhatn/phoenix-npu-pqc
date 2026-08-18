@@ -14,8 +14,12 @@ EXPECTED_PRF_SHA256 = (
     "f2f858451147d532310d7a10727164c7f0685afeae8b7fe6cfa42463e03c2d61",
 )
 ROOT = Path(__file__).resolve().parents[2]
-KERNEL = ROOT / "phoenix_sdr_dsp" / "pqc" / "kernels" / (
-    "dr2d_mlkem512_kpke_sigma_prf_tap.cc"
+KERNEL = (
+    ROOT
+    / "phoenix_sdr_dsp"
+    / "pqc"
+    / "kernels"
+    / ("dr2d_mlkem512_kpke_sigma_prf_tap.cc")
 )
 GRAPH = ROOT / "phoenix_sdr_dsp" / "pqc" / "dr2d_mlkem512_kpke_sigma_prf_tap_graph.py"
 
@@ -24,8 +28,7 @@ def expected_trace(d: bytes) -> bytes:
     digest = hashlib.sha3_512(d + b"\x02").digest()
     sigma = digest[32:64]
     streams = b"".join(
-        hashlib.shake_256(sigma + bytes((nonce,))).digest(192)
-        for nonce in range(4)
+        hashlib.shake_256(sigma + bytes((nonce,))).digest(192) for nonce in range(4)
     )
     return sigma + streams
 

@@ -1,7 +1,7 @@
 # Contributing to Phoenix NPU PQC
 
 Phoenix NPU PQC is a research repository for FIPS 202/203/204 work on AMD
-Phoenix NPU1. Contributions must preserve evidence boundaries: a host check,
+Phoenix NPU. Contributions must preserve evidence boundaries: a host check,
 compile-only result, and physical exact-output result are different kinds of
 evidence and must never be presented as interchangeable.
 
@@ -19,14 +19,21 @@ python -m compileall -q phoenix_sdr_dsp tests run_all_pqc_tests.py run_all_silic
 git diff --check
 ```
 
-`run_all_silicon_tests.py` is a compatibility alias for the host-safe runner.
-It does not execute a silicon test.
+`run_all_silicon_tests.py` is the fail-closed physical NPU runner. Do not invoke
+it during host-only validation. Its default path preflights the native Windows
+toolchain and then dispatches the DR0, DR1, DR2a, DR2b, and DR2c milestone
+gates on the Phoenix NPU.
 
-Install NumPy for the graph-contract tests if it is not already available:
+Use the repository installer rather than installing an unpinned dependency by
+hand:
 
-```bash
-python -m pip install numpy
+```powershell
+py .\install
 ```
+
+The default install provisions the pinned native environment and then invokes
+the physical runner. Use `py .\install --no-tests` when preparing a checkout
+without authorizing physical dispatch.
 
 ## Working with PQC research material
 

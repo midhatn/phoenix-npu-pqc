@@ -26,8 +26,8 @@ success/reachable-error zeroization are host-tested.
 
 The focused host gate includes all 25 pinned NIST ACVP-Server FIPS 203
 ML-KEM-512 KeyGen cases and links every production partition kernel. That is
-not physical proof. `run_all_silicon_tests.py` is now an explicitly host-safe
-compatibility forwarder and does not invoke this historical native gate.
+not physical proof. The current `run_all_silicon_tests.py` is native-only, but
+it deliberately never dispatches this DR2d gate; DR2d remains unresolved.
 
 ## Diagnostic physical follow-up
 

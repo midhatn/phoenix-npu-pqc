@@ -1,41 +1,56 @@
 # DR1 Silicon Validation Record
 
-**Status: v3 PHYSICAL PASS for the narrow DR1 milestone.**  On 2026-08-17 the
-single-entrypoint v3 graph compiled, linked, placed, routed, and executed on a
-physical Phoenix NPU through IRON 1.4.1.  All 33 frozen requests matched the
-independent `hashlib.shake_128` / rejection-sampling oracle exactly across all
-256 returned coefficient lanes.
+> **Current release-flow correction (2026-08-18).** The operator supplied the
+> SHA-256 value
+> `85B373B1E3B8A1BD883DA6BBDE73F874EE5C331B4AE419E5D161758A64EB4A7E`
+> for an **external, operator-retained** historical DR1 log. That raw log is not
+> present in this repository, so this checkout cannot independently reproduce
+> its bytes, hash, backend line, or `TOTAL 33/33 PASS` line. It is an external
+> historical assertion, not current physical DR1 success. DR1 is the second
+> gate of the native-only canonical runner and must be rerun on the target
+> Phoenix laptop before any current five-gate claim.
+
+The raw historical DR1 log is not present in this repository.
+
+**Status: EXTERNAL / OPERATOR-RETAINED HISTORICAL ASSERTION — NOT
+REPOSITORY-REPRODUCIBLE.** The operator-reported 2026-08-17 v3 log says the
+single-entrypoint graph compiled, linked, placed, routed, and executed on a
+Phoenix NPU through IRON 1.4.1, with 33 requests matching the independent
+`hashlib.shake_128` / rejection-sampling oracle. The raw evidence is absent
+from this checkout; none of those physical results are independently verified
+here.
 
 The implementation is limited to one ML-DSA-44 `ExpandA` / `RejNTT` polynomial
 per invocation.  It uses SHAKE128 over `rho || j || i`, as specified by [NIST
 FIPS 202](https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.202.pdf) and [NIST
 FIPS 204](https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.204.pdf).
 
-## Definitive physical evidence
+## Operator-reported historical log metadata (not repository proof)
 
 | Item | Recorded value |
 |---|---|
-| Backend label | `dr1-mldsa44-expanda-rejntt:silicon` |
-| Physical corpus | all 16 `j/i` coordinates for `rho=bytes(range(32))`; 16 deterministic varied `rho/j/i` requests; one alternating `00/ff` boundary `rho` |
-| Terminal result | `TOTAL 33/33 PASS` |
-| Exact comparisons | 33 requests x 256 lanes = 8,448 exact coefficient comparisons |
-| Log name | `PQC_DR1_MLDSA44_v3_physical_corpus_20260817.log` |
-| Log SHA-256 | `85B373B1E3B8A1BD883DA6BBDE73F874EE5C331B4AE419E5D161758A64EB4A7E` |
-| Log length | 3,382 bytes |
-| Log timestamp | 2026-08-17 20:14:29 local time |
-| JIT cache key | `c1b1aaa7ab02f303edff67b3` |
-| Complete host log | `PQC_DR0_DR1_complete_host_zero_skip_20260817.log` |
-| Complete host log SHA-256 | `2621EF2E4130003895A9DA46042CEAA232D9C11AA5D24A25D0800978283B9568` |
-| Complete host log length | 10,514 bytes |
-| Complete host log timestamp | 2026-08-17 20:27:27 local time |
+| Reported backend label | `dr1-mldsa44-expanda-rejntt:silicon` |
+| Reported physical corpus | all 16 `j/i` coordinates for `rho=bytes(range(32))`; 16 deterministic varied `rho/j/i` requests; one alternating `00/ff` boundary `rho` |
+| Reported terminal result | `TOTAL 33/33 PASS` |
+| Reported comparisons | 33 requests x 256 lanes = 8,448 claimed exact coefficient comparisons |
+| External log name | `PQC_DR1_MLDSA44_v3_physical_corpus_20260817.log` (not stored in this repository) |
+| Operator-supplied log SHA-256 | `85B373B1E3B8A1BD883DA6BBDE73F874EE5C331B4AE419E5D161758A64EB4A7E` |
+| Reported log length | 3,382 bytes |
+| Reported log timestamp | 2026-08-17 20:14:29 local time |
+| Reported JIT cache key | `c1b1aaa7ab02f303edff67b3` |
+| External complete host log | `PQC_DR0_DR1_complete_host_zero_skip_20260817.log` (not stored in this repository) |
+| Reported host-log SHA-256 | `2621EF2E4130003895A9DA46042CEAA232D9C11AA5D24A25D0800978283B9568` |
+| Reported host-log length | 10,514 bytes |
+| Reported host-log timestamp | 2026-08-17 20:27:27 local time |
+| Current source corpus identity | SHA-256 `6f6ff6ef59666417492605b3aeded74c299ec053847147a38803b0948b1ee459` over canonical v1 serialization of all 33 request fields and expected coefficient fingerprints; this is **not** a hash of the absent historical log |
 
-The 33 requests executed sequentially in one Python process.  Every request
-returned the terminal SUCCESS ABI, exactly 256 canonical coefficients, and the
-frozen SHA-256 coefficient fingerprint for that case.  This supplies physical
-evidence for repeated-request reset of the core-local producer `g_service` and
-sampler `g_sampler` state in addition to exact arithmetic.
+The operator's log reports sequential execution of 33 requests in one Python
+process, terminal SUCCESS ABI records, 256 canonical coefficients, and the
+per-case fingerprints. Because neither named raw log is versioned here, this
+repository cannot validate the claimed reset behavior of the core-local
+`g_service` and `g_sampler` state or exact arithmetic from that log.
 
-## Compiler-reported worker sizes
+## Operator-reported worker sizes (not independently reproduced)
 
 Peano's `llvm-size.exe -A` reported:
 
@@ -44,10 +59,10 @@ Peano's `llvm-size.exe -A` reported:
 | `(0,2)` | `dr1_shake128_emit_next`, called eight times | 9,152 B | 6,608 B | 272 B | 197 B | 7,077 B |
 | `(0,3)` | `dr1_rejntt_consume_next`, called eight times | 5,468 B | 3,328 B | 1,040 B | 197 B | 4,565 B |
 
-The executable `.text` sections are below the project's 16 KiB per-worker
-program-memory limit.  `.bss` is reported separately and is not counted as
-program text.  The optimized per-core IR independently identifies core `(0,2)`
-as the SHAKE worker and core `(0,3)` as the RejNTT worker.
+The operator-reported executable `.text` sections are below the project's 16
+KiB per-worker program-memory limit. `.bss` is reported separately and is not
+counted as program text. The underlying ELF and IR are not retained here, so
+the repository does not independently establish these measurements.
 
 ## Recorded v1 IRON link incident (pre-execution)
 
@@ -81,10 +96,12 @@ The cause was not proven, but the host-correct table-based v2 Keccak was
 suspected to be incompatible with Peano/AIE2 code generation or read-only data
 handling.  V3 replaced it with an explicitly aligned 200-byte state, an
 on-the-fly FIPS 202 LFSR for Iota constants, and the Rho/Pi orbit recurrence
-used by the physically proven M32c algorithm shape.  The definitive v3 corpus
-above validates that replacement on this Phoenix/IRON path.
+used by the physically proven M32c algorithm shape. The external operator
+report attributes the claimed v3 result to that replacement; this repository
+does not validate the physical result without the retained raw log and a new
+canonical run.
 
-## Recorded host and source checks (2026-08-17)
+## Operator-reported host and source checks (2026-08-17)
 
 The following off-hardware checks completed against the v3 LFSR/orbit source
 in the development workspace:
@@ -109,11 +126,16 @@ dependency and remain outside this narrowly scoped DR1 validation record.
 
 ## Claim boundary and remaining evidence
 
-This record establishes physical exact-output execution only for the narrow
-DR1 operation and fixed successful-request corpus described above.  The graph
-retains exactly two host ingress FIFOs, one internal XOF FIFO, one terminal
-result FIFO, two host fills, one terminal drain, and no host/reference fallback.
-DR1 remains excluded from the canonical 34-entry silicon runner.
+This document does **not** establish physical exact-output execution from
+repository-retained evidence. It preserves an operator-supplied historical
+assertion about the narrow DR1 operation and fixed successful-request corpus.
+The current source has a canonical serialization and SHA-256 identity for its
+33 request fields and expected fingerprints; that proves current corpus
+identity, not historical log identity or device execution. The graph retains
+exactly two host ingress FIFOs, one internal XOF FIFO, one terminal result FIFO,
+two host fills, one terminal drain, and no host/reference fallback. The
+historical 34-entry runner accounting is superseded for current release use by
+the five-gate native-only canonical runner.
 
 The physical corpus did not inject malformed descriptors or corrupted internal
 tokens; those fail-closed paths remain host-compiled/source-contract evidence.

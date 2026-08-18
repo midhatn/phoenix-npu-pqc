@@ -1,6 +1,9 @@
 # Phoenix NPU PQC — host-only continuous integration.
 # This workflow intentionally does not install native NPU tooling, compile AIE
-# programs, or dispatch hardware. Native gates remain retained research evidence.
+# programs, or dispatch hardware. It therefore produces NO silicon evidence.
+# Canonical silicon validation is the separate physical run of
+# `py .\run_all_silicon_tests.py` on the target AMD Phoenix laptop, and a green
+# CI badge must never be presented as an NPU claim.
 name: CI
 
 "on":
@@ -40,11 +43,15 @@ jobs:
             phoenix_sdr_dsp/pqc/dr2d_mlkem512_kpke_keygen_terminal_probe_graph.py \
             phoenix_sdr_dsp/pqc/dr2d_mlkem512_kpke_keygen_w0_token_tap_graph.py \
             tests/production_dependency_guard.py tests/test_install_bootstrap.py \
+            tests/test_canonical_silicon_runner_contract.py \
+            tests/test_canonical_silicon_runner_behavior.py \
             tests/test_markdown_math_contract.py \
             tests/test_pqc_dr1_contract.py tests/test_pqc_dr2a_contract.py \
             tests/test_pqc_dr2b_contract.py tests/test_pqc_dr2c_contract.py \
             tests/test_pqc_dr2d_contract.py \
-            tests/test_release_materials_contract.py
+            tests/test_release_materials_contract.py \
+            tests/pqc_device_resident/test_dr1_mldsa44_rejntt.py \
+            tests/pqc_device_resident/test_dr1_mldsa44_rejntt_silicon.py
 
   validate-metadata:
     name: Validate metadata
@@ -74,16 +81,34 @@ jobs:
           missing = required - set(data)
           assert not missing, f"toolchain.yaml missing: {sorted(missing)}"
           assert data["project"]["name"] == "phoenix-npu-pqc"
-          for name in ("mlir_aie", "llvm_aie_peano", "xrt"):
+          for name in ("mlir_aie", "llvm_aie_peano"):
               assert data["toolchain"][name]["verified_version"]
           xrt = data["toolchain"]["xrt"]
-          for name in ("sdk_url", "sdk_bytes", "sdk_sha256", "release_url"):
+          for name in (
+              "archive_release", "runtime_version", "sdk_url", "sdk_bytes",
+              "sdk_sha256", "release_url",
+          ):
               assert xrt[name], f"toolchain.xrt missing {name}"
+          assert xrt["release_url"].endswith(xrt["archive_release"])
+          assert f"/download/{xrt['archive_release']}/" in xrt["sdk_url"]
+          canonical = data["verification"]["canonical_physical"]
+          assert canonical["ordered_gates"] == ["DR0", "DR1", "DR2a", "DR2b", "DR2c"]
+          assert canonical["expected_case_total"] == 94
+          assert sum(canonical["expected_totals"].values()) == 94
+          assert "run_all_silicon_tests.py" in canonical["runner"]
+          status = data["verification"]["physical_status_2026_08_18"]
+          assert "61/61" in status["fresh_current_source_subsuite"]
+          assert "85B373B1E3B8A1BD883DA6BBDE73F874EE5C331B4AE419E5D161758A64EB4A7E" in status["historical_dr1"]
+          assert "94/94" in status["no_current_canonical_claim"]
+          assert data["verification"]["host_preflight"]["runner"].endswith(
+              "run_all_pqc_tests.py"
+          )
+          assert "NOT fully hash-locked" in data["bootstrap"]["not_hash_locked"]
           print("toolchain.yaml OK")
           PY
 
-  host-safe-pqc-tests:
-    name: Host-safe PQC tests
+  host-preflight-pqc-tests:
+    name: Host preflight PQC tests (not silicon validation)
     runs-on: ubuntu-latest
     steps:
       # actions/checkout v7.0.1
@@ -94,9 +119,11 @@ jobs:
           python-version: "3.13"
       - name: Install host test dependency
         run: python -m pip install numpy==2.5.2
-      - name: List host-safe test plan
+      - name: List host preflight test plan
         run: python run_all_pqc_tests.py --dry-run
-      - name: Run host-safe PQC suite
+      - name: List canonical native gate plan (no compilation, no dispatch)
+        run: python run_all_silicon_tests.py --list
+      - name: Run host preflight PQC suite
         run: python run_all_pqc_tests.py
       - name: Compile Python without execution
         run: python -m compileall -q phoenix_sdr_dsp tests install install.py run_all_pqc_tests.py run_all_silicon_tests.py

@@ -1,5 +1,9 @@
 # Phoenix NPU PQC repository build report — 2026-08-18
 
+> **Superseding release-flow note.** This dated build report documents the
+> earlier host-forwarder state. Current `main` has a native-only canonical
+> five-gate runner; its current status is separately stated in the root README.
+
 ## Result
 
 The active repository identity is **Phoenix NPU PQC** (`phoenix-npu-pqc`).
@@ -31,10 +35,9 @@ The historical claim boundary is unchanged:
   `phoenix-npu-pqc`: `CITATION.cff`, `CONTRIBUTING.md`, `SECURITY.md`,
   `toolchain.yaml`, the then-current native `install.py`, issue forms, pull-request template,
   Dependabot comment, Markdown-link configuration, and CI.
-- Added `run_all_pqc_tests.py`, an explicit eight-module host-safe allowlist
-  with `--help`, `--list`, and `--dry-run`. `run_all_silicon_tests.py` is now
-  a compatibility forwarder to that host-safe runner and does not dispatch
-  hardware.
+- Added `run_all_pqc_tests.py`, an explicit host-safe allowlist with `--help`,
+  `--list`, and `--dry-run`. The current release flow now keeps that host
+  preflight separate from the native-only canonical runner.
 - Updated the current PQC roadmaps and repaired two retained local
   documentation references that pointed to files excluded by the repository
   split. The historical claims themselves were not changed.
@@ -63,8 +66,8 @@ was compiled, and no physical hardware command was invoked.
 | --- | --- |
 | `python run_all_pqc_tests.py --help` | PASS |
 | `python run_all_pqc_tests.py --dry-run` | PASS; eight explicit host-safe modules listed |
-| `python run_all_silicon_tests.py --dry-run` | PASS; forwards to the same host-safe plan |
-| `python run_all_pqc_tests.py` | PASS; 8/8 modules passed; 78 tests ran with one documented Windows-IRON-environment skip and no failures |
+| `python run_all_silicon_tests.py --list` | PASS; lists exactly the five physical milestone gates and 94 cases without compiling or dispatching |
+| `python run_all_pqc_tests.py` | PASS; host-preflight suite only; this result is not physical NPU validation |
 | `python -m compileall -q phoenix_sdr_dsp tests run_all_pqc_tests.py run_all_silicon_tests.py install install.py` | PASS |
 | Python AST, YAML, JSON, citation-field, toolchain, CI host-only, and import-compatibility checks | PASS |
 | Local Markdown-link check over all retained Markdown files | PASS |

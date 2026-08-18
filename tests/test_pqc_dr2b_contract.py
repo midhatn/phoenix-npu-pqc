@@ -166,7 +166,13 @@ class DR2bDeviceResidencyContractTests(unittest.TestCase):
         compatibility = (REPO / "run_all_silicon_tests.py").read_text(encoding="utf-8")
         self.assertIn("HOST_SAFE_TESTS", runner)
         self.assertNotIn("test_dr2b_mlkem512_noise_ntt_silicon.py", runner)
+        # The canonical physical runner names the host preflight only as a
+        # separate, non-qualifying suite, and dispatches this gate natively.
         self.assertIn("run_all_pqc_tests", compatibility)
+        self.assertIn('gate_id="DR2b"', compatibility)
+        self.assertIn('"test_dr2b_mlkem512_noise_ntt_silicon.py"', compatibility)
+        self.assertIn('backend_label="dr2b-mlkem512-noise-ntt:silicon"', compatibility)
+        self.assertIn("expected_total=13", compatibility)
 
 
 if __name__ == "__main__":

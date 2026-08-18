@@ -1,5 +1,10 @@
 # DR2c Silicon Validation Record
 
+> **Current release-flow correction (2026-08-18).** DR2c is now the fifth gate
+> in the native-only canonical sequence. The freshly verified retained
+> current-source DR0/DR2a/DR2b/DR2c sub-suite is 61/61, not a current 94/94
+> result.
+
 **Status: PHYSICAL PASS for the narrow DR2c milestone.** On 2026-08-17, the
 corrected two-host-input terminal ML-KEM-512 K-PKE.KeyGen row graph compiled,
 linked, placed, routed, and executed on a physical Phoenix NPU through IRON.
@@ -105,8 +110,9 @@ checks are host evidence; malformed descriptor/internal-token fault injection
 remains compiled-harness and source-contract evidence unless separately run on
 native hardware.
 
-`run_all_silicon_tests.py` remains unchanged. Canonical-runner integration is
-not established by this narrow record.
+The historical statement above is superseded by the current five-gate
+native-only canonical runner. This record remains narrow terminal-row evidence,
+not integrated KeyGen evidence.
 
 ## Claim boundary
 

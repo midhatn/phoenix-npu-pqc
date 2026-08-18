@@ -47,7 +47,9 @@ class CorpusCase:
 
 def _varied_rho(case: int) -> bytes:
     """Deterministic non-repeating rho fixture without production dependencies."""
-    return bytes((0x5D + 41 * case + 17 * index + 3 * case * index) & 0xFF for index in range(32))
+    return bytes(
+        (0x5D + 41 * case + 17 * index + 3 * case * index) & 0xFF for index in range(32)
+    )
 
 
 def _pre_silicon_corpus() -> tuple[CorpusCase, ...]:
@@ -118,10 +120,59 @@ COEFFICIENT_SHA256_FIXTURES: tuple[tuple[str, str], ...] = (
     ("varied-13", "7bf6987df6dcf9a67218868045f3d1d6feba85e2a9466896c17cd0859b05246e"),
     ("varied-14", "9bceeb2ee851a536f54b6f0a0bc1f67f7cbf614967dcde8d5b6e1a7218bc5eb9"),
     ("varied-15", "3b7b7117e6ef9c1d52c9f3168dc977e7e63e675f27004dd41030ff06fa048e5c"),
-    ("boundary-alternating-00-ff", "7a6dde5d6356eba98bdb6cad24aa840741c2709b7d820855cf032108b8009fd8"),
+    (
+        "boundary-alternating-00-ff",
+        "7a6dde5d6356eba98bdb6cad24aa840741c2709b7d820855cf032108b8009fd8",
+    ),
 )
 FINGERPRINT_BY_LABEL = dict(COEFFICIENT_SHA256_FIXTURES)
 assert len(FINGERPRINT_BY_LABEL) == len(PRE_SILICON_CORPUS) == 33
+
+DR1_CORPUS_SERIALIZATION_VERSION = b"phoenix-npu-pqc/dr1-corpus-v1\x00"
+DR1_CORPUS_SHA256 = "6f6ff6ef59666417492605b3aeded74c299ec053847147a38803b0948b1ee459"
+
+
+def serialize_pre_silicon_corpus(
+    corpus: tuple[CorpusCase, ...] = PRE_SILICON_CORPUS,
+) -> bytes:
+    """Return the canonical bytes for the DR1 requests and expected fingerprints.
+
+    This is deliberately a compact binary serialization rather than a repr:
+    field boundaries, integer byte order, corpus ordering, and the expected
+    per-case coefficient fingerprint are all part of the identity.
+    """
+
+    chunks = [DR1_CORPUS_SERIALIZATION_VERSION, len(corpus).to_bytes(2, "little")]
+    for case in corpus:
+        label = case.label.encode("utf-8")
+        fingerprint = FINGERPRINT_BY_LABEL.get(case.label)
+        if fingerprint is None:
+            raise AssertionError(f"missing frozen fingerprint for {case.label!r}")
+        fingerprint_bytes = fingerprint.encode("ascii")
+        if len(label) > 0xFFFF or len(fingerprint_bytes) > 0xFF:
+            raise AssertionError(
+                f"unserializable corpus label or fingerprint: {case.label!r}"
+            )
+        chunks.extend(
+            (
+                len(label).to_bytes(2, "little"),
+                label,
+                case.rho,
+                bytes((case.j, case.i)),
+                case.request_id.to_bytes(4, "little"),
+                len(fingerprint_bytes).to_bytes(1, "little"),
+                fingerprint_bytes,
+            )
+        )
+    return b"".join(chunks)
+
+
+def pre_silicon_corpus_sha256(
+    corpus: tuple[CorpusCase, ...] = PRE_SILICON_CORPUS,
+) -> str:
+    """Return the immutable SHA-256 identity of the canonical corpus bytes."""
+
+    return hashlib.sha256(serialize_pre_silicon_corpus(corpus)).hexdigest()
 
 
 def _coefficient_digest(coefficients: tuple[int, ...] | list[int]) -> str:
@@ -129,32 +180,59 @@ def _coefficient_digest(coefficients: tuple[int, ...] | list[int]) -> str:
 
 
 class DR1ReferenceTests(unittest.TestCase):
-    def test_independent_reference_handles_all_mldsa44_coordinates_exactly(self) -> None:
+    def test_independent_reference_handles_all_mldsa44_coordinates_exactly(
+        self,
+    ) -> None:
         rho = bytes(range(32))
-        results = [expanda_rejntt_reference(rho, j, i) for j in range(4) for i in range(4)]
+        results = [
+            expanda_rejntt_reference(rho, j, i) for j in range(4) for i in range(4)
+        ]
         self.assertTrue(all(not result.limit_exceeded for result in results))
         self.assertTrue(all(result.accepted_count == 256 for result in results))
         self.assertTrue(all(result.blocks_executed == 8 for result in results))
-        self.assertEqual(results[2].coefficients[:8], (6311339, 6469688, 7194785, 8319425, 8250096, 1900147, 4250255, 1906562))
+        self.assertEqual(
+            results[2].coefficients[:8],
+            (6311339, 6469688, 7194785, 8319425, 8250096, 1900147, 4250255, 1906562),
+        )
 
     def test_frozen_test_only_fingerprints_cover_the_33_case_corpus(self) -> None:
         for case in PRE_SILICON_CORPUS:
             with self.subTest(case=case.label):
                 result = expanda_rejntt_reference(case.rho, case.j, case.i)
                 self.assertFalse(result.limit_exceeded)
-                self.assertEqual(_coefficient_digest(result.coefficients), FINGERPRINT_BY_LABEL[case.label])
+                self.assertEqual(
+                    _coefficient_digest(result.coefficients),
+                    FINGERPRINT_BY_LABEL[case.label],
+                )
 
-    def test_four_block_reference_specialization_is_an_explicit_limit_failure(self) -> None:
+    def test_canonical_serialized_corpus_has_immutable_identity(self) -> None:
+        self.assertEqual(len(PRE_SILICON_CORPUS), 33)
+        self.assertEqual(len(serialize_pre_silicon_corpus()), 3827)
+        self.assertEqual(
+            pre_silicon_corpus_sha256(),
+            "6f6ff6ef59666417492605b3aeded74c299ec053847147a38803b0948b1ee459",
+        )
+        self.assertEqual(pre_silicon_corpus_sha256(), DR1_CORPUS_SHA256)
+
+    def test_four_block_reference_specialization_is_an_explicit_limit_failure(
+        self,
+    ) -> None:
         result = expanda_rejntt_reference(bytes(range(32)), 0, 0, max_blocks=4)
         self.assertTrue(result.limit_exceeded)
-        self.assertEqual((result.coefficients, result.accepted_count, result.blocks_executed), ((), 0, 4))
+        self.assertEqual(
+            (result.coefficients, result.accepted_count, result.blocks_executed),
+            ((), 0, 4),
+        )
 
 
 class DR1AbiTests(unittest.TestCase):
     def test_descriptor_layout_is_exact(self) -> None:
         descriptor = abi.build_descriptor(3, 1, 0x78563412)
         self.assertEqual(len(descriptor), 16)
-        self.assertEqual(descriptor, bytes((1, 0x11, 0x44, 0, 3, 1, 8, 0, 0x12, 0x34, 0x56, 0x78, 0, 0, 0, 0)))
+        self.assertEqual(
+            descriptor,
+            bytes((1, 0x11, 0x44, 0, 3, 1, 8, 0, 0x12, 0x34, 0x56, 0x78, 0, 0, 0, 0)),
+        )
 
     def test_malformed_inputs_fail_before_iron_loading(self) -> None:
         original = graph._load_iron
@@ -175,7 +253,9 @@ class DR1AbiTests(unittest.TestCase):
         with self.assertRaises(abi.Dr1AbiError):
             abi.parse_result(abi.result_sentinel(), 7)
         error = bytearray(abi.RESULT_BYTES)
-        struct.pack_into("<IIIHBB", error, 0, abi.RESULT_MAGIC, 7, abi.STATUS_LIMIT_EXCEEDED, 0, 8, 0)
+        struct.pack_into(
+            "<IIIHBB", error, 0, abi.RESULT_MAGIC, 7, abi.STATUS_LIMIT_EXCEEDED, 0, 8, 0
+        )
         with self.assertRaises(abi.Dr1OperationError):
             abi.parse_result(error, 7)
         struct.pack_into("<i", error, 16, 1)
@@ -184,7 +264,9 @@ class DR1AbiTests(unittest.TestCase):
 
     def test_success_result_requires_full_header_and_canonical_lanes(self) -> None:
         result = bytearray(abi.RESULT_BYTES)
-        struct.pack_into("<IIIHBB", result, 0, abi.RESULT_MAGIC, 9, abi.STATUS_OK, 256, 8, 0)
+        struct.pack_into(
+            "<IIIHBB", result, 0, abi.RESULT_MAGIC, 9, abi.STATUS_OK, 256, 8, 0
+        )
         for lane in range(256):
             struct.pack_into("<i", result, 16 + 4 * lane, lane)
         parsed = abi.parse_result(result, 9)
@@ -204,11 +286,24 @@ class DR1ProductionKernelHarnessTests(unittest.TestCase):
         library = Path(cls._directory.name) / "dr1_kernels.so"
         subprocess.run(
             [
-                "g++", "-std=c++17", "-shared", "-fPIC", "-O2", "-Wall", "-Wextra", "-Werror",
-                "-I", str(KERNELS), str(KERNELS / "dr1_shake128_service.cc"),
-                str(KERNELS / "dr1_mldsa44_rejntt.cc"), "-o", str(library),
+                "g++",
+                "-std=c++17",
+                "-shared",
+                "-fPIC",
+                "-O2",
+                "-Wall",
+                "-Wextra",
+                "-Werror",
+                "-I",
+                str(KERNELS),
+                str(KERNELS / "dr1_shake128_service.cc"),
+                str(KERNELS / "dr1_mldsa44_rejntt.cc"),
+                "-o",
+                str(library),
             ],
-            check=True, capture_output=True, text=True,
+            check=True,
+            capture_output=True,
+            text=True,
         )
         cls.library = ctypes.CDLL(str(library))
         cls.rho_type = ctypes.c_uint8 * abi.RHO_BYTES
@@ -226,13 +321,17 @@ class DR1ProductionKernelHarnessTests(unittest.TestCase):
             _ctypes.dlclose(handle)
         cls._directory.cleanup()
 
-    def _produce_blocks(self, rho: bytes, j: int, i: int, request_id: int) -> list[bytes]:
+    def _produce_blocks(
+        self, rho: bytes, j: int, i: int, request_id: int
+    ) -> list[bytes]:
         descriptor = abi.build_descriptor(j, i, request_id)
         blocks: list[bytes] = []
         for block in range(abi.BLOCK_CAP):
             output = self.block_type()
             self.library.dr1_shake128_emit_next(
-                self.rho_type.from_buffer_copy(rho), self.descriptor_type.from_buffer_copy(descriptor), output
+                self.rho_type.from_buffer_copy(rho),
+                self.descriptor_type.from_buffer_copy(descriptor),
+                output,
             )
             blocks.append(bytes(output))
         return blocks
@@ -257,11 +356,20 @@ class DR1ProductionKernelHarnessTests(unittest.TestCase):
         header = struct.unpack_from("<IIIHBB", raw)
         self.assertEqual(
             header,
-            (abi.RESULT_MAGIC, request_id, abi.STATUS_BAD_DESCRIPTOR, 0, abi.BLOCK_CAP, 0),
+            (
+                abi.RESULT_MAGIC,
+                request_id,
+                abi.STATUS_BAD_DESCRIPTOR,
+                0,
+                abi.BLOCK_CAP,
+                0,
+            ),
         )
         self.assertEqual(raw[16:], b"\x00" * 1024)
 
-    def test_full_33_case_compiled_production_corpus_matches_hashlib_exactly(self) -> None:
+    def test_full_33_case_compiled_production_corpus_matches_hashlib_exactly(
+        self,
+    ) -> None:
         for case in PRE_SILICON_CORPUS:
             with self.subTest(case=case.label):
                 raw, blocks = self._run_kernel(case)
@@ -272,17 +380,29 @@ class DR1ProductionKernelHarnessTests(unittest.TestCase):
                 actual = abi.parse_result(raw, case.request_id)
                 self.assertEqual(len(actual), abi.N)
                 self.assertEqual(actual, list(expected.coefficients))
-                self.assertEqual(_coefficient_digest(actual), FINGERPRINT_BY_LABEL[case.label])
+                self.assertEqual(
+                    _coefficient_digest(actual), FINGERPRINT_BY_LABEL[case.label]
+                )
 
-    def test_repeated_requests_in_one_compiled_process_reset_producer_and_sampler_state(self) -> None:
+    def test_repeated_requests_in_one_compiled_process_reset_producer_and_sampler_state(
+        self,
+    ) -> None:
         cases = (PRE_SILICON_CORPUS[0], PRE_SILICON_CORPUS[20], PRE_SILICON_CORPUS[-1])
         outputs: list[bytes] = []
         for case in cases:
             with self.subTest(case=case.label):
                 raw, blocks = self._run_kernel(case)
-                self.assertEqual(b"".join(token[12:] for token in blocks), shake128_stream_reference(case.rho, case.j, case.i))
+                self.assertEqual(
+                    b"".join(token[12:] for token in blocks),
+                    shake128_stream_reference(case.rho, case.j, case.i),
+                )
                 actual = abi.parse_result(raw, case.request_id)
-                self.assertEqual(actual, list(expanda_rejntt_reference(case.rho, case.j, case.i).coefficients))
+                self.assertEqual(
+                    actual,
+                    list(
+                        expanda_rejntt_reference(case.rho, case.j, case.i).coefficients
+                    ),
+                )
                 outputs.append(raw[16:])
         self.assertEqual(len({case.request_id for case in cases}), len(cases))
         self.assertEqual(len(set(outputs)), len(outputs))
@@ -291,7 +411,9 @@ class DR1ProductionKernelHarnessTests(unittest.TestCase):
         """Exercise the defensive new-request boundary; production schedules eight calls."""
         abandoned = PRE_SILICON_CORPUS[1]
         replacement = PRE_SILICON_CORPUS[22]
-        descriptor = abi.build_descriptor(abandoned.j, abandoned.i, abandoned.request_id)
+        descriptor = abi.build_descriptor(
+            abandoned.j, abandoned.i, abandoned.request_id
+        )
         partial_blocks: list[bytes] = []
         for _ in range(3):
             output = self.block_type()
@@ -314,10 +436,16 @@ class DR1ProductionKernelHarnessTests(unittest.TestCase):
         )
         self.assertEqual(
             abi.parse_result(raw, replacement.request_id),
-            list(expanda_rejntt_reference(replacement.rho, replacement.j, replacement.i).coefficients),
+            list(
+                expanda_rejntt_reference(
+                    replacement.rho, replacement.j, replacement.i
+                ).coefficients
+            ),
         )
 
-    def test_sampler_token_corruption_drains_all_eight_and_returns_bad_descriptor(self) -> None:
+    def test_sampler_token_corruption_drains_all_eight_and_returns_bad_descriptor(
+        self,
+    ) -> None:
         case = PRE_SILICON_CORPUS[5]
         corruptions = (
             ("wrong_sequence", 3, 4, "<H", 99),
@@ -327,12 +455,19 @@ class DR1ProductionKernelHarnessTests(unittest.TestCase):
         )
         for label, block_index, offset, format_string, value in corruptions:
             with self.subTest(corruption=label):
-                blocks = [bytearray(token) for token in self._produce_blocks(case.rho, case.j, case.i, case.request_id)]
+                blocks = [
+                    bytearray(token)
+                    for token in self._produce_blocks(
+                        case.rho, case.j, case.i, case.request_id
+                    )
+                ]
                 struct.pack_into(format_string, blocks[block_index], offset, value)
                 raw = self._consume_all_blocks(blocks)
                 self._assert_bad_descriptor_terminal(raw, case.request_id)
 
-    def test_success_freezes_first_256_accepts_but_consumes_all_eight_blocks(self) -> None:
+    def test_success_freezes_first_256_accepts_but_consumes_all_eight_blocks(
+        self,
+    ) -> None:
         case = PRE_SILICON_CORPUS[17]
         raw, blocks = self._run_kernel(case)
         stream = shake128_stream_reference(case.rho, case.j, case.i)
@@ -340,9 +475,13 @@ class DR1ProductionKernelHarnessTests(unittest.TestCase):
         self.assertEqual(len(blocks), abi.BLOCK_CAP)
         self.assertEqual(b"".join(token[12:] for token in blocks), stream)
         self.assertGreater(len(all_accepted), abi.N)
-        self.assertEqual(abi.parse_result(raw, case.request_id), list(all_accepted[:abi.N]))
+        self.assertEqual(
+            abi.parse_result(raw, case.request_id), list(all_accepted[: abi.N])
+        )
 
-    def test_bad_descriptor_still_drains_eight_error_tokens_and_returns_zero_payload(self) -> None:
+    def test_bad_descriptor_still_drains_eight_error_tokens_and_returns_zero_payload(
+        self,
+    ) -> None:
         case = PRE_SILICON_CORPUS[0]
         descriptor = bytearray(abi.build_descriptor(case.j, case.i, case.request_id))
         descriptor[6] = 7
@@ -350,14 +489,21 @@ class DR1ProductionKernelHarnessTests(unittest.TestCase):
         for block in range(abi.BLOCK_CAP):
             output = self.block_type()
             self.library.dr1_shake128_emit_next(
-                self.rho_type.from_buffer_copy(case.rho), self.descriptor_type.from_buffer_copy(descriptor), output
+                self.rho_type.from_buffer_copy(case.rho),
+                self.descriptor_type.from_buffer_copy(descriptor),
+                output,
             )
             blocks.append(bytes(output))
         self.assertEqual(
             [struct.unpack_from("<IHHI", token) for token in blocks],
-            [(case.request_id, sequence, 0, abi.STATUS_BAD_DESCRIPTOR) for sequence in range(abi.BLOCK_CAP)],
+            [
+                (case.request_id, sequence, 0, abi.STATUS_BAD_DESCRIPTOR)
+                for sequence in range(abi.BLOCK_CAP)
+            ],
         )
-        self._assert_bad_descriptor_terminal(self._consume_all_blocks(blocks), case.request_id)
+        self._assert_bad_descriptor_terminal(
+            self._consume_all_blocks(blocks), case.request_id
+        )
 
 
 if __name__ == "__main__":

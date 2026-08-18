@@ -61,16 +61,44 @@ toolchain:
     target_triple: "aie2-none-unknown-elf"
   xrt:
     package_role: "Native Windows XRT runtime and pyxrt bindings"
-    verified_version: "2.21.0"
+    archive_release: "2.21.75"
+    runtime_version: "2.21.0"
     release_url: "https://github.com/Xilinx/XRT/releases/tag/2.21.75"
     sdk_url: "https://github.com/Xilinx/XRT/releases/download/2.21.75/xrt_windows_sdk.zip"
     sdk_bytes: 70834080
     sdk_sha256: "ccc244c2c423588972ade76142cdc01049477aaa39a35be97e782b97eb7c5295"
 
 verification:
-  current_default:
+  canonical_physical:
+    runner: "py .\\run_all_silicon_tests.py"
+    scope: "Only runner whose output may be called silicon validation. Physically compiles and dispatches five ordered fail-closed native gates on AMD Phoenix NPU1."
+    ordered_gates: ["DR0", "DR1", "DR2a", "DR2b", "DR2c"]
+    expected_backends:
+      DR0: "m33-dr0:silicon"
+      DR1: "dr1-mldsa44-expanda-rejntt:silicon"
+      DR2a: "dr2a-mlkem512-samplentt:silicon"
+      DR2b: "dr2b-mlkem512-noise-ntt:silicon"
+      DR2c: "dr2c-mlkem512-keygen-row:silicon"
+    expected_totals:
+      DR0: 24
+      DR1: 33
+      DR2a: 13
+      DR2b: 13
+      DR2c: 11
+    expected_case_total: 94
+    excluded: "DR2d integrated ML-KEM-512 K-PKE.KeyGen is never dispatched by this runner."
+    non_dispatching_modes: ["--list", "--preflight-only"]
+    claim_boundary: "A full pass is 5 narrow milestone gates / 94 cases on Phoenix NPU. It is not complete ML-KEM or ML-DSA and not 100% algorithm residency."
+    acceptance_rule: "No NPU claim is accepted unless canonical native runner output from the target laptop passes."
+    optional_evidence: "Use --evidence-dir for timestamped JSON provenance and merged per-gate output outside protected evidence."
+  physical_status_2026_08_18:
+    fresh_current_source_subsuite: "DR0 24/24 + DR2a 13/13 + DR2b 13/13 + DR2c 11/11 = 61/61 physically verified on the target Phoenix laptop."
+    historical_dr1: "External operator-retained historical-log assertion: operator-supplied SHA-256 85B373B1E3B8A1BD883DA6BBDE73F874EE5C331B4AE419E5D161758A64EB4A7E; reported backend dr1-mldsa44-expanda-rejntt:silicon; reported TOTAL 33/33 PASS. Raw log bytes are absent from this repository and not independently reproducible."
+    no_current_canonical_claim: "Do not combine the fresh 61/61 and historical DR1 33/33 into a current 94/94 claim. Rerun the complete canonical suite on the target laptop."
+  host_preflight:
     runner: "python run_all_pqc_tests.py"
-    scope: "Host-safe PQC contracts and reference checks only; no NPU dispatch."
+    scope: "Host preflight only: contracts and reference checks. Never loads the MLIR-AIE runtime, compiles an AIE program, or dispatches an NPU."
+    boundary: "A pass here can never satisfy or be labelled silicon validation."
   historical_foundation:
     m33e_baseline_tag: "v1.0.0"
     m33e_baseline_commit: "9c592a4c077c73f2ebf910aca0b6575664b0726f"
@@ -85,13 +113,16 @@ verification:
 bootstrap:
   script: "install"
   windows_clean_clone: "py .\\install"
-  compatibility_shim: "install.py (delegates only to install)"
-  dependency: "numpy==2.5.2 cp313-cp313-win_amd64 wheel"
-  wheel_url: "https://files.pythonhosted.org/packages/15/20/f3489f86d81ea460b2bcdceaed094142ca6579f6be0ec527b781d39afe68/numpy-2.5.2-cp313-cp313-win_amd64.whl"
-  wheel_bytes: 12460532
-  wheel_sha256: "85aaccb24182c25df891ad0ec333585967e115269d5f1b17f2c9ae005bc96657"
-  wheel_metadata_source: "https://pypi.org/pypi/numpy/2.5.2/json"
-  scope: "CPython 3.13 x64 Windows host bootstrap only; no XRT, IRON, Visual Studio, AIE compilation, or NPU dispatch."
+  implementation: "install.py (maintained stdlib-only native installer; install delegates to it)"
+  legacy_entry_point: "py .\\install.py"
+  scope: "Provisions the full native Windows toolchain: pinned XRT Windows SDK, pinned mlir-aie commit, pinned mlir_aie cp313 wheel, official iron_setup ironenv, vendored pyxrt, and Peano/llvm-aie. Optional kyber-py, dilithium-py, and pytest host/reference packages are not installed."
+  default_handoff: "On a successful full install, automatically invokes py .\\run_all_silicon_tests.py under third_party/mlir-aie/ironenv."
+  non_dispatching_modes: ["--check-only", "--download-only", "--self-test", "--no-tests"]
+  hash_locked_artifacts:
+    - "XRT Windows SDK zip: exact byte length and SHA-256 (toolchain.xrt)"
+    - "mlir_aie cp313 win_amd64 wheel: exact byte length and SHA-256 (toolchain.mlir_aie)"
+    - "mlir-aie source tree: exact verified commit (toolchain.mlir_aie.verified_commit)"
+  not_hash_locked: "The official utils/iron_setup.py step resolves a transitive Python dependency set from package indexes. That set is NOT fully hash-locked by this repository; a complete independently produced verified wheelhouse would be required for that claim."
   guide: "docs/SETUP_WINDOWS.md"
-  full_regression: "py .\\install"
+  iron_windows_guide: "https://xilinx.github.io/mlir-aie/1.4.1/buildHostWinNative/"
   evidence_check: "(cd docs/pqc_dr2_evidence_20260818 && sha256sum -c SHA256SUMS)"

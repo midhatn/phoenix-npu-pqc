@@ -1,5 +1,10 @@
 # DR2a Silicon Validation Record
 
+> **Current release-flow correction (2026-08-18).** DR2a is now the third gate
+> in the native-only canonical `run_all_silicon_tests.py` sequence. The freshly verified retained
+> current-source DR0/DR2a/DR2b/DR2c sub-suite is 61/61; it does not include a
+> fresh DR1 execution and must not be called a current 94/94 result.
+
 **Status: PHYSICAL PASS for the narrow DR2a milestone.**  On 2026-08-17 the
 two-worker bounded SHAKE128/SampleNTT graph compiled, linked, placed, routed,
 and executed on a physical Phoenix NPU through IRON 1.4.1.  All 13 frozen
@@ -123,8 +128,9 @@ Phoenix NPU.  The final combined DR0/DR1/DR2a host suite ran all 78 tests with
 the MSYS2 UCRT64 compiler available, so no compiled production-kernel harness
 test was skipped.
 
-`run_all_silicon_tests.py` remains intentionally unchanged by this narrow
-validation patch.  Canonical-runner integration is a separate reviewed change.
+The historical statement above about canonical-runner integration is superseded
+by the current native-only canonical runner. This record remains narrow DR2a
+evidence, not integrated KeyGen evidence.
 
 ## Claim boundary
 

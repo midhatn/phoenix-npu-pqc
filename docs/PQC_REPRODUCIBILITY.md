@@ -1,141 +1,113 @@
 # Phoenix NPU PQC reproducibility guide
 
-## Purpose and safety boundary
+## Claim boundary
 
-This guide reproduces repository integrity and host-safe PQC validation. It
-does not authorize a physical NPU run, compile a native graph, or claim that a
-host result is silicon evidence. Native-only gate scripts remain retained
-research material; physical evidence is interpreted through its dated records.
+There are two deliberately separate execution paths:
 
-## Canonical sources
+1. `py .\run_all_silicon_tests.py` is the only canonical **silicon** runner.
+   Its default action re-executes under the checkout-local IRON environment,
+   preflights the native Windows toolchain and Phoenix NPU, then compiles and
+   dispatches DR0, DR1, DR2a, DR2b, and DR2c in that exact order.
+2. `python run_all_pqc_tests.py` is a **host preflight** only. It never loads
+   MLIR-AIE, compiles an AIE program, or dispatches an NPU. A host pass cannot
+   be called silicon validation.
 
-| Subject | Canonical source |
-| --- | --- |
-| Repository identity and current claim boundary | [Root README](../README.md) |
-| History-preserving split and commits | [Repository split record](REPOSITORY_SPLIT_20260818.md) |
-| DR status and stop rule | [Device-residency roadmap](PQC_DEVICE_RESIDENCY_ROADMAP.md) |
-| DR2d negative result, chronology, and rejected paths | [DR2 expert escalation](PQC_DR2_EXPERT_ESCALATION_20260818.md) |
-| Recovered DR2 lineage and local-source provenance | [DR2 local forensic recovery](PQC_DR2_LOCAL_FORENSIC_RECOVERY_20260818.md) |
-| Byte-preserved DR2 forensic inventory | [`pqc_dr2_evidence_20260818/README.md`](pqc_dr2_evidence_20260818/README.md) and `SHA256SUMS` |
-| M32/M33 mathematical and implementation boundaries | [M32 FIPS 203](M32_FIPS203_MLKEM.md), [M33a](M33a_DESIGN.md), [M33b](M33b_DESIGN.md), [M33d](M33d_DESIGN.md), and [M33e](M33e_DESIGN.md) |
-| DR graph design boundaries | [DR0](PQC_DR0_DESIGN.md), [DR1](PQC_DR1_DESIGN.md), [DR2a](PQC_DR2A_DESIGN.md), [DR2b](PQC_DR2B_DESIGN.md), [DR2c](PQC_DR2C_DESIGN.md), and [DR2d](PQC_DR2D_DESIGN.md) |
+No NPU result is accepted unless the canonical runner physically passes on the
+target Phoenix laptop. The five gates are narrow device-resident milestones,
+not complete ML-KEM, complete ML-DSA, or 100% algorithm residency. Integrated
+ML-KEM-512 K-PKE.KeyGen (DR2d) is excluded from canonical dispatch and remains
+`TOTAL 0/25 FAIL`, exit 1.
 
-## History anchors
+## Current and historical physical evidence
 
-- Historical M33e baseline tag `v1.0.0` resolves to
-  `9c592a4c077c73f2ebf910aca0b6575664b0726f`.
-- Native M33 runner lineage is
-  `e77e7ed2783d88b5451394866d7ddfccd9db4f69`.
-- DR0/DR1 graph lineage is
-  `7b38973789fafb950a26551bc947f4fcaa91ec25`.
-- DR2d's integrated physical record is `TOTAL 0/25 FAIL`, exit 1. This is the
-  current integrated result; compile-only success and diagnostic captures do
-  not supersede it.
+Keep these records separate:
 
-## Toolchain record
+| Record | Status | What it supports | What it does not support |
+| --- | --- | --- | --- |
+| Fresh 2026-08-18 sub-suite verification | DR0 24/24 + DR2a 13/13 + DR2b 13/13 + DR2c 11/11 = **61/61** | The four retained current-source native gates passed on the target Phoenix laptop. | A current five-gate 94/94 result; DR1 was not rerun in that fresh sub-suite. |
+| External operator-retained historical DR1 log | Operator-supplied SHA-256 `85B373B1E3B8A1BD883DA6BBDE73F874EE5C331B4AE419E5D161758A64EB4A7E`; reported backend `dr1-mldsa44-expanda-rejntt:silicon`; reported `TOTAL 33/33 PASS` | Only the operator's historical assertion. The raw log is absent from this repository, so its bytes, hash, backend, and total are not independently reproducible here. | A current DR1 pass, a rerun against the current checkout, or a current canonical 94/94 result. |
+| DR2d integrated KeyGen | `TOTAL 0/25 FAIL`, exit 1 | The integrated failure remains part of the evidence record. | DR2 closure, complete ML-KEM KeyGen, or a pass inferred from diagnostics/ELF/compile-only work. |
 
-The machine-readable pins are in [`../toolchain.yaml`](../toolchain.yaml).
-The retained native environment was recorded with Windows 11, AMD Phoenix NPU1
-(XDNA1/AIE2), XRT 2.21.0, MLIR-AIE `v1.4.1+13` at
-`3ca0193cea9e2c39ec670a65f93e1dd43c969f22`, and LLVM-AIE / Peano
-`21.0.0.2026080301+c9c5ecb7`. These are provenance pins, not a statement that
-the current host-safe suite uses or validates an NPU.
+Do not add 61 and historical 33 to claim today's 94/94. Run the complete
+canonical suite from the current checkout to establish that result.
 
-First-party toolchain and standards references:
+## Native Windows installation and canonical run
 
-- [NIST FIPS 202](https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.202.pdf)
-- [NIST FIPS 203](https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.203.pdf)
-- [NIST FIPS 204](https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.204.pdf)
-- [AMD/Xilinx MLIR-AIE](https://github.com/Xilinx/mlir-aie)
-- [AMD/Xilinx XRT](https://github.com/Xilinx/XRT)
-- [AMD/Xilinx LLVM-AIE](https://github.com/Xilinx/llvm-aie)
-
-## Known DR2 identity anchors
-
-These identifiers locate retained research provenance; they do not establish
-correctness or authorize a cache lookup, rebuild, or native execution.
-
-| Item | Recorded identity |
-| --- | --- |
-| Integrated DR2d physical log | SHA-256 `1348dfb53446c4781c14b967fc535c5694cff2d1d56af097efc67cecd902be6c`; `TOTAL 0/25 FAIL`, exit 1 |
-| Passed DR2b comparator | cache `4311961d4f3a43976aa5a60d`; core `0_3` ELF SHA-256 `0f1e4f9563a6716c3076bdc8ad4c8d43dc6dfd566cf0de2fd67b14d937261125` |
-| W0 token-tap diagnostic | cache `320b9680889452b524538534`; raw 2,096-byte token SHA-256 `b7e75f7b55f8f3d30757ca5b0c3c9d13626b40e08cb5c6972681103395c20c53` |
-| Retained production comparison cache | `04f147d54cb01d160974a6e6` |
-| Sigma/PRF retry6 compile-only bundle | cache `337a8cdc94914d464c109ced`; MLIR SHA-256 `6f3cc8523e83e1bf99766795ed6d9fbc98f4d6dc17c3e918a66a65893dfc7d9c` |
-
-The full protected source, graph, ABI, runner, patch, and retry-chain
-identities are recorded in the [DR2 expert escalation](PQC_DR2_EXPERT_ESCALATION_20260818.md).
-
-## Host-safe procedure
-
-From the root of a fresh Windows clone, the primary reproducibility path is:
+On the target Windows 11 Phoenix laptop with CPython 3.13 x64:
 
 ```powershell
+git clone https://github.com/midhatn/phoenix-npu-pqc.git
+cd phoenix-npu-pqc
 py .\install
 ```
 
-It requires CPython 3.13 x64 on Windows. It checks, conditionally obtains, and
-verifies `numpy==2.5.2` using the interpreter selected by `py`, then invokes root
-`run_all_silicon_tests.py`. That historical compatibility name forwards only
-to the explicit host-safe allowlist in `run_all_pqc_tests.py`; it does not
-select `*_silicon.py`, load a native runtime, compile an AIE program, or
-dispatch hardware. The path needs no administrator rights, XRT, IRON, Visual
-Studio, or NPU.
+The extensionless `install` launcher delegates to stdlib-only `install.py` and,
+for a successful full install, automatically starts
+`third_party\mlir-aie\ironenv\Scripts\python.exe run_all_silicon_tests.py`.
+The installer provisions the pinned XRT SDK, exact `mlir-aie` commit, verified
+`mlir_aie` CPython 3.13 wheel, official `iron_setup`, vendored `pyxrt`, and
+Peano/llvm-aie. Direct XRT and wheel downloads are checked by exact byte length
+and SHA-256 from `toolchain.yaml`.
 
-When NumPy needs repair, `install` downloads only the hard-coded
-[`numpy-2.5.2-cp313-cp313-win_amd64.whl`](https://files.pythonhosted.org/packages/15/20/f3489f86d81ea460b2bcdceaed094142ca6579f6be0ec527b781d39afe68/numpy-2.5.2-cp313-cp313-win_amd64.whl),
-verifies 12,460,532 bytes and SHA-256
-`85aaccb24182c25df891ad0ec333585967e115269d5f1b17f2c9ae005bc96657`
-against the [official PyPI metadata](https://pypi.org/pypi/numpy/2.5.2/json),
-then uses `pip --no-index --no-deps` on the verified local cache file. It does
-not perform an uncontrolled package-index install. Optional `g++` enables
-additional host-reference checks; without it those checks are explicitly
-reported as skipped, while the host-safe Python and contract suite remains
-valid.
+The official `iron_setup.py` then resolves transitive Python dependencies from
+package indexes. Those transitive dependencies are **not fully hash-locked** by
+this repository; no claim that every installed package is locked is made.
 
-For maintenance, use `py .\install --check-only`, `py .\install --no-tests`,
-or `py .\install --self-test`. For a release record beyond the one-command
-path, run the optional clean-clone audit and retain its report:
+The five canonical native gates do not require `kyber-py`, `dilithium-py`, or
+`pytest`, so the physical installer does not download them from PyPI. They are
+optional host/reference-oracle dependencies outside the canonical physical path;
+an operator must separately pin and verify them when an optional workflow needs
+them.
+
+Run a new canonical validation and retain a local provenance record with:
+
+```powershell
+py .\run_all_silicon_tests.py --evidence-dir release-evidence\silicon
+```
+
+Each gate must exit 0, print its one exact silicon backend label, and print its
+one exact total: DR0 24/24, DR1 33/33, DR2a 13/13, DR2b 13/13, and DR2c 11/11.
+The runner fails closed on unavailable, skipped, reference, fallback,
+diagnostic, generic-only, malformed, or wrong-total output. It fails fast and
+never dispatches DR2d.
+
+`--list` and `--preflight-only` do not compile or dispatch. They cannot support
+a silicon claim. Maintenance modes `--check-only`, `--download-only`,
+`--self-test`, and launcher option `--no-tests` also do not dispatch hardware.
+The launcher treats `--no-tests` plus `--run-tests` as a mutually exclusive
+argument error, so it cannot guess into a physical handoff.
+
+## Host preflight and protected evidence
+
+Use the host preflight only for source, contract, and reference coverage:
+
+```powershell
+python run_all_pqc_tests.py --dry-run
+python run_all_pqc_tests.py
+```
+
+The retained `validate_clean_clone.ps1` filename denotes a strict
+**clean-checkout** host audit; it does not create a clone. It rejects staged,
+unstaged, and untracked content before testing, records and reasserts the exact
+`HEAD` commit, invokes the installer with `--no-tests`, and has no
+hardware-dispatch switch:
 
 ```powershell
 pwsh -File .\scripts\validate_clean_clone.ps1 -InstallHostDependencies
 ```
 
-`py .\install.py` remains only a compatibility shim for legacy callers and
-delegates to the extensionless launcher.
-
-## Evidence integrity procedure
-
-The DR2d evidence directory is protected by its manifest. Verify it without
-altering its contents:
+Never alter `docs/pqc_dr2_evidence_20260818/**` or either SHA-256 manifest.
+Verify the protected bundle without regenerating its manifest:
 
 ```bash
 (cd docs/pqc_dr2_evidence_20260818 && sha256sum -c SHA256SUMS)
 ```
 
-The manifest covers the recovered raw capture
-`PQC_DR2D_W0_token_tap_tcId01_raw_20260818.bin` and the complete
-`sigma_prf_retry_chain`. The repository attributes mark those captures
-binary so line-ending conversion cannot silently change their bytes.
+## Toolchain and historical records
 
-## Evidence interpretation
-
-1. Treat physical logs and dated validation records as historical evidence
-   within their stated scope.
-2. Treat compile-only, ELF, placement, and source-level checks as build or
-   diagnostic evidence, not as a physical exact-output result.
-3. Treat DR2a/DR2b/DR2c as narrow results only; none is integrated K-PKE.KeyGen.
-4. Treat the DR2d `0/25` result as unresolved until a new independently
-   checked physical corpus and explicit decision record exist.
-5. Do not infer complete ML-KEM, complete ML-DSA, FIPS conformance,
-   constant-time behavior, side-channel resistance, zeroization, or
-   certification from this repository.
-
-## Research continuation questions
-
-The active continuation question is the systematic semantic mismatch in the
-integrated DR2d graph. The escalation and forensic-recovery records define the
-observed mismatch boundary, cached DR2b comparisons, compile-only findings,
-diagnostic captures, and rejected hypotheses. Any future investigation must
-retain that provenance and distinguish a new physical corpus from host or
-compile-only checks.
+`toolchain.yaml` is the machine-readable source for the current native pins and
+canonical gate contract. The dated DR1, DR2a, DR2b, DR2c, and DR2d records
+remain historical evidence within their stated narrow scope. Cite the relevant
+primary standards for cryptographic claims: [FIPS 202](https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.202.pdf),
+[FIPS 203](https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.203.pdf), and
+[FIPS 204](https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.204.pdf).

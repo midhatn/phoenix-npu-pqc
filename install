@@ -1,314 +1,101 @@
-r"""Provision the one host dependency and run the host-safe PQC suite.
+r"""Windows clean-clone launcher for the Phoenix NPU PQC native installer.
 
-Windows clean-clone entrypoint:
+Run this from a fresh clone:
 
+    git clone https://github.com/midhatn/phoenix-npu-pqc.git
+    cd phoenix-npu-pqc
     py .\install
 
-This launcher intentionally has no hardware, AIE, XRT, IRON, NPU, compiler,
-or administrator path. It uses the interpreter that launched it and installs
-only the pinned NumPy wheel needed by the default host-safe suite.
+This launcher is deliberately thin: the maintained implementation lives in
+``install.py`` (stdlib-only, so it runs on a stock CPython 3.13 x64 before
+ironenv exists). ``py .\install.py`` remains supported as the legacy entry
+point.
+
+Behaviour contract:
+
+* A normal full install provisions the native toolchain (pinned XRT Windows
+  SDK, pinned mlir-aie commit, pinned ``mlir_aie`` cp313 wheel, official
+  ``iron_setup``, vendored ``pyxrt``, Peano/llvm-aie) and then automatically
+  hands off to the canonical physical runner ``run_all_silicon_tests.py`` under
+  the checkout ironenv. That is done by appending ``--run-tests``.
+* Maintenance modes (``--check-only``, ``--download-only``, ``--self-test``)
+  and the explicit ``--no-tests`` opt-out never compile an AIE program and
+  never dispatch hardware, so the handoff is not added for them.
+* ``--no-tests`` and ``--run-tests`` are mutually exclusive. Combining them is
+  an argument error; the launcher never guesses which physical-dispatch intent
+  the operator meant.
+
+Integrity boundary: the directly downloaded XRT SDK zip and ``mlir_aie`` wheel
+are verified by exact byte length and SHA-256 from ``toolchain.yaml``, and
+mlir-aie is pinned to an exact commit. The official ``iron_setup`` step then
+resolves a transitive Python dependency set from package indexes that this
+repository does NOT fully hash-lock.
 """
 
 from __future__ import annotations
 
-import argparse
-import hashlib
-import importlib.metadata
-import os
-import platform
-import shutil
-import subprocess
+import runpy
 import sys
 from collections.abc import Sequence
 from pathlib import Path
-from urllib.error import URLError
-from urllib.request import Request, urlopen
 
-REPO_ROOT = Path(__file__).resolve().parent
-NUMPY_DISTRIBUTION = "numpy"
-NUMPY_VERSION = "2.5.2"
-NUMPY_REQUIREMENT = f"{NUMPY_DISTRIBUTION}=={NUMPY_VERSION}"
-SUPPORTED_IMPLEMENTATION = "CPython"
-SUPPORTED_PYTHON = (3, 13)
-SUPPORTED_SYSTEM = "Windows"
-SUPPORTED_MACHINES = frozenset({"amd64", "x86_64"})
-# Official release metadata:
-# https://pypi.org/pypi/numpy/2.5.2/json
-NUMPY_WHEEL_NAME = "numpy-2.5.2-cp313-cp313-win_amd64.whl"
-NUMPY_WHEEL_URL = (
-    "https://files.pythonhosted.org/packages/15/20/"
-    "f3489f86d81ea460b2bcdceaed094142ca6579f6be0ec527b781d39afe68/"
-    "numpy-2.5.2-cp313-cp313-win_amd64.whl"
-)
-NUMPY_WHEEL_BYTES = 12_460_532
-NUMPY_WHEEL_SHA256 = "85aaccb24182c25df891ad0ec333585967e115269d5f1b17f2c9ae005bc96657"
-NUMPY_WHEEL_CACHE = REPO_ROOT / ".bootstrap-cache" / NUMPY_WHEEL_NAME
-HOST_SAFE_RUNNER = REPO_ROOT / "run_all_silicon_tests.py"
-NUMPY_VERIFY_CODE = (
-    "import numpy; "
-    f"assert numpy.__version__ == {NUMPY_VERSION!r}, numpy.__version__; "
-    f"print('numpy==' + numpy.__version__)"
-)
-
-
-class BootstrapError(RuntimeError):
-    """A user-facing host bootstrap failure."""
-
-
-def require_supported_interpreter(
-    *,
-    implementation: str | None = None,
-    version: tuple[int, int] | None = None,
-    system: str | None = None,
-    machine: str | None = None,
-) -> None:
-    """Require the exact interpreter ABI for the integrity-pinned wheel."""
-    actual_implementation = (implementation or sys.implementation.name).lower()
-    actual_version = version or sys.version_info[:2]
-    actual_system = system or platform.system()
-    actual_machine = (machine or platform.machine()).lower()
-
-    if (
-        actual_implementation != SUPPORTED_IMPLEMENTATION.lower()
-        or actual_version != SUPPORTED_PYTHON
-        or actual_system != SUPPORTED_SYSTEM
-        or actual_machine not in SUPPORTED_MACHINES
-        or os.name != "nt"
-    ):
-        raise BootstrapError(
-            "This clean-clone bootstrap requires CPython 3.13 x64 on Windows. "
-            "It installs only the pinned cp313 win_amd64 NumPy wheel. "
-            f"Detected {actual_implementation} {actual_version[0]}.{actual_version[1]} "
-            f"on {actual_system} {actual_machine}. Use: py -3.13-64 .\\install"
-        )
-
-
-def installed_numpy_version() -> str | None:
-    """Return the installed NumPy distribution version without importing NumPy."""
-    try:
-        return importlib.metadata.version(NUMPY_DISTRIBUTION)
-    except importlib.metadata.PackageNotFoundError:
-        return None
-
-
-def run_checked(command: Sequence[str], *, label: str) -> None:
-    """Run one local subprocess and raise an actionable error on failure."""
-    print(f"==> {label}")
-    print("    " + " ".join(command))
-    result = subprocess.run(command, cwd=REPO_ROOT, check=False)
-    if result.returncode:
-        raise BootstrapError(f"{label} failed with exit code {result.returncode}.")
-
-
-def verify_numpy() -> None:
-    """Verify that this exact interpreter can import the pinned NumPy build."""
-    run_checked(
-        (sys.executable, "-c", NUMPY_VERIFY_CODE),
-        label=f"Verify {NUMPY_REQUIREMENT}",
-    )
-
-
-def wheel_sha256(path: Path) -> str:
-    """Return the SHA-256 digest of a local wheel without loading it as code."""
-    digest = hashlib.sha256()
-    with path.open("rb") as handle:
-        for block in iter(lambda: handle.read(1024 * 1024), b""):
-            digest.update(block)
-    return digest.hexdigest()
-
-
-def wheel_is_pinned(path: Path) -> bool:
-    """Return whether a cached wheel matches the release byte and hash pin."""
-    return (
-        path.is_file()
-        and path.stat().st_size == NUMPY_WHEEL_BYTES
-        and wheel_sha256(path) == NUMPY_WHEEL_SHA256
-    )
-
-
-def obtain_numpy_wheel() -> Path:
-    """Return a verified local wheel, downloading it only when cache is invalid."""
-    if wheel_is_pinned(NUMPY_WHEEL_CACHE):
-        try:
-            displayed_cache = NUMPY_WHEEL_CACHE.relative_to(REPO_ROOT)
-        except ValueError:
-            displayed_cache = NUMPY_WHEEL_CACHE
-        print(f"Verified cached wheel: {displayed_cache}")
-        return NUMPY_WHEEL_CACHE
-
-    if NUMPY_WHEEL_CACHE.exists():
-        print("Discarding cached NumPy wheel with an invalid size or SHA-256.")
-        NUMPY_WHEEL_CACHE.unlink()
-
-    NUMPY_WHEEL_CACHE.parent.mkdir(parents=True, exist_ok=True)
-    partial = NUMPY_WHEEL_CACHE.with_name(f"{NUMPY_WHEEL_NAME}.download")
-    if partial.exists():
-        partial.unlink()
-
-    print(f"Download pinned wheel: {NUMPY_WHEEL_URL}")
-    request = Request(
-        NUMPY_WHEEL_URL,
-        headers={"User-Agent": "phoenix-npu-pqc-clean-clone-bootstrap"},
-    )
-    try:
-        with urlopen(request, timeout=60) as response, partial.open("wb") as handle:
-            for block in iter(lambda: response.read(1024 * 1024), b""):
-                handle.write(block)
-    except (OSError, URLError) as exc:
-        if partial.exists():
-            partial.unlink()
-        raise BootstrapError(
-            f"Unable to download the pinned NumPy wheel: {exc}"
-        ) from exc
-
-    if not wheel_is_pinned(partial):
-        actual_bytes = partial.stat().st_size if partial.exists() else 0
-        actual_hash = wheel_sha256(partial) if partial.exists() else "missing"
-        partial.unlink(missing_ok=True)
-        raise BootstrapError(
-            "Downloaded NumPy wheel failed integrity verification: "
-            f"expected {NUMPY_WHEEL_BYTES} bytes and SHA-256 "
-            f"{NUMPY_WHEEL_SHA256}; got {actual_bytes} bytes and {actual_hash}."
-        )
-    partial.replace(NUMPY_WHEEL_CACHE)
-    print("Pinned NumPy wheel byte length and SHA-256 verified.")
-    return NUMPY_WHEEL_CACHE
-
-
-def report_optional_gpp() -> None:
-    """Report optional C++ host-reference coverage without requiring a compiler."""
-    compiler = shutil.which("g++")
-    if compiler:
-        print(
-            f"Optional native host-reference coverage: available (g++ at {compiler})."
-        )
-    else:
-        print(
-            "Optional native host-reference coverage: unavailable "
-            "(g++ not found); C++ host-reference checks will be skipped. "
-            "Python and contract coverage remains enabled."
-        )
-
-
-def provision_numpy() -> None:
-    """Install NumPy only when its installed distribution version is not pinned."""
-    before = installed_numpy_version()
-    if before == NUMPY_VERSION:
-        print(f"Dependency already satisfied: {NUMPY_REQUIREMENT}")
-    else:
-        state = "not installed" if before is None else f"found {before}"
-        print(f"Dependency requires repair: {NUMPY_REQUIREMENT} ({state})")
-        wheel = obtain_numpy_wheel()
-        run_checked(
-            (
-                sys.executable,
-                "-m",
-                "pip",
-                "install",
-                "--disable-pip-version-check",
-                "--no-index",
-                "--no-deps",
-                "--force-reinstall",
-                str(wheel),
-            ),
-            label=f"Install verified {NUMPY_REQUIREMENT} with the current interpreter",
-        )
-
-    after = installed_numpy_version()
-    if after != NUMPY_VERSION:
-        found = "not installed" if after is None else after
-        raise BootstrapError(
-            f"Expected {NUMPY_REQUIREMENT} after provisioning, found {found}."
-        )
-    verify_numpy()
-
-
-def check_only() -> int:
-    """Report whether the current interpreter already has the pinned dependency."""
-    version = installed_numpy_version()
-    if version != NUMPY_VERSION:
-        found = "not installed" if version is None else version
-        print(f"CHECK FAILED: expected {NUMPY_REQUIREMENT}; found {found}.")
-        print("Run: py .\\install")
-        return 1
-    print(f"CHECK PASSED: {NUMPY_REQUIREMENT} is installed for {sys.executable}")
-    verify_numpy()
-    return 0
-
-
-def self_test() -> int:
-    """Check the launcher-to-runner handoff without provisioning or running tests."""
-    if not HOST_SAFE_RUNNER.is_file():
-        print(f"SELF-TEST FAILED: missing host-safe runner: {HOST_SAFE_RUNNER}")
-        return 1
-    run_checked(
-        (sys.executable, str(HOST_SAFE_RUNNER), "--dry-run"),
-        label="Check host-safe runner handoff",
-    )
-    print("SELF-TEST PASSED: launcher targets the host-safe compatibility runner.")
-    return 0
-
-
-def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
-    parser = argparse.ArgumentParser(
-        description=(
-            "Provision pinned NumPy for the current interpreter and run only "
-            "the host-safe PQC suite. No hardware is accessed."
-        )
-    )
-    modes = parser.add_mutually_exclusive_group()
-    modes.add_argument(
+CANONICAL_PHYSICAL_RUNNER = "run_all_silicon_tests.py"
+INSTALL_IMPLEMENTATION = "install.py"
+HANDOFF_OPTION = "--run-tests"
+NO_TESTS_OPTION = "--no-tests"
+MAINTENANCE_OPTIONS = frozenset(
+    {
         "--check-only",
-        action="store_true",
-        help="Check pinned NumPy without installing it or running tests.",
-    )
-    modes.add_argument(
-        "--no-tests",
-        action="store_true",
-        help="Provision and verify pinned NumPy, then stop before the test suite.",
-    )
-    modes.add_argument(
+        "--download-only",
         "--self-test",
-        action="store_true",
-        help="Check the local launcher-to-runner handoff without provisioning.",
-    )
-    return parser.parse_args(argv)
+    }
+)
+
+
+def build_install_argv(argv: Sequence[str]) -> list[str]:
+    """Forward arguments, adding the canonical runner handoff for a full install.
+
+    A default ``py .\\install`` therefore ends in a physical Phoenix NPU
+    dispatch of ``run_all_silicon_tests.py``.
+    """
+
+    opted_out = NO_TESTS_OPTION in argv
+    explicit_handoff = HANDOFF_OPTION in argv
+    if opted_out and explicit_handoff:
+        raise ValueError(
+            f"{NO_TESTS_OPTION} and {HANDOFF_OPTION} are mutually exclusive"
+        )
+    forwarded = [arg for arg in argv if arg != NO_TESTS_OPTION]
+    is_maintenance_mode = any(arg in MAINTENANCE_OPTIONS for arg in forwarded)
+    if HANDOFF_OPTION not in forwarded and not is_maintenance_mode and not opted_out:
+        forwarded.append(HANDOFF_OPTION)
+    return forwarded
 
 
 def main(argv: Sequence[str] | None = None) -> int:
-    """Run the requested maintenance mode or the clean-clone default."""
-    args = parse_args(argv)
-    if args.self_test:
-        return self_test()
-    require_supported_interpreter()
-    report_optional_gpp()
-    if args.check_only:
-        return check_only()
+    """Run the maintained native installer as its command-line entry point."""
 
-    print("Phoenix NPU PQC host bootstrap")
-    print("Hardware access: disabled")
-    print("Requirements: no administrator rights, XRT, IRON, Visual Studio, or NPU")
-    provision_numpy()
-    if args.no_tests:
-        print("Dependency provisioning complete; host-safe tests skipped (--no-tests).")
-        return 0
-
-    run_checked(
-        (sys.executable, str(HOST_SAFE_RUNNER)),
-        label="Run host-safe PQC validation",
-    )
-    print("Host bootstrap complete. No AIE compilation or hardware dispatch occurred.")
+    target = Path(__file__).with_name(INSTALL_IMPLEMENTATION)
+    if not target.is_file():
+        print(f"ERROR: missing installer implementation: {target}", file=sys.stderr)
+        return 2
+    try:
+        forwarded = build_install_argv(sys.argv[1:] if argv is None else argv)
+    except ValueError as exc:
+        print(f"ERROR: {exc}", file=sys.stderr)
+        return 2
+    original_argv = sys.argv
+    try:
+        sys.argv = [str(Path(__file__)), *forwarded]
+        runpy.run_path(
+            str(target),
+            run_name="__main__",
+            init_globals={"PHOENIX_INSTALL_LAUNCHER": True},
+        )
+    finally:
+        sys.argv = original_argv
     return 0
 
 
-def entrypoint() -> int:
-    """Translate expected bootstrap failures into a concise process exit."""
-    try:
-        return main()
-    except BootstrapError as exc:
-        print(f"ERROR: {exc}", file=sys.stderr)
-        return 1
-
-
 if __name__ == "__main__":
-    raise SystemExit(entrypoint())
+    raise SystemExit(main())

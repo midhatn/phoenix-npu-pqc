@@ -10,38 +10,51 @@ from pathlib import Path
 REPO = Path(__file__).resolve().parents[1]
 SCRIPT = REPO / "scripts" / "validate_clean_clone.ps1"
 INSTALL = REPO / "install"
-INSTALL_COMPATIBILITY_SHIM = REPO / "install.py"
+INSTALL_IMPLEMENTATION = REPO / "install.py"
 EVIDENCE = REPO / "docs" / "pqc_dr2_evidence_20260818"
 MANIFEST = EVIDENCE / "SHA256SUMS"
+TOOLCHAIN = REPO / "toolchain.yaml"
 
 
 class ReleaseMaterialsContractTests(unittest.TestCase):
-    def test_extensionless_bootstrap_is_the_primary_host_only_path(self) -> None:
-        source = INSTALL.read_text(encoding="utf-8")
+    def test_extensionless_launcher_is_the_primary_native_install_path(self) -> None:
+        launcher = INSTALL.read_text(encoding="utf-8")
+        installer = INSTALL_IMPLEMENTATION.read_text(encoding="utf-8")
         readme = (REPO / "README.md").read_text(encoding="utf-8")
         setup = (REPO / "docs" / "SETUP_WINDOWS.md").read_text(encoding="utf-8")
 
-        shim = INSTALL_COMPATIBILITY_SHIM.read_text(encoding="utf-8")
-        self.assertIn('NUMPY_VERSION = "2.5.2"', source)
-        self.assertIn("SUPPORTED_PYTHON = (3, 13)", source)
-        self.assertIn("NUMPY_WHEEL_URL", source)
-        self.assertIn("NUMPY_WHEEL_BYTES", source)
-        self.assertIn("NUMPY_WHEEL_SHA256", source)
-        self.assertIn('"--no-index"', source)
-        self.assertIn("report_optional_gpp", source)
-        self.assertIn("run_all_silicon_tests.py", source)
-        self.assertIn("Hardware access: disabled", source)
-        self.assertIn("No AIE compilation or hardware dispatch", source)
+        # The launcher must delegate to the maintained native installer and, for
+        # a default full install, hand off to the canonical physical runner.
+        self.assertIn('INSTALL_IMPLEMENTATION = "install.py"', launcher)
+        self.assertIn(
+            'CANONICAL_PHYSICAL_RUNNER = "run_all_silicon_tests.py"', launcher
+        )
+        self.assertIn('HANDOFF_OPTION = "--run-tests"', launcher)
+        self.assertIn("with_name(INSTALL_IMPLEMENTATION)", launcher)
+        self.assertIn("MAINTENANCE_OPTIONS", launcher)
+        self.assertIn("raise SystemExit(main())", launcher)
+        for option in ('"--check-only"', '"--download-only"', '"--self-test"'):
+            self.assertIn(option, launcher)
+
+        # The native installer must keep its verified pins and disclose the
+        # part of the environment that is not hash-locked.
+        self.assertIn(
+            'CANONICAL_PHYSICAL_RUNNER = "run_all_silicon_tests.py"', installer
+        )
+        self.assertIn("run_iron_setup", installer)
+        self.assertIn("install_vendored_pyxrt", installer)
+        self.assertIn("NOT hash-locked", installer)
+        self.assertIn("print_integrity_disclosure", installer)
+        self.assertIn("No AIE compilation and no hardware", installer)
+
         self.assertIn("py .\\install", readme)
         self.assertIn("py .\\install", setup)
-        self.assertIn("Compatibility entrypoint", shim)
-        self.assertIn('with_name("install")', shim)
-        self.assertRegex(
-            setup,
-            r"No administrator rights, XRT, IRON, Visual Studio, or\s+NPU are required.",
-        )
+        self.assertIn("run_all_silicon_tests.py", readme)
+        self.assertIn("run_all_silicon_tests.py", setup)
 
-    def test_clean_clone_script_has_no_hardware_dispatch_path(self) -> None:
+    def test_clean_checkout_script_is_host_only_and_fails_closed_when_dirty(
+        self,
+    ) -> None:
         source = SCRIPT.read_text(encoding="utf-8-sig")
         self.assertEqual(source.count("{"), source.count("}"))
         self.assertIn("[switch]$InstallHostDependencies", source)
@@ -54,6 +67,17 @@ class ReleaseMaterialsContractTests(unittest.TestCase):
         self.assertIn("Test-Sha256Manifest", source)
         self.assertIn("run_all_pqc_tests.py", source)
         self.assertIn('"install", "install.py", "run_all_pqc_tests.py"', source)
+        # The only canonical-runner invocation permitted here is the
+        # non-dispatching plan listing.
+        self.assertIn('"run_all_silicon_tests.py", "--list"', source)
+        self.assertEqual(source.count("run_all_silicon_tests.py"), 3)
+        self.assertIn("is NOT silicon validation", source)
+        self.assertIn("does not create a clone", source)
+        self.assertIn("staged, unstaged, or untracked", source)
+        self.assertGreaterEqual(source.count("--untracked-files=all"), 2)
+        self.assertIn("git rev-parse --verify HEAD", source)
+        self.assertIn("HEAD changed during audit", source)
+        self.assertIn("full checkout clean after audit", source)
 
     def test_protected_manifest_matches_every_listed_file(self) -> None:
         checked = 0
@@ -85,6 +109,24 @@ class ReleaseMaterialsContractTests(unittest.TestCase):
         self.assertIn("py .\\install", readiness)
         self.assertIn("-InstallHostDependencies", checklist)
         self.assertRegex(checklist, r"no hardware-dispatch\s+switch")
+
+    def test_release_status_requires_new_native_artifacts_and_unambiguous_xrt(
+        self,
+    ) -> None:
+        readiness = (REPO / "docs" / "PUBLICATION_READINESS.md").read_text(
+            encoding="utf-8"
+        )
+        toolchain = TOOLCHAIN.read_text(encoding="utf-8")
+        for required in (
+            "tests/pqc_device_resident/test_dr1_mldsa44_rejntt_silicon.py",
+            "tests/test_canonical_silicon_runner_behavior.py",
+            "tests/test_canonical_silicon_runner_contract.py",
+        ):
+            self.assertIn(required, readiness)
+        self.assertRegex(readiness, r"reviewed,\s+tracked release commit")
+        self.assertIn('archive_release: "2.21.75"', toolchain)
+        self.assertIn('runtime_version: "2.21.0"', toolchain)
+        self.assertNotIn('verified_version: "2.21.0"', toolchain)
 
 
 if __name__ == "__main__":

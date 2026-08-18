@@ -1,5 +1,10 @@
 # Phoenix NPU PQC audit and remediation record — 2026-08-18
 
+> **Superseding release-flow note.** This dated record describes the earlier
+> host-forwarder state. Current `main` has a native-only five-gate canonical
+> runner; see the root README and `PQC_REPRODUCIBILITY.md` for the current
+> release boundary.
+
 ## Purpose, scope, and non-claims
 
 This document records host-safe remediation of the research/document and
@@ -37,10 +42,9 @@ accepting an incomplete polynomial.
 
 ## Current corrections
 
-1. **Current setup/identity.** `SETUP_WINDOWS.md` now clones
-   `phoenix-npu-pqc`, describes only host-safe validation, and makes clear that
-   `run_all_silicon_tests.py` is a compatibility forwarder rather than a
-   hardware runner.
+1. **Historical setup/identity.** This dated record described a host-safe
+   forwarder. The current `SETUP_WINDOWS.md` documents the native-only
+   canonical runner and its separate host-preflight path.
 2. **DR2 topology.** Current DR2d records use one definition: five computation
    workers W0–W4 plus serializer W5, six worker cores total. Evidence that maps
    only W0–W4 is labelled as such and is not treated as an integrated pass.

@@ -1,11 +1,17 @@
 # PQC DR0 Phoenix silicon validation — 2026-08-17
 
+> **Current release-flow correction (2026-08-18).** This dated record preserves
+> its historical command and accounting language. The current canonical runner
+> is now native-only and dispatches DR0 first in the five-gate DR0 → DR1 → DR2a
+> → DR2b → DR2c sequence. The freshly verified current-source DR0/DR2a/DR2b/
+> DR2c sub-suite is 61/61; that is not a current five-gate 94/94 claim.
+
 ## Evidence boundary
 
 This record documents the physical Phoenix validation of the fused DR0 M33
-polynomial-product graph. It is a separate validation record and does not add a
-DR0 invocation to `run_all_silicon_tests.py` or change the canonical 34-entry
-regression accounting.
+polynomial-product graph. Its historical runner-accounting language is
+superseded by the current native-only five-gate canonical runner; the evidence
+scope of this dated DR0 record is otherwise unchanged.
 
 The supplied evidence was produced on a Windows Phoenix laptop at
 **2026-08-17 19:35:37 +03**. The captured terminal log is an evidence artifact;
@@ -64,8 +70,7 @@ This record does **not** validate or claim:
 - Host, AIE-local, DMA, ObjectFIFO, XRT, or compiled-artifact zeroization.
 - Key management, secret-lifetime guarantees, production deployment approval,
   or CMVP validation/certification.
-- Addition of DR0 to the canonical `run_all_silicon_tests.py` suite or any
-  change to its 34-entry accounting.
+- Complete ML-DSA or any broader conclusion from DR0's narrow native gate.
 
 ## Relationship to other records
 

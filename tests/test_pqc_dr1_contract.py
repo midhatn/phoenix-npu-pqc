@@ -10,6 +10,12 @@ from pathlib import Path
 
 from phoenix_sdr_dsp.pqc import dr1_abi as abi
 from phoenix_sdr_dsp.pqc import dr1_mldsa44_rejntt_graph as graph
+from tests.pqc_device_resident.test_dr1_mldsa44_rejntt import (
+    DR1_CORPUS_SHA256,
+    PRE_SILICON_CORPUS,
+    pre_silicon_corpus_sha256,
+    serialize_pre_silicon_corpus,
+)
 from tests.production_dependency_guard import (
     assert_no_test_dependency_imports,
     find_test_dependency_imports,
@@ -20,6 +26,9 @@ KERNELS = REPO / "phoenix_sdr_dsp" / "pqc" / "kernels"
 DESIGN = REPO / "docs" / "PQC_DR1_DESIGN.md"
 PENDING = REPO / "docs" / "PQC_DR1_SILICON_VALIDATION_PENDING.md"
 CANONICAL_RUNNER = REPO / "run_all_silicon_tests.py"
+NATIVE_GATE = (
+    REPO / "tests" / "pqc_device_resident" / "test_dr1_mldsa44_rejntt_silicon.py"
+)
 
 
 def _function(tree: ast.AST, name: str) -> ast.FunctionDef:
@@ -218,12 +227,16 @@ class DR1DeviceResidencyContractTests(unittest.TestCase):
         self.assertIn("g_sampler", pending)
         self.assertIn("v1 IRON link incident", pending)
 
-    def test_physical_record_is_exact_and_canonical_runner_is_unchanged(self) -> None:
+    def test_external_historical_record_is_not_a_current_physical_claim(self) -> None:
         record = PENDING.read_text(encoding="utf-8")
         runner = CANONICAL_RUNNER.read_text(encoding="utf-8")
-        self.assertIn("v3 PHYSICAL PASS for the narrow DR1 milestone", record)
+        self.assertIn("EXTERNAL / OPERATOR-RETAINED HISTORICAL ASSERTION", record)
+        self.assertIn("not present in this repository", record)
+        self.assertIn("cannot independently reproduce", record)
+        self.assertIn("not current physical DR1 success", record)
+        self.assertNotIn("Status: v3 PHYSICAL PASS", record)
         self.assertIn("TOTAL 33/33 PASS", record)
-        self.assertIn("8,448 exact coefficient comparisons", record)
+        self.assertIn("8,448 claimed exact coefficient comparisons", record)
         self.assertIn("PQC_DR1_MLDSA44_v3_physical_corpus_20260817.log", record)
         self.assertIn(
             "85B373B1E3B8A1BD883DA6BBDE73F874EE5C331B4AE419E5D161758A64EB4A7E", record
@@ -243,7 +256,25 @@ class DR1DeviceResidencyContractTests(unittest.TestCase):
         )
         self.assertIn("malformed descriptors", record)
         self.assertIn("no claim of complete FIPS 204 device residency", record)
-        self.assertNotIn("DR1_MLDSA44_EXPANDA_REJNTT", runner)
+        # DR1 is now a first-class fail-closed native gate in the canonical
+        # physical runner, dispatched second in the DR0 -> DR2c sequence.
+        self.assertIn('"test_dr1_mldsa44_rejntt_silicon.py"', runner)
+        self.assertIn('gate_id="DR1"', runner)
+        self.assertIn('backend_label="dr1-mldsa44-expanda-rejntt:silicon"', runner)
+        self.assertIn("expected_total=33", runner)
+
+    def test_current_33_case_corpus_has_a_frozen_serialized_identity(self) -> None:
+        self.assertEqual(len(PRE_SILICON_CORPUS), 33)
+        self.assertEqual(len(serialize_pre_silicon_corpus()), 3827)
+        self.assertEqual(
+            pre_silicon_corpus_sha256(),
+            "6f6ff6ef59666417492605b3aeded74c299ec053847147a38803b0948b1ee459",
+        )
+        self.assertEqual(pre_silicon_corpus_sha256(), DR1_CORPUS_SHA256)
+        gate = NATIVE_GATE.read_text(encoding="utf-8")
+        self.assertIn("graph.require_hardware_runtime()", gate)
+        self.assertIn("actual_corpus_sha256 = pre_silicon_corpus_sha256()", gate)
+        self.assertIn("actual_corpus_sha256 != DR1_CORPUS_SHA256", gate)
 
 
 if __name__ == "__main__":

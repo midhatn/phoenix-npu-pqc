@@ -6,12 +6,12 @@ claims, and filenames; they are not rewritten to imply a broader result.
 
 ## Start here
 
-- [Repository overview](../README.md) — scope, research status, the one-command `py .\install` host-safe path, and compatibility policy.
+- [Repository overview](../README.md) — scope, research status, the native `py .\install` path, canonical silicon gate, and compatibility policy.
 - [Repository split record](REPOSITORY_SPLIT_20260818.md) — history-preserving migration from `phoenix-sdr-dsp`.
 - [Repository build report](REPOSITORY_BUILD_REPORT_20260818.md) — implementation scope, restored evidence integrity, and host-only verification results.
 - [PQC roadmap](PQC_ROADMAP.md) — program-level status and claim boundaries.
 - [PQC device-residency roadmap](PQC_DEVICE_RESIDENCY_ROADMAP.md) — DR0 through the blocked integrated DR2 decision.
-- [PQC reproducibility guide](PQC_REPRODUCIBILITY.md) — host-safe commands, toolchain pins, integrity checks, and evidence interpretation.
+- [PQC reproducibility guide](PQC_REPRODUCIBILITY.md) — canonical native and host-preflight commands, toolchain pins, integrity checks, and evidence interpretation.
 
 ## Historical foundation
 
@@ -38,17 +38,19 @@ claims, and filenames; they are not rewritten to imply a broader result.
 
 ## Environment, maintenance, and citations
 
-- [Windows setup](SETUP_WINDOWS.md) — primary `py .\install` clean-clone path and explicit no-hardware boundary — and [toolchain pin rationale](M2_TOOLCHAIN_PIN.md).
+- [Windows setup](SETUP_WINDOWS.md) — primary `py .\install` native clean-clone path, non-dispatching maintenance modes, and canonical gate contract — and [toolchain pin rationale](M2_TOOLCHAIN_PIN.md).
 - [Audit and remediation record](PQC_AUDIT_REMEDIATION_20260818.md) — current
   correction ledger, source references, boundaries, and remaining blockers.
 - [Publication readiness](PUBLICATION_READINESS.md) — claim/evidence matrix,
   narrow DR2 boundaries, publication blockers, retention, and tag policy.
 - [Journal reproducibility checklist](JOURNAL_REPRODUCIBILITY_CHECKLIST.md) —
-  manuscript-ready clean-clone, evidence, negative-result, and citation
+  manuscript-ready clean-checkout, evidence, negative-result, and citation
   controls.
 - [`../scripts/validate_clean_clone.ps1`](../scripts/validate_clean_clone.ps1)
-  — normal-user PowerShell 7 host-safe audit. It has no hardware-dispatch
-  switch and verifies the protected DR2 evidence manifest.
+  — normal-user PowerShell 7 strict clean-checkout host audit. Despite the
+  retained filename it does not clone; it rejects dirty worktrees, records the
+  exact `HEAD`, has no hardware-dispatch switch, and verifies the protected DR2
+  evidence manifest.
 - [Historical pre-split citation audit](CITATION_AUDIT.md) — retained context
   only; not current setup or claim guidance.
 

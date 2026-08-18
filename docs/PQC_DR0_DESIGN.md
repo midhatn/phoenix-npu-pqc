@@ -9,12 +9,13 @@ random vectors, and reported `TOTAL 24/24 PASS` with exit code 0. The immutable
 evidence details and exact claim boundary are recorded in
 [`PQC_DR0_SILICON_VALIDATION_20260817.md`](PQC_DR0_SILICON_VALIDATION_20260817.md).
 
-DR0 remains intentionally outside `run_all_silicon_tests.py`: that canonical
-runner remains at 34 entries and its published 34/34 accounting is not extended
-by this work. Host-only checks continue to verify source shape, ABI validation,
-and an independent mathematical oracle; they are supplementary to, not a
-substitute for, the recorded Phoenix result. `unavailable` remains an honest
-non-success state and never a fallback result.
+The following historical runner statement is superseded. DR0 is now the first
+gate in the native-only `run_all_silicon_tests.py` sequence. The earlier
+34-entry runner and its published 34/34 accounting are historical only, and
+must not be extended by this work. Host-only checks continue to verify source
+shape, ABI validation, and an independent mathematical oracle; they are
+supplementary to, not a substitute for, the recorded Phoenix result.
+`unavailable` remains an honest non-success state and never a fallback result.
 
 ## Operation and arithmetic contract
 
@@ -157,8 +158,8 @@ python tests\pqc_device_resident\test_m33_product_dr0.py
 The first command executes host-only/static checks as well as the module tests.
 The second is the native gate. The recorded 2026-08-17 Phoenix run reported the
 native backend label and anchored `TOTAL 24/24 PASS`; an `unavailable` report
-is not a pass. Do not add DR0 to `run_all_silicon_tests.py` or alter its
-canonical 34-entry accounting. See
+is not a pass. The historical instruction not to add DR0 to the runner is
+superseded: the current native-only canonical sequence dispatches it first. See
 [`PQC_DR0_SILICON_VALIDATION_20260817.md`](PQC_DR0_SILICON_VALIDATION_20260817.md)
 for the recorded evidence.
 

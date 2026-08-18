@@ -74,9 +74,9 @@ reference. It also tests malformed descriptor/token paths and repeated calls.
 Host compilation is not physical proof.
 
 The native gate is intentionally separate and has no fallback. Any new physical
-claim requires separately authorized Phoenix native evidence.
-`run_all_silicon_tests.py` is a host-safe compatibility forwarder and does not
-invoke the native gate.
+claim requires separately authorized Phoenix native evidence. The current
+`run_all_silicon_tests.py` is native-only and invokes this gate fifth; the
+historical host-forwarder description is superseded.
 
 ## References
 

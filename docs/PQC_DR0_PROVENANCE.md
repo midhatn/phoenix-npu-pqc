@@ -6,7 +6,9 @@ This record covers the new DR0 package, its source-level adaptation, and the
 provenance of its fused-graph validation boundary. The dedicated physical record
 [`PQC_DR0_SILICON_VALIDATION_20260817.md`](PQC_DR0_SILICON_VALIDATION_20260817.md)
 records the 2026-08-17 Phoenix result; it is distinct from the earlier M33a
-primitive result and must not be folded into the canonical 34-entry runner.
+primitive result. The historical 34-entry runner is superseded by the current
+five-gate native-only canonical runner; this provenance record remains narrow
+DR0 evidence.
 The exact implementation baseline is repository commit
 `e77e7ed2783d88b5451394866d7ddfccd9db4f69`; DR0 remains an uncommitted,
 isolated addition on top of that baseline.

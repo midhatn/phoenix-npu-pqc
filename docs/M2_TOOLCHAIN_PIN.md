@@ -40,7 +40,7 @@ WSL2 does not compile in this milestone and does not access the NPU.
 | Git | 2.48.1.windows.1 |
 | NPU device | `PCI\VEN_1022&DEV_1502`, OK |
 | NPU driver | AMD 32.0.20102.3930 |
-| XRT runtime | 2.21.0 |
+| XRT runtime-reported version | 2.21.0 (distinct from the pinned SDK archive release below) |
 | `xrt-smi` | `C:\Windows\System32\AMD\xrt-smi.exe` |
 
 The NPU driver is newer than the documented Windows minimum `32.0.20101.3760`. Do not update or reinstall it in this milestone.
@@ -50,7 +50,7 @@ The NPU driver is newer than the documented Windows minimum `32.0.20101.3760`. D
 | Component | Pinned location or identity |
 |---|---|
 | CPython 3.13 | `winget` package `Python.Python.3.13` ([official IRON guide](https://xilinx.github.io/mlir-aie/1.4.1/buildHostWinNative/); [python.org 3.13](https://www.python.org/downloads/release/python-3130/)) |
-| Windows XRT SDK | `C:\Xilinx\XRT` from `xrt_windows_sdk.zip` tag [`2.21.75`](https://github.com/Xilinx/XRT/releases/tag/2.21.75) |
+| Windows XRT SDK archive | `C:\Xilinx\XRT` from `xrt_windows_sdk.zip` archive release [`2.21.75`](https://github.com/Xilinx/XRT/releases/tag/2.21.75); do not confuse it with the runtime-reported `2.21.0` above |
 | mlir-aie checkout | `C:\phoenix-sdr-dsp\third_party\mlir-aie` at v1.4.1 or later; regression pinned to commit `3ca0193` (v1.4.1 + 13) |
 | IRON environment | checkout-local `ironenv` created by `utils\iron_setup.py` |
 

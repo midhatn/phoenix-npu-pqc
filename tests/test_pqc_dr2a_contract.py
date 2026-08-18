@@ -184,7 +184,7 @@ class DR2aDeviceResidencyContractTests(unittest.TestCase):
         self.assertIn("malformed descriptors or corrupted", pending)
         self.assertIn("run_all_silicon_tests.py", pending)
 
-    def test_native_gate_is_anchored_and_default_runner_is_host_safe(self) -> None:
+    def test_native_gate_is_anchored_and_host_preflight_is_separate(self) -> None:
         gate = GATE.read_text(encoding="utf-8")
         self.assertIn("PQC DR2a - ML-KEM-512 bounded SHAKE128 SampleNTT", gate)
         self.assertIn("Backend: dr2a-mlkem512-samplentt:unavailable", gate)
@@ -195,7 +195,13 @@ class DR2aDeviceResidencyContractTests(unittest.TestCase):
         compatibility = COMPATIBILITY_RUNNER.read_text(encoding="utf-8")
         self.assertIn("HOST_SAFE_TESTS", runner)
         self.assertNotIn("test_dr2a_mlkem512_samplentt_silicon.py", runner)
+        # The canonical physical runner names the host preflight only as a
+        # separate, non-qualifying suite, and dispatches this gate natively.
         self.assertIn("run_all_pqc_tests", compatibility)
+        self.assertIn('gate_id="DR2a"', compatibility)
+        self.assertIn('"test_dr2a_mlkem512_samplentt_silicon.py"', compatibility)
+        self.assertIn('backend_label="dr2a-mlkem512-samplentt:silicon"', compatibility)
+        self.assertIn("expected_total=13", compatibility)
 
 
 if __name__ == "__main__":

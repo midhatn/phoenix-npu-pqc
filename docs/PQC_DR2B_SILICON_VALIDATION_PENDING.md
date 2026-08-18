@@ -1,5 +1,10 @@
 # DR2b Silicon Validation Record
 
+> **Current release-flow correction (2026-08-18).** DR2b is now the fourth
+> gate in the native-only canonical sequence. The freshly verified retained
+> current-source DR0/DR2a/DR2b/DR2c sub-suite is 61/61, not a current 94/94
+> result.
+
 **Status: PHYSICAL PASS for the narrow DR2b milestone.**  On 2026-08-17 the
 two-worker SHAKE256/CBD3/NTT graph compiled, linked, placed, routed, and
 executed on a physical Phoenix NPU through IRON 1.4.1. All 13 frozen requests
@@ -127,8 +132,9 @@ payloads. Those checks are host evidence and do not enlarge the physical
 claim. The final combined DR0/DR1/DR2a/DR2b suite ran 92 tests with the
 production C++ harnesses available, zero skips, and exit code 0.
 
-`run_all_silicon_tests.py` remains unchanged. Until all DR2 sub-milestones are
-closed, no DR2 portion may be pushed or published independently.
+The historical statement above is superseded by the current five-gate
+native-only canonical runner. DR2b remains a narrow terminal result and does
+not close integrated DR2.
 
 ## Claim boundary
 

@@ -17,13 +17,14 @@
 
 Phoenix NPU PQC is a focused continuation of the PQC work separated from the
 historical `phoenix-sdr-dsp` repository. It contains ML-KEM and ML-DSA research
-code, host-safe contract tests, toolchain metadata, and the retained DR2
+code, host-preflight contract tests, native physical gates, toolchain
+metadata, and the retained DR2
 provenance needed to interpret the work accurately.
 
 | Research layer | Current evidence boundary |
 | --- | --- |
 | **M32 / M33 foundation** | Historical v1.0.0 baseline: M32 ML-KEM and M33 ML-DSA work combined native primitive gates with host/NPU composers. This is a hybrid foundation, not a claim of complete device residency. |
-| **DR0 / DR1** | Narrow, fail-closed physical results are retained for the M33 product and ML-DSA-44 ExpandA / rejection-sampling / NTT paths. |
+| **DR0 / DR1** | Narrow, fail-closed native gates exist for the M33 product and the ML-DSA-44 ExpandA / rejection-sampling / NTT path, and both are dispatched by the canonical runner. The DR1 SHA-256 `85B373B1E3B8A1BD883DA6BBDE73F874EE5C331B4AE419E5D161758A64EB4A7E` is an **external, operator-retained** historical-log assertion for `dr1-mldsa44-expanda-rejntt:silicon` / `TOTAL 33/33 PASS`; the raw log is not in this repository and the claim is not independently reproducible here. |
 | **DR2a / DR2b / DR2c** | Narrow, independent physical results are retained for ML-KEM-512 `SampleNTT`, CBD3/NTT noise, and one terminal KeyGen row respectively. They do not establish integrated ML-KEM KeyGen. |
 | **DR2d** | The integrated ML-KEM-512 K-PKE.KeyGen candidate uses five computation workers (W0–W4) plus serializer W5 (six worker cores total). Its recorded physical result is **0/25**, exit 1. Compile-only and diagnostic material do not convert that outcome into a pass. |
 | **Program goal** | 100% NPU residency for the supported FIPS 202/203/204 cryptographic operations, with no host cryptographic fallback or intermediate repair. This is a research goal, not a completed capability. |
@@ -31,6 +32,18 @@ provenance needed to interpret the work accurately.
 The claim boundaries and the stop condition are defined in
 [the device-residency roadmap](docs/PQC_DEVICE_RESIDENCY_ROADMAP.md). The
 integrated DR2d result blocks DR2 closure and later DR research.
+
+### Current physical-result status — 2026-08-18
+
+The operator freshly verified the retained current-source hashes and exact
+native gates for **DR0 24/24, DR2a 13/13, DR2b 13/13, and DR2c 11/11** on the
+target Phoenix laptop: **61/61**. This is a fresh four-sub-suite result, not a
+canonical-suite result. DR1's separately recovered historical physical log
+is external and operator-retained; it is reported as
+`TOTAL 33/33 PASS` with backend `dr1-mldsa44-expanda-rejntt:silicon`, but its
+raw bytes are absent from this repository. Do **not** combine it into a current
+94/94 claim: a current canonical `DR0 -> DR1 -> DR2a -> DR2b -> DR2c` run must
+pass on that laptop first.
 
 ## Scope
 
@@ -49,80 +62,141 @@ or production readiness.
 | Location | Purpose |
 | --- | --- |
 | [`phoenix_sdr_dsp/`](phoenix_sdr_dsp/) | Compatibility package path retained for existing PQC imports. New repository identity does **not** rename this import path. |
-| [`tests/`](tests/) | Host-safe PQC contract/reference tests plus native-only physical gates that are retained as research artifacts. |
+| [`tests/`](tests/) | Host-preflight PQC contract/reference tests plus the fail-closed `*_silicon.py` native gates dispatched by the canonical runner. |
 | [`docs/`](docs/README.md) | PQC-only documentation index, roadmaps, design records, provenance, and protected evidence navigation. |
 | [`docs/pqc_dr2_evidence_20260818/`](docs/pqc_dr2_evidence_20260818/README.md) | Byte-preserved DR2d forensic evidence. It is read-only research evidence, not an authorization to execute hardware. |
 | [`toolchain.yaml`](toolchain.yaml) | Machine-readable Phoenix NPU PQC toolchain and historical-result metadata. |
 | [`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md) | License, dependency, vector, and transliteration provenance ledger. |
 
-## Windows clean clone: one command
+## Windows clean clone: two commands
 
-From the root of a fresh Windows clone, run the only setup command:
+This repository is NPU-native. From the root of a fresh Windows clone on the
+target Phoenix laptop:
 
 ```powershell
+git clone https://github.com/midhatn/phoenix-npu-pqc.git
+cd phoenix-npu-pqc
 py .\install
 ```
 
-The extensionless, standard-library-only launcher requires **CPython 3.13
-x64 on Windows**. It checks pinned `numpy==2.5.2`, then, only if it is missing
-or mismatched, downloads the exact CPython 3.13 Windows x64 wheel to the
-ignored `.bootstrap-cache/`, verifies its byte length and SHA-256, and installs
-that local wheel with `--no-index`. It then verifies the import and
-automatically invokes the root `run_all_silicon_tests.py` compatibility
-forwarder. That forwarder runs only the explicit host-safe suite in
-`run_all_pqc_tests.py`.
+`install` is the primary extensionless launcher. It is standard-library only,
+so it runs on a stock **CPython 3.13 x64 on Windows** before any environment
+exists, and it delegates to the maintained implementation in `install.py`
+(`py .\install.py` remains supported). It provisions the full native
+toolchain:
 
-The pin is
-[`numpy-2.5.2-cp313-cp313-win_amd64.whl`](https://files.pythonhosted.org/packages/15/20/f3489f86d81ea460b2bcdceaed094142ca6579f6be0ec527b781d39afe68/numpy-2.5.2-cp313-cp313-win_amd64.whl),
-12,460,532 bytes, SHA-256
-`85aaccb24182c25df891ad0ec333585967e115269d5f1b17f2c9ae005bc96657`,
-from the [official PyPI 2.5.2 metadata](https://pypi.org/pypi/numpy/2.5.2/json).
+- the pinned XRT Windows SDK zip, verified by exact byte length and SHA-256
+  from [`toolchain.yaml`](toolchain.yaml);
+- the `mlir-aie` source tree at an exact pinned commit;
+- the pinned `mlir_aie` CPython 3.13 `win_amd64` wheel, verified by exact byte
+  length and SHA-256, installed offline from a local wheelhouse;
+- the official [`iron_setup`](https://xilinx.github.io/mlir-aie/1.4.1/buildHostWinNative/)
+  native-Windows IRON environment in `third_party/mlir-aie/ironenv`;
+- vendored `pyxrt` bindings and the Peano / `llvm-aie` `clang++` smoke check.
 
-This clean-clone route requires no administrator rights, XRT, IRON, Visual
-Studio, AIE compiler, or NPU. It never compiles an AIE program or dispatches
-hardware. Maintenance options are `py .\install --check-only`,
-`py .\install --no-tests`, and `py .\install --self-test`.
-`py .\install.py` remains a compatibility shim only; new instructions must
-use the extensionless command.
+On a successful full install it then **automatically invokes the canonical
+physical runner** `run_all_silicon_tests.py` under that checkout `ironenv`.
 
-`g++` is optional. When it is on `PATH`, applicable native C++ **host-reference**
-checks run as part of the host-safe suite. Without it, those checks are
-reported as skipped while Python and contract coverage still run. It is not an
-NPU, AIE, XRT, IRON, or Visual Studio requirement.
+**Integrity boundary, stated plainly.** The directly downloaded XRT SDK zip and
+`mlir_aie` wheel are size- and SHA-256-verified, and `mlir-aie` is commit
+pinned. The official `iron_setup` step then resolves a further transitive Python
+dependency set from package indexes, and that set is **not** fully hash-locked
+by this repository. A fully hash-locked environment would require a complete,
+independently produced verified wheelhouse. No such claim is made here.
+The physical installer does **not** install `kyber-py`, `dilithium-py`, or
+`pytest` from PyPI: none is required by the five canonical native gates.
+Those are optional host/reference dependencies and must be separately pinned
+and verified by an operator when a non-canonical oracle workflow needs them.
 
-## Host-safe validation
+Maintenance modes never compile an AIE program and never dispatch hardware:
+`py .\install --check-only`, `py .\install --download-only`,
+`py .\install --self-test`, and `py .\install --no-tests` (full provisioning
+without the automatic physical handoff). `--no-tests` and `--run-tests` are
+mutually exclusive and fail closed when combined.
 
-The repository CI and default local validation are host-only. They do not
-authorize, compile for, or dispatch to an NPU:
+## Canonical silicon validation
+
+`run_all_silicon_tests.py` is the **only** runner whose output may be described
+as silicon validation. Its default action physically compiles and dispatches
+five ordered fail-closed native gates on the Phoenix NPU:
+
+| Order | Gate | Backend label | Cases |
+| --- | --- | --- | --- |
+| 1 | DR0 M33 device-resident polynomial product | `m33-dr0:silicon` | 24 |
+| 2 | DR1 ML-DSA-44 ExpandA rejection-sampling NTT | `dr1-mldsa44-expanda-rejntt:silicon` | 33 |
+| 3 | DR2a ML-KEM-512 bounded SHAKE128 `SampleNTT` | `dr2a-mlkem512-samplentt:silicon` | 13 |
+| 4 | DR2b ML-KEM-512 SHAKE256 CBD3 noise-to-NTT | `dr2b-mlkem512-noise-ntt:silicon` | 13 |
+| 5 | DR2c ML-KEM-512 K-PKE.KeyGen terminal `t-hat` row | `dr2c-mlkem512-keygen-row:silicon` | 11 |
+
+```powershell
+py .\run_all_silicon_tests.py
+```
+
+Each gate runs as its own subprocess. A gate is accepted only when it exits 0,
+prints its exact `Backend:` line, prints its anchored `TOTAL n/n PASS` line for
+the exact expected case count, and emits no unavailable / skip / reference /
+fallback / diagnostic marker. The first failure stops the run with a non-zero
+exit status. A full pass means **5 gates / 94 cases physically passed on Phoenix
+NPU** (24 + 33 + 13 + 13 + 11). That is a narrow milestone result: it is **not**
+complete ML-KEM or ML-DSA and **not** 100% algorithm residency. Integrated
+ML-KEM-512 K-PKE.KeyGen (DR2d) is deliberately not dispatched; its recorded
+physical result is `TOTAL 0/25 FAIL`, exit 1.
+
+Two non-dispatching inspection modes exist: `--list` prints the ordered gate
+plan and exits, and `--preflight-only` probes Windows, CPython 3.13 x64, the
+Phoenix NPU through `xrt-smi examine`, `pyxrt`, `aie`, IRON, and Peano, then
+exits before any AIE compilation.
+
+**No NPU claim is accepted unless canonical native runner output from the target
+laptop passes.** The fresh 2026-08-18 four-sub-suite result is 61/61; the DR1
+33/33 entry is an external operator-retained historical assertion whose raw log
+is absent from this checkout. Neither is a current 94/94 result. Use
+`--evidence-dir release-evidence/silicon` to retain a
+timestamped JSON record with checkout provenance and merged gate output from a
+new canonical run. The retained DR2a/DR2b/DR2c logs remain narrow evidence for
+those gates only.
+
+## Host preflight (never silicon evidence)
+
+`run_all_pqc_tests.py` is an explicit **host preflight**. It runs contract,
+reference, and production-source checks that work on an ordinary host, never
+selects a `*_silicon.py` gate, and never loads the MLIR-AIE runtime, compiles an
+AIE program, or dispatches an NPU:
 
 ```bash
 python run_all_pqc_tests.py --dry-run
 python run_all_pqc_tests.py
 ```
 
-`run_all_silicon_tests.py` remains only as a compatibility entrypoint and
-forwards to the same host-safe suite. It never starts a hardware test.
+A pass here means the host preflight passed. It can never satisfy, substitute
+for, or be labelled silicon validation. Repository CI runs only this preflight.
 
-For an additional normal-user PowerShell 7 release audit with commit/status,
-tool, Python, and protected-evidence checks, run:
+`g++` is optional. When it is on `PATH`, applicable native C++ **host-reference**
+checks run as part of the preflight. Without it, those checks are reported as
+skipped while Python and contract coverage still run. It is not an NPU, AIE,
+XRT, IRON, or Visual Studio requirement.
+
+For an additional normal-user PowerShell 7 strict clean-checkout audit with
+commit/status, tool, Python, and protected-evidence checks, run:
 
 ```powershell
 pwsh -File .\scripts\validate_clean_clone.ps1 `
     -InstallHostDependencies
 ```
 
-The explicit switch delegates to `py .\install --no-tests`, preserving its
-integrity-pinned local-wheel installation rather than using an index install.
-The script is an optional audit rather than the clean-clone setup path; it
-still has no hardware switch and writes one timestamped report under the ignored
+The retained script name does not create a clone. It fails before testing unless
+the whole checkout is clean (staged, unstaged, and untracked files), records and
+reasserts the exact immutable `HEAD`, and then delegates to `py .\install
+--no-tests` when requested. Provisioning keeps its verified pins without
+triggering the physical handoff. The audit invokes the canonical runner only as
+`run_all_silicon_tests.py --list`. It has no hardware-dispatch switch, produces
+no silicon evidence, and writes one timestamped report under the ignored
 `release-evidence/` directory. See the [publication readiness
 matrix](docs/PUBLICATION_READINESS.md) and [journal reproducibility
-checklist](docs/JOURNAL_REPRODUCIBILITY_CHECKLIST.md) for scope, retention,
-and release controls.
+checklist](docs/JOURNAL_REPRODUCIBILITY_CHECKLIST.md) for scope, retention, and
+release controls.
 
-Native-only physical gates and captured results are documented as evidence
-boundaries; they are not invoked by CI. See
-[CONTRIBUTING.md](CONTRIBUTING.md) before proposing any change that could
+See [CONTRIBUTING.md](CONTRIBUTING.md) before proposing any change that could
 affect a physical-run workflow.
 
 Read [`docs/PQC_AUDIT_REMEDIATION_20260818.md`](docs/PQC_AUDIT_REMEDIATION_20260818.md)
@@ -132,7 +206,8 @@ remaining journal-reproducibility blockers.
 ## Expert continuation and reproducibility
 
 Start with the [PQC reproducibility guide](docs/PQC_REPRODUCIBILITY.md) for
-the exact host-safe commands, integrity check, toolchain pins, known caches,
+the exact host-preflight and canonical native commands, integrity checks,
+toolchain pins, known caches,
 and source boundaries. The mathematical and implementation entry points are
 the M32/M33 design records and the DR0–DR2d design records in the
 [documentation index](docs/README.md).
