@@ -1,7 +1,7 @@
-"""Phoenix SDR-DSP host-side Python entry points.
+"""Compatibility import package for Phoenix NPU PQC host-side entry points.
 
-The package intentionally contains only lightweight import-time code.  Native
-MLIR-AIE/IRON dependencies are loaded by the individual silicon runners when a
-dispatch is requested, so static checks can inspect the runner contracts on a
-host that has no NPU toolchain.
+The historical ``phoenix_sdr_dsp`` module name is intentionally preserved for
+existing PQC research imports. Native MLIR-AIE/IRON dependencies are loaded by
+individual native runners only when a dispatch is requested, so host-safe
+checks can inspect contracts without an NPU toolchain.
 """

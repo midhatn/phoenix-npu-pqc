@@ -8,7 +8,6 @@ import inspect
 import json
 import re
 import struct
-import subprocess
 import unittest
 from pathlib import Path
 
@@ -705,16 +704,11 @@ class DR2dDeviceResidencyContractTests(unittest.TestCase):
             capture_output=True,
             encoding="utf-8",
         )
-        self.assertEqual(
-            (REPO / "run_all_silicon_tests.py").read_text(encoding="utf-8"),
-            subprocess.run(
-                ["git", "show", "HEAD:run_all_silicon_tests.py"],
-                cwd=REPO,
-                check=True,
-                capture_output=True,
-                encoding="utf-8",
-            ).stdout,
-        )
+        runner = (REPO / "run_all_pqc_tests.py").read_text(encoding="utf-8")
+        compatibility = (REPO / "run_all_silicon_tests.py").read_text(encoding="utf-8")
+        self.assertIn("HOST_SAFE_TESTS", runner)
+        self.assertNotIn("test_dr2d_mlkem512_kpke_keygen_silicon.py", runner)
+        self.assertIn("run_all_pqc_tests", compatibility)
 
     def test_terminal_probe_is_diagnostic_only_and_preserves_terminal_residency(
         self,

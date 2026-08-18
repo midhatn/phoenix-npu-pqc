@@ -1,66 +1,51 @@
-# Security Policy
+# Security policy
 
-## Reporting a Vulnerability
+## Reporting a vulnerability
 
-If you discover a security vulnerability in Phoenix SDR-DSP, please **do not**
-open a public GitHub issue. Instead, report it privately so it can be
-investigated and disclosed responsibly.
+If you discover a vulnerability in Phoenix NPU PQC, do not open a public issue.
+Use GitHub Private Vulnerability Reporting or email
+**medhat.nashar@gmail.com** with the subject
+`[phoenix-npu-pqc SECURITY]`.
 
-### How to report
-
-Preferred: use GitHub's **Private Vulnerability Reporting**
-(Security tab → "Report a vulnerability"). Process: [GitHub Docs — privately reporting a security vulnerability](https://docs.github.com/en/code-security/security-advisories/guidance-on-reporting-and-writing/privately-reporting-a-security-vulnerability).
-
-Alternative: email **medhat.nashar@gmail.com** with the subject line
-`[phoenix-sdr-dsp SECURITY]`.
-
-Please include, if possible:
-
-- A description of the vulnerability and its potential impact
-- Steps to reproduce (host OS/build, NPU driver + firmware version, XRT
-  version, milestone / test file, sample inputs)
-- Any proof-of-concept code, kernel dump, or `xrt-smi` capture
-- Your name/handle for acknowledgment (or "anonymous" if preferred)
-
-You should receive an initial response within **7 days**. If the issue is
-confirmed, we will work on a fix and coordinate a disclosure timeline with you.
+Include the affected file or component, a minimal reproduction, impact,
+environment details, and any relevant host-safe or native evidence. Do not
+attach secrets, private keys, sensitive test vectors, or unredacted device
+captures to a public report.
 
 ## Scope
 
-**In scope:**
+In scope:
 
-- Kernel logic bugs in `include/sdr_dsp/*.hpp` and `tests/m*/` (incorrect
-  modular arithmetic, NTT twiddle stride errors, off-by-one indexing, buffer
-  overruns in AIE tile local memory).
-- Host-side XRT dispatch logic in test drivers (`test_*_m*.py`) that could
-  crash the NPU, corrupt DMA buffers, or hang XRT.
-- Numerical correctness regressions that break bit-exact verification against
-  reference implementations.
-- Reproducibility issues in the toolchain lock (`toolchain.yaml`,
-  `scripts/bootstrap_env.ps1`).
+- FIPS 202/203/204 implementation and validation defects in
+  `phoenix_sdr_dsp/pqc/` and PQC test code.
+- Host-side validation, serialization, provenance, checksum, and
+  fail-closed behavior defects.
+- Native MLIR-AIE / XRT integration defects that could corrupt buffers,
+  misreport a result, or obscure a failed device dispatch.
+- Supply-chain or integrity issues in current metadata, installer code, or
+  the protected evidence inventory.
 
-**Out of scope (report upstream):**
+Out of scope:
 
-- Bugs in the AMD XDNA driver → https://github.com/amd/xdna-driver
-- Bugs in MLIR-AIE / IRON → https://github.com/Xilinx/mlir-aie
-- Bugs in LLVM Peano → https://github.com/Xilinx/llvm-aie
-- Bugs in XRT itself → https://github.com/Xilinx/XRT
+- Security defects in AMD's XDNA driver, MLIR-AIE, LLVM-AIE, or XRT
+  themselves; report those to their upstream projects.
+- Claims based only on a historical physical log without a reproducible
+  affected repository component.
+- Requests to interpret historical research evidence as production
+  certification.
 
-## Supported Versions
+## Supported versions
 
-Only the latest `main` branch receives security fixes. Once tagged releases
-exist, this table will list supported versions.
+Only the current `main` branch is maintained. Historical evidence records are
+retained for provenance and are not retroactively changed as a security fix.
 
-| Version | Supported          |
-| ------- | ------------------ |
-| main    | :white_check_mark: |
+| Version | Supported |
+| --- | --- |
+| `main` | Yes |
 
-## Safe Harbor
+## Responsible research
 
-Good-faith security research conducted according to this policy will not
-result in legal action from the maintainer. We consider "good faith" to include:
-
-- Avoiding privacy violations, destruction of data, and disruption to others.
-- Only interacting with test accounts and hardware you own or have explicit
-  permission to test.
-- Giving reasonable time to remediate before public disclosure.
+Good-faith research that avoids privacy violations, destruction of data, and
+disruption of systems is welcome. Test only hardware and accounts you own or
+are authorized to use, and allow reasonable time for remediation before public
+disclosure.

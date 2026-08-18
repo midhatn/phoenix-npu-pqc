@@ -20,8 +20,7 @@ AIE graph. Its only successful output is the canonical 256-lane
 
 This is the existing FIPS 203 K-PKE.KeyGen relation, specialized to one
 ML-KEM-512 row; no new publication mathematics is required beyond the
-authoritative equation already recorded in
-[`MILESTONES_AND_MATHEMATICS.md`](MILESTONES_AND_MATHEMATICS.md).
+authoritative equation in [NIST FIPS 203](https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.203.pdf).
 
 The expansion worker derives `A_hat[row,0]` and `A_hat[row,1]` with bounded
 five-block `SampleNTT(rho || column || row)`, and derives

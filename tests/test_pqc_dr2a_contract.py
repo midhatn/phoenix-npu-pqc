@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import ast
 import inspect
-import subprocess
 import unittest
 from pathlib import Path
 
@@ -16,7 +15,8 @@ KERNELS = REPO / "phoenix_sdr_dsp" / "pqc" / "kernels"
 DESIGN = REPO / "docs" / "PQC_DR2A_DESIGN.md"
 PENDING = REPO / "docs" / "PQC_DR2A_SILICON_VALIDATION_PENDING.md"
 GATE = REPO / "tests" / "pqc_device_resident" / "test_dr2a_mlkem512_samplentt_silicon.py"
-CANONICAL_RUNNER = REPO / "run_all_silicon_tests.py"
+HOST_RUNNER = REPO / "run_all_pqc_tests.py"
+COMPATIBILITY_RUNNER = REPO / "run_all_silicon_tests.py"
 
 
 def _function(tree: ast.AST, name: str) -> ast.FunctionDef:
@@ -174,23 +174,18 @@ class DR2aDeviceResidencyContractTests(unittest.TestCase):
         self.assertIn("malformed descriptors or corrupted", pending)
         self.assertIn("run_all_silicon_tests.py", pending)
 
-    def test_native_gate_is_anchored_and_canonical_runner_is_unchanged(self) -> None:
+    def test_native_gate_is_anchored_and_default_runner_is_host_safe(self) -> None:
         gate = GATE.read_text(encoding="utf-8")
         self.assertIn("PQC DR2a - ML-KEM-512 bounded SHAKE128 SampleNTT", gate)
         self.assertIn("Backend: dr2a-mlkem512-samplentt:unavailable", gate)
         self.assertIn("return 2", gate)
         self.assertIn('print(f"TOTAL {passed}/{EXPECTED_TOTAL} {status}")', gate)
         self.assertNotIn("dr2a-mlkem512-samplentt:reference", gate)
-        self.assertEqual(
-            CANONICAL_RUNNER.read_text(encoding="utf-8"),
-            subprocess.run(
-                ["git", "show", "HEAD:run_all_silicon_tests.py"],
-                cwd=REPO,
-                check=True,
-                capture_output=True,
-                encoding="utf-8",
-            ).stdout,
-        )
+        runner = HOST_RUNNER.read_text(encoding="utf-8")
+        compatibility = COMPATIBILITY_RUNNER.read_text(encoding="utf-8")
+        self.assertIn("HOST_SAFE_TESTS", runner)
+        self.assertNotIn("test_dr2a_mlkem512_samplentt_silicon.py", runner)
+        self.assertIn("run_all_pqc_tests", compatibility)
 
 
 if __name__ == "__main__":

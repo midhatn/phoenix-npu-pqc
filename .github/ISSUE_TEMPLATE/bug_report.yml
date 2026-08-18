@@ -1,36 +1,44 @@
-name: Bug report
-description: A build, install, script, or docs bug — anything not directly about a silicon milestone
-title: "[bug] "
-labels: ["bug"]
+name: PQC host-safe regression
+description: Report a reproducible PQC code, validation, metadata, or documentation issue that does not require hardware execution.
+title: "[pqc bug] "
+labels: ["bug", "pqc"]
 body:
+  - type: markdown
+    attributes:
+      value: |
+        Do not use this form to request or imply a physical NPU run. State whether the report concerns host-safe, compile-only, or historical physical evidence.
   - type: textarea
     id: description
     attributes:
-      label: Describe the bug
+      label: Describe the problem
     validations:
       required: true
-
   - type: textarea
     id: reproduce
     attributes:
-      label: Steps to reproduce
+      label: Host-safe reproduction
+      description: Include the exact command, input or fixture, and observed output.
       render: shell
     validations:
       required: true
-
-  - type: textarea
-    id: expected
+  - type: dropdown
+    id: evidence_class
     attributes:
-      label: Expected behavior
-
+      label: Evidence class
+      options:
+        - Host-safe contract or reference check
+        - Compile-only or static analysis
+        - Historical physical evidence interpretation
+        - Documentation or metadata
+    validations:
+      required: true
   - type: input
     id: environment
     attributes:
-      label: Host OS + Python
-      placeholder: "e.g., Windows 11 Pro 26200, Python 3.13.15"
-
+      label: OS, Python, and dependency versions
+      placeholder: "e.g., Ubuntu 24.04, Python 3.12, NumPy 2.x"
   - type: textarea
     id: logs
     attributes:
-      label: Relevant logs / stack trace
+      label: Relevant output
       render: text

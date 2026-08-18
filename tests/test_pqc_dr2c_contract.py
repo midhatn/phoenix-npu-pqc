@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import ast
 import inspect
-import subprocess
 import unittest
 from pathlib import Path
 
@@ -84,7 +83,7 @@ class DR2cDeviceResidencyContractTests(unittest.TestCase):
         self.assertIn("kBadToken", accumulate)
         self.assertNotIn("pow(", expand + accumulate)
 
-    def test_physical_record_anchors_native_evidence_and_runner_boundary(self) -> None:
+    def test_physical_record_anchors_native_evidence_and_host_runner_boundary(self) -> None:
         design, record, gate = (
             DESIGN.read_text(encoding="utf-8"),
             PENDING.read_text(encoding="utf-8"),
@@ -145,16 +144,11 @@ class DR2cDeviceResidencyContractTests(unittest.TestCase):
         self.assertIn("Backend: dr2c-mlkem512-keygen-row:unavailable", gate)
         self.assertIn("return 2", gate)
         self.assertNotIn("keygen-row:reference", gate)
-        self.assertEqual(
-            (REPO / "run_all_silicon_tests.py").read_text(encoding="utf-8"),
-            subprocess.run(
-                ["git", "show", "HEAD:run_all_silicon_tests.py"],
-                cwd=REPO,
-                check=True,
-                capture_output=True,
-                encoding="utf-8",
-            ).stdout,
-        )
+        runner = (REPO / "run_all_pqc_tests.py").read_text(encoding="utf-8")
+        compatibility = (REPO / "run_all_silicon_tests.py").read_text(encoding="utf-8")
+        self.assertIn("HOST_SAFE_TESTS", runner)
+        self.assertNotIn("test_dr2c_mlkem512_keygen_row_silicon.py", runner)
+        self.assertIn("run_all_pqc_tests", compatibility)
 
 
 if __name__ == "__main__":

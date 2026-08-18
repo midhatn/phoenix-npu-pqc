@@ -54,6 +54,8 @@ Makefile text eol=lf
 # Preserve captured DR2 forensic text byte-for-byte (including CRLF and tabs).
 docs/pqc_dr2_evidence_20260818/*.txt binary
 docs/pqc_dr2_evidence_20260818/**/*.txt binary
+docs/pqc_dr2_evidence_20260818/sigma_prf_retry_chain/*.ps1 binary !eol
+docs/pqc_dr2_evidence_20260818/sigma_prf_retry_chain/*.ps1 binary
 
 # Preserve recovered root-level PQC research evidence byte-for-byte.
 /PQC_DR*.log binary

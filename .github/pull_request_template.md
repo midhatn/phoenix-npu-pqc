@@ -1,26 +1,25 @@
 ## Summary
 
-<!-- What does this PR change and why? Link related issues (e.g., Closes #12). -->
+Describe the PQC research, validation, provenance, or maintenance change and its claim boundary.
 
-## Type of change
+## Evidence class
 
-- [ ] Bug fix (non-breaking)
-- [ ] New feature (non-breaking)
-- [ ] Breaking change
-- [ ] Documentation only
-- [ ] Toolchain / CI / infrastructure
+- [ ] Host-safe contract or reference validation
+- [ ] Compile-only or static analysis
+- [ ] Historical evidence restoration or documentation
+- [ ] Native evidence change with separately recorded provenance
 
-## Silicon impact
+## Validation
 
-- [ ] Full regression `python run_all_silicon_tests.py` still passes 12/12 bit-accurate
-- [ ] N/A — no kernel or host-runtime changes
-
-<!-- If you ran the regression, paste the SUMMARY block from run_all_silicon_tests.py here. -->
+- [ ] `python run_all_pqc_tests.py` passes
+- [ ] `python -m compileall -q phoenix_sdr_dsp tests run_all_pqc_tests.py run_all_silicon_tests.py` passes
+- [ ] `git diff --check` passes
+- [ ] `sha256sum -c SHA256SUMS` passes from `docs/pqc_dr2_evidence_20260818/`, or this PR accurately explains an existing gap
 
 ## Checklist
 
-- [ ] Code follows the existing style; `ruff check .` passes
-- [ ] I updated relevant documentation (`README.md`, `docs/`)
-- [ ] I updated `toolchain.yaml` if toolchain versions changed
-- [ ] I added/updated tests where applicable
-- [ ] Commit messages are descriptive
+- [ ] The change is PQC-only and retains `phoenix_sdr_dsp` import compatibility.
+- [ ] README, roadmap, design, reproducibility, or provenance documentation is updated where needed.
+- [ ] I distinguish host-safe, compile-only, and physical evidence.
+- [ ] I do not claim complete ML-KEM, complete ML-DSA, FIPS conformance, or 100% NPU residency without the required evidence.
+- [ ] CI and default entrypoints remain host-only and do not dispatch hardware.

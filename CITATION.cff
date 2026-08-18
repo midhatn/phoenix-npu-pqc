@@ -1,46 +1,63 @@
 cff-version: 1.2.0
-message: "If you use this software, please cite it using the metadata below."
-title: "Phoenix SDR-DSP: Windows-Native DSP, SDR, and PQC Experiments for AMD Phoenix XDNA1"
-abstract: "A native Windows 11 engineering corpus for deterministic DSP, SDR, transform, and FIPS-aligned post-quantum cryptography experiments on AMD Ryzen AI Phoenix silicon (XDNA1 / AIE2). The 34-invocation regression matrix completed 34/34 PASS on 2026-08-17: 29 direct-hardware entries, four host/NPU composer entries, and one intentional CPU reference entry. M33a/M33b are native ML-DSA primitive gates; M32e and M33d/e remain host-orchestrated rather than fully device-resident. FIPS 203 end-to-end composition coverage is currently ML-KEM-512."
+message: "If you use this research repository, please cite it using the metadata below."
+title: "Phoenix NPU PQC: Post-Quantum Cryptography Research for AMD Phoenix NPU1"
+abstract: "A private research repository for FIPS 202 SHA-3/SHAKE, FIPS 203 ML-KEM, and FIPS 204 ML-DSA work on AMD Ryzen AI Phoenix NPU1 (XDNA1/AIE2). It preserves a historical M32/M33 hybrid foundation, narrow physical DR0/DR1 and DR2a/DR2b/DR2c records, and an unresolved integrated DR2d ML-KEM-512 K-PKE.KeyGen physical result of 0/25. The long-term goal is 100% NPU residency; this repository does not claim that goal is complete."
 type: software
-version: "1.0.0"
-date-released: "2026-08-16"
+version: "0.1.0"
+date-released: "2026-08-18"
 authors:
   - family-names: "Nashar"
     given-names: "Midhat"
     alias: "midhatn"
-repository-code: "https://github.com/midhatn/phoenix-sdr-dsp"
-url: "https://github.com/midhatn/phoenix-sdr-dsp"
+repository-code: "https://github.com/midhatn/phoenix-npu-pqc"
+url: "https://github.com/midhatn/phoenix-npu-pqc"
 license: MIT
 keywords:
-  - "amd-ryzen-ai"
-  - "npu"
-  - "xdna"
-  - "aie2"
-  - "phoenix-npu"
-  - "software-defined-radio"
-  - "sdr"
-  - "dsp"
-  - "number-theoretic-transform"
-  - "ntt"
-  - "mlir-aie"
-  - "peano"
-  - "xrt"
-  - "windows-11"
-  - "lattice-cryptography"
-  - "vectorization"
-  - "fft"
-  - "iron-api"
+  - "post-quantum cryptography"
+  - "ML-KEM"
+  - "ML-DSA"
+  - "FIPS 202"
+  - "FIPS 203"
+  - "FIPS 204"
+  - "AMD Ryzen AI"
+  - "Phoenix NPU"
+  - "XDNA1"
+  - "AIE2"
+  - "MLIR-AIE"
+  - "LLVM-AIE"
+  - "XRT"
+  - "device residency"
 preferred-citation:
   type: software
-  title: "Phoenix SDR-DSP: Windows-Native DSP, SDR, and PQC Experiments for AMD Phoenix XDNA1"
+  title: "Phoenix NPU PQC: Post-Quantum Cryptography Research for AMD Phoenix NPU1"
   authors:
     - family-names: "Nashar"
       given-names: "Midhat"
   year: 2026
-  version: "1.0.0"
-  url: "https://github.com/midhatn/phoenix-sdr-dsp"
+  version: "0.1.0"
+  url: "https://github.com/midhatn/phoenix-npu-pqc"
 references:
+  - type: generic
+    title: "FIPS 202: SHA-3 Standard: Permutation-Based Hash and Extendable-Output Functions"
+    authors:
+      - name: "National Institute of Standards and Technology"
+    year: 2015
+    url: "https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.202.pdf"
+    doi: "10.6028/NIST.FIPS.202"
+  - type: generic
+    title: "FIPS 203: Module-Lattice-Based Key-Encapsulation Mechanism Standard"
+    authors:
+      - name: "National Institute of Standards and Technology"
+    year: 2024
+    url: "https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.203.pdf"
+    doi: "10.6028/NIST.FIPS.203"
+  - type: generic
+    title: "FIPS 204: Module-Lattice-Based Digital Signature Standard"
+    authors:
+      - name: "National Institute of Standards and Technology"
+    year: 2024
+    url: "https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.204.pdf"
+    doi: "10.6028/NIST.FIPS.204"
   - type: software
     title: "mlir-aie: MLIR-based tooling for AMD AIEngine processors"
     authors:
@@ -48,15 +65,13 @@ references:
     repository-code: "https://github.com/Xilinx/mlir-aie"
     url: "https://github.com/Xilinx/mlir-aie/releases/tag/v1.4.1"
     version: "1.4.1+13 (commit 3ca0193)"
-    notes: "Pinned at commit 3ca0193cea9e2c39ec670a65f93e1dd43c969f22 (v1.4.1 + 13 commits) because it additionally contains PR #3545 (Retain executable per kernel handle to fix run_chain use-after-free), which is required by parallel-DMA milestones M9, M9b, and M17p. The v1.4.1 release itself introduced the new iron.Runtime(seq_fn, fn_args=[...]) API used throughout this project."
     license: "Apache-2.0"
   - type: software
-    title: "llvm-aie (Peano): LLVM-based backend for AMD AIEngine cores"
+    title: "llvm-aie: LLVM-based backend for AMD AIEngine cores"
     authors:
       - name: "AMD (Xilinx) Research Labs"
     repository-code: "https://github.com/Xilinx/llvm-aie"
     version: "21.0.0.2026080301+c9c5ecb7"
-    notes: "AMD's LLVM fork with AIE code-generation support. Provides the peano-clang compiler used to build kernels in kernels/*.cc for AIE2 tiles. Full SPDX license expression is `Apache-2.0 WITH LLVM-exception`; the CFF `license` field below records the base license identifier accepted by the SPDX enum."
     license: "Apache-2.0"
   - type: software
     title: "XRT: Xilinx Runtime"
@@ -64,57 +79,4 @@ references:
       - name: "AMD (Xilinx)"
     repository-code: "https://github.com/Xilinx/XRT"
     version: "2.21.0"
-    notes: "Provides the userspace runtime (pyxrt Python bindings, xrt-smi CLI) used by run_all_silicon_tests.py to load compiled XCLBINs onto the Phoenix NPU."
     license: "Apache-2.0"
-  - type: software
-    title: "FFT_R4_AIE: AMD reference radix-4 Stockham FFT kernel"
-    authors:
-      - name: "AMD Research (Xilinx)"
-    repository-code: "https://github.com/diacccc/FFT_R4_AIE"
-    url: "https://github.com/diacccc/FFT_R4_AIE"
-    notes: "The M17-v3 radix-4 Stockham FFT kernel (kernels/fft_stockham_f32.cc) is adapted from diacccc/FFT_R4_AIE (AMD-authored, Apache-2.0). Not the mlir-aie tree itself."
-    license: "Apache-2.0"
-  - type: article
-    title: "Retain executable per kernel handle to fix run_chain use-after-free"
-    authors:
-      - name: "Xilinx/mlir-aie contributors"
-    url: "https://github.com/Xilinx/mlir-aie/pull/3545"
-    year: 2026
-    notes: "Upstream fix required by parallel-DMA milestones M9, M9b, and M17p. Merged into mlir-aie main after v1.4.1; landed at commit 3ca0193."
-  - type: standard
-    title: "FIPS 203: Module-Lattice-Based Key-Encapsulation Mechanism Standard"
-    authors:
-      - name: "National Institute of Standards and Technology"
-    year: 2024
-    url: "https://nvlpubs.nist.gov/nistpubs/fips/nist.fips.203.pdf"
-    doi: "10.6028/NIST.FIPS.203"
-  - type: article
-    title: "An algorithm for the machine calculation of complex Fourier series"
-    authors:
-      - family-names: "Cooley"
-        given-names: "James W."
-      - family-names: "Tukey"
-        given-names: "John W."
-    year: 1965
-    url: "https://garfield.library.upenn.edu/classics1993/A1993MJ84400001.pdf"
-  - type: article
-    title: "Implementing the Rivest Shamir and Adleman Public Key Encryption Algorithm on a Standard Digital Signal Processor"
-    authors:
-      - family-names: "Barrett"
-        given-names: "Paul"
-    year: 1986
-    url: "https://link.springer.com/chapter/10.1007/3-540-47721-7_24"
-  - type: article
-    title: "High-speed convolution and correlation"
-    authors:
-      - family-names: "Stockham"
-        given-names: "Thomas G."
-        name-particle: "Jr."
-    year: 1966
-    url: "https://dl.acm.org/doi/10.1145/1464182.1464209"
-  - type: article
-    title: "CRYSTALS-Kyber Algorithm Specification and Supporting Documentation (version 3.02)"
-    authors:
-      - name: "Avanzi, Bos, Ducas, Kiltz, Lepoint, Lyubashevsky, Schanck, Schwabe, Seiler, Stehlé"
-    year: 2021
-    url: "https://pq-crystals.org/kyber/data/kyber-specification-round3-20210804.pdf"

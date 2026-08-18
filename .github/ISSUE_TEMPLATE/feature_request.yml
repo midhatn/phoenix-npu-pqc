@@ -1,35 +1,40 @@
-name: Feature request
-description: Propose a new milestone, kernel, DSP primitive, or infrastructure improvement
-title: "[feature] "
-labels: ["enhancement"]
+name: PQC research proposal
+description: Propose a bounded FIPS 202/203/204 research, validation, provenance, or infrastructure improvement.
+title: "[pqc proposal] "
+labels: ["enhancement", "pqc"]
 body:
+  - type: markdown
+    attributes:
+      value: |
+        A proposal does not authorize hardware execution. Explain how the proposed boundary differs from the retained historical evidence.
   - type: textarea
     id: problem
     attributes:
-      label: What problem does this solve?
+      label: Research question or problem
     validations:
       required: true
-
   - type: textarea
     id: proposal
     attributes:
-      label: Proposed solution
-      description: Describe the API, kernel design, or milestone specification.
+      label: Proposed scope and validation boundary
+      description: State inputs, output, independent oracle, fail-closed behavior, provenance capture, and whether the work is host-safe or native-only.
     validations:
       required: true
-
   - type: textarea
-    id: alternatives
+    id: prior_art
     attributes:
-      label: Alternatives considered
-
+      label: Relevant repository evidence and primary references
+      description: Link the design, roadmap, evidence record, and applicable FIPS section.
   - type: dropdown
     id: scope
     attributes:
       label: Scope
       options:
-        - New DSP kernel / milestone
-        - Kernel optimization
-        - Toolchain / build / CI
-        - Documentation
-        - Other
+        - FIPS 202 SHA-3/SHAKE
+        - FIPS 203 ML-KEM
+        - FIPS 204 ML-DSA
+        - Device residency and ABI
+        - Host-safe validation or provenance
+        - Toolchain, CI, or documentation
+    validations:
+      required: true

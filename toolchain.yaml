@@ -1,34 +1,27 @@
-# Phoenix SDR-DSP Toolchain Lock
-# ------------------------------
-# Machine-readable, canonical record of the exact software + hardware stack
-# under which the 16-milestone silicon regression suite is verified.
-#
-# Update this file whenever a component version changes AND the full regression
-# passes on that new combination. Human-readable rationale lives in
-# docs/M2_TOOLCHAIN_PIN.md.
-
+# Phoenix NPU PQC toolchain and provenance record.
+# Current CI is host-only; these native pins preserve the environment associated
+# with retained research evidence and do not authorize a hardware dispatch.
 schema_version: "1.0"
 
 project:
-  name: phoenix-sdr-dsp
-  repository: "https://github.com/midhatn/phoenix-sdr-dsp"
+  name: phoenix-npu-pqc
+  repository: "https://github.com/midhatn/phoenix-npu-pqc"
   license: MIT
+  scope: "FIPS 202/203/204 post-quantum cryptography research"
 
-# --- Target silicon --------------------------------------------------------
 target:
   vendor: AMD
   soc: "Ryzen 9 7940HS"
   soc_family: "Phoenix / Hawk Point (Ryzen 7040 / 8040 series)"
   npu:
-    name: "AMD XDNA1 / 1st Gen Ryzen AI"  # https://docs.kernel.org/accel/amdxdna/amdnpu.html
+    name: "AMD XDNA1 / 1st Gen Ryzen AI"
     codename: npu1
-    tile_array: "4 columns x 5 rows"  # Linux amdxdna: Phoenix/Hawk Point 4x5
+    tile_array: "4 columns x 5 rows"
     engine: "AIE2 (AI Engine 2)"
     simd_width_bits: 512
     tile_local_memory_kb: 64
     tile_local_banks: 4
 
-# --- Host / OS -------------------------------------------------------------
 host:
   os: "Windows 11 Pro"
   os_min_build: "22H2"
@@ -39,7 +32,6 @@ host:
     max_exclusive: "3.14"
     verified: "3.13.15"
 
-# --- Runtime driver / firmware --------------------------------------------
 drivers:
   amd_npu_driver:
     verified: "32.0.20102.3930"
@@ -47,39 +39,18 @@ drivers:
   npu_firmware:
     verified: "1.5.5.391"
 
-# --- Toolchain (Python packages, LLVM, XRT) --------------------------------
 toolchain:
   mlir_aie:
     package: "mlir-aie"
     verified_version: "v1.4.1+13 (commit 3ca0193, 2026-08-14)"
     minimum_release: "v1.4.1"
-    minimum_release_date: "2026-08-11"
     minimum_release_url: "https://github.com/Xilinx/mlir-aie/releases/tag/v1.4.1"
     verified_commit: "3ca0193cea9e2c39ec670a65f93e1dd43c969f22"
-    verified_commit_short: "3ca0193"
-    verified_commit_date: "2026-08-14"
-    verified_commit_pr: "https://github.com/Xilinx/mlir-aie/pull/3545"
     source: "git checkout in third_party/mlir-aie"
-    # Published cp313 Windows wheel used by install.py --wheelhouse.
-    # Do not use latest-wheels-4 for an untagged 3ca0193 checkout.
     wheel_name: "mlir_aie-1.4.1-cp313-cp313-win_amd64.whl"
     wheel_url: "https://github.com/Xilinx/mlir-aie/releases/download/v1.4.1/mlir_aie-1.4.1-cp313-cp313-win_amd64.whl"
     wheel_bytes: 180031689
     wheel_sha256: "a3a0266051cbeb7bd28c0304d02fa361b3c05036c81f0880a0046992a77e7663"
-    # mlir-aie v1.4.1 introduces the current iron.Runtime API used by every
-    # iron-based test in tests/:
-    #   Runtime(seq_fn, fn_args=[...])
-    #   Program(..., workers=[worker0, worker1, ...])
-    # with tg = TaskGroup() inside the sequence body and
-    #   prod_ep.fill(buf, tap=tap, group=tg)
-    # for per-column DMA. Earlier context-manager style (Runtime() as with-block,
-    # rt.start(worker), rt.task_group(), rt.finish_task_group(tg), rt.fill(fifo.prod(), ...))
-    # is removed at v1.4.1.
-    # The regression pin (commit 3ca0193) is v1.4.1 + 13 commits and additionally
-    # includes PR #3545 ("Retain executable per kernel handle to fix run_chain
-    # use-after-free"). Any commit >= v1.4.1 that also contains PR #3545 is expected
-    # to pass the 16/16 suite.
-
   llvm_aie_peano:
     package: "llvm-aie"
     verified_version: "21.0.0.2026080301+c9c5ecb7"
@@ -87,72 +58,31 @@ toolchain:
     upstream_commit_short: "c9c5ecb7"
     index_url: "https://github.com/Xilinx/llvm-aie/releases/expanded_assets/nightly"
     target_triple: "aie2-none-unknown-elf"
-    installed_at:
-      env_var: "PEANO_INSTALL_DIR"
-      relative_path: "third_party/mlir-aie/ironenv/Lib/site-packages/llvm-aie"
-
   xrt:
-    package_role: "Native Windows XRT runtime + pyxrt bindings"
-    verified_version: "2.21.0"  # SDK zip: https://github.com/Xilinx/XRT/releases/tag/2.21.75
-    branch: "HEAD"
-    commit_short: "15e6319b"
-    commit_date: "2026-05-07"
-    dll_search_paths:
-      - "C:\\Windows\\System32"
-      - "C:\\Windows\\System32\\AMD"
-      - "third_party/xrt_windows_sdk/xrt_sdk/xrt"
-    pyxrt_source:
-      description: "Vendored SDK build copied into site-packages/ to bypass mismatched System32\\AMD\\pyxrt.pyd"
-      relative_path: "third_party/xrt_windows_sdk/xrt_sdk/xrt/python/pyxrt.pyd"
+    package_role: "Native Windows XRT runtime and pyxrt bindings"
+    verified_version: "2.21.0"
+    release_url: "https://github.com/Xilinx/XRT/releases/tag/2.21.75"
+    sdk_url: "https://github.com/Xilinx/XRT/releases/download/2.21.75/xrt_windows_sdk.zip"
+    sdk_bytes: 70834080
+    sdk_sha256: "ccc244c2c423588972ade76142cdc01049477aaa39a35be97e782b97eb7c5295"
 
-# --- Python virtual environment -------------------------------------------
-virtual_environment:
-  name: ironenv
-  relative_path: "third_party/mlir-aie/ironenv"
-  activate_windows: "third_party\\mlir-aie\\ironenv\\Scripts\\Activate.ps1"
-
-# --- Verification snapshot ------------------------------------------------
 verification:
-  last_verified:
-    date: "2026-08-15"
-    host_build: "Windows 11 Pro 26200"
-    result: "16/16 PASS"
-    total_elapsed_seconds: 17.46
-    commit: "9effa56"
-    # Second-volume wipe-and-clone of main (install.py + ironenv runner).
-    clean_clone:
-      date: "2026-08-15"
-      result: "16/16 PASS"
-      total_elapsed_seconds: 95.91
-      note: "cold xclbin compile after py .\\install.py; mlir_aie 1.4.1 wheelhouse"
-    milestones:
-      - { id: M3,   name: "Single-Core SAXPY Vector Operation",                status: PASS, note: "Bit-exact (0.0 error)" }
-      - { id: M5,   name: "8-Tap Vectorized Low-Pass FIR",                     status: PASS, note: "L_inf <= 0.007812" }
-      - { id: M6,   name: "Complex Mixer / NCO Downconverter",                 status: PASS, note: "L_inf <= 0.007812" }
-      - { id: M7,   name: "Power / RSSI Energy Detector",                      status: PASS, note: "L_inf <= 0.015625" }
-      - { id: M8,   name: "Multi-Stage Fused Demodulator Pipeline",            status: PASS, note: "Zero stack allocation" }
-      - { id: M9,   name: "4-Column Parallel FIR Filter",                      status: PASS, note: "4-Core Parallel Lockstep" }
-      - { id: M9b,  name: "4-Column Parallel Multi-Stage Pipeline",            status: PASS, note: "2400.71 us / burst, 0.85 MSamples/sec" }
-      - { id: M10,  name: "Modular Arithmetic & Barrett Reduction (mod 3329)", status: PASS, note: "Bit-Exact Match" }
-      - { id: M11,  name: "Radix-2 NTT Butterfly Kernel (mod 3329)",           status: PASS, note: "Bit-Exact Match" }
-      - { id: M12,  name: "CPU NTT/INTT Reference & Constant Generator",      status: PASS, note: "Bit-Exact Match" }
-      - { id: M13,  name: "16-Point Vectorized NPU NTT (64 Batches)",          status: PASS, note: "Bit-Exact Match" }
-      - { id: M14,  name: "256-Point Vectorized NPU NTT (4 Batches)",          status: PASS, note: "Bit-Exact Match" }
-      - { id: M15,  name: "NPU INTT & Cyclic Polynomial Multiplication",       status: PASS, note: "Bit-Exact Match" }
-      - { id: M15b, name: "Negacyclic Polynomial Multiplication (Kyber ring)", status: PASS, note: "Bit-Exact Match (schoolbook, iron.Runtime)" }
-      - { id: M17,  name: "64-point NPU Radix-4 Stockham FFT + IFFT",          status: PASS, note: "FFT 138.79 dB / IFFT round-trip 135.11 dB SNR" }
-      - { id: M17p, name: "4-Column Parallel FFT Channelizer",                 status: PASS, note: "1,993 FFTs/sec, 0.51 MB/s I/Q" }
+  current_default:
+    runner: "python run_all_pqc_tests.py"
+    scope: "Host-safe PQC contracts and reference checks only; no NPU dispatch."
+  historical_foundation:
+    m33e_baseline_tag: "v1.0.0"
+    m33e_baseline_commit: "9c592a4c077c73f2ebf910aca0b6575664b0726f"
+    native_m33_runner_commit: "e77e7ed2783d88b5451394866d7ddfccd9db4f69"
+    dr0_dr1_commit: "7b38973789fafb950a26551bc947f4fcaa91ec25"
+    boundary: "Historical M32/M33 results are hybrid native and host/NPU work."
+  dr2:
+    dr2a_dr2b_dr2c: "Narrow physical-result records retained; not integrated KeyGen."
+    dr2d: "Integrated ML-KEM-512 K-PKE.KeyGen physical result: TOTAL 0/25 FAIL, exit 1."
+    integrated_dr2: "Blocked pending independently checked physical evidence and explicit closure."
 
-# --- Bootstrap contract ---------------------------------------------------
 bootstrap:
   script: "install.py"
-  repair_script: "scripts/bootstrap_env.ps1"
-  url: "https://github.com/Xilinx/XRT/releases/download/2.21.75/xrt_windows_sdk.zip"
-  tag: "2.21.75"
-  bytes: 70834080
-  sha256: "ccc244c2c423588972ade76142cdc01049477aaa39a35be97e782b97eb7c5295"
-  smoke_check:
-    - "python -c \"import pyxrt\""
-    - "python -c \"import aie; from aie.iron import ObjectFifo\""
-    - "clang++ --version"
-  full_regression: "python run_all_silicon_tests.py"
+  guide: "docs/SETUP_WINDOWS.md"
+  full_regression: "python run_all_pqc_tests.py"
+  evidence_check: "(cd docs/pqc_dr2_evidence_20260818 && sha256sum -c SHA256SUMS)"

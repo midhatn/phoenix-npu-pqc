@@ -1,12 +1,12 @@
-# Purpose: One-command native Windows installer for Phoenix SDR-DSP.
+# Purpose: One-command native Windows environment installer for Phoenix NPU PQC.
 # Target operating system: Windows 11 Pro 22H2+ (verified 25H2 / 26200).
 # Target architecture: AMD Phoenix / Hawk Point NPU1 / XDNA1 / AIE2.
 # Verification: Prerequisite probe + idempotent XRT SDK download/extract +
 #               pinned mlir-aie checkout + official iron_setup.py.
 #
 # A new user should only need:
-#   git clone https://github.com/midhatn/phoenix-sdr-dsp.git
-#   cd phoenix-sdr-dsp
+#   git clone https://github.com/midhatn/phoenix-npu-pqc.git
+#   cd phoenix-npu-pqc
 #   python install.py
 #
 # This file is stdlib-only so it runs on a stock CPython 3.13 before ironenv
@@ -62,8 +62,8 @@ DEFAULT_OS_MIN_BUILD = 22621  # Windows 11 22H2
 IRON_WINDOWS_GUIDE = "https://xilinx.github.io/mlir-aie/1.4.1/buildHostWinNative/"
 # Pinned mlir_aie wheel. iron_setup.py on an untagged checkout (our 3ca0193
 # pin is v1.4.1+13) selects the rolling latest-wheels-4 channel, which can
-# resolve to an older series such as 1.3.4. The 16-suite needs the v1.4.1
-# iron.Runtime API:
+# resolve to an older series such as 1.3.4. Retained PQC graph sources use the
+# v1.4.1 iron.Runtime API:
 #   https://github.com/Xilinx/mlir-aie/releases/tag/v1.4.1
 DEFAULT_MLIR_AIE_WHEEL_URL = (
     "https://github.com/Xilinx/mlir-aie/releases/download/v1.4.1/"
@@ -77,7 +77,7 @@ DEFAULT_MLIR_AIE_WHEEL_SHA256 = (
 GIT_FETCH_ATTEMPTS = 4
 XRT_RELEASE_URL = "https://github.com/Xilinx/XRT/releases/tag/2.21.75"
 AMD_DRIVER_URL = "https://www.amd.com/en/support/download/drivers.html"
-USER_AGENT = "phoenix-sdr-dsp-bootstrap/0.4.0"
+USER_AGENT = "phoenix-npu-pqc-bootstrap/0.1.0"
 CHUNK_SIZE = 256 * 1024
 VSWHERE = Path(r"C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe")
 XRT_SMI = Path(r"C:\Windows\System32\AMD\xrt-smi.exe")
@@ -947,7 +947,7 @@ def install_pqc_reference_packages(iron_python: Path) -> None:
     These are required by the Post-Quantum Cryptography track (M32 FIPS 203
     ML-KEM and M33 FIPS 204 ML-DSA). Installing them here means a new user
     running `python install.py` on a fresh clone gets a fully working
-    `python run_all_silicon_tests.py` without a second manual pip step.
+    `python run_all_pqc_tests.py` without a second manual pip step.
     """
     section("Post-Quantum Cryptography reference packages")
     if not iron_python.is_file():
@@ -989,7 +989,7 @@ def smoke_check(iron_python: Path, peano_clang: Path) -> None:
 def self_test() -> int:
     """Exercise skip / repair / hash-fail paths without touching the real SDK."""
     section("Self-test (idempotent download)")
-    payload = b"phoenix-sdr-dsp-bootstrap-self-test\n"
+    payload = b"phoenix-npu-pqc-bootstrap-self-test\n"
     digest = hashlib.sha256(payload).hexdigest()
     with tempfile.TemporaryDirectory(prefix="phoenix-bootstrap-") as tmp:
         tmp_path = Path(tmp)
@@ -1041,7 +1041,7 @@ def self_test() -> int:
 
 def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(
-        description="Phoenix SDR-DSP one-command Windows installer.",
+        description="Phoenix NPU PQC one-command Windows environment installer.",
     )
     parser.add_argument(
         "--check-only",
@@ -1061,7 +1061,7 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument(
         "--run-tests",
         action="store_true",
-        help="After a full install, run python run_all_silicon_tests.py.",
+        help="After a full install, run python run_all_pqc_tests.py.",
     )
     parser.add_argument(
         "--self-test",
@@ -1170,7 +1170,7 @@ def main(argv: list[str] | None = None) -> int:
     print(" Install complete.")
     print("======================================================================")
     print(" Next step:")
-    print("   python run_all_silicon_tests.py")
+    print("   python run_all_pqc_tests.py")
     print(" The test runner uses ironenv automatically. No activate step.")
     print(" Expected at v1.0.0: 33 / 33 PASS (M3, M5-M15, M15b, M17, M17p,")
     print("                                   M19-M27, M32b/c/d/e, M33a/b/d/e).")
@@ -1181,7 +1181,7 @@ def main(argv: list[str] | None = None) -> int:
 
     if args.run_tests:
         section("Silicon regression")
-        runner = repo_root / "run_all_silicon_tests.py"
+        runner = repo_root / "run_all_pqc_tests.py"
         run_checked([str(iron_python), str(runner)], cwd=repo_root)
     return 0
 

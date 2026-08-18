@@ -6,7 +6,7 @@
 
 **Current regression boundary:** 34 invocations: 29 direct-hardware, 4 host/NPU composers, and 1 intentional CPU reference.
 
-This document records what the repository demonstrates and, equally importantly, what it does not. It supersedes the original “33/33 silicon” wording. The detailed correction is in [`V1_0_0_VALIDATION_ERRATA.md`](V1_0_0_VALIDATION_ERRATA.md).
+This document records what the repository demonstrates and, equally importantly, what it does not. It supersedes the original “33/33 silicon” wording. The active claim-safe interpretation after the PQC repository split is in the [device-residency roadmap](PQC_DEVICE_RESIDENCY_ROADMAP.md).
 
 ## FIPS 203 ML-KEM scope
 

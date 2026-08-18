@@ -1,155 +1,79 @@
-# Contributing to Phoenix SDR-DSP
+# Contributing to Phoenix NPU PQC
 
-Thanks for your interest in improving this project. This is a research-quality
-NPU acceleration framework that runs directly on [AMD Ryzen AI Phoenix](https://www.amd.com/en/products/processors/laptop/ryzen/7000-series/amd-ryzen-9-7940hs.html) silicon
-([XDNA1 / AIE2](https://docs.kernel.org/accel/amdxdna/amdnpu.html)), so contributions need to preserve the bit-accurate silicon
-verification guarantees of the master regression suite.
+Phoenix NPU PQC is a research repository for FIPS 202/203/204 work on AMD
+Phoenix NPU1. Contributions must preserve evidence boundaries: a host check,
+compile-only result, and physical exact-output result are different kinds of
+evidence and must never be presented as interchangeable.
 
-By participating you agree to the [Code of Conduct](CODE_OF_CONDUCT.md).
-Security issues should go through [SECURITY.md](SECURITY.md), not the public
-issue tracker.
+By participating, you agree to the [Code of Conduct](CODE_OF_CONDUCT.md).
+Security reports belong in [SECURITY.md](SECURITY.md), not public issues.
 
----
+## Start with host-safe validation
 
-## 1. Prerequisites
+The default test runner and CI do not use hardware:
 
-You need an AMD Ryzen AI Phoenix or Hawk Point laptop (Ryzen 7040 or 8040
-series with XDNA1 / AIE2 NPU) running Windows 11 Pro build 22H2 or newer.
-The full toolchain is captured in [`toolchain.yaml`](toolchain.yaml):
-
-| Component        | Verified version                     |
-| ---------------- | ------------------------------------ |
-| Windows          | 11 Pro 26200 (25H2)                  |
-| AMD NPU driver   | 32.0.20102.3930                      |
-| NPU firmware     | 1.5.5.391                            |
-| XRT              | 2.21.0                               |
-| Python           | 3.13.15                              |
-| mlir-aie         | v1.4.1 + 13 commits (pin `3ca0193`)  |
-| llvm-aie (Peano) | 21.0.0.2026080301+c9c5ecb7           |
-
-The mlir-aie pin is [v1.4.1](https://github.com/Xilinx/mlir-aie/releases/tag/v1.4.1) plus [PR #3545](https://github.com/Xilinx/mlir-aie/pull/3545) (run_chain executable-lifetime fix,
-required by parallel-DMA milestones). Official install path: [IRON native Windows 1.4.1](https://xilinx.github.io/mlir-aie/1.4.1/buildHostWinNative/). See
-[`docs/M2_TOOLCHAIN_PIN.md`](docs/M2_TOOLCHAIN_PIN.md) for details.
-
-See [`docs/SETUP_WINDOWS.md`](docs/SETUP_WINDOWS.md) for the full install
-walkthrough, or run the one-shot bootstrap:
-
-```powershell
-.\scripts\bootstrap_env.ps1
+```bash
+python run_all_pqc_tests.py --dry-run
+python run_all_pqc_tests.py
+python -m compileall -q phoenix_sdr_dsp tests run_all_pqc_tests.py run_all_silicon_tests.py
+git diff --check
 ```
 
----
+`run_all_silicon_tests.py` is a compatibility alias for the host-safe runner.
+It does not execute a silicon test.
 
-## 2. Development workflow
+Install NumPy for the graph-contract tests if it is not already available:
 
-### Activate the environment
-
-Every session starts by activating `ironenv`:
-
-```powershell
-& "C:\phoenix-sdr-dsp\third_party\mlir-aie\ironenv\Scripts\Activate.ps1"
+```bash
+python -m pip install numpy
 ```
 
-### Verify silicon before touching anything
+## Working with PQC research material
 
-```powershell
-python run_all_silicon_tests.py
-```
+1. Read the [documentation index](docs/README.md) and
+   [reproducibility guide](docs/PQC_REPRODUCIBILITY.md).
+2. For work touching DR2d, read
+   [the expert escalation record](docs/PQC_DR2_EXPERT_ESCALATION_20260818.md)
+   and preserve its `0/25` physical-result boundary.
+3. Do not edit `docs/pqc_dr2_evidence_20260818/`, its `SHA256SUMS`, or other
+   checksum-protected historical evidence. Verify it instead:
 
-You should see `16/16 PASS` in about 18 s with a warm IRON cache (first compile
-is slower). If not, fix your environment before starting work.
-`scripts/verify_environment.ps1` runs quick smoke checks.
+   ```bash
+   (cd docs/pqc_dr2_evidence_20260818 && sha256sum -c SHA256SUMS)
+   ```
 
-### Make your change
+4. Keep `phoenix_sdr_dsp` import paths working. The repository identity is
+   Phoenix NPU PQC, while the import path is intentionally retained for
+   compatibility.
 
-Small, focused commits are strongly preferred. Follow existing style:
+## Native and physical work
 
-- Python: [`ruff`](https://docs.astral.sh/ruff/) (config is CI-driven — run `ruff check --fix .`)
-- C++ AIE2 kernels (`*.cc`): match the vectorization style of adjacent files
-- MLIR / eDSL: match the ObjectFifo IRON conventions used in `tests/m*_*/`
+Native MLIR-AIE / IRON / XRT changes require the pinned environment in
+[`toolchain.yaml`](toolchain.yaml): MLIR-AIE `v1.4.1+13` at `3ca0193`,
+LLVM-AIE / Peano `21.0.0.2026080301+c9c5ecb7`, and XRT 2.21.0. The
+[Windows setup guide](docs/SETUP_WINDOWS.md) describes the retained
+environment.
 
-### Verify silicon AFTER your change
+Do not add a hardware-dispatch command to CI or to the default runner. A
+proposed physical experiment must state its scope, input corpus, independent
+oracle, expected terminal output, fail-closed behavior, provenance capture,
+and how it differs from existing evidence. Native execution is not implied or
+authorized by opening an issue or pull request.
 
-Re-run the full regression:
+## Pull-request checklist
 
-```powershell
-python run_all_silicon_tests.py
-```
+- [ ] The change is PQC-only and retains `phoenix_sdr_dsp` import compatibility.
+- [ ] `python run_all_pqc_tests.py` passes.
+- [ ] `git diff --check` passes.
+- [ ] The relevant README, roadmap, design record, or reproducibility guide is updated.
+- [ ] Historical evidence and checksums are unchanged, or a separately reviewed exact-byte restoration is documented.
+- [ ] Claims distinguish host-safe, compile-only, and physical evidence.
+- [ ] Toolchain metadata changed only with an accurately scoped provenance record.
 
-Any milestone that regresses is a blocker. Paste the SUMMARY block into your
-PR description.
+## Reporting bugs and research failures
 
----
-
-## 3. Adding a new milestone
-
-Follow the existing shape of a milestone directory (see `tests/m15_polymul/`):
-
-tests/mN_your_name/
-├── test_your_kernel_mN.py # IRON eDSL + XRT dispatch + host verify
-├── your_kernel.cc # AIE2 vectorized kernel (if applicable)
-└── README.md # numerical spec, expected pass criteria
-
-1. Add a matching entry to `run_all_silicon_tests.py`.
-2. Add the milestone to the `verification.last_verified.milestones` list in
-   [`toolchain.yaml`](toolchain.yaml).
-3. Update `README.md` "Validated Silicon Milestones" table.
-4. Verify: full 16/16 PASS is preserved.
-
-Demos such as `tests/npu_visible/` are not milestones. Do not add them to
-`run_all_silicon_tests.py` or `toolchain.yaml` unless the project explicitly
-promotes them. Keep first-buffer numerical checks if the demo claims DSP
-correctness. The planned FIPS 203 work in `tests/m32_mlkem/` is the same:
-stay out of the 16-suite until a gate is bit-exact on Phoenix NPU1.
-
----
-
-## 4. Pull request checklist
-
-Copy this into the PR body:
-
-- [ ] `ruff check .` passes
-- [ ] `python run_all_silicon_tests.py` passes all pre-existing milestones
-      bit-accurate; SUMMARY block pasted in this PR
-- [ ] Any new milestone added to `toolchain.yaml` and README
-- [ ] Docs updated (`README.md`, `docs/`) where behavior changed
-- [ ] Toolchain versions in `toolchain.yaml` updated only if I actually
-      upgraded a component AND the full regression passed on the new version
-- [ ] Commit messages are descriptive
-
-Then open the PR against `main`. CI will run lint + CFF/YAML validation +
-M12 NTT CPU reference + M16 FFT CPU reference + Markdown link check. If your
-change touches the mlir-aie/Peano install path, add the `run-onboarding-smoke`
-label to the PR to also run the fork-onboarding smoke job.
-
----
-
-## 5. Reporting bugs
-
-The issue tracker has three forms tailored to this project — pick the most
-specific:
-
-- **Silicon regression / milestone failure** — a milestone stopped passing
-  or produced incorrect numerical output on physical NPU hardware
-- **Bug report** — build, install, script, or docs
-- **Feature request** — new milestone, kernel, or infrastructure
-
-For upstream bugs (kernel driver, mlir-aie, llvm-aie) the chooser links
-directly to the correct upstream tracker.
-
----
-
-## 6. Style — quick reference
-
-- Python: 4-space indent, LF endings, UTF-8 without BOM. `ruff` will fix
-  most things.
-- PowerShell scripts (`*.ps1`): CRLF endings preserved (see
-  `.gitattributes`).
-- YAML: 2-space indent (see `.editorconfig`).
-- Commit messages: imperative present, `scope: short summary`, then blank
-  line, then bullet-pointed detail. Examples:
-  - `feat(m17): add bit-reversed radix-4 NTT kernel`
-  - `fix(m9): correct FIR tap indexing at column boundaries`
-  - `chore(ci): pin ruff to 0.5.x`
-
-Thanks for contributing.
+Use the PQC-focused issue forms for host-safe regressions, device-residency
+research failures, or proposal discussion. Include exact commands, inputs,
+toolchain versions, output, and the evidence class. The DR2d integrated
+physical result remains unresolved; report a new result as a new record rather
+than altering the existing evidence.

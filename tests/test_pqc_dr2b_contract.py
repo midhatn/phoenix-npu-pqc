@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import ast
 import inspect
-import subprocess
 import unittest
 from pathlib import Path
 
@@ -130,7 +129,7 @@ class DR2bDeviceResidencyContractTests(unittest.TestCase):
         self.assertIn("dr2b_cbd3_ntt_consume", consumer)
         self.assertIn("store_le16(result + 12, status == kOk ? kN : 0)", consumer)
 
-    def test_design_and_physical_record_native_gate_and_canonical_runner_boundary(
+    def test_design_and_physical_record_native_gate_and_host_runner_boundary(
         self,
     ) -> None:
         design, pending, gate = (
@@ -164,16 +163,11 @@ class DR2bDeviceResidencyContractTests(unittest.TestCase):
         self.assertIn("Backend: dr2b-mlkem512-noise-ntt:unavailable", gate)
         self.assertIn("return 2", gate)
         self.assertNotIn("noise-ntt:reference", gate)
-        self.assertEqual(
-            (REPO / "run_all_silicon_tests.py").read_text(encoding="utf-8"),
-            subprocess.run(
-                ["git", "show", "HEAD:run_all_silicon_tests.py"],
-                cwd=REPO,
-                check=True,
-                capture_output=True,
-                encoding="utf-8",
-            ).stdout,
-        )
+        runner = (REPO / "run_all_pqc_tests.py").read_text(encoding="utf-8")
+        compatibility = (REPO / "run_all_silicon_tests.py").read_text(encoding="utf-8")
+        self.assertIn("HOST_SAFE_TESTS", runner)
+        self.assertNotIn("test_dr2b_mlkem512_noise_ntt_silicon.py", runner)
+        self.assertIn("run_all_pqc_tests", compatibility)
 
 
 if __name__ == "__main__":
