@@ -21,9 +21,14 @@ from phoenix_sdr_dsp.pqc import (
 
 
 class W0TokenTapContractTests(unittest.TestCase):
-    def test_pinned_production_sources_are_unchanged(self) -> None:
-        observed = tap.verify_production_hashes(require_retained_object=False)
-        self.assertEqual(len(observed), 5)
+    def test_historical_runner_pin_rejects_current_host_safe_runner(self) -> None:
+        with self.assertRaisesRegex(
+            tap.DiagnosticIntegrityError, "historical canonical_runner pin refuses"
+        ):
+            tap.verify_production_hashes(require_retained_object=False)
+
+        runner = REPO_ROOT / "run_all_silicon_tests.py"
+        self.assertIn("host-safe", runner.read_text(encoding="utf-8").lower())
 
     def test_graph_is_one_worker_two_ingress_one_direct_egress(self) -> None:
         source = Path(tap.__file__).read_text(encoding="utf-8")

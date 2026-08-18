@@ -25,7 +25,7 @@ build/provenance, and a separately recorded physical exact-output gate.
 | **DR2a** | ML-KEM-512 `SampleNTT(SHAKE128(rho || j || i))` for one matrix polynomial. | Narrow physical pass record retained. | Not K-PKE KeyGen. |
 | **DR2b** | ML-KEM-512 CBD3/NTT seed-noise building block. | Narrow physical pass record retained. | Not integrated KeyGen. |
 | **DR2c** | One terminal ML-KEM-512 K-PKE.KeyGen `t_hat` row. | Narrow physical pass record retained. | `G(d || k)`, both rows, serialization, and lifecycle handling remain outside the result. |
-| **DR2d** | Integrated five-worker ML-KEM-512 K-PKE.KeyGen candidate. | **Physical fail: `TOTAL 0/25 FAIL`, exit 1.** | Expert resolution, a clean independently checked corpus, retained provenance, and explicit approval are required. |
+| **DR2d** | Integrated ML-KEM-512 K-PKE.KeyGen candidate: five computation workers (W0–W4) plus serializer W5, six worker cores total. | **Physical fail: `TOTAL 0/25 FAIL`, exit 1.** | Expert resolution, a clean independently checked corpus, retained provenance, and explicit approval are required. |
 | **Integrated DR2** | First integrated ML-KEM KeyGen research gate. | **Blocked.** | DR2d closure is required. |
 | **DR3+** | Future research records. | **Not started.** | Integrated DR2 closure and a new reviewable scope decision. |
 

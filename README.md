@@ -25,7 +25,7 @@ provenance needed to interpret the work accurately.
 | **M32 / M33 foundation** | Historical v1.0.0 baseline: M32 ML-KEM and M33 ML-DSA work combined native primitive gates with host/NPU composers. This is a hybrid foundation, not a claim of complete device residency. |
 | **DR0 / DR1** | Narrow, fail-closed physical results are retained for the M33 product and ML-DSA-44 ExpandA / rejection-sampling / NTT paths. |
 | **DR2a / DR2b / DR2c** | Narrow, independent physical results are retained for ML-KEM-512 `SampleNTT`, CBD3/NTT noise, and one terminal KeyGen row respectively. They do not establish integrated ML-KEM KeyGen. |
-| **DR2d** | The integrated five-worker ML-KEM-512 K-PKE.KeyGen candidate remains unresolved: its recorded physical result is **0/25**, exit 1. Compile-only and diagnostic material do not convert that outcome into a pass. |
+| **DR2d** | The integrated ML-KEM-512 K-PKE.KeyGen candidate uses five computation workers (W0–W4) plus serializer W5 (six worker cores total). Its recorded physical result is **0/25**, exit 1. Compile-only and diagnostic material do not convert that outcome into a pass. |
 | **Program goal** | 100% NPU residency for the supported FIPS 202/203/204 cryptographic operations, with no host cryptographic fallback or intermediate repair. This is a research goal, not a completed capability. |
 
 The claim boundaries and the stop condition are defined in
@@ -53,6 +53,7 @@ or production readiness.
 | [`docs/`](docs/README.md) | PQC-only documentation index, roadmaps, design records, provenance, and protected evidence navigation. |
 | [`docs/pqc_dr2_evidence_20260818/`](docs/pqc_dr2_evidence_20260818/README.md) | Byte-preserved DR2d forensic evidence. It is read-only research evidence, not an authorization to execute hardware. |
 | [`toolchain.yaml`](toolchain.yaml) | Machine-readable Phoenix NPU PQC toolchain and historical-result metadata. |
+| [`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md) | License, dependency, vector, and transliteration provenance ledger. |
 
 ## Host-safe validation
 
@@ -71,6 +72,10 @@ Native-only physical gates and captured results are documented as evidence
 boundaries; they are not invoked by CI. See
 [CONTRIBUTING.md](CONTRIBUTING.md) before proposing any change that could
 affect a physical-run workflow.
+
+Read [`docs/PQC_AUDIT_REMEDIATION_20260818.md`](docs/PQC_AUDIT_REMEDIATION_20260818.md)
+for the current source-backed correction ledger, research-use boundary, and
+remaining journal-reproducibility blockers.
 
 ## Expert continuation and reproducibility
 

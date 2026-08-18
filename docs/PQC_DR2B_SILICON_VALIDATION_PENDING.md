@@ -8,16 +8,16 @@ oracle across all 256 returned coefficient lanes.
 
 ## Validated scope
 
-DR2b is only one terminal-only ML-KEM-512 \(\eta_1=3\) noise polynomial:
+DR2b is only one terminal-only ML-KEM-512 $\eta_1=3$ noise polynomial:
 SHAKE256 PRF from `sigma || counter`, then CBD3, then FIPS 203 NTT. The only
 host-visible successful value is the final 256-lane NTT polynomial.
 
-\[
+$$
 \widehat f=\operatorname{NTT}\left(
 \operatorname{SamplePolyCBD}_3\left(
 \operatorname{SHAKE256}(\sigma\mathbin\Vert b,1536)
 \right)\right).
-\]
+$$
 
 The 192-byte PRF stream and coefficient-domain CBD polynomial remain
 device-local. The successful corpus covers all four ML-KEM-512 KeyGen noise
@@ -133,7 +133,7 @@ closed, no DR2 portion may be pushed or published independently.
 ## Claim boundary
 
 This record establishes physical exact-output execution only for one
-ML-KEM-512 \(\eta_1=3\) noise-to-NTT polynomial per invocation under the fixed
+ML-KEM-512 $\eta_1=3$ noise-to-NTT polynomial per invocation under the fixed
 successful corpus. The physical corpus did not inject malformed descriptors
 or corrupted internal tokens; those fail-closed paths remain compiled
 host-harness and source-contract evidence.

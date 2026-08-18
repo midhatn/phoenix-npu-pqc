@@ -10,6 +10,10 @@ from pathlib import Path
 
 from phoenix_sdr_dsp.pqc import dr1_abi as abi
 from phoenix_sdr_dsp.pqc import dr1_mldsa44_rejntt_graph as graph
+from tests.production_dependency_guard import (
+    assert_no_test_dependency_imports,
+    find_test_dependency_imports,
+)
 
 REPO = Path(__file__).resolve().parents[1]
 KERNELS = REPO / "phoenix_sdr_dsp" / "pqc" / "kernels"
@@ -27,8 +31,24 @@ def _function(tree: ast.AST, name: str) -> ast.FunctionDef:
 
 class DR1DeviceResidencyContractTests(unittest.TestCase):
     def test_fixed_public_abi(self) -> None:
-        self.assertEqual((abi.RHO_BYTES, abi.DESCRIPTOR_BYTES, abi.XOF_BLOCK_BYTES, abi.RESULT_BYTES), (32, 16, 180, 1040))
-        self.assertEqual((abi.ABI_VERSION, abi.OPCODE_EXPANDA_REJNTT, abi.PARAMETER_MLDSA44, abi.BLOCK_CAP), (1, 0x11, 0x44, 8))
+        self.assertEqual(
+            (
+                abi.RHO_BYTES,
+                abi.DESCRIPTOR_BYTES,
+                abi.XOF_BLOCK_BYTES,
+                abi.RESULT_BYTES,
+            ),
+            (32, 16, 180, 1040),
+        )
+        self.assertEqual(
+            (
+                abi.ABI_VERSION,
+                abi.OPCODE_EXPANDA_REJNTT,
+                abi.PARAMETER_MLDSA44,
+                abi.BLOCK_CAP,
+            ),
+            (1, 0x11, 0x44, 8),
+        )
         self.assertEqual((abi.N, abi.Q, abi.RESULT_MAGIC), (256, 8_380_417, 0x44523152))
         self.assertEqual(graph.BACKEND_LABEL, "dr1-mldsa44-expanda-rejntt:silicon")
 
@@ -42,8 +62,12 @@ class DR1DeviceResidencyContractTests(unittest.TestCase):
         self.assertIn("of_xof_block.prod()", source)
         self.assertIn("of_xof_block.cons()", source)
         self.assertNotIn("in_ctrl", source)
-        self.assertEqual(source.count('source_file=str(kernel_path / "dr1_shake128_service.cc")'), 1)
-        self.assertEqual(source.count('source_file=str(kernel_path / "dr1_mldsa44_rejntt.cc")'), 1)
+        self.assertEqual(
+            source.count('source_file=str(kernel_path / "dr1_shake128_service.cc")'), 1
+        )
+        self.assertEqual(
+            source.count('source_file=str(kernel_path / "dr1_mldsa44_rejntt.cc")'), 1
+        )
         self.assertIn('"dr1_shake128_emit_next"', source)
         self.assertIn('"dr1_rejntt_consume_next"', source)
         self.assertNotIn("emit_block_", source)
@@ -52,30 +76,65 @@ class DR1DeviceResidencyContractTests(unittest.TestCase):
     def test_runtime_has_two_fills_and_one_terminal_drain(self) -> None:
         tree = ast.parse(inspect.getsource(graph))
         sequence = _function(tree, "sequence")
-        calls = [statement.value for statement in sequence.body if isinstance(statement, ast.Expr)]
+        calls = [
+            statement.value
+            for statement in sequence.body
+            if isinstance(statement, ast.Expr)
+        ]
         self.assertEqual([call.func.attr for call in calls], ["fill", "fill", "drain"])
-        self.assertEqual([call.func.value.id for call in calls], ["rho_prod", "descriptor_prod", "result_cons"])
+        self.assertEqual(
+            [call.func.value.id for call in calls],
+            ["rho_prod", "descriptor_prod", "result_cons"],
+        )
 
     def test_only_terminal_result_calls_to_cpu(self) -> None:
         tree = ast.parse(inspect.getsource(graph))
-        transfers = [node for node in ast.walk(tree) if isinstance(node, ast.Call) and isinstance(node.func, ast.Attribute) and node.func.attr == "to"]
+        transfers = [
+            node
+            for node in ast.walk(tree)
+            if isinstance(node, ast.Call)
+            and isinstance(node.func, ast.Attribute)
+            and node.func.attr == "to"
+        ]
         self.assertEqual(len(transfers), 1)
         self.assertEqual(transfers[0].func.value.id, "result_t")
         self.assertEqual(transfers[0].args[0].value, "cpu")
 
-    def test_host_validates_before_native_loading_and_never_uses_a_reference(self) -> None:
+    def test_host_validates_before_native_loading_and_never_uses_a_reference(
+        self,
+    ) -> None:
         source = inspect.getsource(graph.run_mldsa44_expanda_rejntt)
-        self.assertLess(source.index("abi.validate_request"), source.index("_load_iron()"))
+        self.assertLess(
+            source.index("abi.validate_request"), source.index("_load_iron()")
+        )
         self.assertIn("abi.result_sentinel()", source)
         self.assertIn("abi.parse_result", source)
         self.assertNotIn("hashlib", source)
         self.assertNotIn("expanda_rejntt_reference", source)
 
     def test_production_sources_have_no_test_tree_dependency(self) -> None:
-        sources = "\n".join(path.read_text(encoding="utf-8") for path in (REPO / "phoenix_sdr_dsp" / "pqc").rglob("*" ) if path.is_file() and path.suffix in {".py", ".cc", ".hpp"})
-        self.assertNotIn("tests/", sources)
-        self.assertNotIn("../tests", sources)
-        self.assertNotIn("tests.", sources)
+        production = tuple(
+            path
+            for path in (REPO / "phoenix_sdr_dsp" / "pqc").rglob("*.py")
+            if path.is_file()
+        )
+        assert_no_test_dependency_imports(production)
+
+    def test_test_dependency_guard_catches_direct_and_dynamic_imports(self) -> None:
+        findings = find_test_dependency_imports(
+            "import os, tests, tests.unit\n"
+            "from tests.contracts import helper\n"
+            "import importlib\n"
+            "importlib.import_module('tests.dynamic')\n"
+            "__import__('tests.loader')\n"
+            "import importlib as il\n"
+            "il.import_module('tests.alias')\n"
+            "from importlib import import_module as loader\n"
+            "loader('tests.from_import')\n",
+            "synthetic_production.py",
+        )
+        self.assertEqual(len(findings), 7)
+        self.assertTrue(all("synthetic_production.py:" in item for item in findings))
 
     def test_kernel_contracts_cover_incremental_shake_and_fixed_drain(self) -> None:
         permutation = (KERNELS / "dr1_keccak_f1600.hpp").read_text(encoding="utf-8")
@@ -90,7 +149,10 @@ class DR1DeviceResidencyContractTests(unittest.TestCase):
         self.assertIn("g_service.seed[32] = descriptor[4]", keccak)
         self.assertIn("g_service.seed[33] = descriptor[5]", keccak)
         self.assertIn("void dr1_shake128_emit_next", keccak)
-        self.assertEqual(re.findall(r"\bvoid\s+(dr1_shake128_emit_\w+)\s*\(", keccak), ["dr1_shake128_emit_next"])
+        self.assertEqual(
+            re.findall(r"\bvoid\s+(dr1_shake128_emit_\w+)\s*\(", keccak),
+            ["dr1_shake128_emit_next"],
+        )
         self.assertNotIn("DR1_EMIT", keccak)
         self.assertIn("clear_bytes(&g_service", keccak)
         self.assertIn("& 0x7fffffU", sampler)
@@ -99,7 +161,10 @@ class DR1DeviceResidencyContractTests(unittest.TestCase):
         self.assertIn("kLimitExceeded", sampler)
         self.assertIn("__attribute__((noinline)) static void consume_next", sampler)
         self.assertIn("void dr1_rejntt_consume_next", sampler)
-        self.assertEqual(re.findall(r"\bvoid\s+(dr1_rejntt_consume_\w+)\s*\(", sampler), ["dr1_rejntt_consume_next"])
+        self.assertEqual(
+            re.findall(r"\bvoid\s+(dr1_rejntt_consume_\w+)\s*\(", sampler),
+            ["dr1_rejntt_consume_next"],
+        )
         self.assertNotIn("DR1_CONSUME", sampler)
         self.assertIn("DR1_SAMPLER_DISABLE_LOOP_UNROLL", sampler)
         self.assertIn("clear_bytes(&g_sampler", sampler)
@@ -132,10 +197,18 @@ class DR1DeviceResidencyContractTests(unittest.TestCase):
         self.assertEqual(sampler_source.count("range(abi.BLOCK_CAP)"), 1)
         self.assertIn("emit_next(rho, descriptor, xof_block)", keccak_source)
         self.assertIn("consume_next(xof_block, result)", sampler_source)
-        self.assertLess(sampler_source.index("result = of_result.acquire(1)"), sampler_source.index("for _ in range(abi.BLOCK_CAP)"))
-        self.assertLess(sampler_source.index("for _ in range(abi.BLOCK_CAP)"), sampler_source.index("of_result.release(1)"))
+        self.assertLess(
+            sampler_source.index("result = of_result.acquire(1)"),
+            sampler_source.index("for _ in range(abi.BLOCK_CAP)"),
+        )
+        self.assertLess(
+            sampler_source.index("for _ in range(abi.BLOCK_CAP)"),
+            sampler_source.index("of_result.release(1)"),
+        )
 
-    def test_docs_require_compiler_size_evidence_and_name_static_state_linkage_risk(self) -> None:
+    def test_docs_require_compiler_size_evidence_and_name_static_state_linkage_risk(
+        self,
+    ) -> None:
         design = DESIGN.read_text(encoding="utf-8")
         pending = PENDING.read_text(encoding="utf-8")
         self.assertIn("16 KiB", design)
@@ -152,12 +225,22 @@ class DR1DeviceResidencyContractTests(unittest.TestCase):
         self.assertIn("TOTAL 33/33 PASS", record)
         self.assertIn("8,448 exact coefficient comparisons", record)
         self.assertIn("PQC_DR1_MLDSA44_v3_physical_corpus_20260817.log", record)
-        self.assertIn("85B373B1E3B8A1BD883DA6BBDE73F874EE5C331B4AE419E5D161758A64EB4A7E", record)
+        self.assertIn(
+            "85B373B1E3B8A1BD883DA6BBDE73F874EE5C331B4AE419E5D161758A64EB4A7E", record
+        )
         self.assertIn("PQC_DR0_DR1_complete_host_zero_skip_20260817.log", record)
-        self.assertIn("2621EF2E4130003895A9DA46042CEAA232D9C11AA5D24A25D0800978283B9568", record)
+        self.assertIn(
+            "2621EF2E4130003895A9DA46042CEAA232D9C11AA5D24A25D0800978283B9568", record
+        )
         self.assertIn("`56 passed`, no skips", record)
-        self.assertIn("| `(0,2)` | `dr1_shake128_emit_next`, called eight times | 9,152 B | 6,608 B | 272 B", record)
-        self.assertIn("| `(0,3)` | `dr1_rejntt_consume_next`, called eight times | 5,468 B | 3,328 B | 1,040 B", record)
+        self.assertIn(
+            "| `(0,2)` | `dr1_shake128_emit_next`, called eight times | 9,152 B | 6,608 B | 272 B",
+            record,
+        )
+        self.assertIn(
+            "| `(0,3)` | `dr1_rejntt_consume_next`, called eight times | 5,468 B | 3,328 B | 1,040 B",
+            record,
+        )
         self.assertIn("malformed descriptors", record)
         self.assertIn("no claim of complete FIPS 204 device residency", record)
         self.assertNotIn("DR1_MLDSA44_EXPANDA_REJNTT", runner)

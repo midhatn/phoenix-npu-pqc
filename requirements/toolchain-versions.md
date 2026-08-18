@@ -1,4 +1,9 @@
-﻿# Verified Native Windows Toolchain
+# Historical native Windows toolchain record
+
+> **Historical provenance, not a current execution procedure.** The repository
+> default runner is host-safe and does not invoke this native stack. Any
+> physical reproduction requires separate authorization and a new provenance
+> record; the integrated DR2d result remains `TOTAL 0/25 FAIL`, exit 1.
 
 This project was validated on a native Windows environment targeting the AMD Phoenix NPU.
 
@@ -44,13 +49,14 @@ Auto-installed inside the `ironenv` by `install.py` for the M32 [FIPS 203](https
 |---|---|---|
 | `kyber-py` | `1.0.1` | [github.com/GiacomoPope/kyber-py](https://github.com/GiacomoPope/kyber-py) |
 | `dilithium-py` | `1.4.0` | [github.com/GiacomoPope/dilithium-py](https://github.com/GiacomoPope/dilithium-py) |
-| `pytest` | unpinned | [docs.pytest.org](https://docs.pytest.org/) |
+| `pytest` | `9.1.1` | [docs.pytest.org](https://docs.pytest.org/) |
 
 All SHAKE128 / SHAKE256 / SHA3-256 / SHA3-512 primitives come from the CPython [`hashlib`](https://docs.python.org/3/library/hashlib.html) standard library, so no separate SHAKE / Keccak wheel is required. The equivalent manual install command is documented in [`docs/SETUP_WINDOWS.md`](../docs/SETUP_WINDOWS.md). NIST ACVP-Server KAT vectors for ML-KEM (keyGen / encapsulation / decapsulation) and ML-DSA (keyGen / signature-generation / signature-verification) are vendored inside the repository at `tests/m32_mlkem/vectors/` and `tests/m33_mldsa/vectors/`. Source: [`usnistgov/ACVP-Server`](https://github.com/usnistgov/ACVP-Server/tree/master/gen-val/json-files).
 
-## Required Validation
+## Historical validation prerequisites
 
-Before running the silicon tests, verify:
+The following were recorded before historical native work. They are not
+instructions to run a silicon test from current `main`:
 
 ```powershell
 python -c "import aie; print(aie.__file__)"

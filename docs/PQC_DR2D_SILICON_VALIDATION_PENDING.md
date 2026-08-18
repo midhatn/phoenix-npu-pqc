@@ -1,13 +1,14 @@
 # DR2d Silicon Validation Record
 
-**Status: PENDING PHYSICAL VALIDATION.** No physical-Phoenix result, xclbin,
-PDI, placement, route, native-gate transcript, timing, performance, data-memory
-report, or program-memory report is recorded here.
+**Status: NO PASSING INTEGRATED PHYSICAL RESULT.** No passing integrated DR2d
+production result or complete production-acceptance bundle is recorded here.
+Historical physical failure and diagnostic observations are documented below;
+they do not establish a pass or authorize a new native run.
 
 ## Host-validated implementation awaiting physical evidence
 
-DR2d now uses a real six-worker, independently compiled partition rather than
-the prior monolithic derive program:
+DR2d uses five independently compiled computation workers (W0–W4) plus
+serializer W5, rather than the prior monolithic derive program:
 
 1. seed/G derivation plus all secret/error CBD3/NTT noise;
 2. row-0 matrix expansion;
@@ -25,11 +26,13 @@ success/reachable-error zeroization are host-tested.
 
 The focused host gate includes all 25 pinned NIST ACVP-Server FIPS 203
 ML-KEM-512 KeyGen cases and links every production partition kernel. That is
-not physical proof. `run_all_silicon_tests.py` is intentionally unchanged.
+not physical proof. `run_all_silicon_tests.py` is now an explicitly host-safe
+compatibility forwarder and does not invoke this historical native gate.
 
 ## Diagnostic physical follow-up
 
-The first six-worker physical build compiled, fit, and executed. Its `rho`
+The first six-core physical build (five computation workers plus serializer)
+compiled, fit, and executed. Its `rho`
 suffix matched expected output exactly, while both `dkPKE` and `t_hat` rows
 diverged from byte zero. The first working hypothesis was target-side noise
 CBD3/NTT representation.
@@ -114,7 +117,8 @@ toolchain, all of the following:
 
 It does **not** establish production DR2d KeyGen correctness: the probe never
 runs `derive_g`, `cbd3`, `ntt`, `sample_matrix_store`, `add_product_ntt`, the
-six-worker topology, or any of the five private FIFO handoffs.
+six-core topology (five computation workers plus serializer), or any of the
+five private FIFO handoffs.
 
 ### Production repair now in tree (still awaiting physical evidence)
 
@@ -203,7 +207,7 @@ physical claim is:
    FIFO placement, addresses, depth, program memory, and result bytes before
    changing production code.
 3. This is a discriminator, not a DR2d KeyGen pass. It does not validate the
-   production six-worker final FIFO placement unless physical reports show the
+   production six-core final FIFO placement unless physical reports show the
    comparable route/allocation, and it never replaces the required native
    25/25 production gate.
 
@@ -283,13 +287,13 @@ hard failure - not a waiver.
 
 ### Gate steps
 
-1. **Provenance.** Fresh-build the production six-worker artifact with the build
+1. **Provenance.** Fresh-build the production six-core artifact with the build
    cache for this artifact deleted or bypassed. Record toolchain
    versions/commits, compile/link command lines, cache key/path, per-source
    timestamps and SHA-256, per-object timestamps and SHA-256, all six core ELF
    timestamps and SHA-256, and the `final.xclbin` timestamp and SHA-256, so no
-   stale object can be mistaken for the repair. Confirm exactly six worker cores
-   and the mapping of the five repaired workers to their ELFs.
+   stale object can be mistaken for the repair. Confirm exactly six worker cores:
+   five computation workers plus serializer, and their ELF mapping.
 2. **Disassemble the five repaired cores** with symbol and source correlation:
    seed/noise, row-0 expand, row-0 accumulate, row-1 expand, row-1 accumulate.
    The serializer core is unchanged and already physically validated.

@@ -39,7 +39,10 @@ claims, and filenames; they are not rewritten to imply a broader result.
 ## Environment, maintenance, and citations
 
 - [Windows setup](SETUP_WINDOWS.md) and [toolchain pin rationale](M2_TOOLCHAIN_PIN.md).
-- [Citation audit](CITATION_AUDIT.md).
+- [Audit and remediation record](PQC_AUDIT_REMEDIATION_20260818.md) — current
+  correction ledger, source references, boundaries, and remaining blockers.
+- [Historical pre-split citation audit](CITATION_AUDIT.md) — retained context
+  only; not current setup or claim guidance.
 
 The source-compatible Python package remains `phoenix_sdr_dsp`; see the root
 README for the compatibility rationale.

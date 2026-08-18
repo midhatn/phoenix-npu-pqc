@@ -13,7 +13,7 @@ DR2c accepts exactly two host ingress buffers: packed
 `rho[32] || sigma[32]` (64 bytes) and its strict 16-byte descriptor. It derives
 the selected matrix row and secret/error NTT-domain polynomials within the AIE
 graph, executes both `MultiplyNTTs` operations and accumulation, and exposes
-only one terminal canonical 256-lane \(\widehat t[\mathrm{row}]\) result plus
+only one terminal canonical 256-lane $\widehat t[\mathrm{row}]$ result plus
 status. The private 2,576-byte five-polynomial token has no shim allocation or
 flow.
 
@@ -87,7 +87,7 @@ The recorded flows are exactly:
 Shim allocations are exactly descriptor MM2S0, result S2MM0, and seeds MM2S1.
 There is no shim allocation or flow for `dr2c_row_token`. This is placement and
 route evidence for the stated terminal-only graph boundary: the packed seeds
-and descriptor enter, the completed \(\widehat t\) row exits, and the private
+and descriptor enter, the completed $\widehat t$ row exits, and the private
 five-polynomial token remains inside the AIE graph.
 
 ## Reproduction boundary
@@ -111,7 +111,7 @@ not established by this narrow record.
 ## Claim boundary
 
 This record establishes physical exact-output execution only for **one
-terminal ML-KEM-512 \(\widehat t\) row** per successful request under the
+terminal ML-KEM-512 $\widehat t$ row** per successful request under the
 11-case corpus and the documented two-input/one-output DMA boundary. It does
 not establish complete K-PKE.KeyGen or complete ML-KEM: `G(d || k)`, both-row
 scheduling, public-key or secret-key serialization, and lifecycle zeroization

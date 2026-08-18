@@ -195,25 +195,26 @@ def load_pins(repo_root: Path) -> Pins:
         return pins
 
     text = yaml_path.read_text(encoding="utf-8")
-    bootstrap = _yaml_block(text, "bootstrap:")
-    xrt_block = bootstrap
-    url = _yaml_scalar(xrt_block, "url")
-    tag = _yaml_scalar(xrt_block, "tag")
-    raw_bytes = _yaml_scalar(xrt_block, "bytes")
-    sha256 = _yaml_scalar(xrt_block, "sha256")
+    toolchain = _yaml_block(text, "toolchain:")
+    xrt_block = _yaml_block(toolchain, "  xrt:")
+    url = _yaml_scalar(xrt_block, "sdk_url")
+    release_url = _yaml_scalar(xrt_block, "release_url")
+    raw_bytes = _yaml_scalar(xrt_block, "sdk_bytes")
+    sha256 = _yaml_scalar(xrt_block, "sdk_sha256")
     if url:
         pins.xrt_url = url
-    if tag:
-        pins.xrt_tag = tag
+    if release_url:
+        pins.xrt_tag = release_url.rstrip("/").rsplit("/", 1)[-1]
     if raw_bytes and raw_bytes.isdigit():
         pins.xrt_bytes = int(raw_bytes)
     if sha256:
         pins.xrt_sha256 = sha256.lower()
 
-    wheel_url = _yaml_scalar(text, "wheel_url")
-    wheel_name = _yaml_scalar(text, "wheel_name")
-    wheel_bytes = _yaml_scalar(text, "wheel_bytes")
-    wheel_sha = _yaml_scalar(text, "wheel_sha256")
+    mlir_aie_block = _yaml_block(toolchain, "  mlir_aie:")
+    wheel_url = _yaml_scalar(mlir_aie_block, "wheel_url")
+    wheel_name = _yaml_scalar(mlir_aie_block, "wheel_name")
+    wheel_bytes = _yaml_scalar(mlir_aie_block, "wheel_bytes")
+    wheel_sha = _yaml_scalar(mlir_aie_block, "wheel_sha256")
     if wheel_url:
         pins.mlir_wheel_url = wheel_url
     if wheel_name:
@@ -223,11 +224,12 @@ def load_pins(repo_root: Path) -> Pins:
     if wheel_sha:
         pins.mlir_wheel_sha256 = wheel_sha.lower()
 
-    commit = _yaml_scalar(text, "verified_commit")
+    commit = _yaml_scalar(mlir_aie_block, "verified_commit")
     if commit:
         pins.mlir_commit = commit
 
-    driver = _yaml_scalar(_yaml_block(text, "drivers:"), "minimum")
+    drivers = _yaml_block(text, "drivers:")
+    driver = _yaml_scalar(_yaml_block(drivers, "  amd_npu_driver:"), "minimum")
     if driver:
         pins.npu_driver_min = driver
 
@@ -937,7 +939,7 @@ PQC_REFERENCE_PACKAGES: tuple[str, ...] = (
     # parametrisation.
     "kyber-py==1.0.1",
     "dilithium-py==1.4.0",
-    "pytest",
+    "pytest==9.1.1",
 )
 
 

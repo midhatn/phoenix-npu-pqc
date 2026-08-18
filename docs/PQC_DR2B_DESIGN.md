@@ -5,20 +5,20 @@ narrow, terminal-only subgraph toward FIPS 203 K-PKE.KeyGen; it is not K-PKE Key
 
 ## Scope and composability
 
-For ML-KEM-512, FIPS 203 Table 2 fixes \(k=2\) and \(\eta_1=3\).  K-PKE.KeyGen
+For ML-KEM-512, FIPS 203 Table 2 fixes $k=2$ and $\eta_1=3$.  K-PKE.KeyGen
 uses counters 0, 1 for the secret vector and 2, 3 for the error vector.  One
 DR2b request computes exactly one of these four components:
 
-\[
+$$
  \hat f = \operatorname{NTT}(\operatorname{SamplePolyCBD}_3(
  \operatorname{SHAKE256}(\sigma\mathbin\Vert b, 1536\ \mathrm{bits}))).
-\]
+$$
 
 Here `sigma` is exactly 32 bytes and the public counter `b` is strictly in
 `0..3`.  SHAKE256 uses the FIPS 202 rate of 136 bytes and emits exactly the
 192 bytes required by FIPS 203 PRF_3.  CBD consumes every one of those bytes in
 LSB-first order, and the seven-stage FIPS 203 Algorithm 9 NTT returns 256
-canonical residues in \([0,3329)\).  No SHAKE bytes or CBD-domain coefficient
+canonical residues in $[0,3329)$.  No SHAKE bytes or CBD-domain coefficient
 returns to the host.
 
 This is the safer next boundary than a host-orchestrated primitive wrapper:

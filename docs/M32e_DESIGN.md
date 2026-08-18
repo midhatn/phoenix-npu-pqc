@@ -2,14 +2,14 @@
 
 ## Purpose
 
-M32e is the capstone of Track 4 (Post-Quantum Cryptography, PQC) in the
-`phoenix-sdr-dsp` roadmap. It composes the three previously-landed PQC
+M32e is a historical Track 4 (Post-Quantum Cryptography, PQC) experiment
+retained from the `phoenix-sdr-dsp` lineage. It composes three PQC
 primitive kernels — **M32b** (NTT / INTT / MultiplyNTTs / PolyAdd / PolySub),
 **M32c** (SHA-3-256, SHA-3-512, SHAKE128, SHAKE256, SampleNTT, SamplePolyCBD),
 and **M32d** (Compress / Decompress d=4 & d=10, ByteEncode / ByteDecode d=12,
-poly frommsg / tomsg) — into a full FIPS 203 ML-KEM-512 KEM: KeyGen,
-Encapsulation, and Decapsulation. Every internal primitive dispatches to the
-Phoenix AI NPU (AIE2). The composition itself runs as pure Python on the host
+poly frommsg / tomsg) — into a host-orchestrated ML-KEM-512 internal-interface
+composition experiment. It is not a complete external FIPS 203 KEM interface
+or a fully device-resident implementation. The composition itself runs as pure Python on the host
 laptop, so a full KEM operation is a sequence of ~30 (KeyGen) / ~40 (Encaps) /
 ~70 (Decaps) round-trip DMAs between the host and the NPU.
 
@@ -25,7 +25,7 @@ PQC KEM whose every arithmetic and symmetric primitive lives on the NPU.
 |---|---|
 | `tests/m32_mlkem/mlkem_composer.py` | Pure-Python FIPS 203 K-PKE + ML-KEM.Internal composition on top of a `Backend` abstraction; ships with a `HostBackend` (CPU reference) and a `SiliconBackend` (dispatches to M32b/M32c/M32d) |
 | `tests/m32_mlkem/test_mlkem_m32e.py` | Pytest suite: 60 reference gates (HostBackend vs NIST ACVP) + 9 silicon gates (SiliconBackend, small smoke subset) + `M32E_FULL_KAT=1` for full 60-vector silicon sweep |
-| `tools/m32e_kernel_transliteration_check.py` | Independent second-source cross-check: `HostBackend` == `kyber-py v1.2.0` == NIST ACVP across all 60 KATs |
+| `tools/m32e_kernel_transliteration_check.py` | Optional second-source cross-check using the repository-pinned `kyber-py` package; it is only reproducible when the pinned package and its dependency record are installed |
 | `tests/m32_mlkem/vectors/` | Vendored NIST ACVP-Server ML-KEM-512 vectors (`keygen_prompt.json`, `keygen_expected.json`, `encapdecap_prompt.json`, `encapdecap_expected.json`) |
 | `docs/M32e_DESIGN.md` | This document |
 | `tests/m32_mlkem/keccak_shake_kernel.cc` (edited) | M32c kernel: `XOF_MAX_OUT` bumped from 504 → 840 (5 SHAKE128 rate blocks) to eliminate SampleNTT tail failures on unlucky NIST vectors |
@@ -93,16 +93,17 @@ Four independent axes gate correctness:
 
 2. **Composer vs second-source Python.** `tools/m32e_kernel_transliteration_check.py`
    checks that `HostBackend` composed FIPS 203 KEM matches
-   [kyber-py v1.2.0](https://pypi.org/project/kyber-py/) byte-for-byte on all
+   the repository-pinned [kyber-py](https://pypi.org/project/kyber-py/) package byte-for-byte on all
    60 KATs. `kyber-py` is fully independent of `pq-crystals` reference C —
    different author (GiacomoPope), pure Python, positive-residue representation
    throughout. Since `kyber-py` also passes all 60 NIST vectors, a three-way
    agreement (composer / kyber-py / NIST) is strong evidence of no
    transliteration errors.
 
-3. **Silicon primitives vs host primitives.** M32b, M32c, and M32d silicon
-   gates (already PASS 5/5, 12/12, 8/8 on Ryzen 9 7940HS Phoenix NPU1) prove
-   each primitive is bit-exact against its Python reference.
+3. **Historical primitive evidence.** M32b, M32c, and M32d have retained
+   historical physical gate records (5/5, 12/12, and 8/8 respectively). Those
+   records do not automatically validate later source revisions; each revised
+   native artifact requires its own dated physical evidence.
 
 4. **Silicon composition vs NIST.** `test_mlkem_m32e.py` runs
    `SiliconBackend` (composed on-NPU) against a smoke set of 3 NIST KATs per
@@ -131,11 +132,11 @@ compliance, and are outside M32e scope.
 
 ## SampleNTT byte budget: M32c XOF_MAX_OUT bump
 
-FIPS 203 Algorithm 6 (SampleNTT) is a rejection sampler: it consumes 3 bytes
+FIPS 203 Algorithm 7 (SampleNTT) is a rejection sampler: it consumes 3 bytes
 of SHAKE128(rho || j || i) output at a time, accepts each 12-bit little-endian
-sample below `q=3329`, and stops after 256 accepted coefficients. The number
-of SHAKE128 bytes consumed per SampleNTT call is a random variable; the mean
-is ~236 bytes but the tail can be arbitrarily long.
+sample below `q=3329`, and stops after 256 accepted coefficients. Each
+three-byte group produces two candidates. Under the independent-candidate
+model, the mean is $256/(2(3329/4096)) \approx 472.47$ bytes.
 
 The M32c kernel prior to M32e capped SampleNTT XOF output at 504 bytes
 (3 rate blocks). Empirically, across the 25 NIST ML-KEM-512 KeyGen vectors
@@ -147,13 +148,15 @@ the trailing coefficients, producing wrong A_hat and failing KAT match.
 **Fix (this milestone).** Bump `XOF_MAX_OUT` from 504 → **840 bytes**
 (5 SHAKE128 rate blocks) in `tests/m32_mlkem/keccak_shake_kernel.cc`, and
 correspondingly bump `MAX_OUT_BYTES` 512 → 1024 to keep the DMA transfer
-size in sync. Tail probability at 840 bytes: well below 2⁻¹⁰⁰⁰ per call.
+size in sync. A fixed 840-byte cap supplies 560 candidates; under the same
+independent-candidate model, the probability of accepting fewer than 256 is
+approximately $2^{-261.24}$. This is a bounded implementation property, not
+an unbounded sampler claim.
 The host reference and the transliteration cross-check tool are updated to
 draw 840 SHAKE128 bytes as well.
 
-This means **M32c must be re-dispatched on the laptop** to pick up the new
-`XOF_MAX_OUT`; the existing M32c gates should still all PASS (their inputs are
-short, so the extra buffer capacity is unused).
+The current source revision therefore requires separately recorded physical
+evidence before it can inherit any historical M32c physical-status statement.
 
 The theoretical analysis of SampleNTT tail behavior (including the notion of
 "unlucky vectors" that exercise the tail) is documented in the community

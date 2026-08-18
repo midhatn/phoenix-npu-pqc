@@ -10,13 +10,13 @@ KeyGen graph, not a claim that DR2 KeyGen itself is complete.
 
 `DR2A_MLKEM512_SAMPLENTT` returns one ML-KEM-512 matrix polynomial:
 
-\[
+$$
 \hat A[i][j] = \operatorname{SampleNTT}(
   \operatorname{SHAKE128}(\rho\mathbin\Vert j\mathbin\Vert i)).
-\]
+$$
 
 `j` is the column byte and `i` is the row byte.  Both are restricted to
-`0..1`, the ML-KEM-512 dimension \(k=2\).  The exact byte ordering, candidate
+`0..1`, the ML-KEM-512 dimension $k=2$.  The exact byte ordering, candidate
 decoder, and acceptance predicate follow [NIST FIPS 203](https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.203.pdf);
 the SHAKE128 rate and sponge construction follow [NIST FIPS 202](https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.202.pdf).
 
@@ -36,19 +36,19 @@ Phoenix-proven two-worker streaming topology.
 
 Five SHAKE128 rate blocks are emitted and consumed per request:
 
-\[
+$$
 5 \times 168 = 840\ {\rm bytes} = 280\ {\rm three\mbox{-}byte\
 candidate\ iterations}.
-\]
+$$
 
 This is the minimum bounded iteration limit described in FIPS 203 Appendix B.
 The sampler parses each three-byte group as
 
-\[
+$$
 d_1=b_0+256(b_1\bmod16), \qquad d_2=\lfloor b_1/16\rfloor+16b_2,
-\]
+$$
 
-accepting each value only when it is less than \(q=3329\).  It freezes the
+accepting each value only when it is less than $q=3329$.  It freezes the
 first 256 accepted coefficients but still drains the remaining scheduled
 tokens.  If fewer than 256 coefficients are accepted after all 280 iterations,
 it clears local state and produces a fixed zero-payload `LIMIT_EXCEEDED`

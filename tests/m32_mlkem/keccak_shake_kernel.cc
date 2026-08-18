@@ -218,15 +218,14 @@ static void keccak_sponge(const uint8_t *in, int in_len,
 // ---------------------------------------------------------------------------
 
 static void sample_ntt(const uint8_t *seed_j_i, uint8_t *out_bytes) {
-    // Fixed 34-byte input to SHAKE128; output is streamed one rate block at a
-    // time until 256 coefficients are accepted (average ~236 bytes needed, but
-    // we tolerate up to MAX_XOF_BYTES here for the tail case).
+    // Fixed 34-byte input to SHAKE128. Each three-byte group supplies two
+    // candidates, so the independent-candidate mean is about 472.47 bytes.
+    // This bounded historical kernel tolerates up to XOF_MAX_OUT bytes.
     constexpr int XOF_INPUT_LEN = 34;
     // 5 x 168-byte SHAKE128 rate blocks = 840 bytes.  FIPS 203 SampleNTT is
-    // unbounded in principle; 504 bytes (3 blocks) leaves ~2^-38 tail failure
-    // (see CCTV "unlucky vectors").  Bumping to 5 blocks pushes tail failure
-    // well below 2^-1000 per call, and empirically all 25 NIST ML-KEM-512
-    // KeyGen KATs (worst case 516 bytes) fit.
+    // unbounded in principle. Under the independent-candidate model, 840 bytes
+    // provide 560 candidates and Pr[accepted < 256] is approximately 2^-261.
+    // This is a bounded implementation property, not a conformance claim.
     constexpr int XOF_MAX_OUT   = 840;
 
     uint8_t xof_out[XOF_MAX_OUT];
@@ -252,9 +251,9 @@ static void sample_ntt(const uint8_t *seed_j_i, uint8_t *out_bytes) {
             coeffs[accepted++] = static_cast<int16_t>(d2);
         }
     }
-    // In the astronomically unlikely event that 840 SHAKE128 bytes were not
-    // enough, pad the tail with zeroes so the DMA transfer size is deterministic.
-    // (Empirical tail probability at 840 bytes is well below 2^-1000 per call.)
+    // If the bounded stream is exhausted, retain deterministic zero padding.
+    // The output ABI has no limit-status field, so this path must not be
+    // represented as successful FIPS 203 SampleNTT completion.
     #pragma clang loop unroll(disable)
     while (accepted < KYBER_N) {
         coeffs[accepted++] = 0;

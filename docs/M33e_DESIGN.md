@@ -66,13 +66,13 @@ c_tilde, z, h              = UnpackSig(sig)               # ValueError -> return
 if popcount(h) > omega: return False                       # host
 if !CheckNorm(z, gamma_1 - beta): return False             # M33b mode 4
 A_hat                      = ExpandA(rho)                  # M32c inside
-mu = external_mu ? m : H(H(pk,64) || m, 64)                # M32c
+mu = external_mu ? m : H(H(pk,64) || m, 64)                # host SHAKE/reference path
 c  = SampleInBall(c_tilde, tau);   c_hat = NTT(c)          # M33a mode 0
 z_hat = NTT(z)                                             # M33a mode 0
 t1_hat = NTT(t1 * 2^d)                                     # M33a mode 0
 diff = INTT(A_hat . z_hat - c_hat . t1_hat)                # M33a 2, 1
 w' = UseHint(h, diff, alpha)                               # M33b mode 3
-return c_tilde == H(mu || Pack_w(w'), c_tilde_bytes)       # M32c
+return c_tilde == H(mu || Pack_w(w'), c_tilde_bytes)       # host SHAKE/reference path
 ```
 
 ## Silicon dispatch surface

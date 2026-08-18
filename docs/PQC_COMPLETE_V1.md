@@ -14,7 +14,7 @@ The implemented end-to-end parameter set is **ML-KEM-512**. ML-KEM-768 and ML-KE
 
 | Milestone | Scope | Validation boundary |
 |---|---|---|
-| M32b | NTT, inverse NTT, base multiplication, polynomial add/subtract over \(Z_{3329}\) | Hardware-backed against an independent host reference |
+| M32b | NTT, inverse NTT, base multiplication, polynomial add/subtract over $Z_{3329}$ | Hardware-backed against an independent host reference |
 | M32c | Keccak-f[1600], SHA-3/SHAKE, SampleNTT, and SamplePolyCBD | Hardware-backed against host reference vectors |
 | M32d | K-PKE component primitives | Hardware-backed; K-PKE is not presented as an approved standalone encryption scheme |
 | M32e | ML-KEM-512 host/NPU composition | 60 host known-answer tests plus 9 hardware smoke vectors: 3 each for key generation, encapsulation, and decapsulation |

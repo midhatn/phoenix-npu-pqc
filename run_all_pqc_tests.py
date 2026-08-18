@@ -19,6 +19,12 @@ REPO_ROOT = Path(__file__).resolve().parent
 
 HOST_SAFE_TESTS = (
     "tests/test_pqc_device_residency_contract.py",
+    "tests/test_m33_native_runner_contract.py",
+    "tests/test_pqc_dr1_contract.py",
+    "tests/test_pqc_dr2a_contract.py",
+    "tests/test_pqc_dr2b_contract.py",
+    "tests/test_pqc_dr2c_contract.py",
+    "tests/test_pqc_dr2d_contract.py",
     "tests/pqc_device_resident/test_dr1_mldsa44_rejntt.py",
     "tests/pqc_device_resident/test_dr2_mlkem512_samplentt.py",
     "tests/pqc_device_resident/test_dr2b_mlkem512_noise_ntt.py",
@@ -26,6 +32,9 @@ HOST_SAFE_TESTS = (
     "tests/pqc_device_resident/test_dr2d_mlkem512_kpke_keygen.py",
     "tests/pqc_device_resident/test_dr2d_mlkem512_kpke_terminal_probe.py",
     "tests/pqc_device_resident/test_dr2d_mlkem512_kpke_sigma_prf_tap_contract.py",
+    "tests/pqc_device_resident/test_dr2d_mlkem512_kpke_w0_token_tap_contract.py",
+    "tests/pqc_device_resident/test_m33_product_dr0.py",
+    "tests/test_install_pins.py",
 )
 
 

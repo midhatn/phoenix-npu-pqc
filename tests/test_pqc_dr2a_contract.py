@@ -9,12 +9,15 @@ from pathlib import Path
 
 from phoenix_sdr_dsp.pqc import dr2_mlkem512_samplentt_abi as abi
 from phoenix_sdr_dsp.pqc import dr2_mlkem512_samplentt_graph as graph
+from tests.production_dependency_guard import assert_no_test_dependency_imports
 
 REPO = Path(__file__).resolve().parents[1]
 KERNELS = REPO / "phoenix_sdr_dsp" / "pqc" / "kernels"
 DESIGN = REPO / "docs" / "PQC_DR2A_DESIGN.md"
 PENDING = REPO / "docs" / "PQC_DR2A_SILICON_VALIDATION_PENDING.md"
-GATE = REPO / "tests" / "pqc_device_resident" / "test_dr2a_mlkem512_samplentt_silicon.py"
+GATE = (
+    REPO / "tests" / "pqc_device_resident" / "test_dr2a_mlkem512_samplentt_silicon.py"
+)
 HOST_RUNNER = REPO / "run_all_pqc_tests.py"
 COMPATIBILITY_RUNNER = REPO / "run_all_silicon_tests.py"
 
@@ -29,7 +32,12 @@ def _function(tree: ast.AST, name: str) -> ast.FunctionDef:
 class DR2aDeviceResidencyContractTests(unittest.TestCase):
     def test_fixed_public_abi_and_fips203_bound(self) -> None:
         self.assertEqual(
-            (abi.RHO_BYTES, abi.DESCRIPTOR_BYTES, abi.XOF_BLOCK_BYTES, abi.RESULT_BYTES),
+            (
+                abi.RHO_BYTES,
+                abi.DESCRIPTOR_BYTES,
+                abi.XOF_BLOCK_BYTES,
+                abi.RESULT_BYTES,
+            ),
             (32, 16, 180, 528),
         )
         self.assertEqual(
@@ -61,9 +69,7 @@ class DR2aDeviceResidencyContractTests(unittest.TestCase):
             1,
         )
         self.assertEqual(
-            source.count(
-                'source_file=str(kernel_path / "dr2_mlkem512_samplentt.cc")'
-            ),
+            source.count('source_file=str(kernel_path / "dr2_mlkem512_samplentt.cc")'),
             1,
         )
 
@@ -94,31 +100,33 @@ class DR2aDeviceResidencyContractTests(unittest.TestCase):
         self.assertEqual(transfers[0].func.value.id, "result_t")
         self.assertEqual(transfers[0].args[0].value, "cpu")
 
-    def test_host_validation_precedes_native_loading_without_reference_fallback(self) -> None:
+    def test_host_validation_precedes_native_loading_without_reference_fallback(
+        self,
+    ) -> None:
         source = inspect.getsource(graph.run_mlkem512_samplentt)
-        self.assertLess(source.index("abi.validate_request"), source.index("_load_iron()"))
+        self.assertLess(
+            source.index("abi.validate_request"), source.index("_load_iron()")
+        )
         self.assertIn("abi.result_sentinel()", source)
         self.assertIn("abi.parse_result", source)
         self.assertNotIn("hashlib", source)
         self.assertNotIn("samplentt_reference", source)
 
     def test_production_sources_have_no_test_dependency(self) -> None:
-        production = "\n".join(
-            path.read_text(encoding="utf-8")
-            for path in (REPO / "phoenix_sdr_dsp" / "pqc").rglob("*")
-            if path.is_file() and path.suffix in {".py", ".cc", ".hpp"}
+        production = tuple(
+            path
+            for path in (REPO / "phoenix_sdr_dsp" / "pqc").rglob("*.py")
+            if path.is_file()
         )
-        self.assertNotIn("tests/", production)
-        self.assertNotIn("../tests", production)
-        self.assertNotIn("tests.", production)
+        assert_no_test_dependency_imports(production)
 
-    def test_kernel_contracts_cover_continuation_and_complete_or_empty_output(self) -> None:
-        producer = (
-            KERNELS / "dr2_mlkem512_shake128_service.cc"
-        ).read_text(encoding="utf-8")
-        sampler = (
-            KERNELS / "dr2_mlkem512_samplentt.cc"
-        ).read_text(encoding="utf-8")
+    def test_kernel_contracts_cover_continuation_and_complete_or_empty_output(
+        self,
+    ) -> None:
+        producer = (KERNELS / "dr2_mlkem512_shake128_service.cc").read_text(
+            encoding="utf-8"
+        )
+        sampler = (KERNELS / "dr2_mlkem512_samplentt.cc").read_text(encoding="utf-8")
         self.assertIn('#include "dr1_keccak_f1600.hpp"', producer)
         self.assertIn("constexpr uint32_t kBlockCap = 5", producer)
         self.assertIn("descriptor[4]", producer)
@@ -135,7 +143,9 @@ class DR2aDeviceResidencyContractTests(unittest.TestCase):
         self.assertIn("clear_bytes(&g_sampler", sampler)
         self.assertIn("void dr2a_samplentt_consume_next", sampler)
 
-    def test_workers_loop_exactly_five_times_and_terminal_acquire_wraps_loop(self) -> None:
+    def test_workers_loop_exactly_five_times_and_terminal_acquire_wraps_loop(
+        self,
+    ) -> None:
         tree = ast.parse(inspect.getsource(graph))
         keccak_source = ast.unparse(_function(tree, "keccak_body"))
         sampler_source = ast.unparse(_function(tree, "sampler_body"))

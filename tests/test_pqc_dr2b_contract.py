@@ -9,6 +9,7 @@ from pathlib import Path
 
 from phoenix_sdr_dsp.pqc import dr2b_mlkem512_noise_ntt_abi as abi
 from phoenix_sdr_dsp.pqc import dr2b_mlkem512_noise_ntt_graph as graph
+from tests.production_dependency_guard import assert_no_test_dependency_imports
 
 REPO = Path(__file__).resolve().parents[1]
 KERNELS = REPO / "phoenix_sdr_dsp" / "pqc" / "kernels"
@@ -96,14 +97,12 @@ class DR2bDeviceResidencyContractTests(unittest.TestCase):
         self.assertNotIn("noise_ntt_reference", source)
 
     def test_production_sources_do_not_depend_on_tests(self) -> None:
-        production = "\n".join(
-            path.read_text(encoding="utf-8")
-            for path in (REPO / "phoenix_sdr_dsp" / "pqc").rglob("*")
-            if path.is_file() and path.suffix in {".py", ".cc", ".hpp"}
+        production = tuple(
+            path
+            for path in (REPO / "phoenix_sdr_dsp" / "pqc").rglob("*.py")
+            if path.is_file()
         )
-        self.assertNotIn("tests/", production)
-        self.assertNotIn("../tests", production)
-        self.assertNotIn("tests.", production)
+        assert_no_test_dependency_imports(production)
 
     def test_device_workers_have_strict_prf_cbd_ntt_and_zero_error_contracts(
         self,

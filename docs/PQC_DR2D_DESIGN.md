@@ -1,8 +1,11 @@
 # PQC DR2d Design: Partitioned Device-Resident ML-KEM-512 K-PKE.KeyGen
 
-**Status:** host-harness validated; physical Phoenix validation is pending. DR2d
-is one device-resident FIPS 203 ML-KEM-512 `K-PKE.KeyGen` operation, not full
-approved ML-KEM `KeyGen`, encapsulation, or decapsulation.
+**Status:** host-harness validated. No passing integrated DR2d production
+result or complete production-acceptance bundle is recorded. The historical
+integrated physical result is `TOTAL 0/25 FAIL`, exit 1; diagnostic physical
+observations do not supersede it. DR2d is one device-resident FIPS 203
+ML-KEM-512 `K-PKE.KeyGen` research operation, not full approved ML-KEM
+`KeyGen`, encapsulation, or decapsulation.
 
 ## Public boundary (unchanged)
 
@@ -23,13 +26,13 @@ committed by the final magic store. Errors have zero lengths, checksum, and
 1,568-byte payload. The host checks magic, request, status, CRC, all packed
 canonical lanes, and rejects all-zero successful payloads.
 
-## Memory-fit six-worker topology
+## Memory-fit topology: five computation workers plus serializer
 
 The previous monolithic derive worker is not referenced by the production
-graph. The graph has six independently compiled workers and five internal-only
-ObjectFIFOs; each worker consumes exactly one record and produces exactly one
-record. No private FIFO has a shim endpoint, host allocation, fill, drain, or
-CPU transfer.
+graph. The graph has five independently compiled computation workers (W0–W4)
+plus serializer W5: six worker cores total and five internal-only ObjectFIFOs.
+Each worker consumes exactly one record and produces exactly one record. No
+private FIFO has a shim endpoint, host allocation, fill, drain, or CPU transfer.
 
 ```
 d[32] + descriptor[16]
@@ -94,10 +97,10 @@ into the private token. The active W0 path does not perform an in-place NTT
 over packed token lanes and does not use the prior fixed 24-bit mask path.
 W1/W3 use bounded five-block SampleNTT. W2/W4 compute:
 
-\[
+$$
 \widehat t[i]=\sum_{j=0}^{1}\operatorname{MultiplyNTTs}
 (\widehat A[i,j],\widehat s[j])+\widehat e[i]\pmod {3329}.
-\]
+$$
 
 The frozen 128-entry FIPS 203 zeta table is copied from physically validated
 DR2c. No worker computes runtime bit-reversed indices or modular powers. The
@@ -166,14 +169,14 @@ retains one 1,588-byte normal terminal record and one result CPU transfer.
 
 The fixture uses only descriptor byte 8 (`seed = 1` for case 1):
 
-\[
+$$
 \begin{aligned}
 t_0[i]&=13i+\mathrm{seed},&
 t_1[i]&=3328-(13i+\mathrm{seed}),\\
 s_0[i]&=11i+3\mathrm{seed},&
 s_1[i]&=3328-(11i+3\mathrm{seed}).
 \end{aligned}
-\]
+$$
 
 All 1,024 lanes are canonical. The 32-byte `rho` is
 `0xa5 ^ descriptor[8 + (i mod 4)] ^ i`. The test-only expected terminal bytes

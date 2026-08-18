@@ -17,6 +17,7 @@ from phoenix_sdr_dsp.pqc import dr2d_mlkem512_kpke_keygen_graph as graph
 from phoenix_sdr_dsp.pqc import (
     dr2d_mlkem512_kpke_keygen_terminal_probe_graph as terminal_probe,
 )
+from tests.production_dependency_guard import assert_no_test_dependency_imports
 
 REPO = Path(__file__).resolve().parents[1]
 KERNELS = REPO / "phoenix_sdr_dsp" / "pqc" / "kernels"
@@ -173,17 +174,16 @@ class DR2dDeviceResidencyContractTests(unittest.TestCase):
             source.index("abi.parse_result"),
             source.index("_clear_host_staging(result_np, result_t)"),
         )
-        production = "\n".join(
-            path.read_text(encoding="utf-8")
-            for path in (REPO / "phoenix_sdr_dsp" / "pqc").rglob("*")
-            if path.is_file() and path.suffix in {".py", ".cc", ".hpp"}
+        production = tuple(
+            path
+            for path in (REPO / "phoenix_sdr_dsp" / "pqc").rglob("*.py")
+            if path.is_file()
         )
-        self.assertNotIn("tests/", production)
-        self.assertNotRegex(
-            production,
-            r"(?m)^\s*(?:from|import)\s+tests(?:\.|\s)",
+        assert_no_test_dependency_imports(production)
+        production_text = "\n".join(
+            path.read_text(encoding="utf-8") for path in production
         )
-        self.assertNotIn("kpke_keygen_reference", production)
+        self.assertNotIn("kpke_keygen_reference", production_text)
         self.assertNotIn("hashlib", source)
 
     def test_partitioned_workers_use_fixed_tokens_frozen_zetas_and_clear_all_boundaries(
@@ -576,7 +576,7 @@ class DR2dDeviceResidencyContractTests(unittest.TestCase):
         # 11. The physical diagnostic result and the residual gate are documented.
         pending = PENDING.read_text(encoding="utf-8")
         design = DESIGN.read_text(encoding="utf-8")
-        self.assertIn("Status: PENDING PHYSICAL VALIDATION", pending)
+        self.assertIn("Status: NO PASSING INTEGRATED PHYSICAL RESULT", pending)
         self.assertIn("physically PASSED on Phoenix", pending)
         self.assertIn(
             "309c9dd65e843edb15bc67766aff8f37b302ef815a435813881d6908d567adb4",
@@ -685,7 +685,8 @@ class DR2dDeviceResidencyContractTests(unittest.TestCase):
             all(len(bytes.fromhex(case["dkPKE"])) == 768 for case in vectors["tests"])
         )
         self.assertIn(
-            "Status: PENDING PHYSICAL VALIDATION", PENDING.read_text(encoding="utf-8")
+            "Status: NO PASSING INTEGRATED PHYSICAL RESULT",
+            PENDING.read_text(encoding="utf-8"),
         )
         self.assertIn("two host fills", DESIGN.read_text(encoding="utf-8"))
         gate = GATE.read_text(encoding="utf-8")

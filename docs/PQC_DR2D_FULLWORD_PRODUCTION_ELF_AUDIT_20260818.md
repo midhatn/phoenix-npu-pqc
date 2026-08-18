@@ -1756,7 +1756,7 @@ The new capture matches the pinned W0 and internal-header hashes. Combined with 
 - `0x7e0-0x870` clears exactly 200 state bytes through `p7`.
 - The 32-byte input absorb at `0x8c0-0x930` uses the previously proved AIE2 software-pipeline schedule. The fixed updates target state offsets 32, 33, and 71, corresponding to `K=2`, SHA3 suffix `0x06`, and the final `0x80` bit for the 72-byte SHA3-512 rate.
 - `0x98e` calls the already-proved Keccak implementation with `p7` as state.
-- Extraction programs 32 iterations. For each old index \(i=0..31\), `0x9f0` loads `state[i]`, `0xa00` stores it to `p6[i]` (rho), `0xa20-0xa2c` forms and loads `state[32+i]`, and the ZOL-end store at `0xa30` writes it to `p0[i]` (sigma). `dj0` remains the old \(i\) for both destination stores while `dj1=i+32` addresses the second state half.
+- Extraction programs 32 iterations. For each old index $i=0..31$, `0x9f0` loads `state[i]`, `0xa00` stores it to `p6[i]` (rho), `0xa20-0xa2c` forms and loads `state[32+i]`, and the ZOL-end store at `0xa30` writes it to `p0[i]` (sigma). `dj0` remains the old $i$ for both destination stores while `dj1=i+32` addresses the second state half.
 - There is no swapped destination, state+31/state+33 error, missing byte, extra iteration, or alias overlap.
 
 The one-case physical localizer proved rho is exactly canonical. Since the same deterministic Keccak state supplies both halves, and the second half is now statically proved to copy `state[32..63]` to the correct non-overlapping sigma buffer, no W0 `derive_g` construction or sigma-extraction defect is proved. Together with the earlier physically anchored Keccak comparison, **derive_g/sigma extraction is ruled out as a static root cause**.

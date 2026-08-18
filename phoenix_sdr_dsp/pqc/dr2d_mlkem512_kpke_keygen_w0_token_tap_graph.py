@@ -92,6 +92,16 @@ def verify_production_hashes(*, require_retained_object: bool = True) -> dict[st
             raise DiagnosticIntegrityError(f"missing pinned production file: {path}")
         actual = _sha256(path)
         if actual != expected:
+            if (
+                name == "canonical_runner"
+                and "host-safe"
+                in path.read_text(encoding="utf-8", errors="replace").lower()
+            ):
+                raise DiagnosticIntegrityError(
+                    "historical canonical_runner pin refuses the current host-safe "
+                    "compatibility runner; use the archived historical baseline "
+                    f"with sha256 {expected}, not current main ({actual})"
+                )
             raise DiagnosticIntegrityError(
                 f"{name} hash mismatch: expected {expected}, observed {actual}"
             )

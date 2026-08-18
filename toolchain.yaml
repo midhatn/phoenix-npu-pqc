@@ -16,7 +16,7 @@ target:
   npu:
     name: "AMD XDNA1 / 1st Gen Ryzen AI"
     codename: npu1
-    tile_array: "4 columns x 5 rows"
+    tile_array: "5 columns x 4 compute-tile rows"
     engine: "AIE2 (AI Engine 2)"
     simd_width_bits: 512
     tile_local_memory_kb: 64

@@ -34,6 +34,20 @@ Out of scope:
 - Requests to interpret historical research evidence as production
   certification.
 
+## Research-use and cryptographic-security boundary
+
+This repository is research infrastructure, not a production cryptographic
+module. It does not claim FIPS or CMVP conformance, constant-time behavior,
+side-channel resistance, secure zeroization, key-management suitability, or
+production readiness. Host-safe tests, compile-only output, and historical
+native transcripts are different evidence classes and must not be promoted into
+one another.
+
+The protected `docs/pqc_dr2_evidence_20260818/` bundle is immutable historical
+evidence. It includes machine-specific paths and diagnostic material; do not
+rewrite it to redact or “fix” it. Restrict access appropriately and publish a
+separate, reviewed redacted derivative if disclosure is required.
+
 ## Supported versions
 
 Only the current `main` branch is maintained. Historical evidence records are

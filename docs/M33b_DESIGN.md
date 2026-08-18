@@ -15,7 +15,7 @@ Kernel: `tests/m33_mldsa/dilithium_sampler_kernel.cc`, six modes.
 | 1    | Decompose(α)        | Sign (w → w₁,w₀)         | 256 × int32   | —               | r₁ (256 × int32)                 | r₀ (256 × int32) |
 | 2    | MakeHint(α)         | Sign (build h)           | z (256 × int32) | r (256 × int32) | h ∈ {0,1} (256 × int32)          | —                |
 | 3    | UseHint(α)          | Verify (recover w'₁)     | h (256 × int32) | r (256 × int32) | r'₁ (256 × int32)                | —                |
-| 4    | CheckNormBound(b)   | Sign (‖z‖∞ < γ₁−β), Verify (‖h‖ ≤ ω) | 256 × int32 | — | out_c[0] = 1 if all pass, else 0 | —                |
+| 4    | CheckNormBound(b)   | Sign/Verify coefficient-norm check | 256 × int32 | — | out_c[0] = 1 if all pass, else 0 | —                |
 | 5    | ReduceModPm         | utility (canonical form) | 256 × int32   | —               | r' ∈ (−q/2, q/2]                 | —                |
 
 **SampleInBall is intentionally not in this kernel.** Its inner loop is a
@@ -26,7 +26,7 @@ data-parallel modes gain.
 
 ## Parameters per ML-DSA set
 
-| Set        | γ₂ = (q−1)/⋅  | α = 2γ₂     | β         | γ₁ − β   | ω  |
+| Set        | γ₂            | α = 2γ₂     | β         | γ₁ − β   | ω  |
 |:-----------|--------------:|------------:|----------:|---------:|---:|
 | ML-DSA-44  | (q−1)/88 = 95232  | 190464 | 78        | 130994   | 80 |
 | ML-DSA-65  | (q−1)/32 = 261888 | 523776 | 196       | 524092   | 55 |
@@ -62,13 +62,16 @@ the reference sets `r₁ = 0, r₀ = r₀ − 1` so that r₁ stays in `[0, (q�
 supplies both operands; the kernel does two Decompose calls per coefficient
 under the hood.
 
-**UseHint** (Alg 34): given h and r, returns approximate `HighBits(r+z)` by
-optionally nudging `r₁` up or down by one modulo `m = (q−1)/α`. Handles the
-r₀ = 0 case by nudging down instead of up.
+**UseHint** (Alg 34): given h and r, returns the hint-adjusted high bits of
+r by optionally nudging `r₁` up or down by one modulo `m = (q−1)/α`. When
+`h = MakeHint(z, r)` under the algorithm preconditions, the result equals
+`HighBits(r+z)`.
 
 **CheckNormBound**: reduces each coefficient to `(−q/2, q/2]`, takes absolute
 value, checks all coeffs are `< b`. Returns single bit in `out_c[0]` (rest of
-`out_c` undefined). Composer treats out_c[0] = 0 as reject.
+`out_c` undefined). Composer treats out_c[0] = 0 as reject. Signature hint
+weight is a separate host-side `popcount(h)` check, not this coefficient-norm
+operation.
 
 ## Composer bridge
 

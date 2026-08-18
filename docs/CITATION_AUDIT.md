@@ -1,4 +1,10 @@
-# Citation audit — 2026-08-15
+# Historical pre-split citation audit — 2026-08-15
+
+> **Historical record, not current repository guidance.** This audit predates
+> the Phoenix NPU PQC split and intentionally retains its original Phoenix
+> SDR-DSP references, file inventory, and reported results. Do not use it for
+> current setup, current claims, or licensing status; see
+> [`PQC_AUDIT_REMEDIATION_20260818.md`](PQC_AUDIT_REMEDIATION_20260818.md).
 
 Whole-repo pass after the 16/16 silicon result. Goal: every technical claim
 that could appear in a paper has a primary-source URL. Lab measurements

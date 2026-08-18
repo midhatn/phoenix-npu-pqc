@@ -9,26 +9,57 @@ from pathlib import Path
 
 from phoenix_sdr_dsp.pqc import dr2c_mlkem512_keygen_row_abi as abi
 from phoenix_sdr_dsp.pqc import dr2c_mlkem512_keygen_row_graph as graph
+from tests.production_dependency_guard import assert_no_test_dependency_imports
 
 REPO = Path(__file__).resolve().parents[1]
 KERNELS = REPO / "phoenix_sdr_dsp" / "pqc" / "kernels"
 DESIGN = REPO / "docs" / "PQC_DR2C_DESIGN.md"
 PENDING = REPO / "docs" / "PQC_DR2C_SILICON_VALIDATION_PENDING.md"
-GATE = REPO / "tests" / "pqc_device_resident" / "test_dr2c_mlkem512_keygen_row_silicon.py"
+GATE = (
+    REPO / "tests" / "pqc_device_resident" / "test_dr2c_mlkem512_keygen_row_silicon.py"
+)
 
 
 def _function(tree: ast.AST, name: str) -> ast.FunctionDef:
-    return next(node for node in ast.walk(tree) if isinstance(node, ast.FunctionDef) and node.name == name)
+    return next(
+        node
+        for node in ast.walk(tree)
+        if isinstance(node, ast.FunctionDef) and node.name == name
+    )
 
 
 class DR2cDeviceResidencyContractTests(unittest.TestCase):
     def test_fixed_public_and_private_abi(self) -> None:
-        self.assertEqual((abi.RHO_BYTES, abi.SIGMA_BYTES, abi.SEEDS_BYTES, abi.DESCRIPTOR_BYTES, abi.INTERNAL_TOKEN_BYTES, abi.RESULT_BYTES), (32, 32, 64, 16, 2576, 528))
-        self.assertEqual((abi.ABI_VERSION, abi.OPCODE_MLKEM512_KEYGEN_ROW, abi.PARAMETER_MLKEM512, abi.ETA1, abi.SAMPLE_NTT_BLOCK_CAP), (1, 0x23, 0x52, 3, 5))
-        self.assertEqual((abi.N, abi.Q, abi.RESULT_MAGIC, abi.INTERNAL_POLYNOMIALS), (256, 3329, 0x4332524D, 5))
+        self.assertEqual(
+            (
+                abi.RHO_BYTES,
+                abi.SIGMA_BYTES,
+                abi.SEEDS_BYTES,
+                abi.DESCRIPTOR_BYTES,
+                abi.INTERNAL_TOKEN_BYTES,
+                abi.RESULT_BYTES,
+            ),
+            (32, 32, 64, 16, 2576, 528),
+        )
+        self.assertEqual(
+            (
+                abi.ABI_VERSION,
+                abi.OPCODE_MLKEM512_KEYGEN_ROW,
+                abi.PARAMETER_MLKEM512,
+                abi.ETA1,
+                abi.SAMPLE_NTT_BLOCK_CAP,
+            ),
+            (1, 0x23, 0x52, 3, 5),
+        )
+        self.assertEqual(
+            (abi.N, abi.Q, abi.RESULT_MAGIC, abi.INTERNAL_POLYNOMIALS),
+            (256, 3329, 0x4332524D, 5),
+        )
         self.assertEqual(graph.BACKEND_LABEL, "dr2c-mlkem512-keygen-row:silicon")
 
-    def test_two_ingress_fifos_one_private_row_token_and_one_terminal_output(self) -> None:
+    def test_two_ingress_fifos_one_private_row_token_and_one_terminal_output(
+        self,
+    ) -> None:
         source = inspect.getsource(graph)
         self.assertEqual(source.count("ObjectFifo("), 4)
         self.assertEqual(source.count("ExternalFunction("), 2)
@@ -38,33 +69,53 @@ class DR2cDeviceResidencyContractTests(unittest.TestCase):
         self.assertIn("of_row_token.cons()", source)
         self.assertNotIn("in_ctrl", source)
 
-    def test_runtime_has_two_fills_one_drain_and_only_result_host_transfer(self) -> None:
+    def test_runtime_has_two_fills_one_drain_and_only_result_host_transfer(
+        self,
+    ) -> None:
         tree = ast.parse(inspect.getsource(graph))
         sequence = _function(tree, "sequence")
         calls = [node.value for node in sequence.body if isinstance(node, ast.Expr)]
         self.assertEqual([call.func.attr for call in calls], ["fill", "fill", "drain"])
-        transfers = [node for node in ast.walk(tree) if isinstance(node, ast.Call) and isinstance(node.func, ast.Attribute) and node.func.attr == "to"]
+        transfers = [
+            node
+            for node in ast.walk(tree)
+            if isinstance(node, ast.Call)
+            and isinstance(node.func, ast.Attribute)
+            and node.func.attr == "to"
+        ]
         self.assertEqual(len(transfers), 1)
         self.assertEqual(transfers[0].func.value.id, "result_t")
         self.assertEqual(transfers[0].args[0].value, "cpu")
 
-    def test_validation_precedes_native_loading_and_no_reference_fallback_exists(self) -> None:
+    def test_validation_precedes_native_loading_and_no_reference_fallback_exists(
+        self,
+    ) -> None:
         source = inspect.getsource(graph.run_mlkem512_keygen_row)
-        self.assertLess(source.index("abi.validate_request"), source.index("_load_iron()"))
+        self.assertLess(
+            source.index("abi.validate_request"), source.index("_load_iron()")
+        )
         self.assertIn("abi.result_sentinel()", source)
         self.assertIn("abi.parse_result", source)
         self.assertNotIn("hashlib", source)
         self.assertNotIn("keygen_row_reference", source)
 
     def test_production_sources_do_not_depend_on_tests(self) -> None:
-        production = "\n".join(path.read_text(encoding="utf-8") for path in (REPO / "phoenix_sdr_dsp" / "pqc").rglob("*") if path.is_file() and path.suffix in {".py", ".cc", ".hpp"})
-        self.assertNotIn("tests/", production)
-        self.assertNotIn("../tests", production)
-        self.assertNotIn("tests.", production)
+        production = tuple(
+            path
+            for path in (REPO / "phoenix_sdr_dsp" / "pqc").rglob("*.py")
+            if path.is_file()
+        )
+        assert_no_test_dependency_imports(production)
 
-    def test_workers_own_all_sampling_and_multiply_intermediates_then_clear_them(self) -> None:
-        expand = (KERNELS / "dr2c_mlkem512_keygen_row_expand.cc").read_text(encoding="utf-8")
-        accumulate = (KERNELS / "dr2c_mlkem512_keygen_row_accumulate.cc").read_text(encoding="utf-8")
+    def test_workers_own_all_sampling_and_multiply_intermediates_then_clear_them(
+        self,
+    ) -> None:
+        expand = (KERNELS / "dr2c_mlkem512_keygen_row_expand.cc").read_text(
+            encoding="utf-8"
+        )
+        accumulate = (KERNELS / "dr2c_mlkem512_keygen_row_accumulate.cc").read_text(
+            encoding="utf-8"
+        )
         self.assertIn('#include "dr1_keccak_f1600.hpp"', expand)
         self.assertIn("const uint8_t *rho = seeds", expand)
         self.assertIn("const uint8_t *sigma = seeds + 32", expand)
@@ -83,7 +134,9 @@ class DR2cDeviceResidencyContractTests(unittest.TestCase):
         self.assertIn("kBadToken", accumulate)
         self.assertNotIn("pow(", expand + accumulate)
 
-    def test_physical_record_anchors_native_evidence_and_host_runner_boundary(self) -> None:
+    def test_physical_record_anchors_native_evidence_and_host_runner_boundary(
+        self,
+    ) -> None:
         design, record, gate = (
             DESIGN.read_text(encoding="utf-8"),
             PENDING.read_text(encoding="utf-8"),

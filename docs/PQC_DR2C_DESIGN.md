@@ -1,8 +1,11 @@
 # PQC DR2c Design: ML-KEM-512 K-PKE.KeyGen Terminal Row
 
-**Status:** host-harness validated, with native Phoenix validation pending. DR2c
+**Status:** a narrow physical `TOTAL 11/11 PASS` record is retained for the
+terminal-row scope, with repeated `22/22` execution recorded separately. DR2c
 is a narrow terminal-only subgraph toward K-PKE.KeyGen; it is **not K-PKE KeyGen**,
-ML-KEM KeyGen, or a complete ML-KEM operation.
+ML-KEM KeyGen, or a complete ML-KEM operation. See the dated
+[physical validation record](PQC_DR2C_SILICON_VALIDATION_PENDING.md) for
+evidence scope and provenance limitations.
 
 ## Scope
 
@@ -11,12 +14,12 @@ caller has already produced the FIPS 203 KeyGen seeds `rho` and `sigma`. The
 public API packs them as `rho || sigma` into one 64-byte seed DMA ingress. It keeps both matrix elements, the two secret NTT polynomials, the selected error
 NTT polynomial, both `MultiplyNTTs` products, and the accumulator within the
 AIE graph. Its only successful output is the canonical 256-lane
-\(\widehat t[\mathrm{row}]\):
+$\widehat t[\mathrm{row}]$:
 
-\[
+$$
 \widehat t[i]=\operatorname{MultiplyNTTs}(\widehat A[i,0],\widehat s[0])+
 \operatorname{MultiplyNTTs}(\widehat A[i,1],\widehat s[1])+\widehat e[i]\pmod{3329}.
-\]
+$$
 
 This is the existing FIPS 203 K-PKE.KeyGen relation, specialized to one
 ML-KEM-512 row; no new publication mathematics is required beyond the
@@ -70,9 +73,10 @@ strict C++17 flags and compares every terminal lane against that independent
 reference. It also tests malformed descriptor/token paths and repeated calls.
 Host compilation is not physical proof.
 
-The native gate is intentionally separate and has no fallback. It must be run
-on the Phoenix native Windows IRON/XRT environment before claiming a physical
-result. `run_all_silicon_tests.py` remains deliberately unchanged.
+The native gate is intentionally separate and has no fallback. Any new physical
+claim requires separately authorized Phoenix native evidence.
+`run_all_silicon_tests.py` is a host-safe compatibility forwarder and does not
+invoke the native gate.
 
 ## References
 

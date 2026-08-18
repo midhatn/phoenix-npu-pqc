@@ -9,7 +9,7 @@
 
 ## 1. Purpose and PQC context
 
-M32c is the first milestone on **Track 4 — Post-Quantum Cryptography on NPU**. Track 4 targets the Ryzen AI Phoenix NPU (AIE2, 4×5 compute-tile array) as an accelerator for post-quantum cryptographic primitives. Post-quantum cryptography is the family of public-key algorithms designed to resist attack by a large-scale quantum computer running Shor's algorithm ([Shor 1994](https://ieeexplore.ieee.org/document/365700)); NIST ran a multi-year standardization process from 2016 to 2024 to select algorithms for federal use ([NIST PQC Project](https://csrc.nist.gov/projects/post-quantum-cryptography)), and the first three finalized standards were published in August 2024 ([NIST press release 2024-08-13](https://www.nist.gov/news-events/news/2024/08/nist-releases-first-3-finalized-post-quantum-encryption-standards)):
+M32c is the first milestone on **Track 4 — Post-Quantum Cryptography on NPU**. Track 4 targets the Ryzen AI Phoenix NPU (AIE2, five columns by four compute-tile rows) as an accelerator for post-quantum cryptographic primitives. Post-quantum cryptography is the family of public-key algorithms designed to resist attack by a large-scale quantum computer running Shor's algorithm ([Shor 1994](https://ieeexplore.ieee.org/document/365700)); NIST ran a multi-year standardization process from 2016 to 2024 to select algorithms for federal use ([NIST PQC Project](https://csrc.nist.gov/projects/post-quantum-cryptography)), and the first three finalized standards were published in August 2024 ([NIST press release 2024-08-13](https://www.nist.gov/news-events/news/2024/08/nist-releases-first-3-finalized-post-quantum-encryption-standards)):
 
 - **FIPS 203 — Module-Lattice-based Key-Encapsulation Mechanism (ML-KEM)**, derived from CRYSTALS-Kyber ([FIPS 203](https://nvlpubs.nist.gov/nistpubs/fips/nist.fips.203.pdf))
 - **FIPS 204 — Module-Lattice-based Digital Signature Algorithm (ML-DSA)**, derived from CRYSTALS-Dilithium ([FIPS 204](https://nvlpubs.nist.gov/nistpubs/fips/nist.fips.204.pdf))
@@ -31,9 +31,9 @@ All three are the *only* sources of randomness inside ML-KEM key generation and 
 
 FIPS 202 §3.1 defines the Keccak-*p* family and fixes SHA-3 / SHAKE to use Keccak-*f*[1600] = Keccak-*p*[1600, 24] ([FIPS 202 §5.2](https://nvlpubs.nist.gov/nistpubs/fips/nist.fips.202.pdf)). The permutation state is a 5 × 5 × 64-bit array
 
-\[
+$$
 A : \{0,1,2,3,4\} \times \{0,1,2,3,4\} \times \{0,1,\dots,63\} \to \{0,1\}
-\]
+$$
 
 stored as 25 lanes of 64 bits each, with `lane(x,y) = A[x,y,·]` treated as a little-endian 64-bit word ([Keccak specifications summary](https://keccak.team/keccak_specs_summary.html)). One round applies five step mappings θ, ρ, π, χ, ι in sequence; Keccak-*f*[1600] applies 24 rounds:
 
@@ -67,27 +67,38 @@ FIPS 203 §4.1 fixes the four PQC-usage names of the FIPS 202 modes ([FIPS 203](
 - **G(x)** = SHA3-512(x). Used to expand seeds into (ρ, σ) pairs.
 - **PRF(η, s, b)** = SHAKE256(s ‖ b). Driver for SamplePolyCBDη (§4.2.2 Alg 8), where η ∈ {2, 3}.
 - **J(x)** = SHAKE256(x, 32). Implicit-rejection tag used in Decaps.
-- **KDF(x)** = SHAKE256(x, 32). Used in older draft Kyber; FIPS 203 folds this into the shared-secret derivation flow.
 
-M32c exposes exactly the four FIPS 202 primitives above and lets the higher-level milestones (M32d/e) name them XOF / H / G / PRF / J at the call site.
+M32c exposes the FIPS 202 primitives above and lets higher-level milestones
+name them XOF / H / G / PRF / J at the call site. Use the final FIPS 203
+function names at the implementation boundary; do not introduce a separate
+`KDF` label unless it is explicitly mapped to the applicable standard step.
 
 ### 2.4 SampleNTT (FIPS 203 Algorithm 7)
 
 `SampleNTT` converts a 32-byte seed plus a 2-byte (j, i) domain-separation tag into a uniform ring element `â ∈ R_q` where `R_q = Z_q[X] / (X²⁵⁶ + 1)` and `q = 3329`. The algorithm feeds `(seed ‖ j ‖ i)` into SHAKE128 as an XOF and consumes bytes three at a time. Each 3-byte block is unpacked into two 12-bit little-endian integers
 
-\[
+$$
 d_1 = b_0 + 256 (b_1 \bmod 16), \qquad d_2 = \lfloor b_1 / 16 \rfloor + 16 b_2
-\]
+$$
 
-and each 12-bit integer is accepted iff it is < q. When 256 coefficients have been accepted the routine returns. Rejection probability per 12-bit integer is (2¹² − q) / 2¹² = 767 / 4096 ≈ 18.7%, so on average `256 / (2 · (1 − 767/4096)) ≈ 78.7` three-byte blocks (≈ 236 bytes) suffice — always less than one 168-byte SHAKE128 rate block, but the algorithm must be able to squeeze additional rate blocks in the tail case ([Kyber round-3 spec §1.4.2](https://pq-crystals.org/kyber/data/kyber-specification-round3-20210131.pdf)).
+and each 12-bit integer is accepted iff it is < q. With acceptance probability
+$p = 3329/4096$, each three-byte group supplies two independent candidates.
+The expected group count to accept 256 coefficients is
+$256/(2p) \approx 157.49$, or about 472.47 bytes (about 2.81 SHAKE128 rate
+blocks). A conforming unbounded implementation must squeeze additional
+SHAKE128 blocks until completion; a bounded research implementation must
+signal its limit rather than present an incomplete polynomial as a successful
+SampleNTT result. The retained M32c DMA ABI has a fixed 840-byte cap and no
+limit-status field, so it is not a FIPS-conformance claim ([FIPS 203, Algorithm
+7](https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.203.pdf)).
 
 ### 2.5 SamplePolyCBDη (FIPS 203 Algorithm 8)
 
 `SamplePolyCBDη` produces a ring element whose 256 coefficients are drawn from the centered binomial distribution CBD(η): each coefficient equals ∑ aᵢ − ∑ bᵢ where a₁ … aη and b₁ … bη are η pairs of independent uniform bits. The routine consumes exactly 64η bytes of PRF (SHAKE256) output — 128 bytes for η = 2 (ML-KEM-768/1024) or 192 bytes for η = 3 (ML-KEM-512) — and lays them out as a bit stream. Coefficient i is
 
-\[
+$$
 f_i = \sum_{j=0}^{\eta-1} B[2\eta i + j] - \sum_{j=0}^{\eta-1} B[2\eta i + \eta + j]
-\]
+$$
 
 where `B[·]` indexes the bit stream in little-endian byte-bit order (LSB-first within each byte). Output coefficients lie in {−η, …, +η}. For η = 2 the distribution has variance 1; for η = 3 the variance is 3/2 ([Kyber CFRG draft §2.4](https://www.ietf.org/archive/id/draft-cfrg-schwabe-kyber-04.html)).
 
@@ -108,7 +119,7 @@ The kernel dispatches on `mode ∈ {SHA3_256, SHA3_512, SHAKE128, SHAKE256, SAMP
 AIE2 program-memory is 16 KiB per tile. M27 hit this limit with the OFDM loopback and mitigated it via `#pragma clang loop unroll(disable)` on all counted loops and `__attribute__((noinline))` on the inner FIR routine. M32c applies the same discipline:
 
 - The θ / ρ+π / χ inner loops of `keccak_f1600_state_permute` are `unroll(disable)`.
-- `keccak_f1600_state_permute` is `noinline` (called 24 times per SHA3-512 short input; must not be duplicated).
+- `keccak_f1600_state_permute` is `noinline`; each invocation executes the 24-round permutation and must not be duplicated.
 - The absorb loop, the squeeze loop, and the SampleNTT `while (accepted < 256)` loop are `unroll(disable)`.
 - LFSR-based round-constant generation and the on-the-fly `(t+1)(t+2)/2 mod 64` rotation offset avoid `.rodata` tables entirely.
 
@@ -162,7 +173,7 @@ Two sub-gates for both η = 2 and η = 3:
 - No NTT-domain arithmetic (M32b).
 - No K-PKE encryption/decryption (M32d).
 - No full ML-KEM-512 KeyGen/Encaps/Decaps (M32e).
-- No side-channel countermeasures beyond constant-time control flow in Keccak-*f*[1600] itself. Rejection sampling in SampleNTT is inherently variable-time per FIPS 203 §3.3 note; that is standards-compliant.
+- No constant-time, side-channel-resistance, or secure-zeroization claim is made. SampleNTT rejection sampling has data-dependent completion, and this research record does not evaluate leakage or fault behavior.
 
 ## 7. References
 

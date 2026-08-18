@@ -1,4 +1,9 @@
-# Phoenix SDR-DSP Milestone 2 Toolchain Pin
+# Historical Phoenix SDR-DSP Milestone 2 Toolchain Pin
+
+> **Historical pre-split record.** This file preserves the earlier environment
+> description and old checkout paths. Current repository setup is
+> [`SETUP_WINDOWS.md`](SETUP_WINDOWS.md), which is host-safe and does not
+> authorize native execution.
 
 - Purpose: pin the native Windows IRON / MLIR-AIE / XRT development toolchain
 - Target operating system: Windows 11 Pro 25H2, build 26200.9168

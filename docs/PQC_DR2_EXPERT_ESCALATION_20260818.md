@@ -13,13 +13,16 @@ This handoff consolidates the recorded evidence for expert review. It makes only
 | DR2a | [`PQC_DR2A_SILICON_VALIDATION_PENDING.md`](PQC_DR2A_SILICON_VALIDATION_PENDING.md) | Narrow ML-KEM-512 SampleNTT physical result: `TOTAL 13/13 PASS`; repeated `26/26`; cache `c65a53d2c8de882f9a5dc7d9`. |
 | DR2b | DR2d audit’s passed-artifact comparison | Narrow CBD3/NTT physical comparator: passed 13-vector artifact at cache `4311961d4f3a43976aa5a60d`; core `0_3` ELF SHA-256 `0f1e4f9563a6716c3076bdc8ad4c8d43dc6dfd566cf0de2fd67b14d937261125`. |
 | DR2c | [`PQC_DR2C_PHYSICAL_VALIDATION_HANDOFF_20260817.md`](PQC_DR2C_PHYSICAL_VALIDATION_HANDOFF_20260817.md) | Narrow terminal ML-KEM-512 `t_hat` row: `TOTAL 11/11 PASS`, repeated `22/22`. It excludes `G(d || k)`, both-row scheduling, serialization, and lifecycle zeroization. |
-| DR2d | [`PQC_DR2D_FULLWORD_PRODUCTION_ELF_AUDIT_20260818.md`](PQC_DR2D_FULLWORD_PRODUCTION_ELF_AUDIT_20260818.md) | Integrated five-worker candidate compile-only review passed, but physical backend `dr2d-mlkem512-kpke-keygen:silicon` returned `TOTAL 0/25 FAIL`, exit 1. |
+| DR2d | [`PQC_DR2D_FULLWORD_PRODUCTION_ELF_AUDIT_20260818.md`](PQC_DR2D_FULLWORD_PRODUCTION_ELF_AUDIT_20260818.md) | Integrated candidate with five computation workers (W0–W4) plus serializer W5 (six worker cores total): compile-only review passed, but physical backend `dr2d-mlkem512-kpke-keygen:silicon` returned `TOTAL 0/25 FAIL`, exit 1. |
 
 The DR2a/DR2b/DR2c results are intentionally narrow. They do not offset, convert, or partially close DR2d. The roadmap consequence is explicit: **no DR3 work until integrated DR2 completion**; see [`PQC_DEVICE_RESIDENCY_ROADMAP.md`](PQC_DEVICE_RESIDENCY_ROADMAP.md).
 
 ## 2. Exact architecture boundary
 
-The failed DR2d candidate is an integrated ML-KEM-512 K-PKE.KeyGen topology with five repaired workers:
+The failed DR2d candidate is an integrated ML-KEM-512 K-PKE.KeyGen topology
+with five repaired computation workers (W0–W4) plus serializer W5: six worker
+cores total. The ELF core-map discussion below covers W0–W4 where stated; it
+does not turn a partial core-map observation into a complete integrated pass.
 
 | Core | Worker | Bounded responsibility |
 |---|---|---|
@@ -28,6 +31,7 @@ The failed DR2d candidate is an integrated ML-KEM-512 K-PKE.KeyGen topology with
 | `0_4` | W2 | row-0 token consumption, copies and accumulation for `t_hat[0]`. |
 | `0_5` | W3 | row-1 counterpart of W1. |
 | `1_2` | W4 | row-1 counterpart of W2. |
+| `1_3` | W5 | canonical serializer and terminal commit. |
 
 The production boundary is protected by these recorded SHA-256 identities:
 
@@ -44,6 +48,14 @@ The production boundary is protected by these recorded SHA-256 identities:
 | accepted V2 W0 diagnostic runner | `b96e1d60981121feac33644ddcda38cc490d2ee8866300509941266383575da0` |
 
 The accepted production-repair patch hash is `ea914b69dfa76cdac20926f2000fc9a7c3ffedc9e8c469e324f3ae4e61bf3c00`; the initial condensed store-map hash is `3ab8f6584e4ccd649a5d43abee43d2af84f13860ce5d1e2ac9cd9e0ca45f0835`.
+
+### Historical runner-pin notice
+
+The canonical-runner hash above belongs to the historical native-runner
+baseline. Current `main` intentionally supplies a host-safe compatibility
+forwarder at the same path. DR2d diagnostics must reject that different file
+rather than silently updating the historical pin; use the archived baseline
+identified by the recorded hash for any separately authorized reproduction.
 
 ## 3. What passed before the physical failure
 
