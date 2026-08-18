@@ -23,6 +23,10 @@ class ReleaseMaterialsContractTests(unittest.TestCase):
         citation = (REPO / "CITATION.cff").read_text(encoding="utf-8")
         toolchain = TOOLCHAIN.read_text(encoding="utf-8")
         third_party = (REPO / "THIRD_PARTY_NOTICES.md").read_text(encoding="utf-8")
+        provenance = (REPO / "THIRD_PARTY_PROVENANCE.md").read_text(encoding="utf-8")
+        nist_notice = (REPO / "LICENSES" / "NIST-ACVP-NOTICE.txt").read_text(
+            encoding="utf-8"
+        )
         history = (REPO / "LICENSE_HISTORY.md").read_text(encoding="utf-8")
         contributing = (REPO / "CONTRIBUTING.md").read_text(encoding="utf-8")
         mit_text = (REPO / "LICENSES" / "MIT.txt").read_text(encoding="utf-8")
@@ -36,12 +40,40 @@ class ReleaseMaterialsContractTests(unittest.TestCase):
         self.assertIn("license: Apache-2.0", citation)
         self.assertIn("license: Apache-2.0", toolchain)
         self.assertIn("LICENSES/MIT.txt", third_party)
+        self.assertIn("THIRD_PARTY_PROVENANCE.md", third_party)
+        self.assertIn(
+            "975de31eb83d87039ec88934fdc47d8c312b892d",
+            provenance,
+        )
+        self.assertIn("Comparison anchor only", provenance)
+        self.assertIn(
+            "c490a3249d01a59de62e007261b5a4c6088d3a98c3979b165c6e0bc5fc7eb935",
+            provenance,
+        )
+        self.assertIn("keep intact this entire notice", nist_notice)
         self.assertIn("Permissions already granted", history)
         self.assertIn("submitted under the repository's", contributing)
         self.assertIn("Apache License 2.0", contributing)
         self.assertIn("immutable upstream URL and revision", contributing)
         self.assertTrue(mit_text.startswith("MIT License"))
         self.assertTrue(kpke.startswith("// SPDX-License-Identifier: MIT"))
+
+    def test_provenance_manifest_matches_local_files(self) -> None:
+        provenance = (REPO / "THIRD_PARTY_PROVENANCE.md").read_text(encoding="utf-8")
+        rows = re.findall(
+            r"^\| `([^`]+)` \| `([0-9a-f]{64})` \|",
+            provenance,
+            flags=re.MULTILINE,
+        )
+        self.assertGreaterEqual(len(rows), 26)
+        for relative_path, expected_sha256 in rows:
+            with self.subTest(path=relative_path):
+                path = REPO / relative_path
+                self.assertTrue(path.is_file())
+                self.assertEqual(
+                    hashlib.sha256(path.read_bytes()).hexdigest(),
+                    expected_sha256,
+                )
 
     def test_extensionless_launcher_is_the_primary_native_install_path(self) -> None:
         launcher = INSTALL.read_text(encoding="utf-8")

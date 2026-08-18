@@ -259,5 +259,7 @@ Original project work is licensed under the
 [Apache License 2.0](LICENSE). File-level SPDX identifiers and third-party
 notices remain authoritative when they differ from the project default; see
 [LICENSE_HISTORY.md](LICENSE_HISTORY.md), [NOTICE](NOTICE), and
-[THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md). Research users should use the
-metadata in [`CITATION.cff`](CITATION.cff) when citing the software.
+[THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md). Immutable upstream anchors,
+local SHA-256 identities, and ACVP extraction records are in
+[THIRD_PARTY_PROVENANCE.md](THIRD_PARTY_PROVENANCE.md). Research users should
+use the metadata in [`CITATION.cff`](CITATION.cff) when citing the software.

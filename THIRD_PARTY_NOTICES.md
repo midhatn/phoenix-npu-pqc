@@ -17,9 +17,9 @@ identifiers remain authoritative when they differ from the project default.
 `tests/m32_mlkem/kpke_kernel.cc` remains explicitly MIT because its header
 describes a line-for-line pq-crystals Kyber reference transliteration. Its
 file-level SPDX identifier must be retained. The previously applicable project
-MIT text is preserved at [`LICENSES/MIT.txt`](LICENSES/MIT.txt); exact upstream
-revision and notice verification remains required before a formal
-redistribution claim.
+MIT text is preserved at [`LICENSES/MIT.txt`](LICENSES/MIT.txt). Its local hash,
+immutable upstream comparison anchor, and exactness limitation are recorded in
+[`THIRD_PARTY_PROVENANCE.md`](THIRD_PARTY_PROVENANCE.md).
 
 ## Cryptographic reference provenance requiring retention review
 
@@ -31,14 +31,16 @@ a derivative work:
 
 | Local material | Declared/source provenance | Canonical URL |
 | --- | --- | --- |
-| ML-KEM test/reference material | pq-crystals Kyber reference source; FIPS 203 mapping | https://github.com/pq-crystals/kyber/tree/main/ref ; https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.203.pdf |
-| ML-DSA NTT/sampler material | pq-crystals Dilithium reference source; FIPS 204 mapping | https://github.com/pq-crystals/dilithium/tree/master/ref ; https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.204.pdf |
-| ML-KEM vectors | NIST ACVP-Server generated JSON corpus; exact imported commit/hash is not yet recorded | https://github.com/usnistgov/ACVP-Server |
-| ML-DSA vectors | NIST ACVP-Server generated JSON corpus; exact imported commit/hash is not yet recorded | https://github.com/usnistgov/ACVP-Server |
+| ML-KEM test/reference material | pq-crystals Kyber reference source; immutable comparison anchor and local hashes are recorded in `THIRD_PARTY_PROVENANCE.md`; FIPS 203 mapping | https://github.com/pq-crystals/kyber/tree/main/ref ; https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.203.pdf |
+| ML-DSA NTT/sampler material | pq-crystals Dilithium reference source; immutable comparison anchor and local hashes are recorded in `THIRD_PARTY_PROVENANCE.md`; FIPS 204 mapping | https://github.com/pq-crystals/dilithium/tree/master/ref ; https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.204.pdf |
+| ML-KEM vectors | NIST ACVP-Server generated JSON corpus; exact upstream commit, subset relation, and hashes are recorded in `THIRD_PARTY_PROVENANCE.md` | https://github.com/usnistgov/ACVP-Server |
+| ML-DSA vectors | NIST ACVP-Server generated JSON corpus; exact upstream commit and hashes are recorded in `THIRD_PARTY_PROVENANCE.md` | https://github.com/usnistgov/ACVP-Server |
 
-No upstream license is inferred solely from a source URL or an algorithm
-standard. The table is a provenance ledger and deliberately marks unresolved
-license/revision facts rather than guessing.
+The path-specific local hashes, immutable upstream anchors, license choices,
+confidence labels, ACVP extraction record, and complete NIST notice are in
+[`THIRD_PARTY_PROVENANCE.md`](THIRD_PARTY_PROVENANCE.md). It deliberately
+distinguishes verified extraction from comparison-only anchors rather than
+guessing an exact historical derivation revision.
 
 ## Runtime and build dependencies
 
