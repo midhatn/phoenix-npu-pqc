@@ -39,6 +39,8 @@ dist/
 audit/
 captures/
 results/
+# Timestamped reports written by scripts/validate_clean_clone.ps1.
+release-evidence/
 .DS_Store
 Thumbs.db
 

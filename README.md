@@ -68,6 +68,19 @@ python run_all_pqc_tests.py
 `run_all_silicon_tests.py` remains only as a compatibility entrypoint and
 forwards to the same host-safe suite. It never starts a hardware test.
 
+For a normal-user PowerShell 7 clean-clone audit with commit/status, tool,
+Python, and protected-evidence checks, run:
+
+```powershell
+pwsh -File .\scripts\validate_clean_clone.ps1
+```
+
+The script has no hardware switch and writes one timestamped report under the
+ignored `release-evidence/` directory. See the [publication readiness
+matrix](docs/PUBLICATION_READINESS.md) and [journal reproducibility
+checklist](docs/JOURNAL_REPRODUCIBILITY_CHECKLIST.md) for scope, retention,
+and release controls.
+
 Native-only physical gates and captured results are documented as evidence
 boundaries; they are not invoked by CI. See
 [CONTRIBUTING.md](CONTRIBUTING.md) before proposing any change that could

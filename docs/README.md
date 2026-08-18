@@ -41,6 +41,14 @@ claims, and filenames; they are not rewritten to imply a broader result.
 - [Windows setup](SETUP_WINDOWS.md) and [toolchain pin rationale](M2_TOOLCHAIN_PIN.md).
 - [Audit and remediation record](PQC_AUDIT_REMEDIATION_20260818.md) — current
   correction ledger, source references, boundaries, and remaining blockers.
+- [Publication readiness](PUBLICATION_READINESS.md) — claim/evidence matrix,
+  narrow DR2 boundaries, publication blockers, retention, and tag policy.
+- [Journal reproducibility checklist](JOURNAL_REPRODUCIBILITY_CHECKLIST.md) —
+  manuscript-ready clean-clone, evidence, negative-result, and citation
+  controls.
+- [`../scripts/validate_clean_clone.ps1`](../scripts/validate_clean_clone.ps1)
+  — normal-user PowerShell 7 host-safe audit. It has no hardware-dispatch
+  switch and verifies the protected DR2 evidence manifest.
 - [Historical pre-split citation audit](CITATION_AUDIT.md) — retained context
   only; not current setup or claim guidance.
 

@@ -42,7 +42,8 @@ jobs:
             tests/production_dependency_guard.py tests/test_install_pins.py \
             tests/test_pqc_dr1_contract.py tests/test_pqc_dr2a_contract.py \
             tests/test_pqc_dr2b_contract.py tests/test_pqc_dr2c_contract.py \
-            tests/test_pqc_dr2d_contract.py
+            tests/test_pqc_dr2d_contract.py \
+            tests/test_release_materials_contract.py
 
   validate-metadata:
     name: Validate metadata

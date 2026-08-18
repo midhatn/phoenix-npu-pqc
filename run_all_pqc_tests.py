@@ -35,6 +35,7 @@ HOST_SAFE_TESTS = (
     "tests/pqc_device_resident/test_dr2d_mlkem512_kpke_w0_token_tap_contract.py",
     "tests/pqc_device_resident/test_m33_product_dr0.py",
     "tests/test_install_pins.py",
+    "tests/test_release_materials_contract.py",
 )
 
 
