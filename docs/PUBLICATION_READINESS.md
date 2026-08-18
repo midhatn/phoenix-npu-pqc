@@ -22,7 +22,7 @@ contracts establish FIPS conformance.
 
 | Proposed claim | Supporting tracked evidence | Validated boundary | Not established |
 | --- | --- | --- | --- |
-| A current clone can run an explicit host-safe audit. | `scripts/validate_clean_clone.ps1`, `run_all_pqc_tests.py`, and CI host-safe tests. | Git/tool capture, Python compilation, allowlisted contract/reference checks, and manifest verification; no native toolchain or NPU is used. | Physical execution, AIE compilation, timing, or a new device result. |
+| A current Windows clone can provision and run host-safe validation in one command. | Extensionless `install`, root `run_all_silicon_tests.py` forwarder, `run_all_pqc_tests.py`, and CI host-safe tests. | Pinned NumPy check/install/verification and allowlisted contract/reference checks; no native toolchain or NPU is used. | Physical execution, AIE compilation, timing, or a new device result. |
 | Protected DR2 forensic evidence is intact. | `docs/pqc_dr2_evidence_20260818/SHA256SUMS` plus Git status/diff checks. | Manifest-covered file bytes and absence of a protected working-tree diff. | A new physical experiment or an interpretation beyond the dated records. |
 | DR2b is solved only for its narrow physical terminal-noise scope. | [DR2b physical record](PQC_DR2B_SILICON_VALIDATION_PENDING.md). | One ML-KEM-512 $\eta_1=3$ noise polynomial: SHAKE256 PRF, CBD3, then FIPS 203 NTT for the stated frozen requests. | Integrated K-PKE.KeyGen, full ML-KEM, residency beyond that terminal scope, or conformance. |
 | DR2c is solved only for its narrow physical terminal-KeyGen-row scope. | [DR2c physical record](PQC_DR2C_SILICON_VALIDATION_PENDING.md) and handoff. | The recorded 11/11 first and 22/22 repeated terminal-row result. | Integrated K-PKE.KeyGen, complete matrix/noise/keygen residency, or full ML-KEM. |
@@ -44,7 +44,21 @@ contracts establish FIPS conformance.
   resistance, secure zeroization as a certification claim, CMVP validation,
   or the research goal of 100% device residency.
 
-## Clean-drive protocol
+## Primary Windows clean-clone path
+
+From the root of a fresh Windows clone, run:
+
+```powershell
+py .\install
+```
+
+The extensionless launcher checks, conditionally installs, and verifies
+`numpy==2.5.2` using CPython 3.13 x64 on Windows, then automatically invokes the
+root `run_all_silicon_tests.py` compatibility forwarder. The forwarder is
+host-safe only: it does not compile AIE or dispatch hardware. This path
+requires no administrator rights, XRT, IRON, Visual Studio, or NPU.
+
+## Supplemental clean-drive audit
 
 1. Clone the intended revision into a new directory and record remote URL,
    `git rev-parse HEAD`, and status.
@@ -59,7 +73,7 @@ contracts establish FIPS conformance.
    `release-evidence/clean-clone/`.
 4. Retain that report, the source revision, `toolchain.yaml`, and the
    manifest-verification result with the release record.
-5. Do not add a hardware switch or use the clean-clone script to invoke a
+5. Do not add a hardware switch or use either clean-clone path to invoke a
    historical/native gate. Any future physical protocol requires separately
    reviewed operator, safety, toolchain, and evidence procedures.
 

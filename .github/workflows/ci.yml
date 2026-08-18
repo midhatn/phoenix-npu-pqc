@@ -27,19 +27,20 @@ jobs:
       # actions/setup-python v7.0.0
       - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
         with:
-          python-version: "3.12"
+          python-version: "3.13"
       - name: Install ruff
         run: python -m pip install ruff==0.16.3
       - name: Lint maintained Python
-        run: ruff check .
+        run: ruff check . install
       - name: Check Python formatting
         run: |
           ruff format --check \
-            install.py run_all_pqc_tests.py run_all_silicon_tests.py \
+            install install.py run_all_pqc_tests.py run_all_silicon_tests.py \
             phoenix_sdr_dsp/pqc/dr2d_mlkem512_kpke_keygen_graph.py \
             phoenix_sdr_dsp/pqc/dr2d_mlkem512_kpke_keygen_terminal_probe_graph.py \
             phoenix_sdr_dsp/pqc/dr2d_mlkem512_kpke_keygen_w0_token_tap_graph.py \
-            tests/production_dependency_guard.py tests/test_install_pins.py \
+            tests/production_dependency_guard.py tests/test_install_bootstrap.py \
+            tests/test_markdown_math_contract.py \
             tests/test_pqc_dr1_contract.py tests/test_pqc_dr2a_contract.py \
             tests/test_pqc_dr2b_contract.py tests/test_pqc_dr2c_contract.py \
             tests/test_pqc_dr2d_contract.py \
@@ -54,7 +55,7 @@ jobs:
       # actions/setup-python v7.0.0
       - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
         with:
-          python-version: "3.12"
+          python-version: "3.13"
       - name: Install validators
         run: python -m pip install cffconvert==2.0.0 PyYAML==6.0.3
       - name: Validate citation metadata
@@ -90,7 +91,7 @@ jobs:
       # actions/setup-python v7.0.0
       - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
         with:
-          python-version: "3.12"
+          python-version: "3.13"
       - name: Install host test dependency
         run: python -m pip install numpy==2.5.2
       - name: List host-safe test plan
@@ -98,7 +99,7 @@ jobs:
       - name: Run host-safe PQC suite
         run: python run_all_pqc_tests.py
       - name: Compile Python without execution
-        run: python -m compileall -q phoenix_sdr_dsp tests run_all_pqc_tests.py run_all_silicon_tests.py
+        run: python -m compileall -q phoenix_sdr_dsp tests install install.py run_all_pqc_tests.py run_all_silicon_tests.py
 
   evidence-integrity:
     name: Verify protected DR2 evidence

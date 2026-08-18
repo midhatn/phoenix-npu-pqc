@@ -68,18 +68,41 @@ identities are recorded in the [DR2 expert escalation](PQC_DR2_EXPERT_ESCALATION
 
 ## Host-safe procedure
 
-Run all commands from the repository root:
+From the root of a fresh Windows clone, the primary reproducibility path is:
 
-```bash
-python run_all_pqc_tests.py --help
-python run_all_pqc_tests.py --dry-run
-python run_all_pqc_tests.py
-python -m compileall -q phoenix_sdr_dsp tests run_all_pqc_tests.py run_all_silicon_tests.py
-git diff --check
+```powershell
+py .\install
 ```
 
-The test runner has an explicit allowlist of host-safe tests. It does not
-select `*_silicon.py` files and does not call a native runner.
+It requires CPython 3.13 x64 on Windows. It checks, conditionally obtains, and
+verifies `numpy==2.5.2` using the interpreter selected by `py`, then invokes root
+`run_all_silicon_tests.py`. That historical compatibility name forwards only
+to the explicit host-safe allowlist in `run_all_pqc_tests.py`; it does not
+select `*_silicon.py`, load a native runtime, compile an AIE program, or
+dispatch hardware. The path needs no administrator rights, XRT, IRON, Visual
+Studio, or NPU.
+
+When NumPy needs repair, `install` downloads only the hard-coded
+[`numpy-2.5.2-cp313-cp313-win_amd64.whl`](https://files.pythonhosted.org/packages/15/20/f3489f86d81ea460b2bcdceaed094142ca6579f6be0ec527b781d39afe68/numpy-2.5.2-cp313-cp313-win_amd64.whl),
+verifies 12,460,532 bytes and SHA-256
+`85aaccb24182c25df891ad0ec333585967e115269d5f1b17f2c9ae005bc96657`
+against the [official PyPI metadata](https://pypi.org/pypi/numpy/2.5.2/json),
+then uses `pip --no-index --no-deps` on the verified local cache file. It does
+not perform an uncontrolled package-index install. Optional `g++` enables
+additional host-reference checks; without it those checks are explicitly
+reported as skipped, while the host-safe Python and contract suite remains
+valid.
+
+For maintenance, use `py .\install --check-only`, `py .\install --no-tests`,
+or `py .\install --self-test`. For a release record beyond the one-command
+path, run the optional clean-clone audit and retain its report:
+
+```powershell
+pwsh -File .\scripts\validate_clean_clone.ps1 -InstallHostDependencies
+```
+
+`py .\install.py` remains only a compatibility shim for legacy callers and
+delegates to the extensionless launcher.
 
 ## Evidence integrity procedure
 

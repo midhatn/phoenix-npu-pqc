@@ -43,7 +43,15 @@ This project was validated on a native Windows environment targeting the AMD Pho
 
 ## Post-Quantum Cryptography (PQC) reference packages
 
-Auto-installed inside the `ironenv` by `install.py` for the M32 [FIPS 203](https://nvlpubs.nist.gov/nistpubs/fips/nist.fips.203.pdf) ML-KEM and M33 [FIPS 204](https://nvlpubs.nist.gov/nistpubs/fips/nist.fips.204.pdf) ML-DSA composer gates. Versions are pinned to the values validated on 2026-08-16 against the [NIST ACVP-Server](https://github.com/usnistgov/ACVP-Server) response vectors:
+Historically installed inside `ironenv` by the now-retired native installer
+implementation for the M32 [FIPS 203](https://nvlpubs.nist.gov/nistpubs/fips/nist.fips.203.pdf)
+ML-KEM and M33 [FIPS 204](https://nvlpubs.nist.gov/nistpubs/fips/nist.fips.203.pdf)
+ML-DSA composer gates. They are not installed by the current `py .\install`
+host bootstrap. The retained `install.py` is only a compatibility shim that
+delegates to the extensionless host bootstrap; it does not create `ironenv`.
+Versions are pinned to the values validated on 2026-08-16
+against the [NIST ACVP-Server](https://github.com/usnistgov/ACVP-Server)
+response vectors:
 
 | Component | Verified value | Upstream |
 |---|---|---|

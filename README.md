@@ -55,6 +55,41 @@ or production readiness.
 | [`toolchain.yaml`](toolchain.yaml) | Machine-readable Phoenix NPU PQC toolchain and historical-result metadata. |
 | [`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md) | License, dependency, vector, and transliteration provenance ledger. |
 
+## Windows clean clone: one command
+
+From the root of a fresh Windows clone, run the only setup command:
+
+```powershell
+py .\install
+```
+
+The extensionless, standard-library-only launcher requires **CPython 3.13
+x64 on Windows**. It checks pinned `numpy==2.5.2`, then, only if it is missing
+or mismatched, downloads the exact CPython 3.13 Windows x64 wheel to the
+ignored `.bootstrap-cache/`, verifies its byte length and SHA-256, and installs
+that local wheel with `--no-index`. It then verifies the import and
+automatically invokes the root `run_all_silicon_tests.py` compatibility
+forwarder. That forwarder runs only the explicit host-safe suite in
+`run_all_pqc_tests.py`.
+
+The pin is
+[`numpy-2.5.2-cp313-cp313-win_amd64.whl`](https://files.pythonhosted.org/packages/15/20/f3489f86d81ea460b2bcdceaed094142ca6579f6be0ec527b781d39afe68/numpy-2.5.2-cp313-cp313-win_amd64.whl),
+12,460,532 bytes, SHA-256
+`85aaccb24182c25df891ad0ec333585967e115269d5f1b17f2c9ae005bc96657`,
+from the [official PyPI 2.5.2 metadata](https://pypi.org/pypi/numpy/2.5.2/json).
+
+This clean-clone route requires no administrator rights, XRT, IRON, Visual
+Studio, AIE compiler, or NPU. It never compiles an AIE program or dispatches
+hardware. Maintenance options are `py .\install --check-only`,
+`py .\install --no-tests`, and `py .\install --self-test`.
+`py .\install.py` remains a compatibility shim only; new instructions must
+use the extensionless command.
+
+`g++` is optional. When it is on `PATH`, applicable native C++ **host-reference**
+checks run as part of the host-safe suite. Without it, those checks are
+reported as skipped while Python and contract coverage still run. It is not an
+NPU, AIE, XRT, IRON, or Visual Studio requirement.
+
 ## Host-safe validation
 
 The repository CI and default local validation are host-only. They do not
@@ -68,18 +103,19 @@ python run_all_pqc_tests.py
 `run_all_silicon_tests.py` remains only as a compatibility entrypoint and
 forwards to the same host-safe suite. It never starts a hardware test.
 
-For a normal-user PowerShell 7 clean-clone audit with commit/status, tool,
-Python, and protected-evidence checks, run:
+For an additional normal-user PowerShell 7 release audit with commit/status,
+tool, Python, and protected-evidence checks, run:
 
 ```powershell
 pwsh -File .\scripts\validate_clean_clone.ps1 `
     -InstallHostDependencies
 ```
 
-The explicit switch installs and verifies pinned `numpy==2.5.2`. Without it,
-a missing or mismatched NumPy version causes an actionable refusal. The script
-still has no hardware switch and writes one timestamped report under the
-ignored `release-evidence/` directory. See the [publication readiness
+The explicit switch delegates to `py .\install --no-tests`, preserving its
+integrity-pinned local-wheel installation rather than using an index install.
+The script is an optional audit rather than the clean-clone setup path; it
+still has no hardware switch and writes one timestamped report under the ignored
+`release-evidence/` directory. See the [publication readiness
 matrix](docs/PUBLICATION_READINESS.md) and [journal reproducibility
 checklist](docs/JOURNAL_REPRODUCIBILITY_CHECKLIST.md) for scope, retention,
 and release controls.

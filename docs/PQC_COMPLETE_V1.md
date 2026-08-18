@@ -49,7 +49,7 @@ The corrected matrix completed **34/34 PASS** in **126.29 seconds** on 2026-08-1
 On a Phoenix/Hawk Point XDNA1 system with the pinned Windows toolchain:
 
 ```powershell
-py .\install.py
+py .\install
 py .\run_all_silicon_tests.py
 ```
 

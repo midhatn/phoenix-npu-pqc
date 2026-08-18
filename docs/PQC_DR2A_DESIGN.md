@@ -11,8 +11,8 @@ KeyGen graph, not a claim that DR2 KeyGen itself is complete.
 `DR2A_MLKEM512_SAMPLENTT` returns one ML-KEM-512 matrix polynomial:
 
 $$
-\hat A[i][j] = \operatorname{SampleNTT}(
-  \operatorname{SHAKE128}(\rho\mathbin\Vert j\mathbin\Vert i)).
+\hat A[i][j] = \mathrm{SampleNTT}(
+  \mathrm{SHAKE128}(\rho\mathbin\Vert j\mathbin\Vert i)).
 $$
 
 `j` is the column byte and `i` is the row byte.  Both are restricted to

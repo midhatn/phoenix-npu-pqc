@@ -19,6 +19,13 @@ about physical evidence. A checked item means the cited material was retained.
 
 ## Hashes, protected evidence, and clean clone
 
+- [ ] From the root of a clean Windows clone, run `py .\install` and retain
+  its host-safe suite output. The extensionless launcher checks, conditionally
+  verifies the CPython 3.13 x64 integrity-pinned `numpy==2.5.2` wheel with the
+  current interpreter,
+  then invokes root `run_all_silicon_tests.py`, the host-safe compatibility
+  forwarder. It requires no administrator rights, XRT, IRON, Visual Studio,
+  or NPU and cannot compile AIE or dispatch hardware.
 - [ ] Run
   `pwsh -File .\scripts\validate_clean_clone.ps1 -InstallHostDependencies`
   from a clean-drive clone and retain its one timestamped report. The switch
@@ -30,8 +37,8 @@ about physical evidence. A checked item means the cited material was retained.
   Git diff.
 - [ ] Preserve `docs/pqc_dr2_evidence_20260818/**` and its `SHA256SUMS`
   byte-for-byte; never overwrite a historical log or script to “refresh” it.
-- [ ] State that the default audit is host-safe and has no hardware-dispatch
-  switch.
+- [ ] State that the default bootstrap and supplemental audit are host-safe
+  and have no hardware-dispatch switch.
 
 ## Host checks and physical-run safety
 

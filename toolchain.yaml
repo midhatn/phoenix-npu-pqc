@@ -28,8 +28,9 @@ host:
   os_verified_build: "25H2 (26200)"
   arch: x86_64
   python:
-    min: "3.10"
-    max_exclusive: "3.14"
+    required_implementation: "CPython"
+    required_version: "3.13"
+    required_architecture: "x86_64"
     verified: "3.13.15"
 
 drivers:
@@ -82,7 +83,15 @@ verification:
     integrated_dr2: "Blocked pending independently checked physical evidence and explicit closure."
 
 bootstrap:
-  script: "install.py"
+  script: "install"
+  windows_clean_clone: "py .\\install"
+  compatibility_shim: "install.py (delegates only to install)"
+  dependency: "numpy==2.5.2 cp313-cp313-win_amd64 wheel"
+  wheel_url: "https://files.pythonhosted.org/packages/15/20/f3489f86d81ea460b2bcdceaed094142ca6579f6be0ec527b781d39afe68/numpy-2.5.2-cp313-cp313-win_amd64.whl"
+  wheel_bytes: 12460532
+  wheel_sha256: "85aaccb24182c25df891ad0ec333585967e115269d5f1b17f2c9ae005bc96657"
+  wheel_metadata_source: "https://pypi.org/pypi/numpy/2.5.2/json"
+  scope: "CPython 3.13 x64 Windows host bootstrap only; no XRT, IRON, Visual Studio, AIE compilation, or NPU dispatch."
   guide: "docs/SETUP_WINDOWS.md"
-  full_regression: "python run_all_pqc_tests.py"
+  full_regression: "py .\\install"
   evidence_check: "(cd docs/pqc_dr2_evidence_20260818 && sha256sum -c SHA256SUMS)"

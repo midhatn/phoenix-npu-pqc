@@ -29,7 +29,7 @@ The historical claim boundary is unchanged:
   DR2 cache/hash anchors, failure chronology, and continuation questions.
 - Rewrote current metadata and contributor-facing configuration for
   `phoenix-npu-pqc`: `CITATION.cff`, `CONTRIBUTING.md`, `SECURITY.md`,
-  `toolchain.yaml`, `install.py`, issue forms, pull-request template,
+  `toolchain.yaml`, the then-current native `install.py`, issue forms, pull-request template,
   Dependabot comment, Markdown-link configuration, and CI.
 - Added `run_all_pqc_tests.py`, an explicit eight-module host-safe allowlist
   with `--help`, `--list`, and `--dry-run`. `run_all_silicon_tests.py` is now
@@ -65,7 +65,7 @@ was compiled, and no physical hardware command was invoked.
 | `python run_all_pqc_tests.py --dry-run` | PASS; eight explicit host-safe modules listed |
 | `python run_all_silicon_tests.py --dry-run` | PASS; forwards to the same host-safe plan |
 | `python run_all_pqc_tests.py` | PASS; 8/8 modules passed; 78 tests ran with one documented Windows-IRON-environment skip and no failures |
-| `python -m compileall -q phoenix_sdr_dsp tests run_all_pqc_tests.py run_all_silicon_tests.py install.py` | PASS |
+| `python -m compileall -q phoenix_sdr_dsp tests run_all_pqc_tests.py run_all_silicon_tests.py install install.py` | PASS |
 | Python AST, YAML, JSON, citation-field, toolchain, CI host-only, and import-compatibility checks | PASS |
 | Local Markdown-link check over all retained Markdown files | PASS |
 | `(cd docs/pqc_dr2_evidence_20260818 && sha256sum -c SHA256SUMS)` | PASS; every manifest entry verified |

@@ -6,7 +6,7 @@ claims, and filenames; they are not rewritten to imply a broader result.
 
 ## Start here
 
-- [Repository overview](../README.md) — scope, research status, host-safe validation, and compatibility policy.
+- [Repository overview](../README.md) — scope, research status, the one-command `py .\install` host-safe path, and compatibility policy.
 - [Repository split record](REPOSITORY_SPLIT_20260818.md) — history-preserving migration from `phoenix-sdr-dsp`.
 - [Repository build report](REPOSITORY_BUILD_REPORT_20260818.md) — implementation scope, restored evidence integrity, and host-only verification results.
 - [PQC roadmap](PQC_ROADMAP.md) — program-level status and claim boundaries.
@@ -38,7 +38,7 @@ claims, and filenames; they are not rewritten to imply a broader result.
 
 ## Environment, maintenance, and citations
 
-- [Windows setup](SETUP_WINDOWS.md) and [toolchain pin rationale](M2_TOOLCHAIN_PIN.md).
+- [Windows setup](SETUP_WINDOWS.md) — primary `py .\install` clean-clone path and explicit no-hardware boundary — and [toolchain pin rationale](M2_TOOLCHAIN_PIN.md).
 - [Audit and remediation record](PQC_AUDIT_REMEDIATION_20260818.md) — current
   correction ledger, source references, boundaries, and remaining blockers.
 - [Publication readiness](PUBLICATION_READINESS.md) — claim/evidence matrix,

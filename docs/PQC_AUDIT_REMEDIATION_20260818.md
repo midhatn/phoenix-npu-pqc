@@ -24,7 +24,7 @@ rewritten.
 | FIPS 202 | SHA3-* and SHAKE* are defined by equations in FIPS 202 §§6.1–6.3; use section references for those functions. KECCAK-p and its step mappings have algorithm identifiers. | https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.202.pdf |
 | ML-KEM transforms | FIPS 203 NTT and NTT⁻¹ are Algorithms 9 and 10; `MultiplyNTTs` and `BaseCaseMultiply` are Algorithms 11 and 12. | https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.203.pdf |
 | SampleNTT | FIPS 203 `SampleNTT` is Algorithm 7. A three-byte group yields two 12-bit candidates. With $p=3329/4096$, the expected number of groups to accept 256 coefficients is $256/(2p)\approx157.49$, or about 472.47 bytes. | https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.203.pdf |
-| 840-byte model | 840 bytes provide 280 groups / 560 candidates. Under the independent-candidate binomial model, $\Pr[\operatorname{Bin}(560,3329/4096)<256]\approx2^{-261.24}$. This describes a fixed implementation cap; it is not an unbounded-sampler or conformance claim. | https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.203.pdf |
+| 840-byte model | 840 bytes provide 280 groups / 560 candidates. Under the independent-candidate binomial model, $\Pr[\mathrm{Bin}(560,3329/4096)<256]\approx2^{-261.24}$. This describes a fixed implementation cap; it is not an unbounded-sampler or conformance claim. | https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.203.pdf |
 | ML-KEM layers | K-PKE.KeyGen/Encrypt/Decrypt are Algorithms 13–15; ML-KEM internal interfaces are Algorithms 16–18; external ML-KEM operations are Algorithms 19–21. | https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.203.pdf |
 | ML-DSA interfaces | ML-DSA.KeyGen/Sign/Verify are Algorithms 1–3; internal interfaces are Algorithms 6–8; NTT/NTT⁻¹/BitRev8 are Algorithms 41–43. | https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.204.pdf |
 | Phoenix topology | Phoenix/Hawk Point has five columns by four compute-tile rows (a 4×5 topology) and six concurrent workload contexts. The text uses “five columns × four rows” to prevent orientation ambiguity. | https://docs.kernel.org/accel/amdxdna/amdnpu.html |
@@ -56,7 +56,7 @@ accepting an incomplete polynomial.
    DR1/DR2 contract modules, DR2d W0 pin behavior, M33 native-runner contracts,
    DR0 host contracts, and installer pin-parser regression test. Native
    `*_silicon.py` files remain excluded.
-6. **Toolchain parsing.** `install.py` now reads nested
+6. **Historical toolchain parsing.** The former native `install.py` read nested
    `toolchain.xrt.sdk_*`, `toolchain.mlir_aie.*`, driver, and Python fields
    rather than silently relying on duplicated fallback values. This does not
    make the package installation hash-locked; that remains a release blocker.
@@ -83,7 +83,7 @@ accepting an incomplete polynomial.
     `actions/checkout` v7.0.1, `actions/setup-python` v7.0.0, and
     `github-action-markdown-link-check` v1.0.17. CI package installs are pinned
     to `ruff==0.16.3`, `cffconvert==2.0.0`, `PyYAML==6.0.3`, and
-    `numpy==2.5.2`; the historical installer now specifies `pytest==9.1.1`.
+    `numpy==2.5.2`; the historical installer specified `pytest==9.1.1`.
     These are version pins, not hash-locked dependency resolution. Hash locks,
     transitive dependency capture, and platform-specific wheel provenance
     remain deferred release work.
@@ -132,7 +132,7 @@ The intended non-hardware validation set is:
 ```bash
 python run_all_pqc_tests.py --dry-run
 python run_all_pqc_tests.py
-python -m compileall -q phoenix_sdr_dsp tests tools install.py run_all_pqc_tests.py run_all_silicon_tests.py
+python -m compileall -q phoenix_sdr_dsp tests tools install install.py run_all_pqc_tests.py run_all_silicon_tests.py
 ruff check .
 ruff format --check .
 cffconvert --validate

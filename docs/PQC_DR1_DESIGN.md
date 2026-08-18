@@ -10,7 +10,7 @@ compiler-reported sizes, incident history, and claim boundary.
 request:
 
 $$
-\hat A[i][j] = \operatorname{RejNTTPoly}(\operatorname{SHAKE128}(\rho\mathbin\Vert[j]\mathbin\Vert[i]))
+\hat A[i][j] = \mathrm{RejNTTPoly}(\mathrm{SHAKE128}(\rho\mathbin\Vert[j]\mathbin\Vert[i]))
 $$
 
 where `j` is the column byte and `i` is the row byte, each in `0..3`.  This is

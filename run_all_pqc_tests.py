@@ -10,6 +10,7 @@ Physical gates remain separately documented research evidence.
 from __future__ import annotations
 
 import argparse
+import shutil
 import subprocess
 import sys
 import time
@@ -34,7 +35,8 @@ HOST_SAFE_TESTS = (
     "tests/pqc_device_resident/test_dr2d_mlkem512_kpke_sigma_prf_tap_contract.py",
     "tests/pqc_device_resident/test_dr2d_mlkem512_kpke_w0_token_tap_contract.py",
     "tests/pqc_device_resident/test_m33_product_dr0.py",
-    "tests/test_install_pins.py",
+    "tests/test_install_bootstrap.py",
+    "tests/test_markdown_math_contract.py",
     "tests/test_release_materials_contract.py",
 )
 
@@ -84,6 +86,20 @@ def print_plan(paths: tuple[Path, ...]) -> None:
     print(f"Total: {len(paths)} test modules")
 
 
+def print_optional_host_reference_coverage() -> None:
+    """Describe optional g++ checks without making them a bootstrap requirement."""
+    compiler = shutil.which("g++")
+    if compiler:
+        print(
+            f"Optional native host-reference coverage: available (g++ at {compiler})."
+        )
+    else:
+        print(
+            "Optional native host-reference coverage: unavailable (g++ not found); "
+            "C++ host-reference checks are skipped."
+        )
+
+
 def run_test(path: Path) -> tuple[bool, float]:
     relative = path.relative_to(REPO_ROOT)
     print(f"\n=== {relative} ===")
@@ -109,10 +125,12 @@ def main() -> int:
 
     if args.list or args.dry_run:
         print_plan(paths)
+        print_optional_host_reference_coverage()
         return 0
 
     print("Phoenix NPU PQC host-safe validation")
     print("Hardware access: disabled")
+    print_optional_host_reference_coverage()
     results = [(path, *run_test(path)) for path in paths]
     failures = [path for path, passed, _ in results if not passed]
 
@@ -123,6 +141,7 @@ def main() -> int:
     print(
         f"Modules: {len(results)} | Passed: {len(results) - len(failures)} | Failed: {len(failures)}"
     )
+    print_optional_host_reference_coverage()
     return 0 if not failures else 1
 
 

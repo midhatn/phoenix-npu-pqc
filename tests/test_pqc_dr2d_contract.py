@@ -9,6 +9,7 @@ import json
 import re
 import struct
 import subprocess
+import sys
 import unittest
 from pathlib import Path
 
@@ -695,7 +696,7 @@ class DR2dDeviceResidencyContractTests(unittest.TestCase):
         self.assertIn("return 2", gate)
         subprocess.run(
             [
-                "python",
+                sys.executable,
                 str(EXTRACTOR),
                 "--prompt",
                 str(PROVENANCE / "prompt.json"),

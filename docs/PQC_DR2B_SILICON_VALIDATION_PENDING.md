@@ -13,9 +13,9 @@ SHAKE256 PRF from `sigma || counter`, then CBD3, then FIPS 203 NTT. The only
 host-visible successful value is the final 256-lane NTT polynomial.
 
 $$
-\widehat f=\operatorname{NTT}\left(
-\operatorname{SamplePolyCBD}_3\left(
-\operatorname{SHAKE256}(\sigma\mathbin\Vert b,1536)
+\widehat f=\mathrm{NTT}\left(
+\mathrm{SamplePolyCBD}_3\left(
+\mathrm{SHAKE256}(\sigma\mathbin\Vert b,1536)
 \right)\right).
 $$
 

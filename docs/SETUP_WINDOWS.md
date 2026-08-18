@@ -25,33 +25,48 @@ Set-Location C:\phoenix-npu-pqc
 The retained import package is intentionally named `phoenix_sdr_dsp` for
 compatibility; it is not the repository identity.
 
-## Host-safe prerequisites
+## Clean clone: one command
 
-Use a supported CPython interpreter and install the only dependency used by the
-default host-safe suite:
-
-```powershell
-python -m pip install numpy
-```
-
-The default suite uses the standard-library `unittest` runner. Optional
-historical M32/M33 composer utilities require separately pinned dependencies
-recorded in `requirements/toolchain-versions.md`; they are not part of the
-default validation gate.
-
-## Validate the checkout
-
-Run these commands from the repository root:
+With the Windows Python launcher available, the complete default setup and
+validation path is one command from the repository root:
 
 ```powershell
-python run_all_pqc_tests.py --dry-run
-python run_all_pqc_tests.py
-python -m compileall -q phoenix_sdr_dsp tests tools install.py run_all_pqc_tests.py run_all_silicon_tests.py
+py .\install
 ```
 
-`run_all_silicon_tests.py` is a compatibility alias that forwards to the same
-host-safe suite. It does not load an NPU runtime, compile an AIE program, or
-dispatch hardware.
+The extensionless stdlib-only launcher requires **CPython 3.13 x64 on
+Windows**, matching the repository's cp313 toolchain record. It checks
+`numpy==2.5.2`; only if the dependency is absent or mismatched, it downloads
+the exact `numpy-2.5.2-cp313-cp313-win_amd64.whl` to the ignored
+`.bootstrap-cache/`, verifies its 12,460,532-byte length and SHA-256
+`85aaccb24182c25df891ad0ec333585967e115269d5f1b17f2c9ae005bc96657`, then
+installs that verified local file with `pip --no-index --no-deps`. The official
+pin source is the [PyPI NumPy 2.5.2 JSON record](https://pypi.org/pypi/numpy/2.5.2/json);
+the exact [wheel URL](https://files.pythonhosted.org/packages/15/20/f3489f86d81ea460b2bcdceaed094142ca6579f6be0ec527b781d39afe68/numpy-2.5.2-cp313-cp313-win_amd64.whl)
+is hard-coded in `install`. It then verifies the installed import and
+automatically invokes the root `run_all_silicon_tests.py` compatibility
+forwarder.
+
+Despite its historical name, `run_all_silicon_tests.py` forwards only to
+`run_all_pqc_tests.py`, the explicit host-safe suite. Neither the launcher nor
+either runner loads an NPU runtime, compiles an AIE program, probes a device,
+or dispatches hardware. No administrator rights, XRT, IRON, Visual Studio, or
+NPU are required.
+
+For maintenance, use `py .\install --check-only` to inspect the exact
+dependency without modifying it, `py .\install --no-tests` to provision and
+verify without running tests, or `py .\install --self-test` to check the local
+forwarder handoff without provisioning.
+`py .\install.py` is retained solely as a compatibility shim; use the
+extensionless command in all current instructions.
+
+The default suite uses the standard-library `unittest` runner. It reports
+whether optional `g++` C++ host-reference coverage is available. If `g++` is
+not on `PATH`, only those native host-reference checks are skipped; Python and
+contract coverage still pass. `g++` is optional and does not add any native
+NPU tooling requirement. Historical M32/M33 composer utilities have separately
+recorded dependencies in `requirements/toolchain-versions.md`; they are not
+part of this path.
 
 ## Verify protected evidence without modifying it
 

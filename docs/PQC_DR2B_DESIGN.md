@@ -10,8 +10,8 @@ uses counters 0, 1 for the secret vector and 2, 3 for the error vector.  One
 DR2b request computes exactly one of these four components:
 
 $$
- \hat f = \operatorname{NTT}(\operatorname{SamplePolyCBD}_3(
- \operatorname{SHAKE256}(\sigma\mathbin\Vert b, 1536\ \mathrm{bits}))).
+ \hat f = \mathrm{NTT}(\mathrm{SamplePolyCBD}_3(
+ \mathrm{SHAKE256}(\sigma\mathbin\Vert b, 1536\ \mathrm{bits}))).
 $$
 
 Here `sigma` is exactly 32 bytes and the public counter `b` is strictly in

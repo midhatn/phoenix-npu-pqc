@@ -14,7 +14,6 @@ $stamp = Get-Date -Format "yyyyMMdd-HHmmss"
 $report = Join-Path $evidenceDirectory "pqc-clean-clone-$stamp.txt"
 $protectedRelative = "docs/pqc_dr2_evidence_20260818"
 $manifestRelative = "$protectedRelative/SHA256SUMS"
-$requiredNumpyVersion = "2.5.2"
 
 function Write-Report {
     param([string]$Message)
@@ -56,30 +55,22 @@ function Test-HostDependencies {
         [switch]$Install
     )
 
-    $versionCheck = @(
-        "-c",
-        "import numpy; assert numpy.__version__ == '$requiredNumpyVersion', numpy.__version__"
-    )
-    & $PythonCommand @versionCheck 2>&1 |
-        ForEach-Object { Write-Report "$_" }
-    if ($LASTEXITCODE -eq 0) {
-        Write-Report "Pinned host dependency: numpy==$requiredNumpyVersion (PASS)"
+    if ($Install) {
+        Invoke-Checked "Provision pinned dependency with the integrity-checked bootstrap" `
+            $PythonCommand @("install", "--no-tests")
         return
     }
 
-    if (-not $Install) {
+    & $PythonCommand @("install", "--check-only") 2>&1 |
+        ForEach-Object { Write-Report "$_" }
+    if ($LASTEXITCODE -ne 0) {
         throw (
-            "Pinned host dependency numpy==$requiredNumpyVersion is missing or has " +
-            "a different version. Re-run with -InstallHostDependencies, or install " +
-            "it explicitly with: $PythonCommand -m pip install --upgrade " +
-            "numpy==$requiredNumpyVersion"
+            "Pinned NumPy is absent or mismatched. Re-run with " +
+            "-InstallHostDependencies, which delegates only to py .\install " +
+            "--no-tests and its pinned local-wheel verification."
         )
     }
-
-    Invoke-Checked "Install pinned host dependency" $PythonCommand @(
-        "-m", "pip", "install", "--upgrade", "numpy==$requiredNumpyVersion"
-    )
-    Invoke-Checked "Verify pinned host dependency" $PythonCommand $versionCheck
+    Write-Report "Pinned host dependency verified by the integrity-checked bootstrap."
 }
 
 function Test-Sha256Manifest {
@@ -147,7 +138,7 @@ try {
     Invoke-Checked "List host-safe test plan" $pythonCommand @("run_all_pqc_tests.py", "--dry-run")
     Invoke-Checked "Compile maintained Python" $pythonCommand @(
         "-m", "compileall", "-q", "phoenix_sdr_dsp", "tests", "tools",
-        "install.py", "run_all_pqc_tests.py", "run_all_silicon_tests.py"
+        "install", "install.py", "run_all_pqc_tests.py", "run_all_silicon_tests.py"
     )
     Invoke-Checked "Run host-safe PQC suite" $pythonCommand @("run_all_pqc_tests.py")
 
