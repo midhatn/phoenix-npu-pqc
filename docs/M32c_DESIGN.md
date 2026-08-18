@@ -95,7 +95,7 @@ where `B[·]` indexes the bit stream in little-endian byte-bit order (LSB-first 
 
 ### 3.1 Single-tile placement
 
-The full M32c stack fits on **one AIE2 compute tile** on the Phoenix NPU 4×5 array ([Kernel.org AMD XDNA driver docs](https://docs.kernel.org/accel/amdxdna/amd_shim.html)). We follow the M27 topology lesson: AIE2 compute tiles have 2 input DMA channels + 2 output DMA channels; overrunning 2 in + 1 out breaks placement, so M32c uses exactly:
+The full M32c stack fits on **one AIE2 compute tile** on the Phoenix NPU 4×5 array ([Linux kernel AMD NPU documentation](https://docs.kernel.org/accel/amdxdna/amdnpu.html)). We follow the M27 topology lesson: AIE2 compute tiles have 2 input DMA channels + 2 output DMA channels; overrunning 2 in + 1 out breaks placement, so M32c uses exactly:
 
 - `in_bytes`  — u8 buffer, absorbed message + trailing domain-separation control block
 - `in_ctrl`   — u8 control block: `{mode, in_len_lo, in_len_hi, out_len_lo, out_len_hi, eta, ntt_flag, seed_j, seed_i}` (9 bytes zero-padded to 16)

@@ -72,10 +72,13 @@ was compiled, and no physical hardware command was invoked.
 | `git diff --check` | PASS |
 | Placeholder scan of current docs/configuration | PASS; no unfinished-work marker found |
 
-## Deliberate non-actions
+## Publication and deliberate non-actions
 
-- No commit, push, tag, release, hardware authorization, native dispatch,
-  cache deletion, driver update, or historical-script execution occurred.
+- The history-preserving repository split was committed and pushed to the
+  private `midhatn/phoenix-npu-pqc` GitHub repository. No release or new tag
+  was created.
+- No hardware authorization, native dispatch, cache deletion, driver update,
+  or historical-script execution occurred.
 - The checksum manifest and retained evidence contents were not rewritten.
 - No result in this report changes the DR2d physical outcome or expands a
   residency, correctness, conformance, security, or production claim.

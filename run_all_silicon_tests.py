@@ -6,10 +6,7 @@ forwards only to the explicit host-safe suite in ``run_all_pqc_tests.py``.
 Native-only physical gates are retained as evidence and are not invoked here.
 """
 
-from __future__ import annotations
-
 from run_all_pqc_tests import main
-
 
 if __name__ == "__main__":
     raise SystemExit(main())

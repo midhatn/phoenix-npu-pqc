@@ -54,11 +54,15 @@ def validate_allowlist() -> tuple[Path, ...]:
     missing = [path.relative_to(REPO_ROOT) for path in paths if not path.is_file()]
     if missing:
         joined = ", ".join(str(path) for path in missing)
-        raise RuntimeError(f"host-safe test allowlist references missing files: {joined}")
+        raise RuntimeError(
+            f"host-safe test allowlist references missing files: {joined}"
+        )
     forbidden = [path for path in paths if path.name.endswith("_silicon.py")]
     if forbidden:
         joined = ", ".join(str(path.relative_to(REPO_ROOT)) for path in forbidden)
-        raise RuntimeError(f"host-safe test allowlist includes native gate(s): {joined}")
+        raise RuntimeError(
+            f"host-safe test allowlist includes native gate(s): {joined}"
+        )
     return paths
 
 
@@ -106,7 +110,9 @@ def main() -> int:
     for path, passed, elapsed in results:
         state = "PASS" if passed else "FAIL"
         print(f"{state:4} {path.relative_to(REPO_ROOT)} ({elapsed:.2f}s)")
-    print(f"Modules: {len(results)} | Passed: {len(results) - len(failures)} | Failed: {len(failures)}")
+    print(
+        f"Modules: {len(results)} | Passed: {len(results) - len(failures)} | Failed: {len(failures)}"
+    )
     return 0 if not failures else 1
 
 

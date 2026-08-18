@@ -2,7 +2,10 @@
   "ignorePatterns": [
     { "pattern": "^http://localhost" },
     { "pattern": "^#" },
-    { "pattern": "^C:\\\\" }
+    { "pattern": "^C:\\\\" },
+    {
+      "pattern": "^https://github\\.com/midhatn/phoenix-npu-pqc/actions/"
+    }
   ],
   "replacementPatterns": [],
   "httpHeaders": [],

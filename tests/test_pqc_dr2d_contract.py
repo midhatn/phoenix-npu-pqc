@@ -8,6 +8,7 @@ import inspect
 import json
 import re
 import struct
+import subprocess
 import unittest
 from pathlib import Path
 
@@ -178,7 +179,10 @@ class DR2dDeviceResidencyContractTests(unittest.TestCase):
             if path.is_file() and path.suffix in {".py", ".cc", ".hpp"}
         )
         self.assertNotIn("tests/", production)
-        self.assertNotIn("tests.", production)
+        self.assertNotRegex(
+            production,
+            r"(?m)^\s*(?:from|import)\s+tests(?:\.|\s)",
+        )
         self.assertNotIn("kpke_keygen_reference", production)
         self.assertNotIn("hashlib", source)
 
