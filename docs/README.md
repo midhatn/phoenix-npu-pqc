@@ -29,6 +29,7 @@ claims, and filenames; they are not rewritten to imply a broader result.
 - [DR2c design](PQC_DR2C_DESIGN.md), [handoff](PQC_DR2C_MLKEM512_KEYGEN_ROW_HANDOFF_20260817.md), and [physical validation record](PQC_DR2C_SILICON_VALIDATION_PENDING.md).
 - [DR2d design](PQC_DR2D_DESIGN.md), [physical validation record (25/25 PASS)](PQC_DR2D_SILICON_VALIDATION_20260828.md), and [ELF audit](PQC_DR2D_FULLWORD_PRODUCTION_ELF_AUDIT_20260818.md).
 - [DR3 design](PQC_DR3_DESIGN.md) and [physical validation record (25/25 PASS)](PQC_DR3_SILICON_VALIDATION_20260828.md) — 100% on-device ML-KEM-512 `K-PKE.Encrypt`.
+- [DR4 design](PQC_DR4_DESIGN.md) and [physical validation record (25/25 PASS)](PQC_DR4_SILICON_VALIDATION_20260828.md) — 100% on-device ML-KEM-512 `K-PKE.Decrypt`.
 
 ## DR2d provenance and protected evidence
 

@@ -27,17 +27,17 @@ build/provenance, and a separately recorded physical exact-output gate.
 | **DR2c** | One terminal ML-KEM-512 K-PKE.KeyGen `t_hat` row. | Physical silicon PASS: 11/11. | Row accumulation on-device. |
 | **DR2d** | Complete ML-KEM-512 K-PKE.KeyGen 6-worker dataflow graph on AIE2 array. | **Physical silicon PASS: 25/25 ACVP.** | Closes DR2. Zero host offloading. |
 | **DR3** | Complete device-resident ML-KEM-512 `K-PKE.Encrypt` 5-worker graph on AIE2 array. | **Physical silicon PASS: 25/25 ACVP.** | Closes DR3. Zero host offloading. |
-| **DR4** | Complete device-resident ML-KEM-512 `K-PKE.Decrypt` on AIE2 array. | **Next active milestone.** | Requires full decryption corpus and physical validation. |
-| **DR5** | Complete device-resident ML-KEM-512 `ML-KEM.KeyGen` (FIPS 203 Algorithm 15 / $d, z$). | **Sequenced.** | Includes $G = \text{SHA3-512}(d \parallel 0x02)$ on NPU. |
+| **DR4** | Complete device-resident ML-KEM-512 `K-PKE.Decrypt` 2-worker graph on AIE2 array. | **Physical silicon PASS: 25/25 ACVP.** | Closes DR4. Zero host offloading. |
+| **DR5** | Complete device-resident ML-KEM-512 `ML-KEM.KeyGen` (FIPS 203 Algorithm 15 / $d, z$). | **Next active milestone.** | Includes $G = \text{SHA3-512}(d \parallel 0x02)$ and keypair packing on NPU. |
 | **DR6** | Complete device-resident ML-KEM-512 `ML-KEM.Encaps` (FIPS 203 Algorithm 16). | **Sequenced.** | Includes $H = \text{SHA3-256}(m)$, $G(m \parallel H(ek))$, $K = J(z \parallel c)$. |
 | **DR7** | Complete device-resident ML-KEM-512 `ML-KEM.Decaps` (FIPS 203 Algorithm 17). | **Sequenced.** | Full CCA-secure decapsulation on NPU. |
 | **DR8–DR15** | Full FIPS 203 parameter sets (768/1024), FIPS 202 service, and FIPS 204 ML-DSA. | **Sequenced.** | Primary 100% PQC on NPU closure. |
 
 ## Current state
 
-1. All 7 initial DR gates (DR0, DR1, DR2a, DR2b, DR2c, DR2d, DR3) totaling 144 cases pass on physical AMD Phoenix NPU silicon.
-2. DR3 is fully closed with 25/25 ACVP passes on physical hardware.
-3. The next active research target is DR4 (ML-KEM-512 `K-PKE.Decrypt`).
+1. All 8 initial DR gates (DR0, DR1, DR2a, DR2b, DR2c, DR2d, DR3, DR4) totaling 169 cases (145 cases in automated suite) pass on physical AMD Phoenix NPU silicon.
+2. DR4 is fully closed with 25/25 ACVP passes on physical hardware.
+3. The next active research target is DR5 (ML-KEM-512 `ML-KEM.KeyGen`).
 
 ## Claim boundaries
 
