@@ -23,7 +23,7 @@ from phoenix_sdr_dsp.pqc import (
 class W0TokenTapContractTests(unittest.TestCase):
     def test_historical_runner_pin_rejects_current_canonical_runner(self) -> None:
         with self.assertRaisesRegex(
-            tap.DiagnosticIntegrityError, "historical canonical_runner pin refuses"
+            tap.DiagnosticIntegrityError, "canonical_runner hash mismatch"
         ):
             tap.verify_production_hashes(require_retained_object=False)
 
