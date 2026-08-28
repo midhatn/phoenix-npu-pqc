@@ -31,6 +31,7 @@ claims, and filenames; they are not rewritten to imply a broader result.
 - [DR3 design](PQC_DR3_DESIGN.md) and [physical validation record (25/25 PASS)](PQC_DR3_SILICON_VALIDATION_20260828.md) — 100% on-device ML-KEM-512 `K-PKE.Encrypt`.
 - [DR4 design](PQC_DR4_DESIGN.md) and [physical validation record (25/25 PASS)](PQC_DR4_SILICON_VALIDATION_20260828.md) — 100% on-device ML-KEM-512 `K-PKE.Decrypt`.
 - [DR5 design](PQC_DR5_DESIGN.md) and [physical validation record (25/25 PASS)](PQC_DR5_SILICON_VALIDATION_20260828.md) — 100% on-device ML-KEM-512 `ML-KEM.KeyGen`.
+- [DR6 design](PQC_DR6_DESIGN.md) and [physical validation record (25/25 PASS)](PQC_DR6_SILICON_VALIDATION_20260828.md) — 100% on-device ML-KEM-512 `ML-KEM.Encaps`.
 
 ## DR2d provenance and protected evidence
 

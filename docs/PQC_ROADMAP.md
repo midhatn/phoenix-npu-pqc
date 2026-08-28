@@ -47,8 +47,8 @@ user acceptance are all complete.
 A validated kernel fragment, polynomial primitive, matrix entry, row, or
 subgraph does not close a higher-level operation milestone.
 
-The current active milestone is **DR6** (`ML-KEM.Encaps`). DR0 through DR5 are
-**COMPLETE / PHYSICALLY VALIDATED** on AMD Phoenix NPU silicon. DR6 through
+The current active milestone is **DR7** (`ML-KEM.Decaps`). DR0 through DR6 are
+**COMPLETE / PHYSICALLY VALIDATED** on AMD Phoenix NPU silicon. DR7 through
 DR15 are **ACCEPTED ROADMAP BOUNDARIES** and are governed by the sequential
 closure gates defined in this document.
 
@@ -96,6 +96,7 @@ FIPS 206 remains under development.
 | DR3 | COMPLETE / PHYSICALLY VALIDATED | Complete device-resident ML-KEM-512 `K-PKE.Encrypt`. | **25/25 ACVP PASS on Phoenix silicon.** 5-worker AIE2 graph. |
 | DR4 | COMPLETE / PHYSICALLY VALIDATED | Complete device-resident ML-KEM-512 `K-PKE.Decrypt`. | **25/25 ACVP PASS on Phoenix silicon.** 2-worker AIE2 graph. |
 | DR5 | COMPLETE / PHYSICALLY VALIDATED | Complete device-resident ML-KEM-512 `ML-KEM.KeyGen`. | **25/25 ACVP PASS on Phoenix silicon.** 6-worker AIE2 graph. |
+| DR6 | COMPLETE / PHYSICALLY VALIDATED | Complete device-resident ML-KEM-512 `ML-KEM.Encaps`. | **25/25 ACVP PASS on Phoenix silicon.** 6-worker AIE2 graph. |
 
 The existing design and physical records remain authoritative for the details
 of each completed milestone. This roadmap records their place in the
@@ -126,11 +127,11 @@ COMPLETE: DR5
 Complete ML-KEM.KeyGen (100% Silicon Validated)
     |
     v
-NEXT ACTIVE: DR6
-Complete ML-KEM.Encaps
+COMPLETE: DR6
+Complete ML-KEM.Encaps (100% Silicon Validated)
     |
     v
-ACCEPTED: DR7
+NEXT ACTIVE: DR7
 Complete ML-KEM.Decaps and ML-KEM-512 closure
     |
     v
@@ -272,34 +273,41 @@ Design record: [`docs/PQC_DR5_DESIGN.md`](PQC_DR5_DESIGN.md).
 | Validation corpus | **25 / 25 PASS** across the official NIST ACVP ML-KEM-512 KeyGen corpus on physical silicon. |
 | Physical evidence | Retained in [`docs/PQC_DR5_SILICON_VALIDATION_20260828.md`](PQC_DR5_SILICON_VALIDATION_20260828.md). |
 
+## 4d. DR6 completion record (CLOSED & SILICON VALIDATED)
+
+### 4d.1 DR6 closure statement
+
+**Status:** **CLOSED & PHYSICALLY VALIDATED ON PHOENIX SILICON (2026-08-28).**
+DR6 closed with the physical silicon validation of **complete ML-KEM-512 ML-KEM.Encaps**.
+All 25 official NIST ACVP encapsulation test cases executed on the physical AMD Phoenix NPU with 100%
+bit-exact compliance, zero host CPU intermediate offload, and zero fallback.
+
+Detailed physical evidence: [`docs/PQC_DR6_SILICON_VALIDATION_20260828.md`](PQC_DR6_SILICON_VALIDATION_20260828.md).
+Design record: [`docs/PQC_DR6_DESIGN.md`](PQC_DR6_DESIGN.md).
+
+### 4d.2 DR6 validated boundary
+
+| Contract area | Verified DR6 closure condition |
+|---|---|
+| Designation | `DR6` closed on 2026-08-28. |
+| Public ingress | `ek` (800 B) and `m` (32 B) packed into one request (832 B), plus one descriptor (16 B); exactly two host fills. |
+| Terminal output | One packed terminal record containing ciphertext `c` (768 B) and shared key `K` (32 B) plus 20-byte header (total 820 B). |
+| Device residency | $H(ek) = \text{SHA3-256}(ek)$ computed strictly on-chip; $G(m \parallel H(ek)) = \text{SHA3-512}(m \parallel H(ek))$ derived on-chip to produce $(\bar{K}, r)$; $\text{K-PKE.Encrypt}(ek, m, r)$ executed on-device to produce ciphertext $c$ (768 B); $K = \bar{K}$ (32 B) assembled on-chip; CRC32 calculated on-chip. |
+| Prohibited paths | No intermediate CPU transfer, host-completed phase, or reference fallback. |
+| Architecture | 6-worker AIE2 dataflow graph across Row 2, Cols 0-5. |
+| Validation corpus | **25 / 25 PASS** across the official NIST ACVP ML-KEM-512 Encapsulation corpus on physical silicon. |
+| Physical evidence | Retained in [`docs/PQC_DR6_SILICON_VALIDATION_20260828.md`](PQC_DR6_SILICON_VALIDATION_20260828.md). |
+
 ## 5. Accepted future milestone boundaries
 
-DR6 through DR7 are accepted roadmap boundaries. They do not authorize early
+DR7 is an accepted roadmap boundary. It does not authorize early
 implementation, branch creation, publication, performance claims, security
-claims, or certification claims. Each remains not started until its
+claims, or certification claims. It remains not started until its
 predecessor's closure record, user acceptance, and required push are complete.
 
 | ID | Proposed operation | Public ingress | Terminal-only output | Required device-resident scope | Closure focus |
 |---|---|---|---|---|---|
-| DR6 | ML-KEM-512 `ML-KEM.Encaps` | One packed request containing `ek` (800 B) and deterministic 32-byte test randomness, plus one descriptor; exactly two fills. | One terminal record containing `c` (768 B) and `K` (32 B). | Perform required `H`, `G`, KDF, and device `K-PKE.Encrypt` work. | Applicable ACVP encapsulation cases, deterministic reproducibility, zeroization, and physical evidence. |
 | DR7 | ML-KEM-512 `ML-KEM.Decaps` and end-to-end closure | One packed request containing `dk` (1632 B) and `c` (768 B), plus one descriptor; exactly two fills. | Shared secret `K` (32 B) only. | Perform decrypt, re-encrypt, constant-shape comparison/select, implicit rejection, and KDF on device. | Applicable ACVP decapsulation cases, mutation tests, rejection-oracle review, integrated lifecycle, and full physical evidence. |
-
-### 5.1 DR6 proposed contract
-
-DR6 implements complete device-resident ML-KEM-512 `ML-KEM.Encaps`.
-
-- **Input boundary:** A packed request carries `ek` (800 B) and a deterministic
-  32-byte randomness/test input. A second ingress carries the descriptor.
-- **Output boundary:** One terminal record carries `c` (768 B) and `K` (32 B).
-- **Residency:** Required `H`, `G`, KDF, and accepted device `K-PKE.Encrypt`
-  computation remain on device.
-- **Randomness boundary:** The explicit 32-byte value provides deterministic
-  validation. It does not define or approve a production entropy architecture.
-- **Prohibited paths:** No CPU hash/KDF completion, intermediate drain, or
-  reference fallback.
-- **Acceptance:** All applicable vendored ACVP encapsulation cases,
-  byte-exact `c` and `K`, lifecycle tests, repeated silicon runs, and physical
-  evidence.
 
 ### 5.2 DR7 proposed contract
 
@@ -602,7 +610,7 @@ open.
    before beginning the next DR.
 5. **No overlap:** Never start the next DR before the current closure record,
    user acceptance, and required push are complete.
-6. **Completed push state:** DR0 through DR5 are pushed and physically
+6. **Completed push state:** DR0 through DR6 are pushed and physically
    validated. The `main` branch reflects the complete accepted state of all
    closed milestones.
 7. **Repository boundaries:** Do not touch unrelated files and do not modify
@@ -664,7 +672,8 @@ closure record and explicit acceptance.
       PHYSICALLY VALIDATED (25/25 ACVP PASS).
 - [x] Approved: DR5 (ML-KEM.KeyGen) is COMPLETE /
       PHYSICALLY VALIDATED (25/25 ACVP PASS).
-- [x] Approved: Reserve DR6 for `ML-KEM.Encaps`.
+- [x] Approved: DR6 (ML-KEM.Encaps) is COMPLETE /
+      PHYSICALLY VALIDATED (25/25 ACVP PASS).
 - [x] Approved: Reserve DR7 for `ML-KEM.Decaps` and
       end-to-end ML-KEM-512 closure.
 - [x] Approved: Reserve DR8 for all-parameter-set
@@ -686,11 +695,10 @@ closure record and explicit acceptance.
 - [x] DR3: 25/25 ACVP PASS. All conditions in Section 4a.2 verified.
 - [x] DR4: 25/25 ACVP PASS. All conditions in Section 4b.2 verified.
 - [x] DR5: 25/25 ACVP PASS. All conditions in Section 4c.2 verified.
+- [x] DR6: 25/25 ACVP PASS. All conditions in Section 4d.2 verified.
 
 ### 12.3 Accepted future interfaces
 
-- [x] Approved: DR6 packed `ek + deterministic input`
-      ingress and one terminal `c + K` record.
 - [x] Approved: DR7 packed `dk + c` ingress, terminal
       `K`, and no rejection oracle.
 - [x] Approved: DR8 covers ML-KEM-512, ML-KEM-768,
@@ -736,18 +744,17 @@ closure record and explicit acceptance.
 | Field | Record |
 |---|---|
 | Reviewer / user | Midhat Nashar |
-| Review date | 2026-08-17 (Initial), 2026-08-28 (DR2d/DR3/DR4/DR5 Silicon Closure) |
+| Review date | 2026-08-17 (Initial), 2026-08-28 (DR2d/DR3/DR4/DR5/DR6 Silicon Closure) |
 | Overall roadmap decision | **APPROVED & ACTIVE** |
-| Completed & Validated | DR0, DR1, DR2a, DR2b, DR2c, DR2d, DR3, DR4, DR5 (100% Silicon Validated) |
-| Next Immediate Milestone | **DR6 (ML-KEM-512 ML-KEM.Encaps)** |
-| Approved sequence | DR6 through DR15 for full FIPS 202, 203, 204 on-device completion |
+| Completed & Validated | DR0, DR1, DR2a, DR2b, DR2c, DR2d, DR3, DR4, DR5, DR6 (100% Silicon Validated) |
+| Next Immediate Milestone | **DR7 (ML-KEM-512 ML-KEM.Decaps)** |
+| Approved sequence | DR7 through DR15 for full FIPS 202, 203, 204 on-device completion |
 | Required changes | FIPS 205 and FIPS 206 retained as unnumbered future work |
 | Deferred boundaries | All FIPS 205 and FIPS 206 DR numbering and operation boundaries |
-| Acceptance reference | DR5 100% Silicon Pass (25/25 ACVP) on AMD Phoenix NPU (2026-08-28) |
+| Acceptance reference | DR6 100% Silicon Pass (25/25 ACVP) on AMD Phoenix NPU (2026-08-28) |
 
-DR0 through DR5 are **CLOSED / PHYSICALLY VALIDATED ON SILICON**.
+DR0 through DR6 are **CLOSED / PHYSICALLY VALIDATED ON SILICON**.
 
-The immediate next milestone to implement is **DR6 (ML-KEM-512 ML-KEM.Encaps)**,
-followed by DR7 (`ML-KEM.Decaps`), DR8 (FIPS 203 full parameter-set closure),
-DR9 (FIPS 202 service), DR10 (entropy/lifecycle), and DR11–DR15 (ML-DSA-44/65/87
-and primary FIPS 202/203/204 closure).
+The immediate next milestone to implement is **DR7 (ML-KEM-512 ML-KEM.Decaps)**,
+followed by DR8 (FIPS 203 full parameter-set closure), DR9 (FIPS 202 service),
+DR10 (entropy/lifecycle), and DR11–DR15 (ML-DSA-44/65/87 and primary FIPS 202/203/204 closure).

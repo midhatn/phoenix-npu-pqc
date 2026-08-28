@@ -587,6 +587,7 @@ def main(argv: list[str] | None = None) -> int:
         print(
             f" {state}  {gate.gate_id:<5} {gate.expected_total:>3} cases  "
             f"{gate.backend_label}  ({elapsed:.2f}s)"
+        )
     print("-" * 72)
     print(
         f" {EXPECTED_GATE_COUNT} gates / {EXPECTED_CASE_TOTAL} cases physically "

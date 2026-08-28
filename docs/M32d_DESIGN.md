@@ -16,10 +16,11 @@ Combined with **M32b** (NTT / INTT / MultiplyNTTs / BaseCaseMultiply, poly add/s
 
 FIPS 203 §4.2.1 [equations (4.7)–(4.8)](https://nvlpubs.nist.gov/nistpubs/fips/nist.fips.203.pdf):
 
-$$
+\[
 \mathrm{Compress}_d(x) = \left\lceil \frac{2^d}{q} \cdot x \right\rfloor \bmod 2^d, \qquad
 \mathrm{Decompress}_d(y) = \left\lceil \frac{q}{2^d} \cdot y \right\rfloor,
-$$with$ q = 3329 $, $n = 256$. $\mathrm{Compress}_d$ is lossy for $d < 12$; the standard notes that $\mathrm{Compress}_d(\mathrm{Decompress}_d(y)) = y$ for every $y \in \mathbb{Z}_{2^d}$ — decompression is a right inverse of compression, and that property lets ML-KEM tolerate the lossy compression baked into every ciphertext coefficient.
+\]
+with $q = 3329$, $n = 256$. $\mathrm{Compress}_d$ is lossy for $d < 12$; the standard notes that $\mathrm{Compress}_d(\mathrm{Decompress}_d(y)) = y$ for every $y \in \mathbb{Z}_{2^d}$ — decompression is a right inverse of compression, and that property lets ML-KEM tolerate the lossy compression baked into every ciphertext coefficient.
 
 The pq-crystals reference computes both rounds with magic-constant multiply-and-shift sequences (avoiding integer division). For $d = 4$, [ref/poly.c poly_compress](https://github.com/pq-crystals/kyber/blob/main/ref/poly.c):
 
@@ -116,7 +117,9 @@ The Python host reference in [`tests/m32_mlkem/test_kpke_m32d.py`](../tests/m32_
 
 The transliteration cross-check tool [`tools/m32d_kernel_transliteration_check.py`](../tools/m32d_kernel_transliteration_check.py) audits the primary against an independent implementation that uses **exact rational rounding**:
 
-$$\mathrm{Compress}_d(x) = \left\lfloor \frac{2^d \cdot x + \lfloor q/2 \rfloor}{q} \right\rfloor \bmod 2^d,$$
+\[
+\mathrm{Compress}_d(x) = \left\lfloor \frac{2^d \cdot x + \lfloor q/2 \rfloor}{q} \right\rfloor \bmod 2^d,
+\]
 
 computed with Python's unbounded integers. That formulation shares zero code with the pq-crystals magic-constant fast path — every match confirms the primary implementation is bit-exact against the mathematical definition, not just against itself.
 

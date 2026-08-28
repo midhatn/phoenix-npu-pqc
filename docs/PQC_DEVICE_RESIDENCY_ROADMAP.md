@@ -29,15 +29,15 @@ build/provenance, and a separately recorded physical exact-output gate.
 | **DR3** | Complete device-resident ML-KEM-512 `K-PKE.Encrypt` 5-worker graph on AIE2 array. | **Physical silicon PASS: 25/25 ACVP.** | Closes DR3. Zero host offloading. |
 | **DR4** | Complete device-resident ML-KEM-512 `K-PKE.Decrypt` 2-worker graph on AIE2 array. | **Physical silicon PASS: 25/25 ACVP.** | Closes DR4. Zero host offloading. |
 | **DR5** | Complete device-resident ML-KEM-512 `ML-KEM.KeyGen` (FIPS 203 Algorithm 15 / $d, z$). | **Physical silicon PASS: 25/25 ACVP.** | Closes DR5. Zero host offloading. |
-| **DR6** | Complete device-resident ML-KEM-512 `ML-KEM.Encaps` (FIPS 203 Algorithm 16). | **Next active milestone.** | Includes $H = \text{SHA3-256}(m)$, $G(m \parallel H(ek))$, $K = J(z \parallel c)$. |
-| **DR7** | Complete device-resident ML-KEM-512 `ML-KEM.Decaps` (FIPS 203 Algorithm 17). | **Sequenced.** | Full CCA-secure decapsulation on NPU. |
+| **DR6** | Complete device-resident ML-KEM-512 `ML-KEM.Encaps` (FIPS 203 Algorithm 16). | **Physical silicon PASS: 25/25 ACVP.** | Closes DR6. Zero host offloading. |
+| **DR7** | Complete device-resident ML-KEM-512 `ML-KEM.Decaps` (FIPS 203 Algorithm 17). | **Next active milestone.** | Full CCA-secure decapsulation on NPU. |
 | **DR8–DR15** | Full FIPS 203 parameter sets (768/1024), FIPS 202 service, and FIPS 204 ML-DSA. | **Sequenced.** | Primary 100% PQC on NPU closure. |
 
 ## Current state
 
-1. All 9 initial DR gates (DR0, DR1, DR2a, DR2b, DR2c, DR2d, DR3, DR4, DR5) totaling 194 cases (170 cases in automated suite) pass on physical AMD Phoenix NPU silicon.
-2. DR5 is fully closed with 25/25 ACVP passes on physical hardware.
-3. The next active research target is DR6 (ML-KEM-512 `ML-KEM.Encaps`).
+1. All 10 initial DR gates (DR0, DR1, DR2a, DR2b, DR2c, DR2d, DR3, DR4, DR5, DR6) totaling 219 cases (195 cases in automated suite) pass on physical AMD Phoenix NPU silicon.
+2. DR6 is fully closed with 25/25 ACVP passes on physical hardware.
+3. The next active research target is DR7 (ML-KEM-512 `ML-KEM.Decaps`).
 
 ## Claim boundaries
 

@@ -95,7 +95,7 @@ over packed token lanes and does not use the prior fixed 24-bit mask path.
 W1/W3 use bounded five-block SampleNTT. W2/W4 compute:
 
 \[
-\widehat t[i]=\sum_{j=0}^{1}\operatorname{MultiplyNTTs}
+\widehat t[i]=\sum_{j=0}^{1}\text{MultiplyNTTs}
 (\widehat A[i,j],\widehat s[j])+\widehat e[i]\pmod {3329}.
 \]
 
