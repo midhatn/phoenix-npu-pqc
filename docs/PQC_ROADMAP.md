@@ -602,7 +602,7 @@ open.
    before beginning the next DR.
 5. **No overlap:** Never start the next DR before the current closure record,
    user acceptance, and required push are complete.
-6. **Completed push state:** DR0 through DR4 are pushed and physically
+6. **Completed push state:** DR0 through DR5 are pushed and physically
    validated. The `main` branch reflects the complete accepted state of all
    closed milestones.
 7. **Repository boundaries:** Do not touch unrelated files and do not modify
