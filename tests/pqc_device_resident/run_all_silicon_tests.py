@@ -20,6 +20,7 @@ TESTS = [
     ("DR7  (ML-KEM-512 ML-KEM.Decaps)", "tests/pqc_device_resident/test_dr7_mlkem512_decaps_silicon.py"),
     ("DR8  (ML-KEM-768/1024 Expansion)", "tests/pqc_device_resident/test_dr8_mlkem_unified_silicon.py"),
     ("DR9  (Reusable FIPS 202 Service)", "tests/pqc_device_resident/test_dr9_fips202_silicon.py"),
+    ("DR10 (Sealed Lifecycle Architecture)", "tests/pqc_device_resident/test_dr10_sealed_lifecycle_silicon.py"),
 ]
 
 def main():

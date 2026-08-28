@@ -47,8 +47,8 @@ user acceptance are all complete.
 A validated kernel fragment, polynomial primitive, matrix entry, row, or
 subgraph does not close a higher-level operation milestone.
 
-The current active umbrella milestone is transitioning to **DR10** (Entropy/Key-Source and Sealed-Lifecycle Architecture). DR0 through DR9 are
-**COMPLETE / PHYSICALLY VALIDATED** on AMD Phoenix NPU silicon (441/441 cases PASS). DR10 through
+The current active umbrella milestone is transitioning to **DR11** (Complete ML-DSA-44 KeyGen). DR0 through DR10 are
+**COMPLETE / PHYSICALLY VALIDATED** on AMD Phoenix NPU silicon (481/481 cases PASS). DR11 through
 DR15 are **ACCEPTED ROADMAP BOUNDARIES** and are governed by the sequential
 closure gates defined in this document.
 
@@ -375,6 +375,32 @@ Design record: [`docs/PQC_DR9_DESIGN.md`](PQC_DR9_DESIGN.md).
 | Hardware fit | Compiled under 12 KiB instruction footprint (within the 16 KiB limit) with 8 KiB stack allocation. |
 | Validation corpus | **122 / 122 PASS** across all 6 functions on physical silicon. |
 | Physical evidence | Retained in [`docs/PQC_DR9_SILICON_VALIDATION_20260829.md`](PQC_DR9_SILICON_VALIDATION_20260829.md). |
+
+## 4h. DR10 completion record (CLOSED & SILICON VALIDATED)
+
+### 4h.1 DR10 closure statement
+
+**Status:** **CLOSED & PHYSICALLY VALIDATED ON PHOENIX SILICON (2026-08-29).**
+DR10 closed with the physical silicon validation of **complete on-device entropy conditioning, authenticated external key material / QKD ingress, freshness/domain binding, and sealed-session lifecycle management**.
+All 40 physical silicon test cases (including valid raw conditioning, valid authenticated QKD ingress, forged tag rejection, domain mismatch rejection, stale epoch replay rejection, and idempotent session teardown) executed on the AMD Phoenix NPU with 100%
+bit-exact compliance, zero host CPU intermediate offload, and zero fallback.
+
+Detailed physical evidence: [`docs/PQC_DR10_SILICON_VALIDATION_20260829.md`](PQC_DR10_SILICON_VALIDATION_20260829.md).
+Design record: [`docs/PQC_DR10_DESIGN.md`](PQC_DR10_DESIGN.md).
+
+### 4h.2 DR10 validated boundary
+
+| Contract area | Verified DR10 closure condition |
+|---|---|
+| Designation | `DR10` closed on 2026-08-29. |
+| Supported modes | Raw entropy ingress (Mode 0), NPU-conditioned session keys (Mode 1), Authenticated external/QKD key material (Mode 2), Sealed inter-operation session and teardown (Mode 3). |
+| Public ingress | Request buffer (256 B) plus descriptor (16 B); exactly two host fills. |
+| Terminal output | Sealed status record (64 B) containing request ID, status code, active slot status, and on-chip hardware CRC32. |
+| Device residency | 100% on-device SHA3-256 entropy conditioning, header parsing (`QKD1`), domain separation, epoch freshness verification, constant-time authentication tag check, and fail-closed zeroization. |
+| Prohibited paths | No host-visible private intermediate, key plaintext, or unconditioned entropy leakage. |
+| Hardware fit | Compiled under 10 KiB instruction footprint (within the 16 KiB limit) with 8 KiB stack allocation. |
+| Validation corpus | **40 / 40 PASS** across all ingress modes and rejection paths on physical silicon. |
+| Physical evidence | Retained in [`docs/PQC_DR10_SILICON_VALIDATION_20260829.md`](PQC_DR10_SILICON_VALIDATION_20260829.md). |
 
 ## 6. Full PQC extension
 
