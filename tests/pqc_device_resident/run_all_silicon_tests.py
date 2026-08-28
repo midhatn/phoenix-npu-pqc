@@ -16,6 +16,7 @@ TESTS = [
     ("DR4  (ML-KEM-512 K-PKE.Decrypt)", "tests/pqc_device_resident/test_dr4_mlkem512_kpke_decrypt_silicon.py"),
     ("DR5  (ML-KEM-512 ML-KEM.KeyGen)", "tests/pqc_device_resident/test_dr5_mlkem512_keygen_silicon.py"),
     ("DR6  (ML-KEM-512 ML-KEM.Encaps)", "tests/pqc_device_resident/test_dr6_mlkem512_encaps_silicon.py"),
+    ("DR7  (ML-KEM-512 ML-KEM.Decaps)", "tests/pqc_device_resident/test_dr7_mlkem512_decaps_silicon.py"),
 ]
 
 def main():

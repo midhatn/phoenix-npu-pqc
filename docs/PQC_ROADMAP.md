@@ -47,8 +47,8 @@ user acceptance are all complete.
 A validated kernel fragment, polynomial primitive, matrix entry, row, or
 subgraph does not close a higher-level operation milestone.
 
-The current active milestone is **DR7** (`ML-KEM.Decaps`). DR0 through DR6 are
-**COMPLETE / PHYSICALLY VALIDATED** on AMD Phoenix NPU silicon. DR7 through
+The current active umbrella milestone is transitioning to **DR8** (ML-KEM Parameter-Set Expansion: ML-KEM-768 & ML-KEM-1024). DR0 through DR7 are
+**COMPLETE / PHYSICALLY VALIDATED** on AMD Phoenix NPU silicon. DR8 through
 DR15 are **ACCEPTED ROADMAP BOUNDARIES** and are governed by the sequential
 closure gates defined in this document.
 
@@ -131,11 +131,11 @@ COMPLETE: DR6
 Complete ML-KEM.Encaps (100% Silicon Validated)
     |
     v
-NEXT ACTIVE: DR7
-Complete ML-KEM.Decaps and ML-KEM-512 closure
+COMPLETE: DR7
+Complete ML-KEM.Decaps and ML-KEM-512 closure (100% Silicon Validated)
     |
     v
-ACCEPTED: DR8
+NEXT ACTIVE: DR8
 Complete FIPS 203 for ML-KEM-512/768/1024
     |
     v
@@ -744,17 +744,16 @@ closure record and explicit acceptance.
 | Field | Record |
 |---|---|
 | Reviewer / user | Midhat Nashar |
-| Review date | 2026-08-17 (Initial), 2026-08-28 (DR2d/DR3/DR4/DR5/DR6 Silicon Closure) |
+| Review date | 2026-08-17 (Initial), 2026-08-28 (DR2d/DR3/DR4/DR5/DR6/DR7 Silicon Closure) |
 | Overall roadmap decision | **APPROVED & ACTIVE** |
-| Completed & Validated | DR0, DR1, DR2a, DR2b, DR2c, DR2d, DR3, DR4, DR5, DR6 (100% Silicon Validated) |
-| Next Immediate Milestone | **DR7 (ML-KEM-512 ML-KEM.Decaps)** |
-| Approved sequence | DR7 through DR15 for full FIPS 202, 203, 204 on-device completion |
+| Completed & Validated | DR0, DR1, DR2a, DR2b, DR2c, DR2d, DR3, DR4, DR5, DR6, DR7 (100% Silicon Validated) |
+| Next Immediate Milestone | **DR8 (ML-KEM-768 & ML-KEM-1024 Parameter-Set Expansion)** |
+| Approved sequence | DR8 through DR15 for full FIPS 202, 203, 204 on-device completion |
 | Required changes | FIPS 205 and FIPS 206 retained as unnumbered future work |
 | Deferred boundaries | All FIPS 205 and FIPS 206 DR numbering and operation boundaries |
-| Acceptance reference | DR6 100% Silicon Pass (25/25 ACVP) on AMD Phoenix NPU (2026-08-28) |
+| Acceptance reference | DR7 100% Silicon Pass (25/25 ACVP) on AMD Phoenix NPU (2026-08-28) |
 
-DR0 through DR6 are **CLOSED / PHYSICALLY VALIDATED ON SILICON**.
+DR0 through DR7 are **CLOSED / PHYSICALLY VALIDATED ON SILICON**.
 
-The immediate next milestone to implement is **DR7 (ML-KEM-512 ML-KEM.Decaps)**,
-followed by DR8 (FIPS 203 full parameter-set closure), DR9 (FIPS 202 service),
-DR10 (entropy/lifecycle), and DR11–DR15 (ML-DSA-44/65/87 and primary FIPS 202/203/204 closure).
+The immediate next milestone to implement is **DR8 (ML-KEM Parameter-Set Expansion: ML-KEM-768 & ML-KEM-1024)**,
+followed by DR9 (FIPS 202 service), DR10 (entropy/lifecycle), and DR11–DR15 (ML-DSA-44/65/87 and primary FIPS 202/203/204 closure).
