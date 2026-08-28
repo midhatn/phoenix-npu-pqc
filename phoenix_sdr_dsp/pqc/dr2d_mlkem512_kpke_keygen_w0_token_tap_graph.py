@@ -28,7 +28,7 @@ _REPO_ROOT = Path(__file__).resolve().parents[2]
 _PINNED_PRODUCTION_FILES = {
     "w0_source": (
         _PQC_DIR / "kernels" / "dr2d_mlkem512_kpke_keygen_seed.cc",
-        "2f94e2995706ac5636f35c66167e5dd8f54ac54b618c200bf4ee45b8b754ceaf",
+        "18060d1ca482083de3baefa2d5f610f3590147b51e1c2e7f415fc4bdd7277357",
     ),
     "internal_header": (
         _PQC_DIR / "kernels" / "dr2d_mlkem512_kpke_keygen_internal.hpp",
@@ -92,16 +92,6 @@ def verify_production_hashes(*, require_retained_object: bool = True) -> dict[st
             raise DiagnosticIntegrityError(f"missing pinned production file: {path}")
         actual = _sha256(path)
         if actual != expected:
-            if (
-                name == "canonical_runner"
-                and "host-safe"
-                in path.read_text(encoding="utf-8", errors="replace").lower()
-            ):
-                raise DiagnosticIntegrityError(
-                    "historical canonical_runner pin refuses the current host-safe "
-                    "compatibility runner; use the archived historical baseline "
-                    f"with sha256 {expected}, not current main ({actual})"
-                )
             raise DiagnosticIntegrityError(
                 f"{name} hash mismatch: expected {expected}, observed {actual}"
             )

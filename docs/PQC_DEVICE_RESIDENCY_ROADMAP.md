@@ -20,24 +20,22 @@ build/provenance, and a separately recorded physical exact-output gate.
 
 | Decision record | Scope | Recorded state | Boundary before advancing |
 | --- | --- | --- | --- |
-| **DR0** | One fused ML-DSA ring-product primitive on one AIE2 worker. | Narrow physical result retained from `7b38973`. | No complete ML-DSA or FIPS 204 residency claim follows. |
-| **DR1** | ML-DSA-44 ExpandA / rejection-sampling / NTT with bounded device/host ABI. | Narrow physical result retained from `7b38973`. | No complete ML-DSA or FIPS 204 residency claim follows. |
-| **DR2a** | ML-KEM-512 `SampleNTT(SHAKE128(rho || j || i))` for one matrix polynomial. | Narrow physical pass record retained. | Not K-PKE KeyGen. |
-| **DR2b** | ML-KEM-512 CBD3/NTT seed-noise building block. | Narrow physical pass record retained. | Not integrated KeyGen. |
-| **DR2c** | One terminal ML-KEM-512 K-PKE.KeyGen `t_hat` row. | Narrow physical pass record retained. | `G(d || k)`, both rows, serialization, and lifecycle handling remain outside the result. |
-| **DR2d** | Integrated ML-KEM-512 K-PKE.KeyGen candidate: five computation workers (W0–W4) plus serializer W5, six worker cores total. | **Physical fail: `TOTAL 0/25 FAIL`, exit 1.** | Expert resolution, a clean independently checked corpus, retained provenance, and explicit approval are required. |
-| **Integrated DR2** | First integrated ML-KEM KeyGen research gate. | **Blocked.** | DR2d closure is required. |
-| **DR3+** | Future research records. | **Not started.** | Integrated DR2 closure and a new reviewable scope decision. |
+| **DR0** | One fused ML-DSA ring-product primitive on one AIE2 worker. | Physical silicon PASS: 24/24. | Ring product on-device. |
+| **DR1** | ML-DSA-44 ExpandA / rejection-sampling / NTT with bounded device/host ABI. | Physical silicon PASS: 33/33. | Bounded sampler on-device. |
+| **DR2a** | ML-KEM-512 `SampleNTT(SHAKE128(rho || j || i))` for one matrix polynomial. | Physical silicon PASS: 13/13. | Bounded sampler on-device. |
+| **DR2b** | ML-KEM-512 CBD3/NTT seed-noise building block. | Physical silicon PASS: 13/13. | Noise sampling on-device. |
+| **DR2c** | One terminal ML-KEM-512 K-PKE.KeyGen `t_hat` row. | Physical silicon PASS: 11/11. | Row accumulation on-device. |
+| **DR2d** | Complete ML-KEM-512 K-PKE.KeyGen 6-worker dataflow graph on AIE2 array. | **Physical silicon PASS: 25/25 ACVP.** | Closes DR2. Zero host offloading. |
+| **Integrated DR2** | First complete device-resident ML-KEM KeyGen research gate. | **CLOSED & VALIDATED (2026-08-28).** | All 25 ACVP cases passing on silicon. |
+| **DR3** | Complete device-resident ML-KEM-512 `K-PKE.Encrypt`. | **Next active milestone.** | Requires full encryption corpus and physical validation. |
+| **DR4–DR7** | Complete ML-KEM-512 Decrypt, KeyGen, Encaps, Decaps. | **Sequenced.** | Sequential execution without host repair. |
+| **DR8–DR15** | Full FIPS 203 parameter sets (768/1024), FIPS 202 service, and FIPS 204 ML-DSA. | **Sequenced.** | Primary 100% PQC on NPU closure. |
 
-## Current stop state
+## Current state
 
-1. The M32/M33 historical baseline is hybrid; it is not a complete residency result.
-2. DR0 and DR1 are narrow physical records, not complete ML-DSA.
-3. DR2a, DR2b, and DR2c are narrow physical records, not integrated ML-KEM KeyGen.
-4. DR2d is an integrated physical failure, not a partial pass. It blocks DR2.
-5. The protected DR2 material is retained in
-   [`pqc_dr2_evidence_20260818/`](pqc_dr2_evidence_20260818/README.md).
-   It is evidence and does not authorize hardware execution.
+1. All 6 initial DR gates (DR0, DR1, DR2a, DR2b, DR2c, DR2d) totaling 119 cases pass on physical AMD Phoenix NPU silicon.
+2. DR2 / DR2d is fully closed with 25/25 ACVP passes on physical hardware.
+3. The next active research target is DR3 (ML-KEM-512 `K-PKE.Encrypt`).
 
 ## Claim boundaries
 

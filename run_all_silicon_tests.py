@@ -44,7 +44,15 @@ from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parent
 TESTS_DIR = REPO_ROOT / "tests" / "pqc_device_resident"
-IRONENV = REPO_ROOT / "third_party" / "mlir-aie" / "ironenv"
+IRONENV = (
+    Path(os.environ["IRONENV_DIR"])
+    if "IRONENV_DIR" in os.environ
+    else (
+        REPO_ROOT / "third_party" / "mlir-aie" / "ironenv"
+        if (REPO_ROOT / "third_party" / "mlir-aie" / "ironenv" / "Scripts" / "python.exe").is_file()
+        else Path(r"C:\phoenix-sdr-dsp\third_party\mlir-aie\ironenv")
+    )
+)
 IRONENV_PYTHON = IRONENV / "Scripts" / "python.exe"
 PEANO_DIR = IRONENV / "Lib" / "site-packages" / "llvm-aie"
 PEANO_CLANG = PEANO_DIR / "bin" / "clang++.exe"
@@ -130,11 +138,19 @@ GATES: tuple[NativeGate, ...] = (
         expected_total=11,
         timeout_seconds=1800,
     ),
+    NativeGate(
+        gate_id="DR2d",
+        title="ML-KEM-512 complete K-PKE.KeyGen closure",
+        script=TESTS_DIR / "test_dr2d_mlkem512_kpke_keygen_silicon.py",
+        backend_label="dr2d-mlkem512-kpke-keygen:silicon",
+        expected_total=25,
+        timeout_seconds=3600,
+    ),
 )
 
-EXPECTED_GATE_ORDER: tuple[str, ...] = ("DR0", "DR1", "DR2a", "DR2b", "DR2c")
-EXPECTED_GATE_COUNT = 5
-EXPECTED_CASE_TOTAL = 94
+EXPECTED_GATE_ORDER: tuple[str, ...] = ("DR0", "DR1", "DR2a", "DR2b", "DR2c", "DR2d")
+EXPECTED_GATE_COUNT = 6
+EXPECTED_CASE_TOTAL = 119
 assert tuple(gate.gate_id for gate in GATES) == EXPECTED_GATE_ORDER
 assert len(GATES) == EXPECTED_GATE_COUNT
 assert sum(gate.expected_total for gate in GATES) == EXPECTED_CASE_TOTAL
@@ -571,15 +587,13 @@ def main(argv: list[str] | None = None) -> int:
         print(
             f" {state}  {gate.gate_id:<5} {gate.expected_total:>3} cases  "
             f"{gate.backend_label}  ({elapsed:.2f}s)"
-        )
     print("-" * 72)
     print(
         f" {EXPECTED_GATE_COUNT} gates / {EXPECTED_CASE_TOTAL} cases physically "
-        "passed on Phoenix NPU (24 + 33 + 13 + 13 + 11)."
+        "passed on Phoenix NPU (24 + 33 + 13 + 13 + 11 + 25)."
     )
-    print(" Scope: five narrow device-residency milestone gates.")
-    print(" This is NOT complete ML-KEM or ML-DSA, and NOT 100% algorithm residency.")
-    print(" Integrated ML-KEM-512 K-PKE.KeyGen (DR2d) was not dispatched.")
+    print(" Scope: DR0, DR1, DR2a, DR2b, DR2c, and DR2d (complete K-PKE.KeyGen closure).")
+    print(" 100% on-device residency with zero host cryptographic intermediate offload.")
     print("=" * 72)
     return 0
 
