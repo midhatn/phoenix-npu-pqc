@@ -47,8 +47,8 @@ user acceptance are all complete.
 A validated kernel fragment, polynomial primitive, matrix entry, row, or
 subgraph does not close a higher-level operation milestone.
 
-The current active umbrella milestone is transitioning to **DR11** (Complete ML-DSA-44 KeyGen). DR0 through DR10 are
-**COMPLETE / PHYSICALLY VALIDATED** on AMD Phoenix NPU silicon (481/481 cases PASS). DR11 through
+The current active umbrella milestone is transitioning to **DR12** (Complete ML-DSA-44 Sign). DR0 through DR11 are
+**COMPLETE / PHYSICALLY VALIDATED** on AMD Phoenix NPU silicon (506/506 cases PASS). DR12 through
 DR15 are **ACCEPTED ROADMAP BOUNDARIES** and are governed by the sequential
 closure gates defined in this document.
 
