@@ -15,49 +15,17 @@ Zero host cryptographic fallback, zero intermediate DMA roundtrips, and zero run
 Given encryption key $ek = (\text{ByteEncode}_{12}(\hat{\mathbf{t}}) \parallel \rho) \in \mathbb{B}^{800}$, plaintext message $m \in \mathbb{B}^{32}$, and randomness $r \in \mathbb{B}^{32}$:
 
 ### Step 1: Noise Generation
-$$
-\mathbf{r} = \begin{pmatrix} \text{CBD}_3(\text{PRF}_\eta(r, 0)) \\ \text{CBD}_3(\text{PRF}_\eta(r, 1)) \end{pmatrix} \in R_q^2
-$$
+$$\mathbf{r} = \begin{pmatrix} \text{CBD}_3(\text{PRF}_\eta(r, 0)) \\ \text{CBD}_3(\text{PRF}_\eta(r, 1)) \end{pmatrix} \in R_q^2$$
 
-$$
-\mathbf{e}_1 = \begin{pmatrix} \text{CBD}_2(\text{PRF}_\eta(r, 2)) \\ \text{CBD}_2(\text{PRF}_\eta(r, 3)) \end{pmatrix} \in R_q^2
-$$
+$$\mathbf{e}_1 = \begin{pmatrix} \text{CBD}_2(\text{PRF}_\eta(r, 2)) \\ \text{CBD}_2(\text{PRF}_\eta(r, 3)) \end{pmatrix} \in R_q^2$$
 
-$$
-e_2 = \text{CBD}_2(\text{PRF}_\eta(r, 4)) \in R_q
-$$
+$$e_2 = \text{CBD}_2(\text{PRF}_\eta(r, 4)) \in R_q$$### Step 2: Transform to NTT Domain$$\hat{\mathbf{r}} = \text{NTT}(\mathbf{r})$$### Step 3: Public Matrix Expansion$$\hat{\mathbf{A}}^T = \begin{pmatrix} \text{SampleNTT}(\rho \parallel 0 \parallel 0) & \text{SampleNTT}(\rho \parallel 0 \parallel 1) \\ \text{SampleNTT}(\rho \parallel 1 \parallel 0) & \text{SampleNTT}(\rho \parallel 1 \parallel 1) \end{pmatrix}$$### Step 4: Vector Polynomial Computations$$\mathbf{u} = \text{INTT}(\hat{\mathbf{A}}^T \circ \hat{\mathbf{r}}) + \mathbf{e}_1 \in R_q^2$$
 
-### Step 2: Transform to NTT Domain
-$$
-\hat{\mathbf{r}} = \text{NTT}(\mathbf{r})
-$$
+$$v = \text{INTT}(\hat{\mathbf{t}}^T \circ \hat{\mathbf{r}}) + e_2 + \text{Decompress}_1(m) \in R_q$$### Step 5: Ciphertext Serialization$$c_1 = \text{ByteEncode}_{10}(\text{Compress}_{10}(\mathbf{u})) \in \mathbb{B}^{640}$$
 
-### Step 3: Public Matrix Expansion
-$$
-\hat{\mathbf{A}}^T = \begin{pmatrix} \text{SampleNTT}(\rho \parallel 0 \parallel 0) & \text{SampleNTT}(\rho \parallel 0 \parallel 1) \\ \text{SampleNTT}(\rho \parallel 1 \parallel 0) & \text{SampleNTT}(\rho \parallel 1 \parallel 1) \end{pmatrix}
-$$
+$$c_2 = \text{ByteEncode}_4(\text{Compress}_4(v)) \in \mathbb{B}^{128}$$
 
-### Step 4: Vector Polynomial Computations
-$$
-\mathbf{u} = \text{INTT}(\hat{\mathbf{A}}^T \circ \hat{\mathbf{r}}) + \mathbf{e}_1 \in R_q^2
-$$
-
-$$
-v = \text{INTT}(\hat{\mathbf{t}}^T \circ \hat{\mathbf{r}}) + e_2 + \text{Decompress}_1(m) \in R_q
-$$
-
-### Step 5: Ciphertext Serialization
-$$
-c_1 = \text{ByteEncode}_{10}(\text{Compress}_{10}(\mathbf{u})) \in \mathbb{B}^{640}
-$$
-
-$$
-c_2 = \text{ByteEncode}_4(\text{Compress}_4(v)) \in \mathbb{B}^{128}
-$$
-
-$$
-c = c_1 \parallel c_2 \in \mathbb{B}^{768}
-$$
+$$c = c_1 \parallel c_2 \in \mathbb{B}^{768}$$
 
 ---
 
@@ -105,15 +73,9 @@ DR3 partitions the encryption pipeline across a 5-tile AIE2 compute array connec
 * **Phenomenon**: On AIE2, expressions of the form `x & 0xFFFFu` or `x & 0x3FFu` combined with Barrett reductions were lowered by Peano Clang++ into `and r, r, #0xfe81` (masking with 65153 instead of 65535), corrupting bit patterns.
 * **Resolution**: Derived and verified exact 32-bit linear closed-form formulas with zero division and zero 64-bit intermediate products:
 
-$$
-\text{Compress}_4(x) = ((x \cdot 315 + 32701) \gg 16) \land \text{0x0F}
-$$
+$$\text{Compress}_4(x) = ((x \cdot 315 + 32701) \gg 16) \land \text{0x0F}$$
 
-$$
-\text{Compress}_{10}(x) = ((x \cdot 161271 + 261911) \gg 19) \land \text{0x3FF}
-$$
-
-Both formulas are mathematically proven and verified on physical hardware to yield 100% bit-exact results for all $x \in [0, 3328]$.
+$$\text{Compress}_{10}(x) = ((x \cdot 161271 + 261911) \gg 19) \land \text{0x3FF}$$Both formulas are mathematically proven and verified on physical hardware to yield 100% bit-exact results for all$x \in [0, 3328]$.
 
 ### 4.2 AIE2 `lda.u16` Index-Doubling Hazard
 * **Phenomenon**: Peano Clang++ emitted `lda.u16 r, [p, dj0]` with `dj0` set to byte offset $2k$. However, the AIE2 scalar execution unit treats `dj` in `lda.u16` as a half-word index, effectively accessing byte $2 \times (2k) = 4k$, causing off-by-factor-of-two memory corruptions.

@@ -18,7 +18,7 @@ control.
 ### M33a — NTT family
 
 ```powershell
-& $py tests\m33_mldsa\test_dilithium_ntt_m33a.py
+& `$py` tests\m33_mldsa\test_dilithium_ntt_m33a.py
 ```
 
 Backend: `m33a:silicon`
@@ -35,7 +35,7 @@ Backend: `m33a:silicon`
 ### M33b — rounding and hint primitives
 
 ```powershell
-& $py tests\m33_mldsa\test_dilithium_sampler_m33b.py
+& `$py` tests\m33_mldsa\test_dilithium_sampler_m33b.py
 ```
 
 Backend: `m33b:silicon`
@@ -56,7 +56,7 @@ Backend: `m33b:silicon`
 ### M33d — ML-DSA KeyGen hybrid composer
 
 ```powershell
-& $py tests\m33_mldsa\test_mldsa_keygen_m33d.py
+& `$py` tests\m33_mldsa\test_mldsa_keygen_m33d.py
 ```
 
 Backend: `m33a:silicon, m33b:silicon`
@@ -67,7 +67,7 @@ vectors, for **75/75 PASS**.
 ### M33e — ML-DSA Sign_internal hybrid composer
 
 ```powershell
-& $py tests\m33_mldsa\test_mldsa_sign_m33e.py
+& `$py` tests\m33_mldsa\test_mldsa_sign_m33e.py
 ```
 
 Backend: `m33a:silicon, m33b:silicon`
@@ -78,7 +78,7 @@ The selected deterministic internal groups, tgIds 7-12, passed **90/90**:
 ### M33e — ML-DSA Verify_internal hybrid composer
 
 ```powershell
-& $py tests\m33_mldsa\test_mldsa_verify_m33e.py
+& `$py` tests\m33_mldsa\test_mldsa_verify_m33e.py
 ```
 
 Backend: `m33a:silicon, m33b:silicon`

@@ -826,7 +826,7 @@ No raw actual vector beyond the reported summaries was retained, and no further 
 
 ```powershell
 & {
-  $cache = "$HOME\.npu\cache\04f147d54cb01d160974a6e6"
+  $cache = "`$HOME`\.npu\cache\04f147d54cb01d160974a6e6"
   $objdump = ".\third_party\mlir-aie\ironenv\Lib\site-packages\llvm-aie\bin\llvm-objdump.exe"
   $elf = "$cache\elfs_main_core_0_2\elfs_main_core_0_2.elf"
   $seed = ".\phoenix_sdr_dsp\pqc\kernels\dr2d_mlkem512_kpke_keygen_seed.cc"
@@ -887,7 +887,7 @@ The NTT is still the highest-priority omission because source-level zeta/order h
 
 ```powershell
 & {
-  $cache = "$HOME\.npu\cache\04f147d54cb01d160974a6e6"
+  $cache = "`$HOME`\.npu\cache\04f147d54cb01d160974a6e6"
   $objdump = ".\third_party\mlir-aie\ironenv\Lib\site-packages\llvm-aie\bin\llvm-objdump.exe"
   $elf = "$cache\elfs_main_core_0_2\elfs_main_core_0_2.elf"
   $out = ".\PQC_DR2D_W0_CBD_tail_Keccak_NTT_aligned_20260818.txt"
@@ -948,7 +948,7 @@ The safest next discriminator is a read-only target comparison against the physi
 
 ```powershell
 & {
-  $cacheRoot = "$HOME\.npu\cache"
+  $cacheRoot = "`$HOME`\.npu\cache"
   $objdump = ".\third_party\mlir-aie\ironenv\Lib\site-packages\llvm-aie\bin\llvm-objdump.exe"
   $out = ".\PQC_DR2D_W0_vs_cached_DR2B_NTT_20260818.txt"
   $dr2bSource = ".\phoenix_sdr_dsp\pqc\kernels\dr2b_mlkem512_cbd_ntt.cc"
@@ -1030,8 +1030,8 @@ The CBD distinction is now especially important: the physically passed DR2b ELF 
 ```powershell
 & {
   $objdump = ".\third_party\mlir-aie\ironenv\Lib\site-packages\llvm-aie\bin\llvm-objdump.exe"
-  $w0 = "$HOME\.npu\cache\04f147d54cb01d160974a6e6\elfs_main_core_0_2\elfs_main_core_0_2.elf"
-  $dr2b = "$HOME\.npu\cache\4311961d4f3a43976aa5a60d\elfs_main_core_0_3\elfs_main_core_0_3.elf"
+  $w0 = "`$HOME`\.npu\cache\04f147d54cb01d160974a6e6\elfs_main_core_0_2\elfs_main_core_0_2.elf"
+  $dr2b = "`$HOME`\.npu\cache\4311961d4f3a43976aa5a60d\elfs_main_core_0_3\elfs_main_core_0_3.elf"
   $w0Source = ".\phoenix_sdr_dsp\pqc\kernels\dr2d_mlkem512_kpke_keygen_seed.cc"
   $dr2bSource = ".\phoenix_sdr_dsp\pqc\kernels\dr2b_mlkem512_cbd_ntt.cc"
   $out = ".\PQC_DR2D_W0_inlined_CBD_vs_passed_DR2B_CBD_20260818.txt"
@@ -1290,8 +1290,8 @@ The physically passed DR2b cache includes the producer and consumer ELFs from th
 ```powershell
 & {
   $objdump = ".\third_party\mlir-aie\ironenv\Lib\site-packages\llvm-aie\bin\llvm-objdump.exe"
-  $dr2bCache = "$HOME\.npu\cache\4311961d4f3a43976aa5a60d"
-  $w0 = "$HOME\.npu\cache\04f147d54cb01d160974a6e6\elfs_main_core_0_2\elfs_main_core_0_2.elf"
+  $dr2bCache = "`$HOME`\.npu\cache\4311961d4f3a43976aa5a60d"
+  $w0 = "`$HOME`\.npu\cache\04f147d54cb01d160974a6e6\elfs_main_core_0_2\elfs_main_core_0_2.elf"
   $out = ".\PQC_DR2D_W0_vs_passed_DR2B_Keccak_20260818.txt"
   $keccakPattern = '_ZN15phoenix_sdr_dsp3pqc3dr1L12keccak_f1600EPh'
 
@@ -1356,7 +1356,7 @@ The corrected command avoids both hazards:
 ```powershell
 & {
   $objdump = ".\third_party\mlir-aie\ironenv\Lib\site-packages\llvm-aie\bin\llvm-objdump.exe"
-  $dr2bCache = "$HOME\.npu\cache\4311961d4f3a43976aa5a60d"
+  $dr2bCache = "`$HOME`\.npu\cache\4311961d4f3a43976aa5a60d"
   $out = ".\PQC_DR2D_passed_DR2B_Keccak_corrected_20260818.txt"
   $symbolName = "_ZN15phoenix_sdr_dsp3pqc3dr1L12keccak_f1600EPh"
   $symbolRegex = [regex]::Escape($symbolName) + "\s*$"
@@ -1453,8 +1453,8 @@ The strongest next static discriminator compares W0's helper-specific SHAKE path
 ```powershell
 & {
   $objdump = ".\third_party\mlir-aie\ironenv\Lib\site-packages\llvm-aie\bin\llvm-objdump.exe"
-  $passed = "$HOME\.npu\cache\4311961d4f3a43976aa5a60d\elfs_main_core_0_2\elfs_main_core_0_2.elf"
-  $w0 = "$HOME\.npu\cache\04f147d54cb01d160974a6e6\elfs_main_core_0_2\elfs_main_core_0_2.elf"
+  $passed = "`$HOME`\.npu\cache\4311961d4f3a43976aa5a60d\elfs_main_core_0_2\elfs_main_core_0_2.elf"
+  $w0 = "`$HOME`\.npu\cache\04f147d54cb01d160974a6e6\elfs_main_core_0_2\elfs_main_core_0_2.elf"
   $passedSource = ".\phoenix_sdr_dsp\pqc\kernels\dr2b_mlkem512_shake256_prf_service.cc"
   $w0Source = ".\phoenix_sdr_dsp\pqc\kernels\dr2d_mlkem512_kpke_keygen_seed.cc"
   $out = ".\PQC_DR2D_W0_SHAKE_staging_vs_passed_DR2B_PRF_20260818.txt"
@@ -1558,8 +1558,8 @@ The strongest next read-only discriminator compares W0's post-NTT pair pipeline 
 ```powershell
 & {
   $objdump = ".\third_party\mlir-aie\ironenv\Lib\site-packages\llvm-aie\bin\llvm-objdump.exe"
-  $cacheRoot = "$HOME\.npu\cache"
-  $w0 = "$HOME\.npu\cache\04f147d54cb01d160974a6e6\elfs_main_core_0_2\elfs_main_core_0_2.elf"
+  $cacheRoot = "`$HOME`\.npu\cache"
+  $w0 = "`$HOME`\.npu\cache\04f147d54cb01d160974a6e6\elfs_main_core_0_2\elfs_main_core_0_2.elf"
   $probeSource = ".\phoenix_sdr_dsp\pqc\kernels\dr2d_mlkem512_kpke_keygen_terminal_probe.cc"
   $out = ".\PQC_DR2D_W0_pair_pack_vs_passed_terminal_probe_20260818.txt"
   $probeRegex = [regex]::Escape("dr2d_kpke_keygen_terminal_probe") + "\s*$"
@@ -1689,7 +1689,7 @@ The next action is one read-only capture of the W0 derive/extraction window plus
 ```powershell
 & {
   $objdump = ".\third_party\mlir-aie\ironenv\Lib\site-packages\llvm-aie\bin\llvm-objdump.exe"
-  $cache = "$HOME\.npu\cache\04f147d54cb01d160974a6e6"
+  $cache = "`$HOME`\.npu\cache\04f147d54cb01d160974a6e6"
   $w0 = "$cache\elfs_main_core_0_2\elfs_main_core_0_2.elf"
   $internal = ".\phoenix_sdr_dsp\pqc\kernels\dr2d_mlkem512_kpke_keygen_internal.hpp"
   $out = ".\PQC_DR2D_derive_sigma_and_copy_words_20260818.txt"
@@ -1787,7 +1787,7 @@ The next safe step is to inventory the exact W0 compiler invocation and any reta
 
 ```powershell
 & {
-  $cache = "$HOME\.npu\cache\04f147d54cb01d160974a6e6"
+  $cache = "`$HOME`\.npu\cache\04f147d54cb01d160974a6e6"
   $w0 = "$cache\elfs_main_core_0_2\elfs_main_core_0_2.elf"
   $needle = "dr2d_mlkem512_kpke_keygen_seed|elfs_main_core_0_2|core_0_2"
   $out = ".\PQC_DR2D_W0_compile_invocation_and_intermediates_20260818.txt"
@@ -1850,7 +1850,7 @@ The next action captures every retained W0 textual IR file verbatim, the complet
 
 ```powershell
 & {
-  $cache = "$HOME\.npu\cache\04f147d54cb01d160974a6e6"
+  $cache = "`$HOME`\.npu\cache\04f147d54cb01d160974a6e6"
   $bin = ".\third_party\mlir-aie\ironenv\Lib\site-packages\llvm-aie\bin"
   $objdump = "$bin\llvm-objdump.exe"
   $readobj = "$bin\llvm-readobj.exe"
@@ -1954,7 +1954,7 @@ No buffer acquire/release, wrapper ABI, double-buffer index, metadata, or symbol
 
 ```powershell
 & {
-  $cache = "$HOME\.npu\cache\04f147d54cb01d160974a6e6"
+  $cache = "`$HOME`\.npu\cache\04f147d54cb01d160974a6e6"
   $bin = ".\third_party\mlir-aie\ironenv\Lib\site-packages\llvm-aie\bin"
   $readobj = "$bin\llvm-readobj.exe"
   $objdump = "$bin\llvm-objdump.exe"

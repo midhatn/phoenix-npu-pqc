@@ -165,29 +165,29 @@ For a baseline without V1, use the full V2 patch:
 
 ```powershell
 $patch = ".\PQC_DR2D_W0_TOKEN_TAP_DIAGNOSTIC_V2_20260818.patch"
-$py = ".\third_party\mlir-aie\ironenv\Scripts\python.exe"
+`$py` = ".\third_party\mlir-aie\ironenv\Scripts\python.exe"
 
 git apply --check $patch
 git apply --stat $patch
 
-& $py -m py_compile `
+& `$py` -m py_compile `
   .\phoenix_sdr_dsp\pqc\dr2d_mlkem512_kpke_keygen_w0_token_tap_graph.py `
   .\tests\pqc_device_resident\diagnose_dr2d_mlkem512_kpke_w0_token_tap.py `
   .\tests\pqc_device_resident\test_dr2d_mlkem512_kpke_w0_token_tap_contract.py
 
-& $py -m ruff check `
+& `$py` -m ruff check `
   .\phoenix_sdr_dsp\pqc\dr2d_mlkem512_kpke_keygen_w0_token_tap_graph.py `
   .\tests\pqc_device_resident\diagnose_dr2d_mlkem512_kpke_w0_token_tap.py `
   .\tests\pqc_device_resident\test_dr2d_mlkem512_kpke_w0_token_tap_contract.py
 
-& $py -m ruff format --check `
+& `$py` -m ruff format --check `
   .\phoenix_sdr_dsp\pqc\dr2d_mlkem512_kpke_keygen_w0_token_tap_graph.py `
   .\tests\pqc_device_resident\diagnose_dr2d_mlkem512_kpke_w0_token_tap.py `
   .\tests\pqc_device_resident\test_dr2d_mlkem512_kpke_w0_token_tap_contract.py
 
 $env:PQC_DR2D_REQUIRE_IRON_MLIR_CONTRACT = "1"
 try {
-  & $py -m unittest `
+  & `$py` -m unittest `
     tests.pqc_device_resident.test_dr2d_mlkem512_kpke_w0_token_tap_contract -v
   if ($LASTEXITCODE -ne 0) { throw "V2 host/MLIR contracts failed" }
 } finally {
@@ -210,9 +210,9 @@ Integrity preflight, still without compilation or execution:
 
 ```powershell
 $env:PQC_DR2D_W0_RETAINED_OBJECT = `
-  "$HOME\.npu\cache\04f147d54cb01d160974a6e6\dr2d_kpke_keygen_seed_noise.o"
+  "`$HOME`\.npu\cache\04f147d54cb01d160974a6e6\dr2d_kpke_keygen_seed_noise.o"
 
-& $py -c @'
+& `$py` -c @'
 from phoenix_sdr_dsp.pqc import dr2d_mlkem512_kpke_keygen_w0_token_tap_graph as tap
 for name, digest in tap.verify_production_hashes().items():
     print(f"{name}={digest}")
@@ -226,7 +226,7 @@ Remove-Item Env:PQC_DR2D_W0_TAP_NATIVE_AUTHORIZATION -ErrorAction SilentlyContin
 $refusalOutput = ".\UNAUTHORIZED_W0_TOKEN_SHOULD_NOT_EXIST.bin"
 Remove-Item $refusalOutput -ErrorAction SilentlyContinue
 
-& $py .\tests\pqc_device_resident\diagnose_dr2d_mlkem512_kpke_w0_token_tap.py `
+& `$py` .\tests\pqc_device_resident\diagnose_dr2d_mlkem512_kpke_w0_token_tap.py `
   --d-hex ("00" * 32) --request-id 1 --output $refusalOutput
 
 if ($LASTEXITCODE -ne 3) { throw "authorization guard did not return exit 3" }

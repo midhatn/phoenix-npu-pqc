@@ -5,7 +5,7 @@ narrow, terminal-only subgraph toward FIPS 203 K-PKE.KeyGen; it is not K-PKE Key
 
 ## Scope and composability
 
-For ML-KEM-512, FIPS 203 Table 2 fixes $k=2$ and $\eta_1=3$.  K-PKE.KeyGen
+For ML-KEM-512, FIPS 203 Table 2 fixes $k=2$and$\eta_1=3$.  K-PKE.KeyGen
 uses counters 0, 1 for the secret vector and 2, 3 for the error vector.  One
 DR2b request computes exactly one of these four components:
 

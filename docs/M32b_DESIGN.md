@@ -6,13 +6,9 @@ M32b delivers the NTT arithmetic layer of the Track 4 Post-Quantum Cryptography 
 
 ## 2. Mathematical background
 
-ML-KEM works in the ring $ R_q = \mathbb{Z}_q[X]/(X^{256} + 1) $ with $ q = 3329 $ and $ n = 256 $, as specified in [FIPS 203 §2.4.4](https://nvlpubs.nist.gov/nistpubs/fips/nist.fips.203.pdf). Since $ q - 1 = 2^8 \cdot 13 $, the base field contains primitive 256th roots of unity but not primitive 512th roots — the defining polynomial $ X^{256}+1 $ therefore factors modulo $ q $ into **128 quadratic factors** rather than 256 linear factors ([CRYSTALS-Kyber round-3 specification, §1.4](https://pq-crystals.org/kyber/data/kyber-specification-round3-20210131.pdf)):
+ML-KEM works in the ring $R_q = \mathbb{Z}_q[X]/(X^{256} + 1)$ with $q = 3329$ and $n = 256$, as specified in [FIPS 203 §2.4.4](https://nvlpubs.nist.gov/nistpubs/fips/nist.fips.203.pdf). Since $q - 1 = 2^8 \cdot 13$, the base field contains primitive 256th roots of unity but not primitive 512th roots — the defining polynomial $X^{256}+1$ therefore factors modulo $q$ into **128 quadratic factors** rather than 256 linear factors ([CRYSTALS-Kyber round-3 specification, §1.4](https://pq-crystals.org/kyber/data/kyber-specification-round3-20210131.pdf)):
 
-$$
-X^{256}+1 \;\equiv\; \prod_{i=0}^{127}\bigl(X^2 - \zeta^{2\mathrm{brv}_7(i)+1}\bigr) \pmod{q},
-$$
-
-where $ \zeta = 17 $ is the first primitive 256th root of unity mod $ q $, and $ \mathrm{brv}_7 $ is the 7-bit bit-reversal function ([Kyber CFRG draft rev 04](https://www.ietf.org/archive/id/draft-cfrg-schwabe-kyber-04.html)). The negacyclic NTT therefore maps a polynomial to a vector of 128 degree-1 polynomials indexed in bit-reversed order — this is the "incomplete" NTT convention adopted verbatim by FIPS 203 and by every mainstream ML-KEM implementation.
+$$X^{256}+1 \;\equiv\; \prod_{i=0}^{127}\bigl(X^2 - \zeta^{2\mathrm{brv}_7(i)+1}\bigr) \pmod{q},$$where$ \zeta = 17 $is the first primitive 256th root of unity mod$ q $, and $\mathrm{brv}_7$ is the 7-bit bit-reversal function ([Kyber CFRG draft rev 04](https://www.ietf.org/archive/id/draft-cfrg-schwabe-kyber-04.html)). The negacyclic NTT therefore maps a polynomial to a vector of 128 degree-1 polynomials indexed in bit-reversed order — this is the "incomplete" NTT convention adopted verbatim by FIPS 203 and by every mainstream ML-KEM implementation.
 
 ### 2.1 Forward NTT (Algorithm 9)
 
@@ -30,26 +26,24 @@ for (len = 128; len >= 2; len >>= 1)
   }
 ```
 
-The 128-entry `zetas` table stores `R * 17^{brv7(k)} mod q` in signed representation for `k = 0..127`, with `R = 2^{16}` — this is the Montgomery-domain form, so every `fqmul` produces a value already reduced by a single factor of $ R^{-1} $.
+The 128-entry `zetas` table stores `R * 17^{brv7(k)} mod q` in signed representation for `k = 0..127`, with `R = 2^{16}` — this is the Montgomery-domain form, so every `fqmul` produces a value already reduced by a single factor of $R^{-1}$.
 
 ### 2.2 Inverse NTT (Algorithm 10)
 
-Gentleman-Sande butterflies, bit-reversed input, standard-order output, plus a trailing scale by `f = 1441 = R^2 / n mod q`. The composition folds the negacyclic $ 1/n $ factor with a Montgomery-to-Montgomery lift, so the net effect of `invntt_tomont(ntt(a))` is $ a \cdot R \pmod q $ — an extra factor of $ R $ that later Montgomery multiplications naturally consume.
+Gentleman-Sande butterflies, bit-reversed input, standard-order output, plus a trailing scale by `f = 1441 = R^2 / n mod q`. The composition folds the negacyclic $1/n$ factor with a Montgomery-to-Montgomery lift, so the net effect of `invntt_tomont(ntt(a))` is $a \cdot R \pmod q$ — an extra factor of $R$ that later Montgomery multiplications naturally consume.
 
 ### 2.3 Base-case multiply (Algorithm 12) and `MultiplyNTTs` (Algorithm 11)
 
-Because the NTT factors $ X^{256}+1 $ into quadratic factors, each pointwise product is a polynomial multiplication modulo $ X^2 - \gamma $ with $ \gamma = \pm\zeta^{2\mathrm{brv}_7(k)+1} $:
+Because the NTT factors $X^{256}+1$ into quadratic factors, each pointwise product is a polynomial multiplication modulo $X^2 - \gamma$ with $\gamma = \pm\zeta^{2\mathrm{brv}_7(k)+1}$:
 
-$$
-(a_0 + a_1 X)(b_0 + b_1 X) \bmod (X^2 - \gamma) \;=\; (a_0 b_0 + \gamma a_1 b_1) + (a_0 b_1 + a_1 b_0)\,X.
-$$
+$$(a_0 + a_1 X)(b_0 + b_1 X) \bmod (X^2 - \gamma) \;=\; (a_0 b_0 + \gamma a_1 b_1) + (a_0 b_1 + a_1 b_0)\,X.$$
 
 `poly_basemul_montgomery` iterates over 64 index blocks; the +/- pairing captures the two conjugate roots per bit-reversal orbit.
 
 ### 2.4 Montgomery and Barrett reductions
 
-* **Montgomery** ([`ref/reduce.c`](https://github.com/pq-crystals/kyber/blob/main/ref/reduce.c)): given `int32_t a` in the range $[-q\cdot 2^{15}, q\cdot 2^{15}-1]$, returns `int16_t` congruent to $ a \cdot R^{-1} \pmod q $ using `QINV = q^{-1} mod 2^{16} = -3327` and `R = 2^{16}`.
-* **Barrett**: keeps coefficients in the canonical signed window $ (-\tfrac{q-1}{2}, \tfrac{q-1}{2}] $ using $ v = \lfloor(2^{26} + q/2)/q\rfloor = 20159 $.
+* **Montgomery** ([`ref/reduce.c`](https://github.com/pq-crystals/kyber/blob/main/ref/reduce.c)): given `int32_t a` in the range $[-q\cdot 2^{15}, q\cdot 2^{15}-1]$, returns `int16_t` congruent to $a \cdot R^{-1} \pmod q$ using `QINV = q^{-1} mod 2^{16} = -3327` and `R = 2^{16}`.
+* **Barrett**: keeps coefficients in the canonical signed window $(-\tfrac{q-1}{2}, \tfrac{q-1}{2}]$ using $v = \lfloor(2^{26} + q/2)/q\rfloor = 20159$.
 
 Both are transliterated line-for-line into the AIE2 kernel and the Python host reference.
 

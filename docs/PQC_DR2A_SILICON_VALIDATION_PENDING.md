@@ -16,9 +16,7 @@ across all 256 returned coefficient lanes.
 The graph accepts `rho[32]`, ML-KEM-512 coordinates `(j,i)` in `0..1`, and a
 request ID.  It produces one terminal 256-lane `int16` polynomial for
 
-$$
-\mathrm{SampleNTT}(\mathrm{SHAKE128}(\rho\mathbin\Vert j\mathbin\Vert i))
-$$
+$$\mathrm{SampleNTT}(\mathrm{SHAKE128}(\rho\mathbin\Vert j\mathbin\Vert i))$$
 
 or a fixed terminal error.  It schedules five 168-byte SHAKE128 blocks, which
 is 280 three-byte candidate iterations, the bounded minimum identified by

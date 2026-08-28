@@ -27,22 +27,24 @@ claims, and filenames; they are not rewritten to imply a broader result.
 - [DR2a design](PQC_DR2A_DESIGN.md) and [validation record](PQC_DR2A_SILICON_VALIDATION_PENDING.md).
 - [DR2b design](PQC_DR2B_DESIGN.md) and [validation record](PQC_DR2B_SILICON_VALIDATION_PENDING.md).
 - [DR2c design](PQC_DR2C_DESIGN.md), [handoff](PQC_DR2C_MLKEM512_KEYGEN_ROW_HANDOFF_20260817.md), and [physical validation record](PQC_DR2C_SILICON_VALIDATION_PENDING.md).
-- [DR2d design](PQC_DR2D_DESIGN.md), [physical-status record](PQC_DR2D_SILICON_VALIDATION_PENDING.md), and [ELF audit](PQC_DR2D_FULLWORD_PRODUCTION_ELF_AUDIT_20260818.md).
+- [DR2d design](PQC_DR2D_DESIGN.md), [physical validation record (25/25 PASS)](PQC_DR2D_SILICON_VALIDATION_20260828.md), and [ELF audit](PQC_DR2D_FULLWORD_PRODUCTION_ELF_AUDIT_20260818.md).
+- [DR3 design](PQC_DR3_DESIGN.md) and [physical validation record (25/25 PASS)](PQC_DR3_SILICON_VALIDATION_20260828.md) — 100% on-device ML-KEM-512 `K-PKE.Encrypt`.
 
 ## DR2d provenance and protected evidence
 
-- [DR2 expert escalation](PQC_DR2_EXPERT_ESCALATION_20260818.md) — records the integrated physical `0/25` result and stop state.
+- [DR2 expert escalation](PQC_DR2_EXPERT_ESCALATION_20260818.md) — historical record of initial physical diagnostic and resolution path.
 - [Local forensic recovery](PQC_DR2_LOCAL_FORENSIC_RECOVERY_20260818.md) — provenance of recovered DR2 material.
 - [W0 token-tap diagnostic handoff](PQC_DR2D_W0_TOKEN_TAP_DIAGNOSTIC_V2_20260818_HANDOFF.md).
 - [Protected DR2 evidence inventory](pqc_dr2_evidence_20260818/README.md) — includes `SHA256SUMS`; do not edit the evidence or manifest.
 
 ## Environment, maintenance, and citations
 
+- [Comprehensive PQC citation and mathematics audit (2026-08-28)](PQC_CITATION_AND_MATHEMATICS_AUDIT_20260828.md) — scientific citation ledger, mathematical derivations, algorithmic proofs, and ACVP vector provenance.
 - [Windows setup](SETUP_WINDOWS.md) — primary `py .\install` native clean-clone path, non-dispatching maintenance modes, and canonical gate contract — and [toolchain pin rationale](M2_TOOLCHAIN_PIN.md).
 - [Audit and remediation record](PQC_AUDIT_REMEDIATION_20260818.md) — current
   correction ledger, source references, boundaries, and remaining blockers.
 - [Publication readiness](PUBLICATION_READINESS.md) — claim/evidence matrix,
-  narrow DR2 boundaries, publication blockers, retention, and tag policy.
+  narrow DR2/DR3 boundaries, publication blockers, retention, and tag policy.
 - [Journal reproducibility checklist](JOURNAL_REPRODUCIBILITY_CHECKLIST.md) —
   manuscript-ready clean-checkout, evidence, negative-result, and citation
   controls.

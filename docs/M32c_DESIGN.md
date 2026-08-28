@@ -31,9 +31,7 @@ All three are the *only* sources of randomness inside ML-KEM key generation and 
 
 FIPS 202 §3.1 defines the Keccak-*p* family and fixes SHA-3 / SHAKE to use Keccak-*f*[1600] = Keccak-*p*[1600, 24] ([FIPS 202 §5.2](https://nvlpubs.nist.gov/nistpubs/fips/nist.fips.202.pdf)). The permutation state is a 5 × 5 × 64-bit array
 
-$$
-A : \{0,1,2,3,4\} \times \{0,1,2,3,4\} \times \{0,1,\dots,63\} \to \{0,1\}
-$$
+$$A : \{0,1,2,3,4\} \times \{0,1,2,3,4\} \times \{0,1,\dots,63\} \to \{0,1\}$$
 
 stored as 25 lanes of 64 bits each, with `lane(x,y) = A[x,y,·]` treated as a little-endian 64-bit word ([Keccak specifications summary](https://keccak.team/keccak_specs_summary.html)). One round applies five step mappings θ, ρ, π, χ, ι in sequence; Keccak-*f*[1600] applies 24 rounds:
 
@@ -77,12 +75,7 @@ function names at the implementation boundary; do not introduce a separate
 
 `SampleNTT` converts a 32-byte seed plus a 2-byte (j, i) domain-separation tag into a uniform ring element `â ∈ R_q` where `R_q = Z_q[X] / (X²⁵⁶ + 1)` and `q = 3329`. The algorithm feeds `(seed ‖ j ‖ i)` into SHAKE128 as an XOF and consumes bytes three at a time. Each 3-byte block is unpacked into two 12-bit little-endian integers
 
-$$
-d_1 = b_0 + 256 (b_1 \bmod 16), \qquad d_2 = \lfloor b_1 / 16 \rfloor + 16 b_2
-$$
-
-and each 12-bit integer is accepted iff it is < q. With acceptance probability
-$p = 3329/4096$, each three-byte group supplies two independent candidates.
+$$d_1 = b_0 + 256 (b_1 \bmod 16), \qquad d_2 = \lfloor b_1 / 16 \rfloor + 16 b_2$$and each 12-bit integer is accepted iff it is < q. With acceptance probability$p = 3329/4096$, each three-byte group supplies two independent candidates.
 The expected group count to accept 256 coefficients is
 $256/(2p) \approx 157.49$, or about 472.47 bytes (about 2.81 SHAKE128 rate
 blocks). A conforming unbounded implementation must squeeze additional
@@ -96,9 +89,7 @@ limit-status field, so it is not a FIPS-conformance claim ([FIPS 203, Algorithm
 
 `SamplePolyCBDη` produces a ring element whose 256 coefficients are drawn from the centered binomial distribution CBD(η): each coefficient equals ∑ aᵢ − ∑ bᵢ where a₁ … aη and b₁ … bη are η pairs of independent uniform bits. The routine consumes exactly 64η bytes of PRF (SHAKE256) output — 128 bytes for η = 2 (ML-KEM-768/1024) or 192 bytes for η = 3 (ML-KEM-512) — and lays them out as a bit stream. Coefficient i is
 
-$$
-f_i = \sum_{j=0}^{\eta-1} B[2\eta i + j] - \sum_{j=0}^{\eta-1} B[2\eta i + \eta + j]
-$$
+$$f_i = \sum_{j=0}^{\eta-1} B[2\eta i + j] - \sum_{j=0}^{\eta-1} B[2\eta i + \eta + j]$$
 
 where `B[·]` indexes the bit stream in little-endian byte-bit order (LSB-first within each byte). Output coefficients lie in {−η, …, +η}. For η = 2 the distribution has variance 1; for η = 3 the variance is 3/2 ([Kyber CFRG draft §2.4](https://www.ietf.org/archive/id/draft-cfrg-schwabe-kyber-04.html)).
 
