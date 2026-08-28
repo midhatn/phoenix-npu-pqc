@@ -441,6 +441,7 @@ Primary closure requires:
 - Applicable ACVP and independent vector coverage, malformed-input and
   mutation tests, repeated requests, lifecycle/zeroization, resource fit, and
   physical evidence.
+- Microarchitectural vector acceleration utilizing VLIW carry-save modular arithmetic, spatial ObjectFIFO streaming, and 64 MAC/cycle 16-bit integer density (see [`docs/PQC_HARDWARE_CRYPTO_ACCELERATION_AND_LITERATURE_ANALYSIS.md`](PQC_HARDWARE_CRYPTO_ACCELERATION_AND_LITERATURE_ANALYSIS.md)).
 
 DR15 is the **primary 100% NPU implementation gate**. It cannot close unless
 every DR through DR15 is accepted and integrated evidence demonstrates full
