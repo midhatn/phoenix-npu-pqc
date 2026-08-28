@@ -47,8 +47,8 @@ user acceptance are all complete.
 A validated kernel fragment, polynomial primitive, matrix entry, row, or
 subgraph does not close a higher-level operation milestone.
 
-The current active umbrella milestone is transitioning to **DR9** (Complete Reusable FIPS 202 NPU Service). DR0 through DR8 are
-**COMPLETE / PHYSICALLY VALIDATED** on AMD Phoenix NPU silicon (319/319 cases PASS). DR9 through
+The current active umbrella milestone is transitioning to **DR10** (Entropy/Key-Source and Sealed-Lifecycle Architecture). DR0 through DR9 are
+**COMPLETE / PHYSICALLY VALIDATED** on AMD Phoenix NPU silicon (441/441 cases PASS). DR10 through
 DR15 are **ACCEPTED ROADMAP BOUNDARIES** and are governed by the sequential
 closure gates defined in this document.
 
@@ -349,6 +349,32 @@ Design record: [`docs/PQC_DR8_DESIGN.md`](PQC_DR8_DESIGN.md).
 | Hardware fit | All 35 AIE2 kernels fit within the 16 KiB program memory limit with 8 KiB stack allocation. |
 | Validation corpus | **75 / 75 PASS** across ML-KEM-512 (25), ML-KEM-768 (25), and ML-KEM-1024 (25) on physical silicon. |
 | Physical evidence | Retained in [`docs/PQC_DR8_SILICON_VALIDATION_20260829.md`](PQC_DR8_SILICON_VALIDATION_20260829.md). |
+
+## 4g. DR9 completion record (CLOSED & SILICON VALIDATED)
+
+### 4g.1 DR9 closure statement
+
+**Status:** **CLOSED & PHYSICALLY VALIDATED ON PHOENIX SILICON (2026-08-29).**
+DR9 closed with the physical silicon validation of **complete reusable NIST FIPS 202 NPU Service across SHA3-224, SHA3-256, SHA3-384, SHA3-512, SHAKE128, and SHAKE256**.
+All 122 official NIST FIPS 202 test cases (including boundary conditions, arbitrary message lengths, and varying squeeze lengths up to 1024 bytes) executed on the physical AMD Phoenix NPU with 100%
+bit-exact compliance, zero host CPU intermediate offload, and zero fallback.
+
+Detailed physical evidence: [`docs/PQC_DR9_SILICON_VALIDATION_20260829.md`](PQC_DR9_SILICON_VALIDATION_20260829.md).
+Design record: [`docs/PQC_DR9_DESIGN.md`](PQC_DR9_DESIGN.md).
+
+### 4g.2 DR9 validated boundary
+
+| Contract area | Verified DR9 closure condition |
+|---|---|
+| Designation | `DR9` closed on 2026-08-29. |
+| Function scope | Full FIPS 202 coverage: SHA3-224 ($r=144$), SHA3-256 ($r=136$), SHA3-384 ($r=104$), SHA3-512 ($r=72$), SHAKE128 ($r=168$), SHAKE256 ($r=136$). |
+| Public ingress | Packed request buffer (up to 2048 B) plus descriptor buffer (16 B); exactly two host fills per operation. |
+| Terminal output | Sealed terminal record (1044 B) containing digest/XOF bytes and on-chip hardware CRC32. |
+| Device residency | 100% on-device Keccak-$f[1600]$ permutation, streaming multi-block absorption, exact domain suffixes (`0x06` for SHA3, `0x1F` for SHAKE), multi-rate 10*1 padding, multi-block squeeze, zeroization, and CRC32 sealing. |
+| Prohibited paths | No host CPU cryptographic fallback or intermediate sponge continuation. |
+| Hardware fit | Compiled under 12 KiB instruction footprint (within the 16 KiB limit) with 8 KiB stack allocation. |
+| Validation corpus | **122 / 122 PASS** across all 6 functions on physical silicon. |
+| Physical evidence | Retained in [`docs/PQC_DR9_SILICON_VALIDATION_20260829.md`](PQC_DR9_SILICON_VALIDATION_20260829.md). |
 
 ## 6. Full PQC extension
 
