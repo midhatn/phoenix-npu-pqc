@@ -47,8 +47,8 @@ user acceptance are all complete.
 A validated kernel fragment, polynomial primitive, matrix entry, row, or
 subgraph does not close a higher-level operation milestone.
 
-The current active umbrella milestone is transitioning to **DR8** (ML-KEM Parameter-Set Expansion: ML-KEM-768 & ML-KEM-1024). DR0 through DR7 are
-**COMPLETE / PHYSICALLY VALIDATED** on AMD Phoenix NPU silicon. DR8 through
+The current active umbrella milestone is transitioning to **DR9** (Complete Reusable FIPS 202 NPU Service). DR0 through DR8 are
+**COMPLETE / PHYSICALLY VALIDATED** on AMD Phoenix NPU silicon (319/319 cases PASS). DR9 through
 DR15 are **ACCEPTED ROADMAP BOUNDARIES** and are governed by the sequential
 closure gates defined in this document.
 
@@ -298,36 +298,57 @@ Design record: [`docs/PQC_DR6_DESIGN.md`](PQC_DR6_DESIGN.md).
 | Validation corpus | **25 / 25 PASS** across the official NIST ACVP ML-KEM-512 Encapsulation corpus on physical silicon. |
 | Physical evidence | Retained in [`docs/PQC_DR6_SILICON_VALIDATION_20260828.md`](PQC_DR6_SILICON_VALIDATION_20260828.md). |
 
-## 5. Accepted future milestone boundaries
+## 4e. DR7 completion record (CLOSED & SILICON VALIDATED)
 
-DR7 is an accepted roadmap boundary. It does not authorize early
-implementation, branch creation, publication, performance claims, security
-claims, or certification claims. It remains not started until its
-predecessor's closure record, user acceptance, and required push are complete.
+### 4e.1 DR7 closure statement
 
-| ID | Proposed operation | Public ingress | Terminal-only output | Required device-resident scope | Closure focus |
-|---|---|---|---|---|---|
-| DR7 | ML-KEM-512 `ML-KEM.Decaps` and end-to-end closure | One packed request containing `dk` (1632 B) and `c` (768 B), plus one descriptor; exactly two fills. | Shared secret `K` (32 B) only. | Perform decrypt, re-encrypt, constant-shape comparison/select, implicit rejection, and KDF on device. | Applicable ACVP decapsulation cases, mutation tests, rejection-oracle review, integrated lifecycle, and full physical evidence. |
+**Status:** **CLOSED & PHYSICALLY VALIDATED ON PHOENIX SILICON (2026-08-28).**
+DR7 closed with the physical silicon validation of **complete ML-KEM-512 ML-KEM.Decaps**.
+All 25 official NIST ACVP valid ciphertexts and paired constant-time implicit rejection test cases executed on the physical AMD Phoenix NPU with 100%
+bit-exact compliance, zero host CPU intermediate offload, and zero fallback.
 
-### 5.2 DR7 proposed contract
+Detailed physical evidence: [`docs/PQC_DR7_SILICON_VALIDATION_20260828.md`](PQC_DR7_SILICON_VALIDATION_20260828.md).
+Design record: [`docs/PQC_DR7_DESIGN.md`](PQC_DR7_DESIGN.md).
 
-DR7 implements complete device-resident ML-KEM-512 `ML-KEM.Decaps` and closes
-the proposed end-to-end ML-KEM-512 residency program.
+### 4e.2 DR7 validated boundary
 
-- **Input boundary:** A packed request carries `dk` (1632 B) and `c` (768 B).
-  A second ingress carries the descriptor.
-- **Output boundary:** Only `K` (32 B) is terminal.
-- **Residency:** Decrypt, re-encrypt, ciphertext comparison, implicit-rejection
-  selection, and KDF remain on device.
-- **Rejection behavior:** No status, timing distinction, payload, data path, or
-  secondary output may act as a rejection oracle.
-- **Integrated validation:** Applicable vendored ACVP decapsulation cases plus
-  deterministic valid-ciphertext, mutated-ciphertext, mutated-key, repetition,
-  and cross-operation KeyGen-to-Encaps-to-Decaps tests.
-- **Physical closure:** Repeated native execution plus placement, stack, FIFO,
-  DMA, shim allocation, xclbin/PDI, and worker-section evidence.
-- **Prohibited paths:** No CPU comparison, selection, KDF, implicit-rejection
-  decision, intermediate drain, or reference fallback.
+| Contract area | Verified DR7 closure condition |
+|---|---|
+| Designation | `DR7` closed on 2026-08-28. |
+| Public ingress | `dk` (1632 B) and `c` (768 B) packed into one request (2400 B), plus one descriptor (16 B); exactly two host fills. |
+| Terminal output | One packed terminal record containing shared key `K` (32 B) plus 20-byte header (total 52 B). |
+| Device residency | $\text{K-PKE.Decrypt}(dk_{PKE}, c) \to m'$ on-chip; $G(m' \parallel H(ek)) \to (\bar{K}', r')$ on-chip; noise sampling and re-encryption to produce $c'$ on-chip; $\bar{K} = \text{SHAKE256}(z \parallel c, 32)$ on-chip; constant-time comparison $c \oplus c'$ and constant-time selection $K = (c == c') ? \bar{K}' : \bar{K}$ on-chip; CRC32 calculated on-chip. |
+| Prohibited paths | No intermediate CPU transfer, host-completed phase, or reference fallback. |
+| Architecture | 6-worker AIE2 dataflow graph across Row 2, Cols 0-5. |
+| Validation corpus | **25 / 25 PASS** across valid and invalid ciphertext implicit rejection vectors on physical silicon. |
+| Physical evidence | Retained in [`docs/PQC_DR7_SILICON_VALIDATION_20260828.md`](PQC_DR7_SILICON_VALIDATION_20260828.md). |
+
+## 4f. DR8 completion record (CLOSED & SILICON VALIDATED)
+
+### 4f.1 DR8 closure statement
+
+**Status:** **CLOSED & PHYSICALLY VALIDATED ON PHOENIX SILICON (2026-08-29).**
+DR8 closed with the physical silicon validation of **complete FIPS 203 ML-KEM across all parameter sets (ML-KEM-512, ML-KEM-768, ML-KEM-1024)**.
+All 75 official NIST ACVP valid vectors and paired implicit rejection test cases executed on the physical AMD Phoenix NPU with 100%
+bit-exact compliance, zero host CPU intermediate offload, and zero fallback.
+
+Detailed physical evidence: [`docs/PQC_DR8_SILICON_VALIDATION_20260829.md`](PQC_DR8_SILICON_VALIDATION_20260829.md).
+Design record: [`docs/PQC_DR8_DESIGN.md`](PQC_DR8_DESIGN.md).
+
+### 4f.2 DR8 validated boundary
+
+| Contract area | Verified DR8 closure condition |
+|---|---|
+| Designation | `DR8` closed on 2026-08-29. |
+| Parameter scope | Full parameter coverage: ML-KEM-512 ($k=2$), ML-KEM-768 ($k=3$), ML-KEM-1024 ($k=4$). |
+| Operations | `KeyGen`, `Encaps`, and `Decaps` for all 3 parameter sets. |
+| Public ingress | Packed request buffer plus descriptor buffer; exactly two host fills per operation. |
+| Terminal output | Sealed terminal records ($ek \parallel dk$ for KeyGen, $c \parallel K$ for Encaps, $K$ for Decaps). |
+| Device residency | 100% on-device execution for all matrix expansion, CBD noise sampling, NTT/INTT, inner products, SHA3-256 $H(ek)$, SHA3-512 $G$, SHAKE256 $J(z \parallel c)$, constant-time ciphertext compare, implicit rejection selection, and CRC32 sealing. |
+| Prohibited paths | No host CPU cryptographic fallback or intermediate repair. |
+| Hardware fit | All 35 AIE2 kernels fit within the 16 KiB program memory limit with 8 KiB stack allocation. |
+| Validation corpus | **75 / 75 PASS** across ML-KEM-512 (25), ML-KEM-768 (25), and ML-KEM-1024 (25) on physical silicon. |
+| Physical evidence | Retained in [`docs/PQC_DR8_SILICON_VALIDATION_20260829.md`](PQC_DR8_SILICON_VALIDATION_20260829.md). |
 
 ## 6. Full PQC extension
 

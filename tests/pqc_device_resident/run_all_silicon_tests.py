@@ -1,6 +1,7 @@
 # SPDX-License-Identifier: Apache-2.0
 """Master runner for all device-resident PQC silicon tests on AMD Phoenix NPU."""
 import subprocess
+import os
 import sys
 from pathlib import Path
 
@@ -17,6 +18,7 @@ TESTS = [
     ("DR5  (ML-KEM-512 ML-KEM.KeyGen)", "tests/pqc_device_resident/test_dr5_mlkem512_keygen_silicon.py"),
     ("DR6  (ML-KEM-512 ML-KEM.Encaps)", "tests/pqc_device_resident/test_dr6_mlkem512_encaps_silicon.py"),
     ("DR7  (ML-KEM-512 ML-KEM.Decaps)", "tests/pqc_device_resident/test_dr7_mlkem512_decaps_silicon.py"),
+    ("DR8  (ML-KEM-768/1024 Expansion)", "tests/pqc_device_resident/test_dr8_mlkem_unified_silicon.py"),
 ]
 
 def main():
@@ -28,7 +30,8 @@ def main():
     
     for name, test_path in TESTS:
         print(f"\n>>> Running {name} on physical hardware...")
-        res = subprocess.run([PYTHON_EXE, test_path])
+        env = dict(os.environ, PYTHONPATH=str(Path(__file__).resolve().parents[2]))
+        res = subprocess.run([PYTHON_EXE, test_path], env=env)
         if res.returncode == 0:
             print(f">>> {name}: PASS")
             passed_milestones += 1
