@@ -6,7 +6,7 @@
 ![Target: AMD Phoenix NPU1](https://img.shields.io/badge/Target-AMD%20Ryzen%20AI%20NPU1%20(AIE2)-blue)
 ![Research: Post-Quantum Cryptography](https://img.shields.io/badge/Research-Post--Quantum%20Cryptography-8a2be2)
 ![Standards: FIPS 202/203/204](https://img.shields.io/badge/Standards-FIPS%20202%20%2F%20203%20%2F%20204-005ea8)
-![Status: DR2d Closed (119/119 Silicon PASS)](https://img.shields.io/badge/Status-DR2d%2025%2F25%20PASS%20%C2%B7%20119%2F119%20Silicon-brightgreen)
+![Status: DR3 Closed (144/144 Silicon PASS)](https://img.shields.io/badge/Status-DR3%2025%2F25%20PASS%20%C2%B7%20144%2F144%20Silicon-brightgreen)
 [![CI](https://github.com/midhatn/phoenix-npu-pqc/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/midhatn/phoenix-npu-pqc/actions/workflows/ci.yml)
 
 **Private research repository for post-quantum cryptography on AMD Ryzen AI Phoenix NPU1 (XDNA1 / AIE2).**
@@ -18,7 +18,7 @@
 Phoenix NPU PQC is a focused continuation of the PQC work separated from the
 historical `phoenix-sdr-dsp` repository. It contains ML-KEM and ML-DSA research
 code, host-preflight contract tests, native physical gates, toolchain
-metadata, and the retained DR2 provenance needed to interpret the work accurately.
+metadata, and the retained DR2/DR3 provenance needed to interpret the work accurately.
 
 | Research layer | Current evidence boundary |
 | --- | --- |
@@ -26,7 +26,8 @@ metadata, and the retained DR2 provenance needed to interpret the work accuratel
 | **DR0 / DR1** | Fail-closed native gates exist for the M33 ring product (24/24) and the ML-DSA-44 ExpandA / rejection-sampling / NTT path (33/33), both verified on physical Phoenix silicon. |
 | **DR2a / DR2b / DR2c** | Independent physical passes verified for ML-KEM-512 `SampleNTT` (13/13), CBD3/NTT noise (13/13), and terminal KeyGen row (11/11). |
 | **DR2d** | Complete ML-KEM-512 K-PKE.KeyGen 6-worker dataflow pipeline. Recorded physical result is **TOTAL 25/25 PASS** across the official NIST ACVP corpus on physical Phoenix NPU silicon. |
-| **Canonical suite** | Complete canonical runner passes all 6 gates (**119/119 cases**) on physical Phoenix silicon. |
+| **DR3** | Complete ML-KEM-512 K-PKE.Encrypt 5-worker dataflow pipeline. Recorded physical result is **TOTAL 25/25 PASS** across the official NIST ACVP corpus on physical Phoenix NPU silicon. |
+| **Canonical suite** | Complete canonical runner passes all 7 gates (**144/144 cases**) on physical Phoenix silicon. |
 | **Program goal** | 100% NPU residency for the supported FIPS 202/203/204 cryptographic operations, with no host cryptographic fallback or intermediate repair. |
 
 The claim boundaries and roadmap sequencing are defined in
@@ -35,7 +36,7 @@ The claim boundaries and roadmap sequencing are defined in
 
 ### Current physical-result status — 2026-08-28
 
-The canonical silicon test suite executed and validated **119 / 119 cases across all 6 gates (DR0 24/24, DR1 33/33, DR2a 13/13, DR2b 13/13, DR2c 11/11, DR2d 25/25)** on the physical AMD Phoenix NPU (Ryzen 9 7940HS w/ AIE2). All cryptographic transformations execute 100% on-device with zero host fallback.
+The canonical silicon test suite executed and validated **144 / 144 cases across all 7 gates (DR0 24/24, DR1 33/33, DR2a 13/13, DR2b 13/13, DR2c 11/11, DR2d 25/25, DR3 25/25)** on the physical AMD Phoenix NPU (Ryzen 9 7940HS w/ AIE2). All cryptographic transformations execute 100% on-device with zero host fallback.
 
 ## Scope
 
