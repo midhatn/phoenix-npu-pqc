@@ -18,7 +18,8 @@ Normative algorithm reference: NIST FIPS 203 Section 6.2, Algorithm 16 (`ML-KEM.
 
 ### 2.1 Algorithm Steps
 
-$$\begin{aligned}
+$$
+\begin{aligned}
 &\textbf{Algorithm 16: } \text{ML-KEM.Encaps}(ek) \\
 &\textbf{Input: } \text{Encapsulation key } ek \in \mathcal{B}^{800} \\
 &\textbf{Deterministic Input (Testing): } \text{Random seed } m \in \mathcal{B}^{32} \\
@@ -28,7 +29,8 @@ $$\begin{aligned}
 &3: c \leftarrow \text{K-PKE.Encrypt}(ek, m, r) \quad [768\text{ bytes}] \\
 &4: K \leftarrow \bar{K} \quad [32\text{ bytes}] \\
 &5: \textbf{return } (c, K)
-\end{aligned}$$
+\end{aligned}
+$$
 
 ---
 

@@ -8,7 +8,11 @@ M32b delivers the NTT arithmetic layer of the Track 4 Post-Quantum Cryptography 
 
 ML-KEM works in the ring $R_q = \mathbb{Z}_q[X]/(X^{256} + 1)$ with $q = 3329$ and $n = 256$, as specified in [FIPS 203 §2.4.4](https://nvlpubs.nist.gov/nistpubs/fips/nist.fips.203.pdf). Since $q - 1 = 2^8 \cdot 13$, the base field contains primitive 256th roots of unity but not primitive 512th roots — the defining polynomial $X^{256}+1$ therefore factors modulo $q$ into **128 quadratic factors** rather than 256 linear factors ([CRYSTALS-Kyber round-3 specification, §1.4](https://pq-crystals.org/kyber/data/kyber-specification-round3-20210131.pdf)):
 
-$$X^{256}+1 \;\equiv\; \prod_{i=0}^{127}\bigl(X^2 - \zeta^{2\mathrm{brv}_7(i)+1}\bigr) \pmod{q},$$where$ \zeta = 17 $is the first primitive 256th root of unity mod$ q $, and $\mathrm{brv}_7$ is the 7-bit bit-reversal function ([Kyber CFRG draft rev 04](https://www.ietf.org/archive/id/draft-cfrg-schwabe-kyber-04.html)). The negacyclic NTT therefore maps a polynomial to a vector of 128 degree-1 polynomials indexed in bit-reversed order — this is the "incomplete" NTT convention adopted verbatim by FIPS 203 and by every mainstream ML-KEM implementation.
+$$
+X^{256}+1 \equiv \prod_{i=0}^{127}\bigl(X^2 - \zeta^{2\mathrm{brv}_7(i)+1}\bigr) \pmod{q}
+$$
+
+where $\zeta = 17$ is the first primitive 256th root of unity modulo $q$, and $\mathrm{brv}_7$ is the 7-bit bit-reversal function ([Kyber CFRG draft rev 04](https://www.ietf.org/archive/id/draft-cfrg-schwabe-kyber-04.html)). The negacyclic NTT therefore maps a polynomial to a vector of 128 degree-1 polynomials indexed in bit-reversed order — this is the "incomplete" NTT convention adopted verbatim by FIPS 203 and by every mainstream ML-KEM implementation.
 
 ### 2.1 Forward NTT (Algorithm 9)
 

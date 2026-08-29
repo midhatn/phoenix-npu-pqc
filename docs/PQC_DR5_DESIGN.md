@@ -33,13 +33,15 @@ The implementation satisfies the strict 100% NPU residency invariant:
 
 The mathematical flow of `ML-KEM.KeyGen` is defined as:
 
-$$\begin{aligned}
+$$
+\begin{aligned}
 (d, z) &\leftarrow \mathcal{B}^{32} \times \mathcal{B}^{32} \\
 (ek_{PKE}, dk_{PKE}) &\leftarrow \text{K-PKE.KeyGen}(d) \\
 ek &\leftarrow ek_{PKE} \\
 dk &\leftarrow dk_{PKE} \parallel ek \parallel \text{SHA3-256}(ek) \parallel z \\
 \text{return } &(ek, dk)
-\end{aligned}$$
+\end{aligned}
+$$
 
 Where:
 - $ek_{PKE} = \text{ByteEncode}_{12}(\widehat{\mathbf{t}}) \parallel \rho$ (800 bytes)

@@ -17,8 +17,7 @@ AIE graph. Its only successful output is the canonical 256-lane
 $\widehat t[\mathrm{row}]$:
 
 $$
-\widehat t[i]=\mathrm{MultiplyNTTs}(\widehat A[i,0],\widehat s[0])+
-\mathrm{MultiplyNTTs}(\widehat A[i,1],\widehat s[1])+\widehat e[i]\pmod{3329}.
+\widehat{t}[i] = \text{MultiplyNTTs}(\widehat{A}[i,0], \widehat{s}[0]) + \text{MultiplyNTTs}(\widehat{A}[i,1], \widehat{s}[1]) + \widehat{e}[i] \pmod{3329}
 $$
 
 This is the existing FIPS 203 K-PKE.KeyGen relation, specialized to one

@@ -94,10 +94,9 @@ into the private token. The active W0 path does not perform an in-place NTT
 over packed token lanes and does not use the prior fixed 24-bit mask path.
 W1/W3 use bounded five-block SampleNTT. W2/W4 compute:
 
-\[
-\widehat t[i]=\sum_{j=0}^{1}\text{MultiplyNTTs}
-(\widehat A[i,j],\widehat s[j])+\widehat e[i]\pmod {3329}.
-\]
+$$
+\widehat{t}[i] = \sum_{j=0}^{1} \text{MultiplyNTTs}(\widehat{A}[i,j], \widehat{s}[j]) + \widehat{e}[i] \pmod{3329}
+$$
 
 The frozen 128-entry FIPS 203 zeta table is copied from physically validated
 DR2c. No worker computes runtime bit-reversed indices or modular powers. The
@@ -166,14 +165,12 @@ retains one 1,588-byte normal terminal record and one result CPU transfer.
 
 The fixture uses only descriptor byte 8 (`seed = 1` for case 1):
 
-\[
+$$
 \begin{aligned}
-t_0[i]&=13i+\mathrm{seed},&
-t_1[i]&=3328-(13i+\mathrm{seed}),\\
-s_0[i]&=11i+3\mathrm{seed},&
-s_1[i]&=3328-(11i+3\mathrm{seed}).
+t_0[i] &= 13i + \text{seed}, & t_1[i] &= 3328 - (13i + \text{seed}) \\
+s_0[i] &= 11i + 3\text{seed}, & s_1[i] &= 3328 - (11i + 3\text{seed})
 \end{aligned}
-\]
+$$
 
 All 1,024 lanes are canonical. The 32-byte `rho` is
 `0xa5 ^ descriptor[8 + (i mod 4)] ^ i`. The test-only expected terminal bytes
