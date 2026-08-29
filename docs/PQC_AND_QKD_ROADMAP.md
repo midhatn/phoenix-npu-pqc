@@ -246,7 +246,47 @@ To prevent session re-negotiation spikes ("state flapping") when QKD key arrival
 
 ---
 
-## 6. Version History & Milestone Release Matrix
+## 6. Architectural Feasibility, Risk Analysis & Proven Mitigations
+
+A rigorous cryptographic and physical accelerator roadmap must candidly address potential hardware bottlenecks and prove that no unsolvable engineering dead-ends exist:
+
+### ⚠️ Challenge 1: Falcon / FN-DSA (DR22) Floating-Point Side-Channels
+* **The Pitfall**: 
+  NIST FIPS 206 (FN-DSA / Falcon) requires Fast Fourier Sampling over NTRU lattices using **53-bit double-precision floating-point (FP64)**. The AMD Phoenix AIE2 vector processor has native **FP32** support, but **lacks native hardware FP64**. If FP64 is emulated naively in software, floating-point denormals (subnormal floats) execute in variable clock cycles, creating a **timing side-channel that can leak secret keys**.
+* **Proven Mitigation**:
+  1. **Verification on Hardware**: Falcon *verification* only requires integer polynomial arithmetic and norm comparisons—it runs natively on AIE2 vector tiles with zero floating-point vulnerability.
+  2. **Constant-Time Signing**: For signing, we utilize **fixed-point 64-bit integer arithmetic** with fractional scaling, or enable hardware Flush-to-Zero (FTZ) and Default-NaN modes in VLIW registers to enforce cycle-accurate constant-time execution on vector pipelines.
+
+### ⚠️ Challenge 2: NSA CNSA 2.0 (DR29) 64 KiB Tile SRAM Limits for ML-DSA-87 / 1024
+* **The Pitfall**: 
+  In ML-DSA-87, Matrix $\mathbf{A} \in \mathbb{Z}_q^{8 \times 7}$ consists of **56 polynomials** (56 KiB). When combined with vectors $\mathbf{s}_1, \mathbf{s}_2, \mathbf{y}, \mathbf{w}_1$, and hint tables, the working set exceeds the **64 KiB local SRAM of a single compute tile**.
+* **Proven Mitigation (Spatial Multi-Tile Partitioning)**:
+  * We do not load the full matrix onto one tile. Instead, we use a **4-Tile Compute Cluster (2×2 grid)** connected via 1-cycle direct neighbor crossbars and MemTiles (Row 1, 512 KiB shared SRAM). 
+  * Each tile processes a 2×2 sub-matrix chunk ($\le 28\text{ KiB}$), keeping each tile's working set strictly below 44 KiB.
+
+### ⚠️ Challenge 3: Optical QKD Rate Asymmetry vs. Gbps Network Throughput
+* **The Pitfall**: 
+  Optical QKD key production rates (10 kbps – 100 kbps) cannot supply raw One-Time-Pad (OTP) encryption for 10 Gbps / 100 Gbps network interfaces without immediate key starvation.
+* **Proven Mitigation (NIST SP 800-56C Dual KDF)**:
+  * QKD keys are never consumed as single-use OTP for bulk payload bytes. Instead, $K_{\text{QKD}}$ is consumed as the master entropy salt into the **NIST SP 800-56C two-step key derivation function** to periodically re-seed high-speed AES-256-GCM / ChaCha20 session keys on physical silicon.
+
+---
+
+### 📊 Summary Matrix: Feasibility & Risk Assessment
+
+| Milestone / Component | Primary Risk Factor | Feasibility | Proven Mitigation Strategy |
+| :--- | :--- | :---: | :--- |
+| **DR21: SLH-DSA (SPHINCS+)** | Tree traversal latency | **High** | Parallelize W-OTS+ and FORS hashes across all 20 tiles using SIMD Keccak. |
+| **DR22: FN-DSA (Falcon)** | FP64 precision & timing leakage | **Medium** | Use fixed-point representation; verify strictly with integer arithmetic. |
+| **DR23: OpenSSL Provider** | OS context-switching overhead | **High** | Zero-copy shared-memory ring buffers between OpenSSL and XRT drivers. |
+| **DR24: Inline WireGuard / IPsec** | Packet jitter under heavy load | **High** | Asynchronous background re-keying via ObjectFIFO DMA channels. |
+| **DR25: Masked Arithmetic (DPA)** | Share refresh PRNG bus stalls | **High** | On-chip local SHAKE-128 stream generators running inside tile microcode. |
+| **DR27: QRNG-OPENAPI / Ingress** | REST network latency spikes | **High** | DR27b Token-Bucket Key Reservoir with 5%/30% hysteresis buffer. |
+| **DR29: CNSA 2.0 (Cat 5)** | 64 KiB tile memory overflow | **High** | 4-Tile spatial clustering across Shared Memory Tiles (MemTiles). |
+
+---
+
+## 7. Version History & Milestone Release Matrix
 
 | Version | Status | Modules Included | Milestones | Physical Silicon Status |
 |---|---|---|---|:---:|
