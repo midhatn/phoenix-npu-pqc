@@ -1,4 +1,4 @@
-# Hybrid PQC & QKD Hardware Roadmap (v1.1.0 Released · v1.2.0 Planned)
+# Hybrid PQC & QKD Hardware Roadmap (v1.2.0 Certified · v1.3.0 Planned)
 ## Complete Standards Compliance, Architecture, and Design Requirements (DR) for Hybrid Execution on AMD Phoenix NPU (AIE2 / XDNA1)
 
 <div align="center">
@@ -9,7 +9,7 @@
 ![Entropy: QRNG-OPENAPI v1.0](https://img.shields.io/badge/Entropy-QRNG--OPENAPI%20v1.0-blueviolet)
 ![Target: AMD Phoenix NPU (AIE2 / XDNA1)](https://img.shields.io/badge/Hardware-AMD%20Phoenix%20AIE2%20(512--bit%20SIMD)-red)
 ![Residency: 100% On-Device Silicon](https://img.shields.io/badge/Residency-100%25%20On--Device%20(Zero%20Host%20Fallback)-brightgreen)
-![Status: v1.1.0 Certified (851/851 PASS)](https://img.shields.io/badge/Status-v1.1.0%20Certified%20%C2%B7%20851%2F851%20PASS-brightgreen)
+![Status: v1.2.0 Certified (851/851 PASS)](https://img.shields.io/badge/Status-v1.2.0%20Certified%20%C2%B7%20851%2F851%20PASS-brightgreen)
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.22164124.svg)](https://doi.org/10.5281/zenodo.22164124)
 
 </div>
@@ -297,5 +297,6 @@ A rigorous cryptographic and physical accelerator roadmap must candidly address 
 | Version | Status | Modules Included | Milestones | Physical Silicon Status |
 |---|---|---|---|:---:|
 | **v1.0.0** | **Released** | Modules 1, 2, 3, 4 (PQC Core) | **DR0–DR15** (19 Gates) | **736 / 736 PASS** (23.98s) |
-| **v1.1.0** | **Released (Current)** | Modules 1–6 (PQC + Hybrid QKD + QRNG + OpenSSL/PKCS11) | **DR0–DR20, DR23, DR27** (25 Gates) | **851 / 851 PASS** (33.21s) |
-| **v1.2.0** | **Planned** | Modules 7–9 (FIPS 205/206, Side-Channel, CNSA 2.0, 5G SUCI) | **DR21–DR22, DR24–DR26, DR28–DR30** | *In Development* |
+| **v1.1.0** | **Released** | Modules 1–5 (PQC + Hybrid QKD) | **DR0–DR20** (23 Gates) | **839 / 839 PASS** (28.45s) |
+| **v1.2.0** | **Released (Current)** | Modules 1–6 (PQC + Hybrid QKD + QRNG + OpenSSL/PKCS11) | **DR0–DR20, DR23, DR27** (25 Gates) | **851 / 851 PASS** (33.21s) |
+| **v1.3.0** | **Planned** | Modules 7–10 (FIPS 205/206, WireGuard, CNSA 2.0, Visualizer, PKI, Docker, ACVP) | **DR21–DR22, DR24–DR26, DR28–DR36** | *In Development* |
