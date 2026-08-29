@@ -7,12 +7,13 @@
 ![Architecture: XDNA1 AIE2 ML](https://img.shields.io/badge/Architecture-XDNA1%20AIE2%20(512--bit%20SIMD)-red)
 ![Research: PQC & QKD Defense-in-Depth](https://img.shields.io/badge/Research-PQC%20%26%20QKD%20Defense--in--Depth-8a2be2)
 ![Standards: FIPS 202 / 203 / 204 · ETSI 014 · QRNG · OpenSSL 3 · PKCS#11 · SP 800-56C](https://img.shields.io/badge/Standards-FIPS%20202%2F203%2F204%20%C2%B7%20ETSI%20014%20%C2%B7%20QRNG%20%C2%B7%20OpenSSL%20%C2%B7%20PKCS%2311-005ea8)
-![Status: v1.2.0 Silicon Certified (851/851 PASS across 25 Gates)](https://img.shields.io/badge/Status-v1.2.0%20Silicon%20Certified%20%C2%B7%20851%2F851%20PASS-brightgreen)
+![Status: v1.2.0 Silicon Certified (857/857 PASS across 26 Gates)](https://img.shields.io/badge/Status-v1.2.0%20Silicon%20Certified%20%C2%B7%20857%2F857%20PASS-brightgreen)
+![Utility: npu--smi Real--Time CLI Monitor](https://img.shields.io/badge/CLI-npu--smi%20Universal%20Monitor-orange)
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.22164124.svg)](https://doi.org/10.5281/zenodo.22164124)
 
 **World's first 100% device-resident hardware realization of finalized NIST Post-Quantum Cryptography standards (FIPS 202, FIPS 203, FIPS 204) and ETSI GS QKD 014 Quantum Key Distribution (ID Quantique Cerberis XGR compatible) on the AMD Phoenix NPU (AIE2 / XDNA1 Architecture).**
 
-[Full Silicon Architecture Whitepaper (v2)](docs/phoenix_npu_xdna1_architecture_v2.md) · [PQC & QKD Hardware Roadmap (v1.2.0)](docs/PQC_AND_QKD_ROADMAP.md) · [Silicon Validation Report](docs/HYBRID_QKD_PQC_SILICON_REPORT.md) · [ID Quantique Manual](docs/ID_QUANTIQUE_QKD_INTEGRATION.md) · [Interactive Frontend](https://github.com/midhatn/phoenix-npu-pqc-frontend)
+[Full Silicon Architecture Whitepaper (v2)](docs/phoenix_npu_xdna1_architecture_v2.md) · [PQC & QKD Hardware Roadmap (v1.2.0)](docs/PQC_AND_QKD_ROADMAP.md) · [Silicon Validation Report](docs/HYBRID_QKD_PQC_SILICON_REPORT.md) · [npu-smi Guide](docs/NPU_SMI_GUIDE.md) · [Session Changelog](docs/SESSION_CHANGELOG_20260829.md) · [Interactive Frontend](https://github.com/midhatn/phoenix-npu-pqc-frontend)
 
 </div>
 
@@ -355,3 +356,27 @@ v1.2.0 Phoenix NPU PQC: Device-Resident Post-Quantum Cryptography on AMD Phoenix
 ## 8. License
 
 Licensed under the Apache License, Version 2.0. See [LICENSE](LICENSE) for details.
+
+
+---
+
+## ⚡ Universal AMD NPU System Management Interface (`npu-smi`)
+
+The repository includes a standalone, general-purpose **`npu-smi`** utility mirroring `nvidia-smi` and `rocm-smi` for all AMD Ryzen AI / XDNA APUs:
+
+```powershell
+# Set global PATH (run once in PowerShell):
+[Environment]::SetEnvironmentVariable("Path", $env:Path + ";C:\Users\midhat\.gemini\antigravity\scratch\phoenix-npu-pqc", "User")
+
+# Run continuous 1-second monitoring loop:
+npu-smi -l 1
+
+# Additional commands:
+npu-smi -q           # Verbose driver, clock, and memory query
+npu-smi dmon         # Streaming device metric columns (pwr, temp, sm, mem, xbar)
+npu-smi pmon         # Streaming process table
+npu-smi --format=csv # Automation CSV export
+```
+
+For complete documentation, see the [Dedicated NPU-SMI User Guide](docs/NPU_SMI_GUIDE.md).
+
