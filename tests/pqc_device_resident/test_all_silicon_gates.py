@@ -17,7 +17,19 @@ import time
 import subprocess
 from pathlib import Path
 
+import os
+
 REPO_ROOT = Path(__file__).resolve().parents[2]
+IRONENV = (
+    Path(os.environ["IRONENV_DIR"])
+    if "IRONENV_DIR" in os.environ
+    else (
+        REPO_ROOT / "third_party" / "mlir-aie" / "ironenv"
+        if (REPO_ROOT / "third_party" / "mlir-aie" / "ironenv" / "Scripts" / "python.exe").is_file()
+        else Path(r"C:\phoenix-sdr-dsp\third_party\mlir-aie\ironenv")
+    )
+)
+IRONENV_PYTHON = IRONENV / "Scripts" / "python.exe"
 
 GATES = [
     ("Gate 00: DR0 M33 Ring Product", "tests/pqc_device_resident/test_m33_product_dr0.py"),
@@ -50,7 +62,7 @@ def main() -> int:
     print("=" * 80)
 
     passed_gates = 0
-    python_exe = sys.executable
+    python_exe = str(IRONENV_PYTHON) if IRONENV_PYTHON.is_file() else sys.executable
 
     for gate_name, script_path in GATES:
         full_path = REPO_ROOT / script_path
