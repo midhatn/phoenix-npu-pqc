@@ -12,6 +12,8 @@
 
 **World's first 100% device-resident hardware implementation of the finalized NIST Post-Quantum Cryptography standards on the AMD Phoenix NPU (AIE2 / XDNA1 Architecture).**
 
+[PQC & QKD Hardware Roadmap (v1.1.0)](docs/PQC_AND_QKD_ROADMAP.md) · [Interactive Web Frontend](https://github.com/midhatn/phoenix-npu-pqc-frontend)
+
 </div>
 
 ---
