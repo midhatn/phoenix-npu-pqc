@@ -214,35 +214,37 @@ $$
 \text{Round}(A, RC) = \iota(\chi(\pi(\rho(\theta(A)))), RC)
 $$
 
-* **$\theta$ (Parity Mixing):**
+#### Step $\theta$ — Parity Mixing
 
-  $$
-  A[x, y, z] \leftarrow A[x, y, z] \oplus \sum_{y'=0}^4 A[x-1, y', z] \oplus \sum_{y'=0}^4 A[x+1, y', z]
-  $$
+$$
+A[x, y, z] \leftarrow A[x, y, z] \oplus \sum_{y'=0}^4 A[x-1, y', z] \oplus \sum_{y'=0}^4 A[x+1, y', z]
+$$
 
-* **$\rho$ (Rotational Dispersion):**
+#### Step $\rho$ — Rotational Dispersion
 
-  $$
-  A[x, y, z] \leftarrow A[x, y, (z - r[x, y]) \bmod 64]
-  $$
+$$
+A[x, y, z] \leftarrow A[x, y, (z - r[x, y]) \bmod 64]
+$$
 
-* **$\pi$ (Transposition):**
+#### Step $\pi$ — Transposition
 
-  $$
-  A[y, (2x + 3y) \bmod 5, z] \leftarrow A[x, y, z]
-  $$
+$$
+A[y, (2x + 3y) \bmod 5, z] \leftarrow A[x, y, z]
+$$
 
-* **$\chi$ (Non-Linear Layer):**
+#### Step $\chi$ — Non-Linear Layer
 
-  $$
-  A[x, y, z] \leftarrow A[x, y, z] \oplus ((\neg A[x+1, y, z]) \wedge A[x+2, y, z])
-  $$
+$$
+A[x, y, z] \leftarrow A[x, y, z] \oplus ((\neg A[x+1, y, z]) \wedge A[x+2, y, z])
+$$
 
-* **$\iota$ (Constant Injection):**
+#### Step $\iota$ — Constant Injection
 
-  $$
-  A[0, 0] \leftarrow A[0, 0] \oplus RC[i_r]
-  $$
+$$
+A[0, 0] \leftarrow A[0, 0] \oplus RC[i_r]
+$$
+
+#### Sponge Construction
 
 Sponge absorption and squeezing with rate $r$ and capacity $c = 1600 - r$:
 
