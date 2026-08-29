@@ -8,6 +8,7 @@
 ![Research: Post-Quantum Cryptography](https://img.shields.io/badge/Research-Post--Quantum%20Cryptography-8a2be2)
 ![Standards: FIPS 202 / 203 / 204](https://img.shields.io/badge/Standards-FIPS%20202%20%2F%20203%20%2F%20204-005ea8)
 ![Status: 100% PQC Silicon Certified (736/736 PASS across 19 Gates)](https://img.shields.io/badge/Status-100%25%20PQC%20Silicon%20Certified%20%C2%B7%20736%2F736%20PASS-brightgreen)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.22160353.svg)](https://doi.org/10.5281/zenodo.22160353)
 
 **World's first 100% device-resident hardware implementation of the finalized NIST Post-Quantum Cryptography standards on the AMD Phoenix NPU (AIE2 / XDNA1 Architecture).**
 
@@ -457,6 +458,16 @@ py .\install
   author={{Advanced Micro Devices, Inc. (AMD)}},
   year={2023},
   url={https://docs.amd.com/r/en-US/ug1603-aie-ml-architecture}
+}
+
+@software{nashar2026phoenix,
+  author = {Midhat Nashar},
+  title = {{Phoenix NPU PQC: 100\% On-Device Post-Quantum Cryptography on AMD Phoenix NPU}},
+  year = {2026},
+  publisher = {Zenodo},
+  version = {1.0.0},
+  doi = {10.5281/zenodo.22160353},
+  url = {https://doi.org/10.5281/zenodo.22160353}
 }
 ```
 
