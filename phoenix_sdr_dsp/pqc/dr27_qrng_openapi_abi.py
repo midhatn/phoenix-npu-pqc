@@ -1,9 +1,23 @@
 # SPDX-License-Identifier: Apache-2.0
 """
 Milestone DR27: QRNG-OPENAPI v1.0 & NPU-Resident Key/Entropy Reservoir ABI.
-Defines packet structures, NIST SP 800-90B health metrics, and token-bucket hysteresis constants.
-"""
 
+Standards & Resource Citations:
+1. Palo Alto Networks QRNG-OPENAPI Specification (v1.0):
+   - Title: Quantum Random Number Generator OpenAPI Interface Specification.
+   - Specification: Standard REST/mTLS schema for `/v1/entropy` and `/v1/healthtest`.
+   - Quality Metric: Minimum min-entropy estimation H_min >= 0.999 bits/bit.
+2. NIST Special Publication 800-90B (January 2018):
+   - Title: Recommendation for the Entropy Sources Used for Random Bit Generation.
+   - Authors: Meltem Sönmez Turan, Elaine Barker, John Kelsey, Kerry A. McKay, Matthew L. Baish, Mike Boyle.
+   - Section 4.4.1: Repetition Count Test (RCT) cutoff: C = 1 + ceil(-log2(alpha) / H) = 10 (alpha = 2^-20, H = 2.0).
+   - Section 4.4.2: Adaptive Proportion Test (APT) cutoff: C = 177 for sample window W = 512, alpha = 2^-20.
+3. NIST Special Publication 800-56C Rev. 2 (August 2020):
+   - Title: Recommendation for Key-Derivation Methods in Key-Establishment Schemes.
+4. AMD Phoenix APU (Ryzen 7 7840HS / Ryzen 9 7940HS) AIE2 / XDNA1 Architecture:
+   - MLIR-AIE (IRON) ObjectFIFO & Tile SRAM memory mapping.
+5. DOI Reference: 10.5281/zenodo.22162273.
+"""
 import json
 import base64
 import struct
