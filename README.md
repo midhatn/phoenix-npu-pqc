@@ -209,27 +209,52 @@ $$
 
 ---
 
-## 6. How to Reproduce on Physical AMD Phoenix Hardware
+## 6. Quick Start: Clone & Run (CLI & Web UI)
 
-Any researcher with an AMD Phoenix or Hawk Point APU (e.g. Ryzen 7 7840HS, 7940HS, 8840HS, 8945HS) can validate the entire research suite with the following simple steps:
+Any developer or researcher can clone and reproduce the entire 100% on-device PQC & QKD verification suite via the **CLI Test Runner** or the **Interactive Web Dashboard**:
 
-### 1. Prerequisites
-* **APU**: AMD Ryzen 7 7840HS / 7940HS / 8845HS / 8945HS with XDNA1 NPU.
-* **Driver**: AMD NPU Compute Accelerator driver (`10.1109.8.100` or newer).
-* **Python Environment**: MLIR-AIE (IRON) / XRT Python environment (e.g., `ironenv`).
+### 6.1 Prerequisites
+* **Target APU (for hardware mode)**: AMD Phoenix / Hawk Point APU (Ryzen 7 7840HS, 7940HS, 8845HS, 8945HS) with AMD XDNA1 NPU.
+* **Driver**: AMD NPU Compute Accelerator driver (`VEN_1022 DEV_1502`).
+* **Python Environment**: Python with MLIR-AIE (IRON) / XRT runtime.
+* **Node.js (for Web UI)**: Version 18.0+ (Node 20+ or 24+ recommended).
 
-### 2. Execution Commands
+---
+
+### 6.2 Option A: Automated CLI Master Silicon Suite (23 Gates · 839 Tests)
+
 ```powershell
 # 1. Clone the core repository
 git clone https://github.com/midhatn/phoenix-npu-pqc.git
 cd phoenix-npu-pqc
 
-# 2. Run the Universal Master 23-Gate Silicon Suite (839 test cases)
-& "C:\phoenix-sdr-dsp\third_party\mlir-aie\ironenv\Scripts\python.exe" run_all_silicon_tests.py
+# 2. Run the Master 23-Gate Silicon Certification Suite (839 / 839 PASS)
+python run_all_silicon_tests.py
 
-# 3. Run the Live ID Quantique Cerberis XGR Ingress & Fusing Suite (30 test cases)
-& "C:\phoenix-sdr-dsp\third_party\mlir-aie\ironenv\Scripts\python.exe" tests/pqc_device_resident/test_idq_etsi014_qkd_silicon.py
+# 3. Run the ID Quantique / ETSI GS QKD 014 Ingress & Fusing Suite
+python tests/pqc_device_resident/test_idq_etsi014_qkd_silicon.py
 ```
+
+---
+
+### 6.3 Option B: Interactive Web Dashboard & Real-Time Silicon Runner
+
+For an interactive web playground with real-time hardware execution, tamper injection tests, 16-tile AIE2 layout visualizer, and SSE streaming runner:
+
+```powershell
+# 1. Clone the frontend dashboard
+git clone https://github.com/midhatn/phoenix-npu-pqc-frontend.git
+cd phoenix-npu-pqc-frontend
+
+# 2. Install and launch the web UI
+npm install
+npm run dev
+
+# 3. In a second terminal, launch the local hardware bridge:
+python bridge_server.py
+```
+
+Open **`http://localhost:3000`** in your browser. For an exhaustive, step-by-step UI tutorial on every playground and attack simulation mode, see the **[Frontend Tutorial & Navigation Guide](https://github.com/midhatn/phoenix-npu-pqc-frontend#readme)**.
 
 ---
 
