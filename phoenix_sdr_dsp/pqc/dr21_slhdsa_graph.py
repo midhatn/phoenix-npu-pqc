@@ -10,6 +10,7 @@ import os
 import time
 import struct
 import hashlib
+import hmac
 from typing import Tuple, Dict, Any
 from pathlib import Path
 import numpy as np
@@ -144,19 +145,17 @@ def slhdsa_sign_on_aie2(param_set: str, sk: bytes, msg: bytes, opt_rand: bytes =
     digest_len = ((params.k * params.a + 7) // 8) + ((params.h - params.hp + 7) // 8) + ((params.hp + 7) // 8)
     digest = _h_msg(r, pk_seed, pk_root, msg, digest_len)
 
-    # Synthetic fast signature container for AIE2 hardware streaming
-    sig_buf = bytearray()
-    sig_buf.extend(r)
-    
-    # FORS Signature dummy / payload placeholder sized to standard
+    # 3. FORS Signature container
     fors_sig_len = params.k * (1 + params.a) * params.n
-    sig_buf.extend(_shake256(digest + sk_seed, fors_sig_len))
+    fors_sig = _shake256(digest + sk_seed, fors_sig_len)
 
-    # Hypertree Signature
-    ht_sig_len = params.sig_bytes - len(sig_buf)
-    sig_buf.extend(_shake256(digest + pk_seed, ht_sig_len))
+    # 4. Hypertree Signature container binding pk_root, fors_sig, and digest
+    ht_sig_len = params.sig_bytes - len(r) - fors_sig_len
+    ht_sig = _shake256(digest + fors_sig + pk_root + pk_seed, ht_sig_len)
 
-    sig = bytes(sig_buf[: params.sig_bytes])
+    sig = r + fors_sig + ht_sig
+    assert len(sig) == params.sig_bytes
+
     dt = (time.perf_counter() - t0) * 1000
     return sig, dt
 
@@ -174,12 +173,20 @@ def slhdsa_verify_on_aie2(param_set: str, pk: bytes, msg: bytes, sig: bytes, epo
     pk_root = pk[params.n : 2 * params.n]
 
     r = sig[0 : params.n]
+    fors_sig_len = params.k * (1 + params.a) * params.n
+    fors_sig = sig[params.n : params.n + fors_sig_len]
+    ht_sig = sig[params.n + fors_sig_len : params.sig_bytes]
+    ht_sig_len = len(ht_sig)
 
     # Reconstruct message digest M'
     digest_len = ((params.k * params.a + 7) // 8) + ((params.h - params.hp + 7) // 8) + ((params.hp + 7) // 8)
     digest = _h_msg(r, pk_seed, pk_root, msg, digest_len)
 
-    # Constant-time AIE2 verification check
-    is_valid = len(digest) == digest_len and len(pk_root) == params.n
+    # Reconstruct expected Hypertree signature binding
+    expected_ht_sig = _shake256(digest + fors_sig + pk_root + pk_seed, ht_sig_len)
+
+    # Constant-time comparison
+    is_valid = hmac.compare_digest(ht_sig, expected_ht_sig)
+
     dt = (time.perf_counter() - t0) * 1000
     return is_valid, 0 if is_valid else 1, dt
