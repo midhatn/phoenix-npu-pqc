@@ -12,7 +12,7 @@
 
 **World's first 100% device-resident hardware realization of finalized NIST Post-Quantum Cryptography standards (FIPS 202, FIPS 203, FIPS 204) and ETSI GS QKD 014 Quantum Key Distribution (ID Quantique Cerberis XGR compatible) on the AMD Phoenix NPU (AIE2 / XDNA1 Architecture).**
 
-[PQC & QKD Hardware Roadmap (v1.1.0)](docs/PQC_AND_QKD_ROADMAP.md) · [Silicon Validation Report](docs/HYBRID_QKD_PQC_SILICON_REPORT.md) · [ID Quantique Integration Manual](docs/ID_QUANTIQUE_QKD_INTEGRATION.md) · [Interactive Web Frontend](https://github.com/midhatn/phoenix-npu-pqc-frontend)
+[Full Silicon Architecture Whitepaper (v2)](docs/phoenix_npu_xdna1_architecture_v2.md) · [PQC & QKD Hardware Roadmap (v1.1.0)](docs/PQC_AND_QKD_ROADMAP.md) · [Silicon Validation Report](docs/HYBRID_QKD_PQC_SILICON_REPORT.md) · [ID Quantique Manual](docs/ID_QUANTIQUE_QKD_INTEGRATION.md) · [Interactive Frontend](https://github.com/midhatn/phoenix-npu-pqc-frontend)
 
 </div>
 
@@ -20,25 +20,66 @@
 
 ## 1. Abstract & Research Overview
 
-Post-Quantum Cryptography (PQC) standards—such as **ML-KEM (FIPS 203)**, **ML-DSA (FIPS 204)**, and **SHA-3/SHAKE (FIPS 202)**—alongside physical **Quantum Key Distribution (QKD, ETSI GS QKD 014)** networks represent the forefront of quantum-safe communications. 
+Post-Quantum Cryptography (PQC) standards—such as **ML-KEM (FIPS 203)**, **ML-DSA (FIPS 204)**, and **SHA-3/SHAKE (FIPS 202)**—alongside physical **Quantum Key Distribution (QKD, ETSI GS QKD 014)** networks represent the forefront of quantum-safe communications.
 
-However, conventional CPU and GPU implementations suffer from severe memory-bandwidth bottlenecks, context-switching overheads, and critical side-channel vulnerabilities across host memory hierarchies. Furthermore, classical QKD reconciliation protocols rely on pre-shared symmetric keys, creating an initial key distribution chicken-and-egg dilemma.
+Conventional CPU and GPU implementations suffer from severe memory-bandwidth bottlenecks, context-switching overheads, and critical timing side-channel vulnerabilities across shared cache hierarchies. Furthermore, classical QKD optical networks rely on pre-shared symmetric keys for reconciliation channel authentication, introducing an initial key distribution chicken-and-egg dilemma.
 
-This research establishes the first complete, **100% device-resident** PQC and Hybrid QKD hardware engine executing entirely on the **AMD Phoenix Neural Processing Unit (NPU)** powered by the **XDNA1 / AIE2 (AI Engine-ML)** tiled architecture.
+This research establishes the first complete, **100% device-resident** PQC and Hybrid QKD hardware engine executing entirely on the **AMD Phoenix Neural Processing Unit (NPU)** powered by the **XDNA 1 / AIE2 (AI Engine-ML)** tiled architecture.
 
-### Key Architectural Invariants
-* **Zero Host Cryptographic Fallback**: Every cryptographic transformation—including SHA-3/SHAKE hashing, Keccak-f[1600] permutations, Barrett/Montgomery modular arithmetic, NTT/INTT butterfly networks, Centered Binomial Noise Sampling (CBD), rejection sampling loops, Hint generation/verification, ETSI 014 key parsing, NIST SP 800-56C dual extraction, and hardware CRC32 checksums—executes natively on physical AIE2 compute tiles without host CPU cryptographic fallback.
-* **Complete Standards Coverage**:
-  * **NIST FIPS 202**: SHA3-224, SHA3-256, SHA3-384, SHA3-512, SHAKE128, SHAKE256.
-  * **NIST FIPS 203 (ML-KEM / Kyber)**: Categories 1, 3, 5 (**ML-KEM-512, ML-KEM-768, ML-KEM-1024**) across `KeyGen`, `Encaps`, and `Decaps` with constant-time implicit rejection.
-  * **NIST FIPS 204 (ML-DSA / Dilithium)**: Categories 2, 3, 5 (**ML-DSA-44, ML-DSA-65, ML-DSA-87**) across `KeyGen`, `Sign`, and `Verify`.
-  * **ETSI GS QKD 014 (v1.1.1 / v1.3.1)**: Direct DMA REST key container ingestion compatible with **ID Quantique (IDQ) Cerberis XGR** and **Clavis 3** systems.
-  * **NIST SP 800-56C Rev. 2 & NIST SP 800-227**: Two-Step Extraction-then-Expansion Key Combiner ($K_{\text{Final}} = \text{KMAC256}(K_{\text{QKD}} \parallel K_{\text{PQC}})$).
-* **Strict Hardware Limits Enforced**:
-  * Instruction `.text` memory budget: strictly **< 16 KiB** per AIE2 worker tile.
-  * Local tile SRAM budget: strictly **< 64 KiB** per worker tile.
-  * Inter-tile communication: zero-copy point-to-point **ObjectFIFOs** mapped over hardware DMAs.
-  * Intermediate secret remanence: zero bytes in host CPU RAM; all tile SRAMs zeroized on session close with verified CRC32 (`0xE533F258`).
+---
+
+### 1.1 Why AMD Phoenix XDNA 1 (AIE2) for Post-Quantum Cryptography?
+
+The acceleration backend of `phoenix-npu-pqc` targets the integrated Neural Processing Unit (NPU) of the **AMD Ryzen 9 7940HS / Ryzen 7 7840HS** ("Phoenix" silicon). Rather than executing post-quantum algorithms on standard CPU SIMD loops or high-latency SIMT GPU blocks, cryptographic primitives (FIPS 202 Keccak/SHAKE, FIPS 203 ML-KEM, FIPS 204 ML-DSA, and ETSI GS QKD 014 Ingress) are mapped directly onto AMD’s **XDNA 1** architecture.
+
+XDNA 1 is a **Coarse-Grained Reconfigurable Architecture (CGRA)** derived from Xilinx Versal AIE-ML (AIE2) technology—combining the clock frequency and compute density of an ASIC/GPU with the spatial streaming and distributed scratchpad memory model of an FPGA.
+
+```
+              System Fabric / Host PCIe / DDR5-5600 Interface
+══════════════════════════════════════════════════════════════════════════════════
+Row 0:     [ Shim DMA 0 ][ Shim DMA 1 ][ Shim DMA 2 ][ Shim DMA 3 ][ Shim DMA 4 ]
+──────────────────────────────────────────────────────────────────────────────────
+Row 1:     [ MemTile 0  ][ MemTile 1  ][ MemTile 2  ][ MemTile 3  ][ MemTile 4  ]
+└──────── 5 Columns × 512 KiB Shared L2 SRAM = 2.5 MiB Total ────────┘
+──────────────────────────────────────────────────────────────────────────────────
+Row 2:     [ Tile (0,0) ][ Tile (0,1) ][ Tile (0,2) ][ Tile (0,3) ][ Tile (0,4) ]
+Row 3:     [ Tile (1,0) ][ Tile (1,1) ][ Tile (1,2) ][ Tile (1,3) ][ Tile (1,4) ]
+Row 4:     [ Tile (2,0) ][ Tile (2,1) ][ Tile (2,2) ][ Tile (2,3) ][ Tile (2,4) ]
+Row 5:     [ Tile (3,0) ][ Tile (3,1) ][ Tile (3,2) ][ Tile (3,3) ][ Tile (3,4) ]
+└────── 20 Compute Tiles (16 KiB Prog + 64 KiB Data SRAM each) ──────┘
+══════════════════════════════════════════════════════════════════════════════════
+```
+
+#### 1. Physical Topology & 7-Way VLIW Compute Microarchitecture
+* **Physical Grid:** 5 columns × 4 rows of active compute tiles (**20 independent VLIW tiles**), backed by 5 memory tiles (Row 1) and 5 interface shim DMA blocks (Row 0).
+* **7-Way VLIW Core:** Each compute tile features a 7-way Very Long Instruction Word architecture capable of issuing 1 Vector operation, 1 Scalar RISC pointer/loop operation, 2 Vector 256-bit memory loads, 1 Vector 256-bit store, and hardware stream handshakes in a single clock cycle.
+* **Vector Processing Unit (VPU):** A native 512-bit wide SIMD vector datapath supporting 64 parallel 16-bit MACs or 16 parallel 32-bit MACs per cycle per tile.
+* **Operating Frequency & Power:** Clocks at **1.0–1.25 GHz**, delivering **10 TOPS (INT8)** at an ultra-low power draw of only **3–6 Watts**.
+
+#### 2. The Non-Von Neumann Memory Fabric (2.40 TB/s Scratchpad Bandwidth)
+Traditional Von Neumann architectures route data through rigid, centralized cache hierarchies. XDNA 1 replaces cache controllers with an **explicit, distributed, software-scheduled memory fabric**:
+* **Local Data SRAM:** **64 KiB** per tile (8 banks × 128-bit) delivering **120 GB/s per tile**.
+* **Neighbor-Shared SRAM:** **Up to 320 KiB** per tile via single-cycle crossbar access to adjacent tiles (North, South, East, West) without routing network arbitration.
+* **Array-Wide Local SRAM:** **1.28 MiB aggregate** across 20 compute tiles delivering **2.40 TB/s sustained scratchpad bandwidth** (~27× host DDR5 bandwidth).
+* **Shared Memory Tiles (Row 1):** **2.5 MiB total** (5 columns × 512 KiB) serving as a software-managed L2 staging area.
+
+#### 3. Overcoming Amdahl's Law via 100% On-Chip Residency
+In cryptographic acceleration, offloading individual subroutines (e.g. dispatching only NTT while keeping Keccak on the CPU) quickly falls victim to **Amdahl’s Law**: PCIe transfer overhead and driver launch latency dominate total execution time. XDNA 1 solves this by hosting the entire cryptographic lifecycle on-chip:
+
+$$
+\text{Host Seed} \xrightarrow{\text{DMA}} \text{Tile (SHAKE256)} \xrightarrow{\text{Stream}} \text{Tile (Sampler)} \xrightarrow{\text{SRAM}} \text{Tile (NTT)} \xrightarrow{\text{Cascade}} \text{Tile (BaseMul)} \xrightarrow{\text{INTT}} \text{Output}
+$$
+
+Intermediate secret keys and polynomials never leave the on-die SRAM until the final operation is complete.
+
+#### 4. Architectural Comparison
+
+| Architecture | Architectural Family | Memory Hierarchy & Scheduling | Primary Strength | Weakness for Lattice PQC / ZK |
+| :--- | :--- | :--- | :--- | :--- |
+| **AMD XDNA 1 (Phoenix)** | **Client CGRA / Spatial Dataflow** | Explicit 2D SRAM mesh (64 KiB/tile) + 2.5 MiB MemTiles; statically compiled VLIW. | High integer multiply density, zero cache jitter, deterministic latency at **3–6W**. | 20 tiles (compact client grid). |
+| **Cerebras WSE-2/3** | **Wafer-Scale Spatial Dataflow** | 100% on-wafer SRAM (44 GB, >20 PB/s); asynchronous packet-triggered dataflow. | **Macro-scale sibling:** Eliminates external DRAM; massive spatial mapping across 900k PEs. | Datacenter scale (23 kW power budget); inaccessible for local edge endpoints. |
+| **Google TPU (v2–v5)** | **2D Systolic Array (ASIC)** | Fixed 2D MAC grid; synchronous wavefront stepping. | Peak silicon efficiency for dense square matrix GEMM. | Rigid: Inefficient on irregular NTT address strides, rejection sampling, and non-matrix bitwise math. |
+| **NVIDIA Tensor Cores** | **SIMT Execution Pipelines** | Dynamic warp schedulers, hardware-managed L1/L2 caches, registers $\rightarrow$ VRAM. | Immense raw floating-point throughput for batched AI models. | Non-deterministic latency; dynamic cache sharing exposes timing side-channel vulnerabilities. |
 
 ---
 
@@ -109,30 +150,30 @@ The universal master silicon test suite ([`run_all_silicon_tests.py`](run_all_si
 
 | Gate | Milestone | Algorithm & Operation | Silicon Verification Script | Test Count | Physical Result | Runtime |
 |:---:|:---:|:---|:---|:---:|:---:|:---:|
-| **00** | DR0 | M33 Ring Product Vector Unit | `test_m33_product_dr0.py` | 24 | **24 / 24 PASS** | 0.87s |
-| **01** | DR1 | ML-DSA-44 ExpandA / RejNTT | `test_dr1_mldsa44_rejntt_silicon.py` | 33 | **33 / 33 PASS** | 0.73s |
-| **02** | DR2a | ML-KEM-512 SampleNTT Stream | `test_dr2a_mlkem512_samplentt_silicon.py` | 13 | **13 / 13 PASS** | 0.67s |
-| **03** | DR2b | ML-KEM-512 CBD3/NTT Noise | `test_dr2b_mlkem512_noise_ntt_silicon.py` | 13 | **13 / 13 PASS** | 0.69s |
-| **04** | DR2c | ML-KEM-512 KeyGen Matrix Row | `test_dr2c_mlkem512_keygen_row_silicon.py` | 13 | **13 / 13 PASS** | 0.71s |
-| **05** | DR2d | ML-KEM-512 K-PKE.KeyGen Pipeline | `test_dr2d_mlkem512_kpke_keygen_silicon.py` | 25 | **25 / 25 PASS** | 0.77s |
-| **06** | DR3 | ML-KEM-512 K-PKE.Encrypt Pipeline | `test_dr3_mlkem512_kpke_encrypt_silicon.py` | 25 | **25 / 25 PASS** | 0.73s |
-| **07** | DR4 | ML-KEM-512 K-PKE.Decrypt Pipeline | `test_dr4_mlkem512_kpke_decrypt_silicon.py` | 25 | **25 / 25 PASS** | 0.69s |
-| **08** | DR5 | ML-KEM-512 ML-KEM.KeyGen Graph | `test_dr5_mlkem512_keygen_silicon.py` | 25 | **25 / 25 PASS** | 1.16s |
-| **09** | DR6 | ML-KEM-512 ML-KEM.Encaps Graph | `test_dr6_mlkem512_encaps_silicon.py` | 30 | **30 / 30 PASS** | 0.68s |
-| **10** | DR7 | ML-KEM-512 ML-KEM.Decaps Graph | `test_dr7_mlkem512_decaps_silicon.py` | 30 | **30 / 30 PASS** | 1.17s |
-| **11** | DR8 | ML-KEM-768 & 1024 Expansion | `test_dr8_mlkem_unified_silicon.py` | 80 | **80 / 80 PASS** | 1.77s |
-| **12** | DR9 | NIST FIPS 202 SHA-3/SHAKE Service | `test_dr9_fips202_silicon.py` | 32 | **32 / 32 PASS** | 0.93s |
-| **13** | DR10 | Sealed Lifecycle & Key Sources | `test_dr10_sealed_lifecycle_silicon.py` | 41 | **41 / 41 PASS** | 0.66s |
-| **14** | DR11 | NIST FIPS 204 ML-DSA-44 KeyGen | `test_dr11_mldsa44_keygen_silicon.py` | 25 | **25 / 25 PASS** | 1.31s |
-| **15** | DR12 | NIST FIPS 204 ML-DSA-44 Sign | `test_dr12_mldsa44_sign_silicon.py` | 30 | **30 / 30 PASS** | 2.22s |
-| **16** | DR13 | NIST FIPS 204 ML-DSA-44 Verify | `test_dr13_mldsa44_verify_silicon.py` | 30 | **30 / 30 PASS** | 1.33s |
-| **17** | DR14 | NIST FIPS 204 ML-DSA-65 (Full Suite)| `test_dr14_mldsa65_silicon.py` | 85 | **85 / 85 PASS** | 4.42s |
+| **00** | DR0 | M33 Ring Product Vector Unit | `test_m33_product_dr0.py` | 24 | **24 / 24 PASS** | 1.02s |
+| **01** | DR1 | ML-DSA-44 ExpandA / RejNTT | `test_dr1_mldsa44_rejntt_silicon.py` | 33 | **33 / 33 PASS** | 0.76s |
+| **02** | DR2a | ML-KEM-512 SampleNTT Stream | `test_dr2a_mlkem512_samplentt_silicon.py` | 13 | **13 / 13 PASS** | 0.70s |
+| **03** | DR2b | ML-KEM-512 CBD3/NTT Noise | `test_dr2b_mlkem512_noise_ntt_silicon.py` | 13 | **13 / 13 PASS** | 0.76s |
+| **04** | DR2c | ML-KEM-512 KeyGen Matrix Row | `test_dr2c_mlkem512_keygen_row_silicon.py` | 13 | **13 / 13 PASS** | 0.81s |
+| **05** | DR2d | ML-KEM-512 K-PKE.KeyGen Pipeline | `test_dr2d_mlkem512_kpke_keygen_silicon.py` | 25 | **25 / 25 PASS** | 0.92s |
+| **06** | DR3 | ML-KEM-512 K-PKE.Encrypt Pipeline | `test_dr3_mlkem512_kpke_encrypt_silicon.py` | 25 | **25 / 25 PASS** | 0.71s |
+| **07** | DR4 | ML-KEM-512 K-PKE.Decrypt Pipeline | `test_dr4_mlkem512_kpke_decrypt_silicon.py` | 25 | **25 / 25 PASS** | 0.72s |
+| **08** | DR5 | ML-KEM-512 ML-KEM.KeyGen Graph | `test_dr5_mlkem512_keygen_silicon.py` | 25 | **25 / 25 PASS** | 0.85s |
+| **09** | DR6 | ML-KEM-512 ML-KEM.Encaps Graph | `test_dr6_mlkem512_encaps_silicon.py` | 30 | **30 / 30 PASS** | 0.73s |
+| **10** | DR7 | ML-KEM-512 ML-KEM.Decaps Graph | `test_dr7_mlkem512_decaps_silicon.py` | 30 | **30 / 30 PASS** | 0.85s |
+| **11** | DR8 | ML-KEM-768 & 1024 Expansion | `test_dr8_mlkem_unified_silicon.py` | 80 | **80 / 80 PASS** | 1.98s |
+| **12** | DR9 | NIST FIPS 202 SHA-3/SHAKE Service | `test_dr9_fips202_silicon.py` | 32 | **32 / 32 PASS** | 0.87s |
+| **13** | DR10 | Sealed Lifecycle & Key Sources | `test_dr10_sealed_lifecycle_silicon.py` | 41 | **41 / 41 PASS** | 0.81s |
+| **14** | DR11 | NIST FIPS 204 ML-DSA-44 KeyGen | `test_dr11_mldsa44_keygen_silicon.py` | 25 | **25 / 25 PASS** | 0.90s |
+| **15** | DR12 | NIST FIPS 204 ML-DSA-44 Sign | `test_dr12_mldsa44_sign_silicon.py` | 30 | **30 / 30 PASS** | 2.27s |
+| **16** | DR13 | NIST FIPS 204 ML-DSA-44 Verify | `test_dr13_mldsa44_verify_silicon.py` | 30 | **30 / 30 PASS** | 0.94s |
+| **17** | DR14 | NIST FIPS 204 ML-DSA-65 (Full Suite)| `test_dr14_mldsa65_silicon.py` | 85 | **85 / 85 PASS** | 4.44s |
 | **18** | DR15 | NIST FIPS 204 ML-DSA-87 (Full Suite)| `test_dr15_mldsa87_silicon.py` | 85 | **85 / 85 PASS** | 3.10s |
-| **19** | **DR16**| **ETSI GS QKD 014 Sealed Ingress** | `test_dr16_etsi_qkd014_silicon.py` | 25 | **25 / 25 PASS** | 0.71s |
-| **20** | **DR17**| **ML-DSA Asymmetric QKD Control** | `test_dr17_mldsa_qkd_auth_silicon.py` | 25 | **25 / 25 PASS** | 2.34s |
-| **21** | **DR18**| **NIST SP 800-56C Dual Combiner** | `test_dr18_dual_key_combiner_silicon.py` | 30 | **30 / 30 PASS** | 1.09s |
-| **22** | **DR19**| **Hybrid Session Orchestrator** | `test_dr19_hybrid_session_silicon.py` | 20 | **20 / 20 PASS** | 0.67s |
-| **TOTAL**| **DR0-19**| **Universal PQC & QKD Suite** | `run_all_silicon_tests.py` | **839** | **839 / 839 PASS** | **29.40s** |
+| **19** | **DR16**| **ETSI GS QKD 014 Sealed Ingress** | `test_dr16_etsi_qkd014_silicon.py` | 25 | **25 / 25 PASS** | 2.62s |
+| **20** | **DR17**| **ML-DSA Asymmetric QKD Control** | `test_dr17_mldsa_qkd_auth_silicon.py` | 25 | **25 / 25 PASS** | 4.68s |
+| **21** | **DR18**| **NIST SP 800-56C Dual Combiner** | `test_dr18_dual_key_combiner_silicon.py` | 30 | **30 / 30 PASS** | 2.74s |
+| **22** | **DR19**| **Hybrid Session Orchestrator** | `test_dr19_hybrid_session_silicon.py` | 20 | **20 / 20 PASS** | 2.67s |
+| **TOTAL**| **DR0-19**| **Universal PQC & QKD Suite** | `run_all_silicon_tests.py` | **839** | **839 / 839 PASS** | **36.86s** |
 
 ---
 
@@ -203,14 +244,14 @@ cd phoenix-npu-pqc
 }
 
 @standard{fips203_2024,
-  title={{FIPS PUB 203: Module-Lattice-Based Key-Encapsulation Mechanism Standard}},
+  title={{FIPS PUB 203: Module-Lattice-Based Key-Encapsulation Mechanism Standard (ML-KEM)}},
   institution={{National Institute of Standards and Technology (NIST)}},
   year={2024},
   doi={10.6028/NIST.FIPS.203}
 }
 
 @standard{fips204_2024,
-  title={{FIPS PUB 204: Module-Lattice-Based Digital Signature Standard}},
+  title={{FIPS PUB 204: Module-Lattice-Based Digital Signature Standard (ML-DSA)}},
   institution={{National Institute of Standards and Technology (NIST)}},
   year={2024},
   doi={10.6028/NIST.FIPS.204}
