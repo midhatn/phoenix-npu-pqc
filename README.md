@@ -268,6 +268,21 @@ Open **`http://localhost:3000`** in your browser. For an exhaustive, step-by-ste
 
 ---
 
+
+### 6.3 Real-Time Hardware Telemetry & Silicon Monitoring
+
+To monitor physical silicon execution contexts, active columns `[1, 2, 3, 4]`, DMA buffer residency (128 MB), and live packet submission/completion counters while tests execute:
+
+```powershell
+# Continuous scrolling stream (with --verbose):
+while ($true) { & "C:\Windows\System32\AMD\xrt-smi.exe" examine -r aie-partitions --verbose; Start-Sleep -Milliseconds 100 }
+
+# Clean in-place screen refresh (live monitor mode):
+while ($true) { Clear-Host; & "C:\Windows\System32\AMD\xrt-smi.exe" examine -r aie-partitions --verbose; Start-Sleep -Milliseconds 100 }
+```
+
+For complete field definitions and hardware register breakdowns, see [docs/NPU_HARDWARE_TELEMETRY.md](docs/NPU_HARDWARE_TELEMETRY.md).
+
 ## 7. Formal Academic & Standards Citations
 
 v1.2.0 Phoenix NPU PQC: Device-Resident Post-Quantum Cryptography on AMD Phoenix NPU
