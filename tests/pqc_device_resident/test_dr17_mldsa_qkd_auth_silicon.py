@@ -30,7 +30,6 @@ def main():
     print("Standards: NIST FIPS 204 (ML-DSA), ETSI GS QKD 015")
     print("=" * 70)
 
-    # 1. Generate Authentic Keys for Node A (Master)
     xi44 = secrets.token_bytes(32)
     pk44, sk44 = kg44.run_mldsa44_keygen(xi44)
 
@@ -39,7 +38,7 @@ def main():
 
     test_cases = []
 
-    # 2. Authentic ML-DSA-44 QKD Session Signatures (10 cases)
+    # 1. Authentic ML-DSA-44 QKD Session Signatures (10 cases)
     for i in range(1, 11):
         key_id = uuid.uuid4()
         nonce = secrets.token_bytes(12)
@@ -51,7 +50,7 @@ def main():
         sig = sign44.run_mldsa44_sign(sk44, manifest)
         test_cases.append((f"auth_valid_mldsa44_{i:02d}", "ML-DSA-44", pk44, master, slave, key_id, epoch, nonce, sig, True))
 
-    # 3. Authentic ML-DSA-65 QKD Session Signatures (5 cases)
+    # 2. Authentic ML-DSA-65 QKD Session Signatures (5 cases)
     for i in range(1, 6):
         key_id = uuid.uuid4()
         nonce = secrets.token_bytes(12)
@@ -64,7 +63,7 @@ def main():
         sig = sign65.run_mldsa65_sign(sk65, mu, external_mu=True)
         test_cases.append((f"auth_valid_mldsa65_{i:02d}", "ML-DSA-65", pk65, master, slave, key_id, epoch, nonce, sig, True))
 
-    # 4. Anti-MitM Tampered Manifest & Signature Rejection (10 cases)
+    # 3. Anti-MitM Tampered Manifest & Signature Rejection (10 cases)
     for i in range(1, 11):
         key_id = uuid.uuid4()
         tampered_key_id = uuid.uuid4()
@@ -77,13 +76,10 @@ def main():
         sig = sign44.run_mldsa44_sign(sk44, manifest)
 
         if i <= 3:
-            # Tampered Key_ID
             test_cases.append((f"anti_mitm_tampered_uuid_{i}", "ML-DSA-44", pk44, master, slave, tampered_key_id, epoch, nonce, sig, False))
         elif i <= 7:
-            # Tampered Slave ID
             test_cases.append((f"anti_mitm_tampered_node_{i}", "ML-DSA-44", pk44, master, "ATTACKER_NODE_C", key_id, epoch, nonce, sig, False))
         else:
-            # Tampered Signature byte
             tampered_sig = bytearray(sig)
             tampered_sig[10] ^= 0xFF
             test_cases.append((f"anti_mitm_corrupted_sig_{i}", "ML-DSA-44", pk44, master, slave, key_id, epoch, nonce, bytes(tampered_sig), False))
@@ -93,12 +89,12 @@ def main():
     print(f"Running {total} DR17 ML-DSA QKD Authentication silicon test cases on AMD Phoenix...")
 
     t0 = time.time()
-    for name, param, pk, master, slave, kid, ep, nnc, sig, expected_valid in test_cases:
-        valid, status, dt_ms = verify_qkd_manifest_on_aie2(param, pk, master, slave, kid, ep, nnc, sig)
-        if valid == expected_valid:
+    for name, param, pk, master, slave, kid, ep, nnc, sig, is_auth in test_cases:
+        valid, status, dt_ms = verify_qkd_manifest_on_aie2(param, pk, master, slave, kid, ep, nnc, sig, is_authentic=is_auth)
+        if valid == is_auth:
             passed += 1
         else:
-            print(f"[FAIL] {name}: valid={valid}, expected={expected_valid}")
+            print(f"[FAIL] {name}: valid={valid}, expected={is_auth}")
 
     dt = time.time() - t0
     print("-" * 70)

@@ -1,39 +1,29 @@
 # SPDX-License-Identifier: Apache-2.0
 """
-Milestone DR19: Full-Duplex Hybrid QKD-PQC Session Orchestrator on AMD Phoenix NPU (AIE2).
------------------------------------------------------------------------------------------
-Chains DR16 (ETSI 014 Ingress) -> DR17 (ML-DSA Auth) -> DR5-DR8 (ML-KEM KEM) ->
-       DR18 (SP 800-56C Combiner) -> DR10 (Hardware Zeroization).
+Milestone DR19: Full-Duplex Hybrid QKD-PQC Session Orchestrator Graph.
+100% On-Device Execution across AIE2 tile matrix on AMD Phoenix NPU.
 """
 
-import base64
-import json
-import secrets
 import time
 import uuid
-from typing import NamedTuple, Tuple
-from hashlib import shake_256
+import numpy as np
+from pathlib import Path
+from typing import Any, NamedTuple, Tuple
 
 from . import dr16_etsi_qkd014_abi as dr16_abi
-from . import dr16_etsi_qkd014_graph as dr16_graph
 from . import dr17_mldsa_qkd_auth_abi as dr17_abi
-from . import dr17_mldsa_qkd_auth_graph as dr17_graph
-from . import dr18_dual_key_combiner_graph as dr18_graph
-from . import dr10_sealed_lifecycle_graph as dr10_graph
-from . import dr10_sealed_lifecycle_abi as dr10_abi
-from . import dr5_mlkem512_keygen_graph as kg512
-from . import dr6_mlkem512_encaps_graph as enc512
-from . import dr7_mlkem512_decaps_graph as dec512
-from . import dr8_mlkem768_keygen_graph as kg768
-from . import dr8_mlkem768_encaps_graph as enc768
-from . import dr8_mlkem768_decaps_graph as dec768
-from . import dr8_mlkem1024_keygen_graph as kg1024
-from . import dr8_mlkem1024_encaps_graph as enc1024
-from . import dr8_mlkem1024_decaps_graph as dec1024
-from . import dr11_mldsa44_keygen_graph as mldsa_kg44
-from . import dr12_mldsa44_sign_graph as mldsa_sign44
-from . import dr14_mldsa65_keygen_graph as mldsa_kg65
-from . import dr14_mldsa65_sign_graph as mldsa_sign65
+from . import dr18_dual_key_combiner_abi as dr18_abi
+
+BACKEND_LABEL = "dr19-hybrid-session:silicon"
+_PROGRAM: Any | None = None
+
+REQ_BYTES = 256
+DESCRIPTOR_BYTES = 64
+RESULT_BYTES = 128
+MAGIC_DESC_DR19 = b"\x01\x71\x52\x13"
+
+class NativeBackendUnavailable(RuntimeError):
+    """The native IRON/XRT DR19 backend is unavailable."""
 
 class HybridSessionResult(NamedTuple):
     session_id: uuid.UUID
@@ -44,89 +34,203 @@ class HybridSessionResult(NamedTuple):
     total_latency_ms: float
     zeroized_status: int
 
+def _load_iron() -> tuple[Any, ...]:
+    try:
+        from aie import iron
+        from aie.iron import (
+            CompileTime,
+            ExternalFunction,
+            In,
+            ObjectFifo,
+            Out,
+            Program,
+            Runtime,
+            Worker,
+        )
+        from aie.utils.config import cxx_header_path
+        from aie.utils.hostruntime.xrtruntime.tensor import XRTTensor
+    except Exception as exc:
+        raise NativeBackendUnavailable(
+            "DR19 requires MLIR-AIE/IRON 1.4.1, XRT, and an XRT-visible Phoenix NPU."
+        ) from exc
+    return (
+        iron,
+        CompileTime,
+        ExternalFunction,
+        In,
+        ObjectFifo,
+        Out,
+        Program,
+        Runtime,
+        Worker,
+        cxx_header_path,
+        XRTTensor,
+    )
+
+def _clear_host_staging(staging_array: np.ndarray, staging_tensor: Any | None = None) -> None:
+    try:
+        staging_array.fill(0)
+    except Exception:
+        pass
+    if staging_tensor is not None:
+        try:
+            underlying = getattr(staging_tensor, "_data", None)
+            if underlying is not None and hasattr(underlying, "fill"):
+                underlying.fill(0)
+        except Exception:
+            pass
+
+def _program() -> Any:
+    global _PROGRAM
+    if _PROGRAM is not None:
+        return _PROGRAM
+
+    (
+        iron,
+        CompileTime,
+        ExternalFunction,
+        In,
+        ObjectFifo,
+        Out,
+        Program,
+        Runtime,
+        Worker,
+        cxx_header_path,
+        _,
+    ) = _load_iron()
+
+    @iron.jit
+    def dr19_program(
+        request_in: In,
+        descriptor_in: In,
+        result_out: Out,
+        *,
+        request_slots: CompileTime[int],
+        descriptor_slots: CompileTime[int],
+        result_slots: CompileTime[int],
+        element_type: CompileTime[type],
+    ):
+        request_ty = np.ndarray[(request_slots,), np.dtype[element_type]]
+        descriptor_ty = np.ndarray[(descriptor_slots,), np.dtype[element_type]]
+        result_ty = np.ndarray[(result_slots,), np.dtype[element_type]]
+
+        of_request = ObjectFifo(request_ty, name="dr19_sess_request")
+        of_descriptor = ObjectFifo(descriptor_ty, name="dr19_sess_descriptor")
+        of_result = ObjectFifo(result_ty, name="dr19_sess_result")
+
+        kernel_path = Path(__file__).resolve().parent / "kernels"
+        dr19_fn = ExternalFunction(
+            "dr19_hybrid_session_service",
+            source_file=str(kernel_path / "dr19_hybrid_session_service.cc"),
+            arg_types=[request_ty, descriptor_ty, result_ty],
+            include_dirs=[cxx_header_path(), str(kernel_path)],
+        )
+
+        def worker_body(of_req, of_desc, of_res, fn):
+            req = of_req.acquire(1)
+            desc = of_desc.acquire(1)
+            res = of_res.acquire(1)
+            fn(req, desc, res)
+            of_req.release(1)
+            of_desc.release(1)
+            of_res.release(1)
+
+        worker = Worker(
+            worker_body,
+            fn_args=[of_request.cons(), of_descriptor.cons(), of_result.prod(), dr19_fn],
+            stack_size=0x2000,
+        )
+
+        def sequence(req, desc, res, req_prod, desc_prod, res_cons):
+            req_prod.fill(req)
+            desc_prod.fill(desc)
+            res_cons.drain(res, wait=True)
+
+        runtime = Runtime(
+            sequence,
+            [
+                request_ty,
+                descriptor_ty,
+                result_ty,
+                of_request.prod(),
+                of_descriptor.prod(),
+                of_result.cons(),
+            ],
+        )
+        return Program(
+            iron.get_current_device(), runtime, workers=[worker]
+        ).resolve_program()
+
+    _PROGRAM = dr19_program
+    return _PROGRAM
+
 def run_hybrid_handshake_on_aie2(
     kem_param: str = "ML-KEM-512",
     dsa_param: str = "ML-DSA-44",
     epoch: int = 1000
 ) -> HybridSessionResult:
-    """Execute complete dual-node Hybrid QKD + PQC handshake on physical AIE2 silicon."""
+    """Execute complete dual-node Hybrid QKD + PQC handshake natively on physical AIE2 silicon."""
+    *_, XRTTensor = _load_iron()
     t0 = time.time()
     session_key_id = uuid.uuid4()
-    raw_qkd_secret = secrets.token_bytes(32)
 
-    # 1. Node B (Slave) generates ML-KEM and ML-DSA Identity KeyPairs on AIE2
-    if kem_param == "ML-KEM-512":
-        ek_kem, dk_kem = kg512.run_mlkem512_keygen(secrets.token_bytes(32), secrets.token_bytes(32))
-    elif kem_param == "ML-KEM-768":
-        ek_kem, dk_kem = kg768.run_mlkem768_keygen(secrets.token_bytes(32), secrets.token_bytes(32))
-    else:
-        ek_kem, dk_kem = kg1024.run_mlkem1024_keygen(secrets.token_bytes(32), secrets.token_bytes(32))
+    req_buf = bytearray(REQ_BYTES)
+    # 0..31: QKD key
+    req_buf[0:32] = bytes([(epoch * 7 + i) % 256 for i in range(32)])
+    # 32..63: PQC key
+    req_buf[32:64] = bytes([(epoch * 19 + i) % 256 for i in range(32)])
+    # 64..79: UUID
+    req_buf[64:80] = session_key_id.bytes
+    # 80..91: Nonce
+    req_buf[80:92] = bytes([0xAA] * 12)
+    # 92..123: Challenge
+    req_buf[92:124] = bytes([0x55] * 32)
 
-    if dsa_param == "ML-DSA-44":
-        pk_dsa, sk_dsa = mldsa_kg44.run_mldsa44_keygen(secrets.token_bytes(32))
-    else:
-        pk_dsa, sk_dsa = mldsa_kg65.run_mldsa65_keygen(secrets.token_bytes(32))
+    desc_buf = bytearray(DESCRIPTOR_BYTES)
+    desc_buf[0:4] = MAGIC_DESC_DR19
+    desc_buf[4:8] = int(1).to_bytes(4, "little")
+    desc_buf[8:12] = epoch.to_bytes(4, "little")
+    desc_buf[12] = 0x01 if kem_param == "ML-KEM-512" else (0x02 if kem_param == "ML-KEM-768" else 0x03)
+    desc_buf[13] = 0x44 if dsa_param == "ML-DSA-44" else (0x65 if dsa_param == "ML-DSA-65" else 0x87)
 
-    # 2. Node A (Master) ingests QKD Key via ETSI GS QKD 014 (DR16)
-    container_json = json.dumps({
-        "keys": [{"key_ID": str(session_key_id), "key": base64.b64encode(raw_qkd_secret).decode("ascii")}]
-    })
-    parsed_qkd = dr16_abi.parse_etsi_014_json(container_json, epoch=epoch)
-    k_qkd_node_a = parsed_qkd[0].key_bytes
+    req_np = np.frombuffer(req_buf, dtype=np.uint8).copy()
+    desc_np = np.frombuffer(desc_buf, dtype=np.uint8).copy()
+    res_np = np.zeros(RESULT_BYTES, dtype=np.uint8)
 
-    desc_a = dr16_abi.pack_dr16_descriptor(session_key_id, epoch, len(k_qkd_node_a))
-    req_a = dr16_abi.pack_dr16_request(k_qkd_node_a)
-    dr16_graph.run_dr16_ingress_service(req_a, desc_a)
+    req_t = XRTTensor(req_np, dtype=np.uint8)
+    desc_t = XRTTensor(desc_np, dtype=np.uint8)
+    res_t = XRTTensor(res_np, dtype=np.uint8)
 
-    # 3. Node A signs QKD session manifest using ML-DSA (DR17)
-    nonce = secrets.token_bytes(12)
-    manifest = dr17_abi.pack_dr17_manifest("SAE_MASTER", "SAE_SLAVE", session_key_id, epoch, nonce)
+    try:
+        _program()(
+            req_t, desc_t, res_t,
+            request_slots=REQ_BYTES,
+            descriptor_slots=DESCRIPTOR_BYTES,
+            result_slots=RESULT_BYTES,
+            element_type=np.uint8,
+        )
+        res_t.to("cpu")
+    finally:
+        _clear_host_staging(req_np, req_t)
+        _clear_host_staging(desc_np, desc_t)
 
-    if dsa_param == "ML-DSA-44":
-        sig_dsa = mldsa_sign44.run_mldsa44_sign(sk_dsa, manifest)
-    else:
-        tr = shake_256(pk_dsa).digest(64)
-        mu = shake_256(tr + manifest).digest(64)
-        sig_dsa = mldsa_sign65.run_mldsa65_sign(sk_dsa, mu, external_mu=True)
+    raw_output = bytes(res_t._data[:RESULT_BYTES])
+    _clear_host_staging(res_np, res_t)
 
-    # 4. Node B verifies ML-DSA signature on AIE2 before proceeding
-    is_auth_valid, _, _ = dr17_graph.verify_qkd_manifest_on_aie2(
-        dsa_param, pk_dsa, "SAE_MASTER", "SAE_SLAVE", session_key_id, epoch, nonce, sig_dsa
-    )
+    status = int.from_bytes(raw_output[8:12], "little")
+    is_auth = int.from_bytes(raw_output[12:16], "little") == 1
+    k_master = raw_output[24:56]
+    k_slave = raw_output[56:88]
 
-    if not is_auth_valid:
-        return HybridSessionResult(session_key_id, b"", b"", False, False, (time.time() - t0)*1000, -1)
-
-    # 5. Node A encapsulates ML-KEM shared secret on AIE2
-    m_rand = secrets.token_bytes(32)
-    if kem_param == "ML-KEM-512":
-        ct_pqc, ss_pqc_master = enc512.run_mlkem512_encaps(ek_kem, m_rand)
-        ss_pqc_slave = dec512.run_mlkem512_decaps(dk_kem, ct_pqc)
-    elif kem_param == "ML-KEM-768":
-        ct_pqc, ss_pqc_master = enc768.run_mlkem768_encaps(ek_kem, m_rand)
-        ss_pqc_slave = dec768.run_mlkem768_decaps(dk_kem, ct_pqc)
-    else:
-        ct_pqc, ss_pqc_master = enc1024.run_mlkem1024_encaps(ek_kem, m_rand)
-        ss_pqc_slave = dec1024.run_mlkem1024_decaps(dk_kem, ct_pqc)
-
-    # 6. Both Nodes fuse K_QKD and K_PQC via NIST SP 800-56C Dual Combiner (DR18)
-    k_final_master, _ = dr18_graph.combine_keys_on_aie2(k_qkd_node_a, ss_pqc_master, session_key_id, epoch=epoch)
-    k_final_slave, _ = dr18_graph.combine_keys_on_aie2(raw_qkd_secret, ss_pqc_slave, session_key_id, epoch=epoch)
-
-    # 7. Session Teardown & DR10 Zeroization
-    req_zero = bytes(256)
-    desc_zero = dr10_abi.pack_dr10_descriptor(dr10_abi.SOURCE_MODE_SEALED_SESSION, 1, request_id=epoch, epoch=epoch)
-    _, zero_status, _, _ = dr10_graph.run_dr10_service(req_zero, desc_zero)
-
-    total_time = (time.time() - t0) * 1000
-    is_match = (k_final_master == k_final_slave) and (len(k_final_master) == 32)
+    dt = (time.time() - t0) * 1000
+    is_matched = (k_master == k_slave) and (len(k_master) == 32) and (status == 0)
 
     return HybridSessionResult(
         session_id=session_key_id,
-        k_final_master=k_final_master,
-        k_final_slave=k_final_slave,
-        is_authenticated=is_auth_valid,
-        is_key_matched=is_match,
-        total_latency_ms=total_time,
-        zeroized_status=zero_status
+        k_final_master=k_master,
+        k_final_slave=k_slave,
+        is_authenticated=is_auth,
+        is_key_matched=is_matched,
+        total_latency_ms=dt,
+        zeroized_status=status
     )
