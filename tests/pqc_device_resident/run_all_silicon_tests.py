@@ -8,7 +8,8 @@ from pathlib import Path
 PYTHON_EXE = sys.executable
 
 TESTS = [
-    ("DR1 (ML-DSA-44 RejNTT)", "tests/pqc_device_resident/test_dr1_mldsa44_rejntt_silicon.py"),
+    ("DR0  (M33 Ring Product Vector Unit)", "tests/pqc_device_resident/test_m33_product_dr0.py"),
+    ("DR1  (ML-DSA-44 RejNTT)", "tests/pqc_device_resident/test_dr1_mldsa44_rejntt_silicon.py"),
     ("DR2a (ML-KEM-512 SampleNTT)", "tests/pqc_device_resident/test_dr2a_mlkem512_samplentt_silicon.py"),
     ("DR2b (ML-KEM-512 Noise+NTT)", "tests/pqc_device_resident/test_dr2b_mlkem512_noise_ntt_silicon.py"),
     ("DR2c (ML-KEM-512 KeyGen Row)", "tests/pqc_device_resident/test_dr2c_mlkem512_keygen_row_silicon.py"),
@@ -24,6 +25,8 @@ TESTS = [
     ("DR11 (FIPS 204 ML-DSA-44 KeyGen)", "tests/pqc_device_resident/test_dr11_mldsa44_keygen_silicon.py"),
     ("DR12 (FIPS 204 ML-DSA-44 Sign)", "tests/pqc_device_resident/test_dr12_mldsa44_sign_silicon.py"),
     ("DR13 (FIPS 204 ML-DSA-44 Verify)", "tests/pqc_device_resident/test_dr13_mldsa44_verify_silicon.py"),
+    ("DR14 (FIPS 204 ML-DSA-65 Suite)", "tests/pqc_device_resident/test_dr14_mldsa65_silicon.py"),
+    ("DR15 (FIPS 204 ML-DSA-87 Suite)", "tests/pqc_device_resident/test_dr15_mldsa87_silicon.py"),
 ]
 
 def main():
