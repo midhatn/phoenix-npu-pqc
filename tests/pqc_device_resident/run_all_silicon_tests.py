@@ -23,6 +23,7 @@ TESTS = [
     ("DR10 (Sealed Lifecycle Architecture)", "tests/pqc_device_resident/test_dr10_sealed_lifecycle_silicon.py"),
     ("DR11 (FIPS 204 ML-DSA-44 KeyGen)", "tests/pqc_device_resident/test_dr11_mldsa44_keygen_silicon.py"),
     ("DR12 (FIPS 204 ML-DSA-44 Sign)", "tests/pqc_device_resident/test_dr12_mldsa44_sign_silicon.py"),
+    ("DR13 (FIPS 204 ML-DSA-44 Verify)", "tests/pqc_device_resident/test_dr13_mldsa44_verify_silicon.py"),
 ]
 
 def main():
