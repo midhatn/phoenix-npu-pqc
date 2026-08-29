@@ -8,14 +8,13 @@ Pure, authentic hardware management interface for AMD Ryzen AI NPUs (AIE2 / XDNA
 Queries physical silicon telemetry directly from the AMD XRT Kernel Service
 and AMD AI Analyzer (dlanalyzer) core subsystems.
 
-100% Real Hardware Data - Zero Synthetic Estimations.
+100% Real Hardware Data - Zero Hardcoded Frequency/Power/Utilization Numbers.
 
 Subsystems Integrated:
   1. AMD XRT Management Interface (C:\Windows\System32\AMD\xrt-smi.exe)
   2. AIE2 Partition Table & Hardware Context Matrix (Columns 1-4, Buffer Objects)
   3. Hardware Packet Counters (Real Submissions, Completions, Error Registers)
-  4. AMD AI Analyzer Timing Engine (dlanalyzer.data.flexml.json_hw_timestamps)
-  5. AMD npupower Platform Subsystem
+  4. AMD npupower Platform Subsystem
 
 Usage:
   python npu_smi.py              # Display single hardware snapshot
@@ -36,7 +35,7 @@ import subprocess
 from pathlib import Path
 from typing import Dict, List, Optional, Any
 
-VERSION = "3.1.0"
+VERSION = "3.1.1"
 XRT_PATH = r"C:\Windows\System32\AMD\xrt-smi.exe"
 
 def clear_screen():
@@ -53,7 +52,6 @@ def get_hardware_info() -> Dict[str, Any]:
         "firmware_version": "1.5.5.391",
         "xrt_version": "2.21.0",
         "architecture": "AMD XDNA1 / AIE2 (512-bit SIMD Array)",
-        "clock_freq_mhz": 1000,
         "total_columns": 5, # 1 SHIM NOC + 4 AIE Columns
         "power_mode": "Default",
         "estimated_power": "N/A"
@@ -83,6 +81,10 @@ def get_hardware_info() -> Dict[str, Any]:
         for line in plat_out.splitlines():
             if "Power Mode" in line:
                 info["power_mode"] = line.split(":", 1)[1].strip()
+            elif "Total Columns" in line:
+                m = re.search(r"Total Columns\s*:\s*(\d+)", line)
+                if m:
+                    info["total_columns"] = int(m.group(1))
             elif "Estimated Power" in line:
                 info["estimated_power"] = line.split(":", 1)[1].strip()
     except Exception:
@@ -199,21 +201,22 @@ def render_smi(hw: Dict[str, Any], part: Dict[str, Any]) -> str:
     """Renders the standard NVIDIA/AMD style SMI tabular layout."""
     now_str = time.strftime("%a %b %d %H:%M:%S %Y")
     status_str = part["status"]
-    pmode_str = f"{hw['power_mode']} (P0)" if part["is_active"] else f"{hw['power_mode']} (P2)"
+    pmode_str = f"{hw['power_mode']} Mode"
     col_str = str(part["columns"]) if part["columns"] else "Standby"
     mem_str = f"{part['total_memory_mb']} MB" if part["total_memory_mb"] > 0 else "0 MB"
+    total_cols_str = f"{hw['total_columns']} (1 SHIM + 4 AIE)"
 
     out = []
     out.append(f"{now_str}")
     out.append("+-------------------------------------------------------------------------------------------------+")
     out.append(f"| AMD NPU-SMI v{VERSION:<6}         Driver: {hw['driver_version']:<16} Firmware: {hw['firmware_version']:<12} XRT: {hw['xrt_version']:<8} |")
     out.append("+------------------------------------------+------------------------------+-----------------------+")
-    out.append("| NPU  Name                   PCIe / BDF   | Operating Mode        Status | Physical Partitioning |")
-    out.append("|      Architecture           Device Node  | Power-Mode / P-State         | DMA Memory Residency  |")
+    out.append("| NPU  Name                   PCIe / BDF   | Power Mode            Status | Physical Partitioning |")
+    out.append("|      Architecture           Device Node  | Hardware Contexts            | DMA Memory Residency  |")
     out.append("|==========================================+==============================+=======================|")
     out.append(f"|   0  {hw['device_name']:<24}    |                              | Columns: {col_str:<13} |")
     out.append(f"|      {hw['bdf']:<16}       {hw['vendor_id']:<8}     | {pmode_str:<18} {status_str:<6} | Allocated: {mem_str:<10} |")
-    out.append(f"|      {hw['architecture']:<35} | Driver: XRT Kernel Service   | Clock: {hw['clock_freq_mhz']} MHz Base    |")
+    out.append(f"|      {hw['architecture']:<35} | HW Total Cols: {total_cols_str:<13} | Est. Power: {hw['estimated_power']:<9} |")
     out.append("+------------------------------------------+------------------------------+-----------------------+")
     out.append("")
     out.append("+-------------------------------------------------------------------------------------------------+")
