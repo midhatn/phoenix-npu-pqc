@@ -10,24 +10,25 @@ static uint32_t bit_at(const uint8_t *prf, uint32_t bit) {
 }
 
 static void cbd3(const uint8_t prf[kPrfBytes], uint32_t out[kN]) {
-  for (uint32_t index = 0; index < kN; ++index) {
-    const uint32_t bit = 6u * index;
+  DR2D_DISABLE_UNROLL
+  for (uint32_t i = 0; i < kN; ++i) {
+    const uint32_t bit = 6 * i;
     const int32_t value =
-        static_cast<int32_t>(bit_at(prf, bit) + bit_at(prf, bit + 1u) +
-                             bit_at(prf, bit + 2u)) -
-        static_cast<int32_t>(bit_at(prf, bit + 3u) + bit_at(prf, bit + 4u) +
-                             bit_at(prf, bit + 5u));
-    out[index] = static_cast<uint32_t>(value) +
-                 (static_cast<uint32_t>(value) >> 31) * kQ;
+        static_cast<int32_t>(bit_at(prf, bit) + bit_at(prf, bit + 1) + bit_at(prf, bit + 2)) -
+        static_cast<int32_t>(bit_at(prf, bit + 3) + bit_at(prf, bit + 4) + bit_at(prf, bit + 5));
+    out[i] = static_cast<uint32_t>(value) + (static_cast<uint32_t>(value) >> 31) * kQ;
   }
 }
 
 __attribute__((noinline)) static void ntt(uint32_t r[kN]) {
   uint32_t k = 1;
+  DR2D_DISABLE_UNROLL
   for (uint32_t stage = 0; stage < 7; ++stage) {
     const uint32_t length = 128u >> stage;
+    DR2D_DISABLE_UNROLL
     for (uint32_t start = 0; start < kN; start += 2 * length) {
       const uint32_t zeta = kZetas[k++];
+      DR2D_DISABLE_UNROLL
       for (uint32_t j = start; j < start + length; ++j) {
         const uint32_t t = mod_mul(zeta, r[j + length]);
         r[j + length] = r[j] >= t ? r[j] - t : r[j] + kQ - t;

@@ -176,7 +176,14 @@ static inline bool canonical_poly(const uint8_t *poly) {
     if (load_le16(poly + 2 * i) >= kQ) return false;
   return true;
 }
-static inline uint32_t mod_mul(uint32_t a, uint32_t b) { return (a * b) % kQ; }
+static inline uint32_t mod_mul(uint32_t a, uint32_t b) {
+  const uint32_t Y = a * b;
+  const uint32_t q = (static_cast<uint64_t>(Y) * 1290167u) >> 32;
+  uint32_t r = Y - q * 3329u;
+  if (r >= 3329u) r -= 3329u;
+  if (r >= 3329u) r -= 3329u;
+  return r;
+}
 
 static inline void derive_g(const uint8_t d[32], uint8_t rho[32], uint8_t sigma[32]) {
   alignas(8) uint8_t state[200];
