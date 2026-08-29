@@ -46,6 +46,7 @@ from . import dr15_mldsa87_verify_graph as mldsa87_vrf
 
 from . import dr19_hybrid_session_orchestrator as hybrid_orch
 from . import dr27_qrng_reservoir_graph as qrng_res
+from . import dr21_slhdsa_graph as slhdsa_graph
 
 # OpenSSL 3.x Operation Opcodes
 OSSL_OP_DIGEST      = 1
@@ -115,6 +116,10 @@ class PhoenixPqcProvider:
                 {"algorithm": "ML-DSA-44", "properties": "provider=phoenix_pqc,npu=aie2"},
                 {"algorithm": "ML-DSA-65", "properties": "provider=phoenix_pqc,npu=aie2"},
                 {"algorithm": "ML-DSA-87", "properties": "provider=phoenix_pqc,npu=aie2"},
+                {"algorithm": "SLH-DSA-SHAKE-128S", "properties": "provider=phoenix_pqc,npu=aie2,fips205=true"},
+                {"algorithm": "SLH-DSA-SHAKE-128F", "properties": "provider=phoenix_pqc,npu=aie2,fips205=true"},
+                {"algorithm": "SLH-DSA-SHAKE-256S", "properties": "provider=phoenix_pqc,npu=aie2,fips205=true"},
+                {"algorithm": "SLH-DSA-SHAKE-256F", "properties": "provider=phoenix_pqc,npu=aie2,fips205=true"},
             ]
         elif operation_id == OSSL_OP_KEYMGMT:
             return [
@@ -124,6 +129,10 @@ class PhoenixPqcProvider:
                 {"algorithm": "ML-DSA-44", "properties": "provider=phoenix_pqc,npu=aie2"},
                 {"algorithm": "ML-DSA-65", "properties": "provider=phoenix_pqc,npu=aie2"},
                 {"algorithm": "ML-DSA-87", "properties": "provider=phoenix_pqc,npu=aie2"},
+                {"algorithm": "SLH-DSA-SHAKE-128S", "properties": "provider=phoenix_pqc,npu=aie2,fips205=true"},
+                {"algorithm": "SLH-DSA-SHAKE-128F", "properties": "provider=phoenix_pqc,npu=aie2,fips205=true"},
+                {"algorithm": "SLH-DSA-SHAKE-256S", "properties": "provider=phoenix_pqc,npu=aie2,fips205=true"},
+                {"algorithm": "SLH-DSA-SHAKE-256F", "properties": "provider=phoenix_pqc,npu=aie2,fips205=true"},
             ]
         return []
 
@@ -208,7 +217,10 @@ class PhoenixPqcProvider:
                 xi_seed = os.urandom(32)
 
         algo = algorithm.upper().replace("_", "-")
-        if algo == "ML-DSA-44":
+        if "SLH-DSA" in algo or "SPHINCS" in algo:
+            canonical = "SLH-DSA-SHAKE-128s" if "128S" in algo else "SLH-DSA-SHAKE-128f" if "128F" in algo else "SLH-DSA-SHAKE-256s" if "256S" in algo else "SLH-DSA-SHAKE-256f"
+            pk, sk, _ = slhdsa_graph.slhdsa_keygen_on_aie2(canonical, sk_seed=xi_seed)
+        elif algo == "ML-DSA-44":
             pk, sk = mldsa44_kg.run_mldsa44_keygen(xi_seed)
         elif algo == "ML-DSA-65":
             pk, sk = mldsa65_kg.run_mldsa65_keygen(xi_seed)
