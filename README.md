@@ -290,6 +290,16 @@ cd phoenix-npu-pqc
   doi={10.1103/RevModPhys.74.145}
 }
 
+@software{nashar2026phoenix_frontend,
+  author    = {Midhat Nashar},
+  title     = {{Phoenix NPU PQC Frontend: Interactive Web Dashboard & Silicon Playground for AMD Phoenix NPU}},
+  year      = {2026},
+  publisher = {Zenodo},
+  version   = {1.1.0},
+  doi       = {10.5281/zenodo.22162273},
+  url       = {https://doi.org/10.5281/zenodo.22162273}
+}
+
 @software{nashar2026phoenix_qkd,
   author = {Midhat Nashar},
   title = {{Phoenix NPU PQC & QKD: 100\% Device-Resident Post-Quantum Cryptography & Quantum Key Distribution on AMD Phoenix NPU}},
