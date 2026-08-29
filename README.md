@@ -6,13 +6,13 @@
 ![Target: AMD Phoenix NPU](https://img.shields.io/badge/Target-AMD%20Ryzen%20AI%20NPU%20(AIE2)-blue)
 ![Architecture: XDNA1 AIE2 ML](https://img.shields.io/badge/Architecture-XDNA1%20AIE2%20(512--bit%20SIMD)-red)
 ![Research: PQC & QKD Defense-in-Depth](https://img.shields.io/badge/Research-PQC%20%26%20QKD%20Defense--in--Depth-8a2be2)
-![Standards: FIPS 202 / 203 / 204 · ETSI GS QKD 014 · NIST SP 800-56C](https://img.shields.io/badge/Standards-FIPS%20202%2F203%2F204%20%C2%B7%20ETSI%20014%20%C2%B7%20SP%20800--56C-005ea8)
-![Status: 100% Silicon Certified (839/839 PASS across 23 Gates)](https://img.shields.io/badge/Status-100%25%20Silicon%20Certified%20%C2%B7%20839%2F839%20PASS-brightgreen)
+![Standards: FIPS 202 / 203 / 204 · ETSI 014 · QRNG · OpenSSL 3 · PKCS#11 · SP 800-56C](https://img.shields.io/badge/Standards-FIPS%20202%2F203%2F204%20%C2%B7%20ETSI%20014%20%C2%B7%20QRNG%20%C2%B7%20OpenSSL%20%C2%B7%20PKCS%2311-005ea8)
+![Status: v1.2.0 Silicon Certified (851/851 PASS across 25 Gates)](https://img.shields.io/badge/Status-v1.2.0%20Silicon%20Certified%20%C2%B7%20851%2F851%20PASS-brightgreen)
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.22162273.svg)](https://doi.org/10.5281/zenodo.22162273)
 
 **World's first 100% device-resident hardware realization of finalized NIST Post-Quantum Cryptography standards (FIPS 202, FIPS 203, FIPS 204) and ETSI GS QKD 014 Quantum Key Distribution (ID Quantique Cerberis XGR compatible) on the AMD Phoenix NPU (AIE2 / XDNA1 Architecture).**
 
-[Full Silicon Architecture Whitepaper (v2)](docs/phoenix_npu_xdna1_architecture_v2.md) · [PQC & QKD Hardware Roadmap (v1.1.0)](docs/PQC_AND_QKD_ROADMAP.md) · [Silicon Validation Report](docs/HYBRID_QKD_PQC_SILICON_REPORT.md) · [ID Quantique Manual](docs/ID_QUANTIQUE_QKD_INTEGRATION.md) · [Interactive Frontend](https://github.com/midhatn/phoenix-npu-pqc-frontend)
+[Full Silicon Architecture Whitepaper (v2)](docs/phoenix_npu_xdna1_architecture_v2.md) · [PQC & QKD Hardware Roadmap (v1.2.0)](docs/PQC_AND_QKD_ROADMAP.md) · [Silicon Validation Report](docs/HYBRID_QKD_PQC_SILICON_REPORT.md) · [ID Quantique Manual](docs/ID_QUANTIQUE_QKD_INTEGRATION.md) · [Interactive Frontend](https://github.com/midhatn/phoenix-npu-pqc-frontend)
 
 </div>
 
@@ -83,9 +83,9 @@ Intermediate secret keys and polynomials never leave the on-die SRAM until the f
 
 ---
 
-## 2. Five Core Cryptographic & Quantum Modules
+## 2. Six Core Cryptographic, Quantum & Enterprise Provider Modules
 
-The architecture is partitioned into five primary modules across 23 physical silicon gates (**839 / 839 test cases PASS in 29.40s**):
+The architecture is partitioned into six primary modules across 25 physical silicon gates (**851 / 851 test cases PASS in 33.21s**):
 
 ### Module 1: NIST FIPS 202 (SHA-3 / SHAKE — Milestone DR9)
 * **Scope**: SHA3-224, SHA3-256, SHA3-384, SHA3-512, SHAKE128, and SHAKE256 running natively on the NPU array.
@@ -131,6 +131,14 @@ The architecture is partitioned into five primary modules across 23 physical sil
   * `Full-Duplex Session Orchestrator (DR19)`: End-to-end multi-tile handshake between Master and Slave nodes with zero-leakage teardown via DR10 hardware zeroization.
 * **Validation**: **103 / 103** test cases passing on silicon.
 
+### Module 6: True Quantum Entropy, Providers & Tokens (Milestones DR27, DR23)
+* **Standards Compliance**: **Palo Alto QRNG-OPENAPI v1.0**, **NIST SP 800-90B**, **OpenSSL 3.0+ Provider API**, and **OASIS PKCS#11 v3.0 Cryptoki**.
+* **Operations**: Complete operations executed 100% on-device:
+  * `QRNG-OPENAPI Ingress & Reservoir (DR27)`: Sealed host daemon (`/v1/entropy`, `/v1/healthtest`) streaming true quantum entropy into on-chip AIE2 token-bucket pool with 5%/30% anti-flapping hysteresis.
+  * `OpenSSL 3.x Native Provider (DR23)`: Standard `OSSL_PROVIDER` dispatching `EVP_KEM` (ML-KEM-512/768/1024, X25519-ML-KEM-768, QKD-ML-KEM-768) and `EVP_SIGNATURE` (ML-DSA-44/65/87) natively to silicon.
+  * `PKCS#11 v3.0 HSM Cryptoki Token (DR23)`: Full cryptographic token management with hardware-backed key derivation and signature verification.
+* **Validation**: **12 / 12** test cases passing on silicon.
+
 ---
 
 ## 3. Universal Architecture Invariants Enforced
@@ -144,36 +152,38 @@ All operations strictly enforce four non-negotiable hardware invariants:
 
 ---
 
-## 4. Master Silicon Validation Evidence Matrix (23 Gates)
+## 4. Master Silicon Validation Evidence Matrix (25 Gates)
 
 The universal master silicon test suite ([`run_all_silicon_tests.py`](run_all_silicon_tests.py)) executes directly on physical AMD Phoenix AIE2 silicon (Ryzen 7 7840HS / Ryzen 9 7940HS):
 
 | Gate | Milestone | Algorithm & Operation | Silicon Verification Script | Test Count | Physical Result | Runtime |
 |:---:|:---:|:---|:---|:---:|:---:|:---:|
-| **00** | DR0 | M33 Ring Product Vector Unit | `test_m33_product_dr0.py` | 24 | **24 / 24 PASS** | 1.02s |
-| **01** | DR1 | ML-DSA-44 ExpandA / RejNTT | `test_dr1_mldsa44_rejntt_silicon.py` | 33 | **33 / 33 PASS** | 0.76s |
-| **02** | DR2a | ML-KEM-512 SampleNTT Stream | `test_dr2a_mlkem512_samplentt_silicon.py` | 13 | **13 / 13 PASS** | 0.70s |
-| **03** | DR2b | ML-KEM-512 CBD3/NTT Noise | `test_dr2b_mlkem512_noise_ntt_silicon.py` | 13 | **13 / 13 PASS** | 0.76s |
-| **04** | DR2c | ML-KEM-512 KeyGen Matrix Row | `test_dr2c_mlkem512_keygen_row_silicon.py` | 13 | **13 / 13 PASS** | 0.81s |
-| **05** | DR2d | ML-KEM-512 K-PKE.KeyGen Pipeline | `test_dr2d_mlkem512_kpke_keygen_silicon.py` | 25 | **25 / 25 PASS** | 0.92s |
-| **06** | DR3 | ML-KEM-512 K-PKE.Encrypt Pipeline | `test_dr3_mlkem512_kpke_encrypt_silicon.py` | 25 | **25 / 25 PASS** | 0.71s |
-| **07** | DR4 | ML-KEM-512 K-PKE.Decrypt Pipeline | `test_dr4_mlkem512_kpke_decrypt_silicon.py` | 25 | **25 / 25 PASS** | 0.72s |
-| **08** | DR5 | ML-KEM-512 ML-KEM.KeyGen Graph | `test_dr5_mlkem512_keygen_silicon.py` | 25 | **25 / 25 PASS** | 0.85s |
-| **09** | DR6 | ML-KEM-512 ML-KEM.Encaps Graph | `test_dr6_mlkem512_encaps_silicon.py` | 30 | **30 / 30 PASS** | 0.73s |
-| **10** | DR7 | ML-KEM-512 ML-KEM.Decaps Graph | `test_dr7_mlkem512_decaps_silicon.py` | 30 | **30 / 30 PASS** | 0.85s |
-| **11** | DR8 | ML-KEM-768 & 1024 Expansion | `test_dr8_mlkem_unified_silicon.py` | 80 | **80 / 80 PASS** | 1.98s |
-| **12** | DR9 | NIST FIPS 202 SHA-3/SHAKE Service | `test_dr9_fips202_silicon.py` | 32 | **32 / 32 PASS** | 0.87s |
-| **13** | DR10 | Sealed Lifecycle & Key Sources | `test_dr10_sealed_lifecycle_silicon.py` | 41 | **41 / 41 PASS** | 0.81s |
-| **14** | DR11 | NIST FIPS 204 ML-DSA-44 KeyGen | `test_dr11_mldsa44_keygen_silicon.py` | 25 | **25 / 25 PASS** | 0.90s |
-| **15** | DR12 | NIST FIPS 204 ML-DSA-44 Sign | `test_dr12_mldsa44_sign_silicon.py` | 30 | **30 / 30 PASS** | 2.27s |
-| **16** | DR13 | NIST FIPS 204 ML-DSA-44 Verify | `test_dr13_mldsa44_verify_silicon.py` | 30 | **30 / 30 PASS** | 0.94s |
-| **17** | DR14 | NIST FIPS 204 ML-DSA-65 (Full Suite)| `test_dr14_mldsa65_silicon.py` | 85 | **85 / 85 PASS** | 4.44s |
-| **18** | DR15 | NIST FIPS 204 ML-DSA-87 (Full Suite)| `test_dr15_mldsa87_silicon.py` | 85 | **85 / 85 PASS** | 3.10s |
-| **19** | **DR16**| **ETSI GS QKD 014 Sealed Ingress** | `test_dr16_etsi_qkd014_silicon.py` | 25 | **25 / 25 PASS** | 2.62s |
-| **20** | **DR17**| **ML-DSA Asymmetric QKD Control** | `test_dr17_mldsa_qkd_auth_silicon.py` | 25 | **25 / 25 PASS** | 4.68s |
-| **21** | **DR18**| **NIST SP 800-56C Dual Combiner** | `test_dr18_dual_key_combiner_silicon.py` | 30 | **30 / 30 PASS** | 2.74s |
-| **22** | **DR19**| **Hybrid Session Orchestrator** | `test_dr19_hybrid_session_silicon.py` | 20 | **20 / 20 PASS** | 2.67s |
-| **TOTAL**| **DR0-19**| **Universal PQC & QKD Suite** | `run_all_silicon_tests.py` | **839** | **839 / 839 PASS** | **36.86s** |
+| **00** | DR0 | M33 Ring Product Vector Unit | `test_m33_product_dr0.py` | 24 | **24 / 24 PASS** | 0.91s |
+| **01** | DR1 | ML-DSA-44 ExpandA / RejNTT | `test_dr1_mldsa44_rejntt_silicon.py` | 33 | **33 / 33 PASS** | 0.75s |
+| **02** | DR2a | ML-KEM-512 SampleNTT Stream | `test_dr2a_mlkem512_samplentt_silicon.py` | 13 | **13 / 13 PASS** | 0.69s |
+| **03** | DR2b | ML-KEM-512 CBD3/NTT Noise | `test_dr2b_mlkem512_noise_ntt_silicon.py` | 13 | **13 / 13 PASS** | 0.71s |
+| **04** | DR2c | ML-KEM-512 KeyGen Matrix Row | `test_dr2c_mlkem512_keygen_row_silicon.py` | 13 | **13 / 13 PASS** | 0.71s |
+| **05** | DR2d | ML-KEM-512 K-PKE.KeyGen Pipeline | `test_dr2d_mlkem512_kpke_keygen_silicon.py` | 25 | **25 / 25 PASS** | 0.78s |
+| **06** | DR3 | ML-KEM-512 K-PKE.Encrypt Pipeline | `test_dr3_mlkem512_kpke_encrypt_silicon.py` | 25 | **25 / 25 PASS** | 0.75s |
+| **07** | DR4 | ML-KEM-512 K-PKE.Decrypt Pipeline | `test_dr4_mlkem512_kpke_decrypt_silicon.py` | 25 | **25 / 25 PASS** | 0.71s |
+| **08** | DR5 | ML-KEM-512 ML-KEM.KeyGen Graph | `test_dr5_mlkem512_keygen_silicon.py` | 25 | **25 / 25 PASS** | 0.76s |
+| **09** | DR6 | ML-KEM-512 ML-KEM.Encaps Graph | `test_dr6_mlkem512_encaps_silicon.py` | 30 | **30 / 30 PASS** | 0.75s |
+| **10** | DR7 | ML-KEM-512 ML-KEM.Decaps Graph | `test_dr7_mlkem512_decaps_silicon.py` | 30 | **30 / 30 PASS** | 0.80s |
+| **11** | DR8 | ML-KEM-768 & 1024 Expansion | `test_dr8_mlkem_unified_silicon.py` | 80 | **80 / 80 PASS** | 1.82s |
+| **12** | DR9 | NIST FIPS 202 SHA-3/SHAKE Service | `test_dr9_fips202_silicon.py` | 32 | **32 / 32 PASS** | 0.86s |
+| **13** | DR10 | Sealed Lifecycle & Key Sources | `test_dr10_sealed_lifecycle_silicon.py` | 41 | **41 / 41 PASS** | 0.80s |
+| **14** | DR11 | NIST FIPS 204 ML-DSA-44 KeyGen | `test_dr11_mldsa44_keygen_silicon.py` | 25 | **25 / 25 PASS** | 0.89s |
+| **15** | DR12 | NIST FIPS 204 ML-DSA-44 Sign | `test_dr12_mldsa44_sign_silicon.py` | 30 | **30 / 30 PASS** | 2.30s |
+| **16** | DR13 | NIST FIPS 204 ML-DSA-44 Verify | `test_dr13_mldsa44_verify_silicon.py` | 30 | **30 / 30 PASS** | 1.35s |
+| **17** | DR14 | NIST FIPS 204 ML-DSA-65 (Full Suite)| `test_dr14_mldsa65_silicon.py` | 85 | **85 / 85 PASS** | 4.84s |
+| **18** | DR15 | NIST FIPS 204 ML-DSA-87 (Full Suite)| `test_dr15_mldsa87_silicon.py` | 85 | **85 / 85 PASS** | 3.56s |
+| **19** | **DR16**| **ETSI GS QKD 014 Sealed Ingress** | `test_dr16_etsi_qkd014_silicon.py` | 25 | **25 / 25 PASS** | 0.70s |
+| **20** | **DR17**| **ML-DSA Asymmetric QKD Control** | `test_dr17_mldsa_qkd_auth_silicon.py` | 25 | **25 / 25 PASS** | 2.71s |
+| **21** | **DR18**| **NIST SP 800-56C Dual Combiner** | `test_dr18_dual_key_combiner_silicon.py` | 30 | **30 / 30 PASS** | 1.11s |
+| **22** | **DR19**| **Hybrid Session Orchestrator** | `test_dr19_hybrid_session_silicon.py` | 20 | **20 / 20 PASS** | 0.65s |
+| **23** | **DR27**| **QRNG-OPENAPI & Reservoir Core** | `test_dr27_qrng_reservoir_silicon.py` | 6 | **6 / 6 PASS** | 1.23s |
+| **24** | **DR23**| **OpenSSL 3.x Provider & PKCS#11** | `test_dr23_openssl_provider_silicon.py` | 6 | **6 / 6 PASS** | 2.09s |
+| **TOTAL**| **DR0-27**| **Universal PQC & QKD Suite** | `run_all_silicon_tests.py` | **851** | **851 / 851 PASS** | **33.21s** |
 
 ---
 

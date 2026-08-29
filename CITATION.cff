@@ -1,9 +1,9 @@
 cff-version: 1.2.0
 message: "If you use this research repository, please cite it using the metadata below."
 title: "Phoenix NPU PQC & QKD: 100% Device-Resident Post-Quantum Cryptography & Quantum Key Distribution on AMD Phoenix NPU"
-abstract: "A complete device-resident hardware implementation of the finalized NIST Post-Quantum Cryptography standards (FIPS 202 SHA-3/SHAKE, FIPS 203 ML-KEM, and FIPS 204 ML-DSA) and ETSI GS QKD 014 Quantum Key Distribution (ID Quantique Cerberis XGR compatible) on the AMD Phoenix NPU (Ryzen 7 7840HS / Ryzen 9 7940HS w/ AIE2 / XDNA1 Architecture). Validated across 23 physical silicon gates (839/839 test cases PASS in 35.98s) with zero host CPU cryptographic fallback."
+abstract: "A complete device-resident hardware implementation of the finalized NIST Post-Quantum Cryptography standards (FIPS 202 SHA-3/SHAKE, FIPS 203 ML-KEM, and FIPS 204 ML-DSA) and ETSI GS QKD 014 Quantum Key Distribution (ID Quantique Cerberis XGR compatible) on the AMD Phoenix NPU (Ryzen 7 7840HS / Ryzen 9 7940HS w/ AIE2 / XDNA1 Architecture). Validated across 25 physical silicon gates (851/851 test cases PASS in 33.21s) with zero host CPU cryptographic fallback."
 type: software
-version: "1.1.0"
+version: "1.2.0"
 date-released: "2026-08-29"
 doi: "10.5281/zenodo.22162273"
 authors:
@@ -18,6 +18,9 @@ keywords:
   - "quantum key distribution"
   - "QKD"
   - "ETSI GS QKD 014"
+  - "QRNG-OPENAPI"
+  - "OpenSSL 3.x"
+  - "PKCS#11"
   - "ID Quantique"
   - "NIST SP 800-56C"
   - "ML-KEM"
@@ -37,7 +40,7 @@ preferred-citation:
     - family-names: "Nashar"
       given-names: "Midhat"
   year: 2026
-  version: "1.1.0"
+  version: "1.2.0"
   doi: "10.5281/zenodo.22162273"
   url: "https://doi.org/10.5281/zenodo.22162273"
 references:
