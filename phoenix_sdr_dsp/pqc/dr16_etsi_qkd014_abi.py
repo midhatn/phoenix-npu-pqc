@@ -35,9 +35,16 @@ class EtsiQkdKey(NamedTuple):
     source_sae_id: str
     target_sae_id: str
 
-def parse_etsi_014_json(json_str: str, epoch: int = 1, source_sae: str = "SAE_MASTER", target_sae: str = "SAE_SLAVE") -> list[EtsiQkdKey]:
+def parse_etsi_014_json(json_str, epoch: int = 1, source_sae: str = "SAE_MASTER", target_sae: str = "SAE_SLAVE") -> list[EtsiQkdKey]:
     """Parse standard ETSI GS QKD 014 JSON Key Container response."""
-    data = json.loads(json_str)
+    if isinstance(json_str, dict):
+        data = json_str
+    elif isinstance(json_str, (bytes, bytearray)):
+        data = json.loads(json_str.decode('utf-8'))
+    elif isinstance(json_str, str):
+        data = json.loads(json_str)
+    else:
+        raise TypeError(f"Expected dict, str, or bytes, got {type(json_str)}")
     keys_list = []
     if "keys" not in data or not isinstance(data["keys"], list):
         raise ValueError("Invalid ETSI GS QKD 014 format: missing 'keys' list.")

@@ -87,10 +87,7 @@ extern "C" void dr15_mldsa87_sign_w1_matrix(
   uint8_t mu_w1[1088];
   for (uint32_t i = 0; i < 64; ++i) mu_w1[i] = mu[i];
   for (uint32_t i = 0; i < 1024; ++i) mu_w1[64 + i] = w1_bytes[i];
-  keccak_sponge(136, mu_w1, 1088, 0x1F, c_tilde, 32);
-
-  DR11_DISABLE_UNROLL
-  for (uint32_t i = 0; i < 32; ++i) c_tilde_out[i] = c_tilde[i];
+  keccak_sponge(136, mu_w1, 1088, 0x1F, c_tilde_out, 32);
 
   clear_bytes(y_poly, sizeof(y_poly));
   clear_bytes(y_hat, sizeof(y_hat));

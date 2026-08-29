@@ -82,9 +82,9 @@ def _build_dr15_sign_program():
             of_o.release(1)
             of_i.release(1)
 
-        w0 = Worker(worker0_body, fn_args=[of_req.cons(), of_desc.cons(), of_t0.prod(), w0_fn], stack_size=0x1800)
-        w1 = Worker(worker_step, fn_args=[of_t0.cons(), of_t1.prod(), w1_fn], stack_size=0x1800)
-        w2 = Worker(worker_step, fn_args=[of_t1.cons(), of_res.prod(), w2_fn], stack_size=0x1800)
+        w0 = Worker(worker0_body, fn_args=[of_req.cons(), of_desc.cons(), of_t0.prod(), w0_fn], stack_size=0x4000)
+        w1 = Worker(worker_step, fn_args=[of_t0.cons(), of_t1.prod(), w1_fn], stack_size=0x4000)
+        w2 = Worker(worker_step, fn_args=[of_t1.cons(), of_res.prod(), w2_fn], stack_size=0x4000)
 
         def sequence(r_in, d_in, res_out, of_rp, of_dp, of_rc):
             of_rp.fill(r_in)
