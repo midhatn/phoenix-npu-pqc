@@ -14,7 +14,7 @@
 
 Signing in lattice-based cryptography (Dilithium / ML-DSA) represents the most complex mathematical algorithm in Post-Quantum Cryptography due to:
 1. **Rejection-Sampling Loop**: Iterating indeterminate rounds ($\kappa \leftarrow \kappa + 4$) until boundary conditions are met.
-2. **Four Distinct Keccak Operations**: `SampleMask` (18-bit SHAKE256), Matrix $\mathbf{A}$ sampling (SHAKE128 `SampleNTT`), Challenge generation ($\widetilde{c} = 	ext{SHAKE256}(\mu \parallel \mathbf{w}_1)$), and `SampleInBall` ($	au=39$ non-zero sign positions).
+2. **Four Distinct Keccak Operations**: `SampleMask` (18-bit SHAKE256), Matrix $\mathbf{A}$ sampling (SHAKE128 `SampleNTT`), Challenge generation ($\widetilde{c} = \text{SHAKE256}(\mu \parallel \mathbf{w}_1)$), and `SampleInBall` ($\tau=39$ non-zero sign positions).
 3. **Complex Polynomial Vector Transformations**: Forward NTT on secret vectors, inverse NTT on pointwise products, modular decomposition ($lpha = 2\gamma_2 = 190464$), Infinity Norm checks, and `MakeHint`.
 4. **Tile SRAM & Program Limits**: AIE2 imposes a strict 16 KiB program memory limit and 32 KiB local data RAM per tile.
 
@@ -22,7 +22,7 @@ Signing in lattice-based cryptography (Dilithium / ML-DSA) represents the most c
 - **Unified Keccak Sponge Subsystem**: Consolidated SHAKE128 and SHAKE256 into a single parameterized `keccak_sponge` primitive, reducing Keccak code footprint by **3x** (from 14.3 KiB down to 4.6 KiB).
 - **Direct-to-Token Zero-Copy Staging**: Intermediate polynomial vectors ($\mathbf{y}, \mathbf{w}$) write directly into ObjectFIFO memory tokens, bypassing local stack allocation and eliminating tile memory overflow.
 - **4-Worker Balanced AIE2 Dataflow Pipeline**:
-  - `Worker 0 (Init)`: Ingests $sk$, derives $\mu, ho''$, forwards compact $sk$ representations ($5.0$ KiB text).
+  - `Worker 0 (Init)`: Ingests $sk$, derives $\mu, \rho''$, forwards compact $sk$ representations ($5.0$ KiB text).
   - `Worker 1 (Mask & Rejection Loop)`: Unified sponge `SampleMask`, matrix $\mathbf{A}$ expansion, $\mathbf{w}$ generation, $\mathbf{w}_1$ decomposition, challenge hash $\widetilde{c}$, and on-device norm checks ($15.8$ KiB text).
   - `Worker 2 (Pointwise Products)`: Computes $\widehat{c} \circ \mathbf{s}_1, \widehat{c} \circ \mathbf{s}_2, \widehat{c} \circ \mathbf{t}_0$, inverse NTTs, and intermediate vectors ($12.5$ KiB text).
   - `Worker 3 (MakeHint & Seal)`: Computes boundary hint bits, bit-packs 2420-byte signature, formats 20-byte header, and computes hardware CRC32 ($4.2$ KiB text).
@@ -45,7 +45,7 @@ graph TD
 |---|---|---|
 | `Request Buffer` | 2656 | Secret key $sk$ (2560 B) + Message/$\mu$ (64 B) + Deterministic Seed $rnd$ (32 B) |
 | `Descriptor` | 16 | Magic (`0x0C527101`), Algo ID, Command, Request ID |
-| `Token 0` | 2596 | Request ID (4 B) + $ho$ (32 B) + $\mu$ (64 B) + $ho''$ (64 B) + Encoded $\mathbf{s}$ (768 B) + Encoded $\mathbf{t}_0$ (1664 B) |
+| `Token 0` | 2596 | Request ID (4 B) + $\rho$ (32 B) + $\mu$ (64 B) + $\rho''$ (64 B) + Encoded $\mathbf{s}$ (768 B) + Encoded $\mathbf{t}_0$ (1664 B) |
 | `Token 1` | 10660 | Request ID (4 B) + $\widetilde{c}$ (32 B) + Encoded secrets (2432 B) + $\mathbf{y}[4][256]$ (4096 B) + $\mathbf{w}[4][256]$ (4096 B) |
 | `Token 2` | 12328 | Request ID (4 B) + $\widetilde{c}$ (32 B) + $\mathbf{z}[4][256]$ (4096 B) + $\mathbf{w}-\mathbf{c}\mathbf{s}_2$ (4096 B) + $\mathbf{c}\mathbf{t}_0$ (4096 B) |
 | `Result Buffer` | 2444 | Sealed Header (20 B) + Signature $\sigma = \widetilde{c} \parallel \mathbf{z} \parallel \mathbf{h}$ (2420 B) + CRC32 (4 B) |

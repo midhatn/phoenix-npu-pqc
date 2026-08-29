@@ -184,16 +184,16 @@ Each cryptographic operation is mapped across a dedicated dataflow pipeline of A
 
 ### Execution Commands
 ```powershell
-# 1. Clone repository
+# 1. Clean clone and one-command native setup
 git clone https://github.com/midhatn/phoenix-npu-pqc.git
 cd phoenix-npu-pqc
+py .\install
 
 # 2. Run the Universal Master Silicon Validation Suite (All 19 Gates)
-& "C:\phoenix-sdr-dsp	hird_party\mlir-aie\ironenv\Scripts\python.exe" tests/pqc_device_resident/test_all_silicon_gates.py
+& "C:\phoenix-sdr-dsp\third_party\mlir-aie\ironenv\Scripts\python.exe" tests/pqc_device_resident/test_all_silicon_gates.py
 
-# 3. Run individual milestone suites
-& "C:\phoenix-sdr-dsp	hird_party\mlir-aie\ironenv\Scripts\python.exe" tests/pqc_device_resident/test_dr14_mldsa65_silicon.py
-& "C:\phoenix-sdr-dsp	hird_party\mlir-aie\ironenv\Scripts\python.exe" tests/pqc_device_resident/test_dr15_mldsa87_silicon.py
+# 3. Alternatively, execute the canonical regression suite
+& "C:\phoenix-sdr-dsp\third_party\mlir-aie\ironenv\Scripts\python.exe" run_all_silicon_tests.py
 ```
 
 ---

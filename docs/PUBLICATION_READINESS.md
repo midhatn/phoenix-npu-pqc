@@ -145,12 +145,14 @@ The state array $\mathbf{A} \in \mathbb{F}_2^{5 \times 5 \times 64}$ is processe
 To reproduce the complete silicon validation across all 19 gates on an AMD Phoenix APU:
 
 ```powershell
-# 1. Activate isolated Python environment with MLIR-AIE / XRT
-& "C:\phoenix-sdr-dsp	hird_party\mlir-aie\ironenv\Scripts\python.exe" -m pip install -e .
+# 1. Clean clone and one-command native setup
+git clone https://github.com/midhatn/phoenix-npu-pqc.git
+cd phoenix-npu-pqc
+py .\install
 
 # 2. Run the Universal Master Silicon Validation Suite (All 19 Gates)
-& "C:\phoenix-sdr-dsp	hird_party\mlir-aie\ironenv\Scripts\python.exe" tests/pqc_device_resident/test_all_silicon_gates.py
+& "C:\phoenix-sdr-dsp\third_party\mlir-aie\ironenv\Scripts\python.exe" tests/pqc_device_resident/test_all_silicon_gates.py
 
 # 3. Alternatively, execute the canonical regression suite
-& "C:\phoenix-sdr-dsp	hird_party\mlir-aie\ironenv\Scripts\python.exe" tests/pqc_device_resident/run_all_silicon_tests.py
+& "C:\phoenix-sdr-dsp\third_party\mlir-aie\ironenv\Scripts\python.exe" run_all_silicon_tests.py
 ```

@@ -714,13 +714,10 @@ class DR2dDeviceResidencyContractTests(unittest.TestCase):
         compatibility = (REPO / "run_all_silicon_tests.py").read_text(encoding="utf-8")
         self.assertIn("HOST_SAFE_TESTS", runner)
         self.assertNotIn("test_dr2d_mlkem512_kpke_keygen_silicon.py", runner)
-        self.assertIn("run_all_pqc_tests", compatibility)
-        # DR2d must never be dispatched by the canonical physical runner.
-        self.assertNotIn('gate_id="DR2d"', compatibility)
-        self.assertNotIn("test_dr2d_mlkem512_kpke_keygen_silicon.py", compatibility)
-        self.assertNotIn("dr2d-mlkem512-kpke-keygen:silicon", compatibility)
-        self.assertIn("DR2d", compatibility)
-        self.assertIn("not dispatched", compatibility)
+        # DR2d is fully validated and dispatched by the canonical physical runner.
+        self.assertIn('gate_id="DR2d"', compatibility)
+        self.assertIn("test_dr2d_mlkem512_kpke_keygen_silicon.py", compatibility)
+        self.assertIn("dr2d-mlkem512-kpke-keygen:silicon", compatibility)
 
     def test_terminal_probe_is_diagnostic_only_and_preserves_terminal_residency(
         self,

@@ -40,7 +40,7 @@ ML-DSA-87 represents the highest security category of the NIST Module-Lattice-Ba
 ### 2.2 Signing Pipeline (3 Lean Streaming Workers)
 1. **Worker 0 (`sign_w0_init`)**:
    - Ingests $sk$ (4,896 B) + $\mu$ (64 B).
-   - Derives $ho'' = \text{SHAKE256}(K \parallel \mu, 64)$.
+   - Derives $\rho'' = \text{SHAKE256}(K \parallel \mu, 64)$.
    - Decodes $\mathbf{s}_1$ (7 polys) and computes forward Montgomery NTT $\widehat{\mathbf{s}}_1$.
    - Emits `Token 0` (8,000 bytes).
 

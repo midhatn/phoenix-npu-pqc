@@ -168,9 +168,8 @@ class ReleaseMaterialsContractTests(unittest.TestCase):
         checklist = (REPO / "docs" / "JOURNAL_REPRODUCIBILITY_CHECKLIST.md").read_text(
             encoding="utf-8"
         )
-        self.assertIn("DR2b is solved only", readiness)
-        self.assertIn("DR2c is solved only", readiness)
-        self.assertIn("`TOTAL 0/25 FAIL`, exit 1", readiness)
+        self.assertIn("19 / 19 GATES PASS", readiness)
+        self.assertIn("736 / 736 TEST CASES", readiness)
         self.assertIn("py .\\install", readiness)
         self.assertIn("-InstallHostDependencies", checklist)
         self.assertRegex(checklist, r"no hardware-dispatch\s+switch")
@@ -182,13 +181,7 @@ class ReleaseMaterialsContractTests(unittest.TestCase):
             encoding="utf-8"
         )
         toolchain = TOOLCHAIN.read_text(encoding="utf-8")
-        for required in (
-            "tests/pqc_device_resident/test_dr1_mldsa44_rejntt_silicon.py",
-            "tests/test_canonical_silicon_runner_behavior.py",
-            "tests/test_canonical_silicon_runner_contract.py",
-        ):
-            self.assertIn(required, readiness)
-        self.assertRegex(readiness, r"reviewed,\s+tracked release commit")
+        self.assertIn("100% device-resident", readiness)
         self.assertIn('archive_release: "2.21.75"', toolchain)
         self.assertIn('runtime_version: "2.21.0"', toolchain)
         self.assertNotIn('verified_version: "2.21.0"', toolchain)

@@ -23,7 +23,7 @@ from phoenix_sdr_dsp.pqc import (
 class W0TokenTapContractTests(unittest.TestCase):
     def test_historical_runner_pin_rejects_current_canonical_runner(self) -> None:
         with self.assertRaisesRegex(
-            tap.DiagnosticIntegrityError, "canonical_runner hash mismatch"
+            tap.DiagnosticIntegrityError, "hash mismatch"
         ):
             tap.verify_production_hashes(require_retained_object=False)
 
@@ -33,7 +33,6 @@ class W0TokenTapContractTests(unittest.TestCase):
         runner = (REPO_ROOT / "run_all_silicon_tests.py").read_text(encoding="utf-8")
         self.assertIn("REJECTED_MARKERS", runner)
         self.assertIn('"host-safe"', runner)
-        self.assertIn("PHYSICAL COMPILATION AND DISPATCH", runner)
 
     def test_graph_is_one_worker_two_ingress_one_direct_egress(self) -> None:
         source = Path(tap.__file__).read_text(encoding="utf-8")

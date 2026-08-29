@@ -10,7 +10,7 @@
 
 Post-Quantum Cryptography (PQC) standardized in NIST FIPS 202, FIPS 203 (ML-KEM), and FIPS 204 (ML-DSA) introduces significant computational demands compared to classical public-key cryptography (RSA/ECC). These demands stem primarily from:
 1. **High-dimensional polynomial arithmetic over finite rings** ($\mathbb{Z}_q[X]/(X^n + 1)$), requiring frequent Number Theoretic Transforms (NTT/INTT) and high-density pointwise modular vector multiply-accumulate operations.
-2. **Heavy symmetric cryptography**, specifically Keccak-[1600]$ sponge permutations for pseudorandom matrix expansion, Centered Binomial Distribution (CBD) noise sampling, hashing, and rejection sampling.
+2. **Heavy symmetric cryptography**, specifically $\\text{Keccak-}f[1600]$ sponge permutations for pseudorandom matrix expansion, Centered Binomial Distribution (CBD) noise sampling, hashing, and rejection sampling.
 3. **Strict side-channel and constant-time invariants**, requiring constant-shape control flow, arithmetic masking, and branchless implicit rejection key selection.
 
 This document synthesizes contemporary academic literature and industry benchmarks regarding the AMD XDNA / AI Engine (AIE2) architecture, demonstrating why AMD XDNA represents an optimal, ultra-low-power hardware platform for 100% on-device PQC residency.
@@ -22,7 +22,7 @@ This document synthesizes contemporary academic literature and industry benchmar
 ### 2.1 Compute Engine & Vector Processing Density
 As analyzed by **Ingonyama (Wu, 2023)** [1], the AMD XDNA (AIE-ML / AIE2) architecture differs fundamentally from conventional SIMD accelerators and GPUs. Each AIE2 processor tile contains:
 - **A Dedicated 512-bit Vector Processing Unit (VPU)** paired with a 32-bit scalar RISC core in a Very Long Instruction Word (VLIW) execution model.
-- **Peak Integer Arithmetic Throughput**: A single AIE2 tile can execute **64 operations of \text{b} \times 16\text{b} = 32\text{b}$ multiply-accumulates (MAC) per clock cycle**.
+- **Peak Integer Arithmetic Throughput**: A single AIE2 tile can execute **64 operations of $16\text{b} \times 16\text{b} = 32\text{b}$ multiply-accumulates (MAC) per clock cycle**.
 - **Dual-Issue VLIW Instruction Dispatch**: Allows parallel execution of vector MAC operations, memory load/store operations, and scalar address/pointer updates within a single clock cycle.
 
 ### 2.2 Memory Hierarchy & Interconnect

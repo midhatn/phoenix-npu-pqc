@@ -16,22 +16,22 @@ ML-DSA signature verification requires performing modular arithmetic in $R_q$, m
 
 ### Verification Flow (FIPS 204 Algorithm 8):
 1. **Unpack & Validate**:
-   - $pk = (ho, \mathbf{t}_1)$ (1312 B), $\mu$ (64 B), $\sigma = (\widetilde{c}, \mathbf{z}, \mathbf{h})$ (2420 B).
+   - $pk = (\rho, \mathbf{t}_1)$ (1312 B), $\mu$ (64 B), $\sigma = (\widetilde{c}, \mathbf{z}, \mathbf{h})$ (2420 B).
    - Check $\|\mathbf{z}\|_\infty < \gamma_1 - eta = 130994$. If failed, set `fail_flag = 1`.
    - Check popcount and strict monotonicity of hints $\mathbf{h}$ ($\sum h_{i,j} \le \omega = 80$). If failed, set `fail_flag = 2`.
    - Scale public key $\mathbf{t}_1 \cdot 2^{13} \pmod q$.
 2. **Transformations (NTT Domain)**:
-   - Compute $\widehat{\mathbf{z}} = 	ext{NTT}(\mathbf{z})$, $\widehat{\mathbf{t}}_1 = 	ext{NTT}(\mathbf{t}_1 \cdot 2^{13})$.
-   - Sample challenge $c = 	ext{SampleInBall}(\widetilde{c})$, compute $\widehat{c} = 	ext{NTT}(c)$.
+   - Compute $\widehat{\mathbf{z}} = \text{NTT}(\mathbf{z})$, $\widehat{\mathbf{t}}_1 = \text{NTT}(\mathbf{t}_1 \cdot 2^{13})$.
+   - Sample challenge $c = \text{SampleInBall}(\widetilde{c})$, compute $\widehat{c} = \text{NTT}(c)$.
 3. **Matrix Accumulation & UseHint**:
    - Expand matrix row $\mathbf{A}[i][0..3]$ using unified Keccak sponge.
    - Accumulate $\widehat{w}[i] = \sum_{j=0}^3 \mathbf{A}[i][j] \circ \widehat{z}[j] - \widehat{c} \circ \widehat{t}_1[i]$.
-   - Inverse NTT: $\mathbf{w}_{	ext{approx}}[i] = 	ext{INTT}(\widehat{w}[i])$.
-   - Reconstruct $\mathbf{w}_1'[i] = 	ext{UseHint}(h[i], \mathbf{w}_{	ext{approx}}[i], lpha = 190464)$.
-   - Encode $\mathbf{w}_1' 	o 768$ bytes.
+   - Inverse NTT: $\mathbf{w}_{\text{approx}}[i] = \text{INTT}(\widehat{w}[i])$.
+   - Reconstruct $\mathbf{w}_1'[i] = \text{UseHint}(h[i], \mathbf{w}_{\text{approx}}[i], lpha = 190464)$.
+   - Encode $\mathbf{w}_1' \to 768$ bytes.
 4. **Challenge Equality & Sealing**:
-   - Compute $c' = 	ext{SHAKE256}(\mu \parallel 	ext{w1_bytes}, 32)$.
-   - Valid $\iff c' == \widetilde{c} \land 	ext{fail\_flag} == 0$.
+   - Compute $c' = \text{SHAKE256}(\mu \parallel \text{w1_bytes}, 32)$.
+   - Valid $\iff c' == \widetilde{c} \land \text{fail\_flag} == 0$.
    - Seal 28-byte result record with hardware CRC32.
 
 ```mermaid
@@ -50,7 +50,7 @@ graph TD
 |---|---|---|
 | `Request Buffer` | 3796 | Public key $pk$ (1312 B) + Message/$\mu$ (64 B) + Signature $\sigma$ (2420 B) |
 | `Descriptor` | 16 | Magic (`0x0D527101`), Algo ID (`0x04`), Command (`0x03`), Request ID |
-| `Token 0` | 10376 | Request ID (4 B) + Fail Flag (4 B) + $ho$ (32 B) + $\mu$ (64 B) + $\widetilde{c}$ (32 B) + $\mathbf{h}$ (1024 B) + $\widehat{\mathbf{z}}$ (4096 B) + $\widehat{\mathbf{t}}_1$ (4096 B) + $\widehat{c}$ (1024 B) |
+| `Token 0` | 10376 | Request ID (4 B) + Fail Flag (4 B) + $\rho$ (32 B) + $\mu$ (64 B) + $\widetilde{c}$ (32 B) + $\mathbf{h}$ (1024 B) + $\widehat{\mathbf{z}}$ (4096 B) + $\widehat{\mathbf{t}}_1$ (4096 B) + $\widehat{c}$ (1024 B) |
 | `Result Buffer` | 28 | Sealed Header (20 B) + Verdict (`1` for Valid / `0` for Rejected, 4 B) + CRC32 (4 B) |
 
 ---
