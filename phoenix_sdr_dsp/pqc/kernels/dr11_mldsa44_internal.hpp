@@ -154,7 +154,7 @@ __attribute__((noinline)) static void invntt_kernel(int32_t coeffs[256]) {
 }
 
 // Pointwise Montgomery product: c[i] = a[i] * b[i] * R^-1 mod q
-static inline void basemul(int32_t c[256], const int32_t a[256], const int32_t b[256]) {
+__attribute__((noinline)) static void basemul(int32_t c[256], const int32_t a[256], const int32_t b[256]) {
   DR11_DISABLE_UNROLL
   for (int32_t i = 0; i < 256; ++i) {
     c[i] = mont_reduce(static_cast<int64_t>(a[i]) * static_cast<int64_t>(b[i]));
@@ -171,7 +171,7 @@ static inline void power2round(int32_t r_in, int32_t &r1_out, int32_t &r0_out) {
 }
 
 // Sample in bounded range [-2, 2] from SHAKE256(sigma || nonce)
-static void sample_bounded_eta2(const uint8_t sigma[64], uint16_t nonce, int32_t out[256]) {
+__attribute__((noinline)) static void sample_bounded_eta2(const uint8_t sigma[64], uint16_t nonce, int32_t out[256]) {
   alignas(8) uint8_t state[200];
   clear_bytes(state, sizeof(state));
 
@@ -205,7 +205,7 @@ static void sample_bounded_eta2(const uint8_t sigma[64], uint16_t nonce, int32_t
 }
 
 // ExpandA: SampleNTT for A[row, col] from SHAKE128(rho || col || row)
-static void expand_a_matrix_entry(const uint8_t rho[32], uint8_t col, uint8_t row, int32_t out[256]) {
+__attribute__((noinline)) static void expand_a_matrix_entry(const uint8_t rho[32], uint8_t col, uint8_t row, int32_t out[256]) {
   alignas(8) uint8_t state[200];
   clear_bytes(state, sizeof(state));
 

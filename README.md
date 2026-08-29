@@ -6,7 +6,7 @@
 ![Target: AMD Phoenix NPU1](https://img.shields.io/badge/Target-AMD%20Ryzen%20AI%20NPU1%20(AIE2)-blue)
 ![Research: Post-Quantum Cryptography](https://img.shields.io/badge/Research-Post--Quantum%20Cryptography-8a2be2)
 ![Standards: FIPS 202/203/204](https://img.shields.io/badge/Standards-FIPS%20202%20%2F%20203%20%2F%20204-005ea8)
-![Status: DR11 Closed (506/506 Silicon PASS)](https://img.shields.io/badge/Status-DR11%2025%2F25%20PASS%20%C2%B7%20506%2F506%20Silicon-brightgreen)
+![Status: DR12 Closed (536/536 Silicon PASS)](https://img.shields.io/badge/Status-DR12%2030%2F30%20PASS%20%C2%B7%20536%2F536%20Silicon-brightgreen)
 [![CI](https://github.com/midhatn/phoenix-npu-pqc/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/midhatn/phoenix-npu-pqc/actions/workflows/ci.yml)
 
 **Private research repository for post-quantum cryptography on AMD Ryzen AI Phoenix NPU1 (XDNA1 / AIE2).**
@@ -18,7 +18,7 @@
 Phoenix NPU PQC is a focused continuation of the PQC work separated from the
 historical `phoenix-sdr-dsp` repository. It contains ML-KEM, ML-DSA, and FIPS 202 research
 code, host-preflight contract tests, native physical gates, toolchain
-metadata, and the retained DR2/DR3/DR4/DR5/DR6/DR7/DR8/DR9/DR10/DR11 provenance needed to interpret the work accurately.
+metadata, and the retained DR2/DR3/DR4/DR5/DR6/DR7/DR8/DR9/DR10/DR11/DR12 provenance needed to interpret the work accurately.
 
 | Research layer | Current evidence boundary |
 | --- | --- |
@@ -35,7 +35,8 @@ metadata, and the retained DR2/DR3/DR4/DR5/DR6/DR7/DR8/DR9/DR10/DR11 provenance 
 | **DR9** | Complete reusable NIST FIPS 202 Cryptographic Service (SHA3-224/256/384/512 & SHAKE128/256 with arbitrary variable-length streaming absorb/squeeze). Recorded physical result is **TOTAL 122/122 PASS** on physical Phoenix NPU silicon. |
 | **DR10** | Complete Entropy/Key-Source and Sealed-Lifecycle Architecture (Raw ingress conditioning, Authenticated external/QKD key material, replay freshness, and sealed session teardown). Recorded physical result is **TOTAL 40/40 PASS** on physical Phoenix NPU silicon. |
 | **DR11** | Complete NIST FIPS 204 ML-DSA-44 Key Generation 6-worker dataflow pipeline. Recorded physical result is **TOTAL 25/25 PASS** across the official NIST ACVP corpus on physical Phoenix NPU silicon. |
-| **Canonical suite** | Complete canonical runner passes all 14 gates (**506/506 cases**) on physical Phoenix silicon. |
+| **DR12** | Complete NIST FIPS 204 ML-DSA-44 Digital Signing 4-worker dataflow pipeline with unified Keccak sponge and on-device rejection loop. Recorded physical result is **TOTAL 30/30 PASS** across the official NIST ACVP corpus on physical Phoenix NPU silicon. |
+| **Canonical suite** | Complete canonical runner passes all 15 gates (**536/536 cases**) on physical Phoenix silicon. |
 | **Program goal** | 100% NPU residency for the supported FIPS 202/203/204 cryptographic operations, with no host cryptographic fallback or intermediate repair. |
 
 The claim boundaries and roadmap sequencing are defined in
@@ -44,7 +45,7 @@ The claim boundaries and roadmap sequencing are defined in
 
 ### Current physical-result status — 2026-08-29
 
-The canonical silicon test suite executed and validated **506 / 506 cases across all 14 gates (DR0 24/24, DR1 33/33, DR2a 13/13, DR2b 13/13, DR2c 11/11, DR2d 25/25, DR3 25/25, DR4 25/25, DR5 25/25, DR6 25/25, DR7 25/25, DR8 75/75, DR9 122/122, DR10 40/40, DR11 25/25)** on the physical AMD Phoenix NPU (Ryzen 9 7940HS w/ AIE2). All cryptographic transformations execute 100% on-device with zero host fallback.
+The canonical silicon test suite executed and validated **536 / 536 cases across all 15 gates (DR0 24/24, DR1 33/33, DR2a 13/13, DR2b 13/13, DR2c 11/11, DR2d 25/25, DR3 25/25, DR4 25/25, DR5 25/25, DR6 25/25, DR7 25/25, DR8 75/75, DR9 122/122, DR10 40/40, DR11 25/25, DR12 30/30)** on the physical AMD Phoenix NPU (Ryzen 9 7940HS w/ AIE2). All cryptographic transformations execute 100% on-device with zero host fallback.
 
 ## Scope
 

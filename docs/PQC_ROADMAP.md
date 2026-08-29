@@ -47,8 +47,8 @@ user acceptance are all complete.
 A validated kernel fragment, polynomial primitive, matrix entry, row, or
 subgraph does not close a higher-level operation milestone.
 
-The current active umbrella milestone is transitioning to **DR12** (Complete ML-DSA-44 Sign). DR0 through DR11 are
-**COMPLETE / PHYSICALLY VALIDATED** on AMD Phoenix NPU silicon (506/506 cases PASS). DR12 through
+The current active umbrella milestone is transitioning to **DR13** (Complete ML-DSA-44 Verify). DR0 through DR12 are
+**COMPLETE / PHYSICALLY VALIDATED** on AMD Phoenix NPU silicon (536/536 cases PASS). DR13 through
 DR15 are **ACCEPTED ROADMAP BOUNDARIES** and are governed by the sequential
 closure gates defined in this document.
 
@@ -818,16 +818,16 @@ closure record and explicit acceptance.
 | Field | Record |
 |---|---|
 | Reviewer / user | Midhat Nashar |
-| Review date | 2026-08-17 (Initial), 2026-08-28 (DR2d/DR3/DR4/DR5/DR6/DR7 Silicon Closure) |
+| Review date | 2026-08-17 (Initial), 2026-08-28 (DR2d-DR7), 2026-08-29 (DR8-DR12 Silicon Closure) |
 | Overall roadmap decision | **APPROVED & ACTIVE** |
-| Completed & Validated | DR0, DR1, DR2a, DR2b, DR2c, DR2d, DR3, DR4, DR5, DR6, DR7 (100% Silicon Validated) |
-| Next Immediate Milestone | **DR8 (ML-KEM-768 & ML-KEM-1024 Parameter-Set Expansion)** |
-| Approved sequence | DR8 through DR15 for full FIPS 202, 203, 204 on-device completion |
+| Completed & Validated | DR0, DR1, DR2a, DR2b, DR2c, DR2d, DR3, DR4, DR5, DR6, DR7, DR8, DR9, DR10, DR11, DR12 (100% Silicon Validated, 536/536 PASS) |
+| Next Immediate Milestone | **DR13 (Complete NIST FIPS 204 ML-DSA-44 Signature Verification)** |
+| Approved sequence | DR13 through DR15 for full FIPS 202, 203, 204 on-device completion |
 | Required changes | FIPS 205 and FIPS 206 retained as unnumbered future work |
 | Deferred boundaries | All FIPS 205 and FIPS 206 DR numbering and operation boundaries |
-| Acceptance reference | DR7 100% Silicon Pass (25/25 ACVP) on AMD Phoenix NPU (2026-08-28) |
+| Acceptance reference | DR12 100% Silicon Pass (30/30 ACVP) on AMD Phoenix NPU (2026-08-29) |
 
-DR0 through DR7 are **CLOSED / PHYSICALLY VALIDATED ON SILICON**.
+DR0 through DR12 are **CLOSED / PHYSICALLY VALIDATED ON SILICON (536 / 536 CASES PASS)**.
 
-The immediate next milestone to implement is **DR8 (ML-KEM Parameter-Set Expansion: ML-KEM-768 & ML-KEM-1024)**,
-followed by DR9 (FIPS 202 service), DR10 (entropy/lifecycle), and DR11–DR15 (ML-DSA-44/65/87 and primary FIPS 202/203/204 closure).
+The immediate next milestone to implement is **DR13 (Complete NIST FIPS 204 ML-DSA-44 Signature Verification)**,
+followed by DR14 (ML-DSA-65) and DR15 (ML-DSA-87 and primary FIPS 202/203/204 closure).
