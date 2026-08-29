@@ -4,8 +4,9 @@
 
 ![License: Apache 2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)
 ![Target: AMD Phoenix NPU1](https://img.shields.io/badge/Target-AMD%20Ryzen%20AI%20NPU1%20(AIE2)-blue)
+![Architecture: XDNA1 AIE2 ML](https://img.shields.io/badge/Architecture-XDNA1%20AIE2%20(512--bit%20SIMD)-red)
 ![Research: Post-Quantum Cryptography](https://img.shields.io/badge/Research-Post--Quantum%20Cryptography-8a2be2)
-![Standards: FIPS 202/203/204](https://img.shields.io/badge/Standards-FIPS%20202%20%2F%20203%20%2F%20204-005ea8)
+![Standards: FIPS 202 / 203 / 204](https://img.shields.io/badge/Standards-FIPS%20202%20%2F%20203%20%2F%20204-005ea8)
 ![Status: 100% PQC Silicon Certified (736/736 PASS across 19 Gates)](https://img.shields.io/badge/Status-100%25%20PQC%20Silicon%20Certified%20%C2%B7%20736%2F736%20PASS-brightgreen)
 [![CI](https://github.com/midhatn/phoenix-npu-pqc/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/midhatn/phoenix-npu-pqc/actions/workflows/ci.yml)
 
@@ -15,13 +16,24 @@
 
 ---
 
-## 1. Abstract & Executive Overview
+## 1. Abstract & About This Research
 
-Modern post-quantum cryptography (PQC) standards—such as **ML-KEM (FIPS 203)**, **ML-DSA (FIPS 204)**, and **SHA-3/SHAKE (FIPS 202)**—introduce substantial computational demands and memory footprints, requiring thousands of modular arithmetic operations, high-dimensional lattice matrix-vector multiplications, Number Theoretic Transforms (NTT), and continuous Keccak permutations.
+Post-Quantum Cryptography (PQC) standards—such as **ML-KEM (FIPS 203)**, **ML-DSA (FIPS 204)**, and **SHA-3/SHAKE (FIPS 202)**—introduce substantial computational demands and memory footprints, requiring thousands of modular arithmetic operations, high-dimensional lattice matrix-vector multiplications, Number Theoretic Transforms (NTT), and continuous Keccak permutations.
 
-This repository establishes the first complete, **100% device-resident** PQC engine running entirely on the **AMD Phoenix Neural Processing Unit (NPU)** powered by the **XDNA1 / AIE2 (AI Engine-ML)** tiled architecture.
+Conventional CPU and GPU implementations incur significant memory-bandwidth penalties, context-switching overheads, and potential side-channel leakage across host memory hierarchies.
 
-Every cryptographic operation executes natively on physical AIE2 compute tiles with **zero host CPU cryptographic fallback** and terminal-only transfer.
+This repository establishes the first complete, **100% device-resident** PQC acceleration engine running entirely on the **AMD Phoenix Neural Processing Unit (NPU)** powered by the **XDNA1 / AIE2 (AI Engine-ML)** tiled architecture.
+
+### Key Architectural Milestones
+* **Zero Host Cryptographic Fallback**: Every cryptographic transformation—including SHA-3/SHAKE hashing, Keccak-$f[1600]$ permutations, Barrett/Montgomery modular arithmetic, NTT/INTT butterfly networks, Centered Binomial Noise Sampling (CBD), rejection sampling loops, Hint generation/verification, and hardware CRC32 checksums—executes natively on physical AIE2 silicon without host CPU intervention or repair.
+* **Complete Standards Coverage**: Fully implements all finalized NIST PQC standards across all security categories:
+  * **NIST FIPS 202**: SHA3-224, SHA3-256, SHA3-384, SHA3-512, SHAKE128, SHAKE256 (Streaming arbitrary-length absorb/squeeze).
+  * **NIST FIPS 203 (ML-KEM / Kyber)**: Security Categories 1, 3, 5 (**ML-KEM-512, ML-KEM-768, ML-KEM-1024**) across `KeyGen`, `Encaps`, and `Decaps` with constant-time implicit rejection.
+  * **NIST FIPS 204 (ML-DSA / Dilithium)**: Security Categories 2, 3, 5 (**ML-DSA-44, ML-DSA-65, ML-DSA-87**) across `KeyGen`, `Sign` (deterministic & randomized), and `Verify`.
+* **Hardware Resource Guarantees**:
+  * Instruction `.text` memory budget: strictly **< 16 KiB** per AIE2 worker tile.
+  * Local tile RAM budget: strictly **< 64 KiB** per worker tile.
+  * Inter-tile communication: zero-copy point-to-point **ObjectFIFOs** mapped over hardware DMAs.
 
 ---
 
@@ -105,38 +117,81 @@ The universal master silicon test suite ([`tests/pqc_device_resident/test_all_si
 
 ---
 
-## 3. Mathematical Foundations & Microarchitecture
+## 5. Mathematical Foundations & Microarchitecture
 
-### 3.1 Ring Polynomials & Moduli
-All lattice operations are evaluated in the cyclotomic polynomial ring $\mathcal{R}_q = \mathbb{Z}_q[X]/(X^n + 1)$ with $n = 256$:
-- **NIST FIPS 203 (ML-KEM)**: $q = 3329 = 13 \cdot 256 + 1$, primitive $256$-th root of unity $\zeta = 17$.
-- **NIST FIPS 204 (ML-DSA)**: $q = 8380417 = 2^{23} - 2^{13} + 1$, primitive $512$-th root of unity $\zeta = 1753$.
+### 5.1 Cyclotomic Polynomial Rings & Moduli
+All lattice operations are evaluated in the quotient polynomial ring $\mathcal{R}_q = \mathbb{Z}_q[X]/(X^n + 1)$ with degree $n = 256$:
+* **NIST FIPS 203 (ML-KEM)**: $q = 3329 = 13 \cdot 256 + 1$, primitive $256$-th root of unity $\zeta = 17 \pmod{3329}$.
+* **NIST FIPS 204 (ML-DSA)**: $q = 8380417 = 2^{23} - 2^{13} + 1$, primitive $512$-th root of unity $\zeta = 1753 \pmod{8380417}$.
 
-### 3.2 Number Theoretic Transform (NTT) & Inverse NTT (INTT)
-The NTT transforms polynomial convolution from $\mathcal{O}(n^2)$ into $\mathcal{O}(n \log n)$ pointwise multiplications:
-$$\widehat{a}_j = \sum_{i=0}^{n-1} a_i \zeta^{(2 \cdot \text{bitrev}(j) + 1) \cdot i} \pmod q$$
-Pointwise base multiplication in the NTT domain:
-$$\widehat{c} = \widehat{a} \circ \widehat{b} \pmod q$$
-The Inverse NTT (INTT) recovers standard polynomial coefficients:
-$$a_i = n^{-1} \sum_{j=0}^{n-1} \widehat{a}_j \zeta^{-(2 \cdot \text{bitrev}(j) + 1) \cdot i} \pmod q$$
+### 5.2 Fast Barrett and Montgomery Modular Reductions
+Because AIE2 scalar vector engines lack a 32-bit hardware integer division instruction, all modular reductions use branchless arithmetic:
 
-### 3.3 Centered Binomial Distribution (CBD)
-For noise sampling in ML-KEM ($\ eta \in \{2, 3\}$):
-$$\text{CBD}_\eta(b_0, \dots, b_{2\eta-1}) = \sum_{i=0}^{\eta-1} b_i - \sum_{i=0}^{\eta-1} b_{\eta+i}$$
+1. **AIE2 Barrett Reduction for $q = 3329$:**
+   $$\mu = \left\lfloor \frac{2^{32}}{3329} \right\rfloor = 1290167$$
+   For product $Y = a \cdot b \in [0, q^2)$:
+   $$q_{\text{quot}} = (Y \cdot 1290167) \gg 32, \quad r = Y - q_{\text{quot}} \cdot 3329$$
+   $$\text{if } (r \ge 3329) \ r \leftarrow r - 3329; \quad \text{if } (r \ge 3329) \ r \leftarrow r - 3329$$
 
-### 3.4 NIST FIPS 202 Keccak-p[1600, 24] Permutation
-The state array $\mathbf{A} \in \mathbb{F}_2^{5 \times 5 \times 64}$ is processed across 24 rounds:
-1. $\theta$ (Column parity mixing): $A[x, y, z] \leftarrow A[x, y, z] \oplus \sum_{y'=0}^4 A[x-1, y', z] \oplus \sum_{y'=0}^4 A[x+1, y', z]$
-2. $\rho$ (Bit lane rotation): $A[x, y, z] \leftarrow A[x, y, z - r[x, y]]$
-3. $\pi$ (Lane permutation): $A[y, (2x + 3y) \bmod 5] \leftarrow A[x, y]$
-4. $\chi$ (Non-linear row mapping): $A[x, y] \leftarrow A[x, y] \oplus (\neg A[x+1, y] \wedge A[x+2, y])$
-5. $\iota$ (Round constant addition): $A[0, 0] \leftarrow A[0, 0] \oplus RC[i_r]$
+2. **Montgomery Reduction for $q = 8380417$ ($R = 2^{32}$):**
+   $$q^{-1} \equiv 58728449 \pmod{2^{32}}$$
+   $$\text{MontReduce}(T) = \frac{T + (T \cdot q^{-1} \bmod 2^{32}) \cdot q}{2^{32}}$$
+
+### 5.3 Number Theoretic Transform (NTT) & Inverse NTT (INTT)
+The NTT transforms polynomial convolution from $\mathcal{O}(n^2)$ into $\mathcal{O}(n \log n)$ pointwise multiplications.
+
+1. **Forward NTT (Cooley-Tukey Butterfly):**
+   $$\hat{a}_j = a_j + \zeta^k a_{j + \text{len}} \pmod q$$
+   $$\hat{a}_{j + \text{len}} = a_j - \zeta^k a_{j + \text{len}} \pmod q$$
+
+2. **FIPS 203 Base Multiplication over $\mathbb{Z}_q[X]/(X^2 - \zeta^{2 \cdot \text{bitrev}_7(i) + 1})$:**
+   For degree-2 polynomial blocks $(a_0 + a_1 X)$ and $(b_0 + b_1 X)$ with $\gamma = \zeta^{2 \cdot \text{bitrev}_7(i) + 1}$:
+   $$(a_0 + a_1 X) \circ (b_0 + b_1 X) \equiv (a_0 b_0 + a_1 b_1 \gamma) + (a_0 b_1 + a_1 b_0) X \pmod{X^2 - \gamma}$$
+
+3. **Inverse NTT (Gentleman-Sande Butterfly):**
+   $$a_j = (\hat{a}_j + \hat{a}_{j + \text{len}}) \cdot n^{-1} \pmod q$$
+   $$a_{j + \text{len}} = (\hat{a}_j - \hat{a}_{j + \text{len}}) \zeta^{-k} \cdot n^{-1} \pmod q$$
+
+### 5.4 Centered Binomial Distribution (CBD)
+For noise sampling in ML-KEM ($\eta \in \{2, 3\}$) from pseudorandom bytes $\mathbf{b}$:
+$$\text{CBD}_\eta(b_0, \dots, b_{2\eta-1}) = \sum_{j=0}^{\eta-1} b_j - \sum_{j=0}^{\eta-1} b_{\eta+j}$$
+
+### 5.5 Polynomial Compression & Decompression
+ML-KEM compress and decompress functions discard low-order error bits while retaining lattice decoding tolerances:
+$$\text{Compress}_d(x) = \left\lceil \frac{2^d}{q} \cdot x \right\rfloor \bmod 2^d$$
+$$\text{Decompress}_d(y) = \left\lceil \frac{q}{2^d} \cdot y \right\rfloor$$
+
+### 5.6 NIST FIPS 202 Keccak-$p[1600, 24]$ Permutation & Sponge Engine
+The Keccak state $\mathbf{A} \in \mathbb{F}_2^{5 \times 5 \times 64}$ (1600 bits) undergoes 24 permutation rounds across five operations:
+$$\text{Round}(A, RC) = \iota(\chi(\pi(\rho(\theta(A)))), RC)$$
+1. **$\theta$ (Parity Mixing):** $A[x, y, z] \leftarrow A[x, y, z] \oplus \sum_{y'=0}^4 A[x-1, y', z] \oplus \sum_{y'=0}^4 A[x+1, y', z]$
+2. **$\rho$ (Rotational Dispersion):** $A[x, y, z] \leftarrow A[x, y, (z - r[x, y]) \bmod 64]$
+3. **$\pi$ (Transposition):** $A[y, (2x + 3y) \bmod 5, z] \leftarrow A[x, y, z]$
+4. **$\chi$ (Non-Linear Layer):** $A[x, y, z] \leftarrow A[x, y, z] \oplus ((\neg A[x+1, y, z]) \wedge A[x+2, y, z])$
+5. **$\iota$ (Constant Injection):** $A[0, 0] \leftarrow A[0, 0] \oplus RC[i_r]$
+
+Sponge absorption and squeezing with rate $r$ and capacity $c = 1600 - r$:
+$$S_{i+1} = \text{Keccak-}f[1600](S_i \oplus (P_i \parallel 0^c))$$
+
+### 5.7 FIPS 204 Lattice Rounding, Decomposition & Hint Generation
+1. **$\text{Power2Round}_q(r, d) \to (r_1, r_0)$:**
+   $$r \equiv r_1 \cdot 2^d + r_0 \pmod q, \quad r_0 \in (-2^{d-1}, 2^{d-1}]$$
+2. **$\text{Decompose}_q(r, 2\gamma_2) \to (r_1, r_0)$:**
+   $$r \equiv r_1 \cdot 2\gamma_2 + r_0 \pmod q, \quad r_0 \in (-\gamma_2, \gamma_2]$$
+3. **$\text{MakeHint}(z, r)$ and $\text{UseHint}(h, r)$:**
+   $$\text{MakeHint}(z, r) = \begin{cases} 1 & \text{if } \text{HighBits}(r) \ne \text{HighBits}(r + z) \\ 0 & \text{otherwise} \end{cases}$$
+4. **Constant-Time Verification Inequality:**
+   $$\|\mathbf{z}\|_\infty < \gamma_1 - \beta \quad \land \quad c = H(\mu \parallel \text{UseHint}(h, \mathbf{A}\mathbf{z} - c \mathbf{t}_1 2^d))$$
+
+### 5.8 Constant-Time Implicit Rejection (ML-KEM Decapsulation)
+To guarantee IND-CCA2 security against chosen-ciphertext timing attacks, ML-KEM decapsulation computes the shared key $K$ in constant time without conditional branch divergence:
+$$K = \begin{cases} \text{KDF}(K' \parallel H(c)) & \text{if } c = c' \\ \text{KDF}(z \parallel H(c)) & \text{if } c \ne c' \end{cases}$$
 
 ---
 
-## 4. Hardware Pipeline Topology & Memory Layout
+## 6. Hardware Pipeline Topology & Dataflow
 
-Each cryptographic operation is mapped across a dedicated dataflow pipeline of AIE2 worker tiles:
+Each cryptographic operation is mapped across dedicated AIE2 compute tiles connected via hardware ObjectFIFOs:
 
 ```
                       AMD PHOENIX NPU AIE2 TILE ARRAY (XDNA1)
@@ -160,7 +215,30 @@ Each cryptographic operation is mapped across a dedicated dataflow pipeline of A
 
 ---
 
-## 5. Formal Academic & Technical References
+## 7. How to Reproduce on Physical Hardware
+
+### System Prerequisites
+* **APU**: AMD Ryzen 7 7840HS, Ryzen 9 7940HS, Ryzen 7 8845HS, or Ryzen 9 8945HS with XDNA1 NPU.
+* **Operating System**: Windows 11 (build 22621+) with AMD NPU driver `10.1109.8.100`+.
+* **Software Toolchain**: MLIR-AIE 1.4.1, Peano LLVM-AIE Compiler, XRT 2.20.0+.
+
+### Execution Commands
+```powershell
+# 1. Clean clone and one-command native setup
+git clone https://github.com/midhatn/phoenix-npu-pqc.git
+cd phoenix-npu-pqc
+py .\install
+
+# 2. Run the Universal Master Silicon Validation Suite (All 19 Gates)
+& "C:\phoenix-sdr-dsp\third_party\mlir-aie\ironenv\Scripts\python.exe" tests/pqc_device_resident/test_all_silicon_gates.py
+
+# 3. Alternatively, execute the canonical regression suite
+& "C:\phoenix-sdr-dsp\third_party\mlir-aie\ironenv\Scripts\python.exe" run_all_silicon_tests.py
+```
+
+---
+
+## 8. Formal Academic & Technical References
 
 ```bibtex
 @standard{fips202_2024,
@@ -217,29 +295,6 @@ Each cryptographic operation is mapped across a dedicated dataflow pipeline of A
 
 ---
 
-## 6. How to Reproduce on Physical Hardware
-
-### System Prerequisites
-- **APU**: AMD Ryzen 7 7840HS, Ryzen 9 7940HS, Ryzen 7 8845HS, or Ryzen 9 8945HS with XDNA1 NPU.
-- **Operating System**: Windows 11 (build 22621+) with AMD NPU driver `10.1109.8.100`+.
-- **Software Toolchain**: MLIR-AIE 1.4.1, Peano LLVM-AIE Compiler, XRT 2.20.0+.
-
-### Execution Commands
-```powershell
-# 1. Clean clone and one-command native setup
-git clone https://github.com/midhatn/phoenix-npu-pqc.git
-cd phoenix-npu-pqc
-py .\install
-
-# 2. Run the Universal Master Silicon Validation Suite (All 19 Gates)
-& "C:\phoenix-sdr-dsp\third_party\mlir-aie\ironenv\Scripts\python.exe" tests/pqc_device_resident/test_all_silicon_gates.py
-
-# 3. Alternatively, execute the canonical regression suite
-& "C:\phoenix-sdr-dsp\third_party\mlir-aie\ironenv\Scripts\python.exe" run_all_silicon_tests.py
-```
-
----
-
-## 7. License
+## 9. License
 
 Licensed under the Apache License, Version 2.0. See [LICENSE](LICENSE) for details.
