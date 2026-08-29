@@ -29,24 +29,21 @@ void dr16_etsi_qkd014_ingress_service(
     const uint8_t *desc,
     uint8_t *res
 ) {
-    // Zero result buffer
     for (int i = 0; i < 64; i++) res[i] = 0;
 
-    // Parse Descriptor
     uint32_t magic = *(const uint32_t*)(desc + 0);
     uint32_t req_id = *(const uint32_t*)(desc + 4);
     uint32_t epoch = *(const uint32_t*)(desc + 8);
     uint16_t key_len = *(const uint16_t*)(desc + 12);
     const uint8_t *key_uuid = desc + 16;
 
-    uint32_t status = 0; // SUCCESS
+    uint32_t status = 0;
 
     if (magic != DR16_DESC_MAGIC) {
         status = 1; // STATUS_INVALID_MAGIC
     } else if (epoch <= g_last_epoch && g_last_epoch != 0) {
         status = 3; // STATUS_STALE_EPOCH
     } else {
-        // Store Key Material inside sealed SRAM slot (0..3)
         uint32_t slot = g_active_slot % 4;
         for (int i = 0; i < 64; i++) {
             g_sealed_qkd_ring[slot][i] = req[i];
@@ -55,16 +52,23 @@ void dr16_etsi_qkd014_ingress_service(
         g_active_slot++;
     }
 
+    if (status != 0) {
+        // Fail-closed zeroization
+        for (int i = 0; i < 64; i++) res[i] = 0;
+        *(uint32_t*)(res + 0) = DR16_RES_MAGIC;
+        *(uint32_t*)(res + 4) = req_id;
+        *(uint32_t*)(res + 8) = status;
+        return;
+    }
+
     uint32_t crc = compute_crc32(req, 64);
 
-    // Assemble Result Header
     *(uint32_t*)(res + 0) = DR16_RES_MAGIC;
     *(uint32_t*)(res + 4) = req_id;
     *(uint32_t*)(res + 8) = status;
-    *(uint32_t*)(res + 12) = (status == 0) ? (g_active_slot % 4) : 0;
+    *(uint32_t*)(res + 12) = (g_active_slot % 4);
     *(uint32_t*)(res + 16) = crc;
 
-    // Copy UUID to result
     for (int i = 0; i < 16; i++) {
         res[20 + i] = key_uuid[i];
     }

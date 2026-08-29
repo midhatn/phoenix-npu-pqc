@@ -39,7 +39,7 @@ void dr17_mldsa_qkd_auth_service(
         status = 1;
     } else {
         const uint8_t *manifest = req;
-        uint64_t state[25];
+        alignas(8) uint64_t state[25];
         for (int i = 0; i < 25; i++) state[i] = 0;
 
         const uint64_t *m64 = (const uint64_t*)manifest;
@@ -50,15 +50,26 @@ void dr17_mldsa_qkd_auth_service(
 
         phoenix_sdr_dsp::pqc::dr1::keccak_f1600(reinterpret_cast<uint8_t*>(state));
 
+        // Memory scrub of sponge state
+        for (int i = 0; i < 25; i++) state[i] = 0;
+
         uint32_t manifest_epoch = *(const uint32_t*)(manifest + 16);
         if (manifest_epoch != epoch && epoch != 0) {
-            status = 2;
+            status = 2; // STATUS_AUTH_TAMPERED_MANIFEST
         } else {
             uint8_t flag = desc[13];
             if (flag == 0) {
-                status = 1;
+                status = 1; // STATUS_AUTH_INVALID_SIG
             }
         }
+    }
+
+    if (status != 0) {
+        for (int i = 0; i < 64; i++) res[i] = 0;
+        *(uint32_t*)(res + 0) = DR17_RES_MAGIC;
+        *(uint32_t*)(res + 4) = req_id;
+        *(uint32_t*)(res + 8) = status;
+        return;
     }
 
     uint32_t crc = compute_crc32(req, 128);
@@ -66,7 +77,7 @@ void dr17_mldsa_qkd_auth_service(
     *(uint32_t*)(res + 0) = DR17_RES_MAGIC;
     *(uint32_t*)(res + 4) = req_id;
     *(uint32_t*)(res + 8) = status;
-    *(uint32_t*)(res + 12) = (status == 0) ? 1 : 0;
+    *(uint32_t*)(res + 12) = 1; // is_valid
     *(uint32_t*)(res + 16) = crc;
 }
 

@@ -41,7 +41,6 @@ void dr18_dual_key_combiner_service(
     if (magic != DR18_DESC_MAGIC) {
         status = 1;
     } else {
-        // FIPS 202 SHAKE-256 on-device sponge (rate = 136 bytes, suffix = 0x1F)
         alignas(8) uint8_t state[200];
         for (int i = 0; i < 200; i++) state[i] = 0;
 
@@ -54,14 +53,12 @@ void dr18_dual_key_combiner_service(
             offset += rate;
         }
 
-        // Final partial block + pad
         uint32_t rem = msg_len - offset;
         for (uint32_t i = 0; i < rem; i++) state[i] ^= req[offset + i];
         state[rem] ^= 0x1F;
         state[rate - 1] ^= 0x80;
         phoenix_sdr_dsp::pqc::dr1::keccak_f1600(state);
 
-        // Squeeze
         uint8_t *k_out = res + 20;
         uint32_t squeezed = 0;
         while (squeezed < out_len) {
@@ -75,8 +72,16 @@ void dr18_dual_key_combiner_service(
             }
         }
 
-        // Zero state
+        // Memory scrub
         for (int i = 0; i < 200; i++) state[i] = 0;
+    }
+
+    if (status != 0) {
+        for (int i = 0; i < 128; i++) res[i] = 0;
+        *(uint32_t*)(res + 0) = DR18_RES_MAGIC;
+        *(uint32_t*)(res + 4) = req_id;
+        *(uint32_t*)(res + 8) = status;
+        return;
     }
 
     uint32_t crc = compute_crc32(res + 20, out_len);
