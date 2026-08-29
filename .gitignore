@@ -69,3 +69,9 @@ _scratch_*/
 !tests/pqc_device_resident/data/*.json
 # The protected DR2 forensic capture includes one required raw byte stream.
 !docs/pqc_dr2_evidence_20260818/PQC_DR2D_W0_token_tap_tcId01_raw_20260818.bin
+
+# Confidential & Private Business / Investor Pitches
+private_pitch/
+confidential/
+*PITCH*
+*ONE_PAGER*
