@@ -5,6 +5,10 @@ import sys
 import time
 from pathlib import Path
 
+REPO_ROOT = Path(__file__).resolve().parents[2]
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
+
 from phoenix_sdr_dsp.pqc import dr7_mlkem512_decaps_graph as graph
 
 VECTORS_PATH = Path(__file__).parent / "data" / "dr7_nist_acvp_mlkem512_decaps_25.json"

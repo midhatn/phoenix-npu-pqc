@@ -6,6 +6,10 @@ import json
 import sys
 from pathlib import Path
 
+REPO_ROOT = Path(__file__).resolve().parents[2]
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
+
 from phoenix_sdr_dsp.pqc import dr4_mlkem512_kpke_decrypt_graph as graph
 
 CORPUS_PATH = Path(__file__).resolve().parent / "data" / "dr4_nist_acvp_mlkem512_kpke_decrypt_25.json"
