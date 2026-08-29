@@ -41,7 +41,7 @@ class ReleaseMaterialsContractTests(unittest.TestCase):
         self.assertIn("Copyright 2026 Midhat Nashar", notice)
         self.assertIn("license: Apache-2.0", citation)
         self.assertIn('version: "1.0.0"', citation)
-        self.assertIn("100% On-Device", citation)
+        self.assertIn("Device-Resident", citation)
         self.assertEqual(zenodo["version"], "1.0.0")
         self.assertEqual(zenodo["license"], "Apache-2.0")
         self.assertEqual(zenodo["access_right"], "open")

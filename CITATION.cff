@@ -1,7 +1,7 @@
 cff-version: 1.2.0
 message: "If you use this research repository, please cite it using the metadata below."
-title: "Phoenix NPU PQC: 100% On-Device Post-Quantum Cryptography on AMD Phoenix NPU"
-abstract: "World's first complete, 100% device-resident hardware implementation of the finalized NIST Post-Quantum Cryptography standards (FIPS 202 SHA-3/SHAKE, FIPS 203 ML-KEM, and FIPS 204 ML-DSA) on the AMD Phoenix NPU (Ryzen 7 7840HS / Ryzen 9 7940HS w/ AIE2 / XDNA1 Architecture). Validated across 19 physical silicon gates (736/736 test cases PASS in 23.98s) with zero host CPU cryptographic fallback."
+title: "Phoenix NPU PQC: Device-Resident Post-Quantum Cryptography on AMD Phoenix NPU"
+abstract: "A complete device-resident hardware implementation of the finalized NIST Post-Quantum Cryptography standards (FIPS 202 SHA-3/SHAKE, FIPS 203 ML-KEM, and FIPS 204 ML-DSA) on the AMD Phoenix NPU (Ryzen 7 7840HS / Ryzen 9 7940HS w/ AIE2 / XDNA1 Architecture). Validated across 19 physical silicon gates (736/736 test cases PASS in 23.98s) with zero host CPU cryptographic fallback."
 type: software
 version: "1.0.0"
 date-released: "2026-08-29"
@@ -30,7 +30,7 @@ keywords:
   - "device residency"
 preferred-citation:
   type: software
-  title: "Phoenix NPU PQC: 100% On-Device Post-Quantum Cryptography on AMD Phoenix NPU"
+  title: "Phoenix NPU PQC: Device-Resident Post-Quantum Cryptography on AMD Phoenix NPU"
   authors:
     - family-names: "Nashar"
       given-names: "Midhat"
