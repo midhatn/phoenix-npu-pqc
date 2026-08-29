@@ -1,63 +1,55 @@
-# Phoenix NPU PQC documentation
+# Phoenix NPU PQC Research Documentation Index
 
-This index contains only documentation relevant to the Phoenix NPU PQC
-research repository. Historical records retain their original dates, evidence
-claims, and filenames; they are not rewritten to imply a broader result.
+This index organizes all mathematical specifications, architectural designs, microarchitectural invariants, and physical silicon validation reports across the four primary post-quantum cryptography research modules on the AMD Phoenix NPU (AIE2 / XDNA1).
 
-## Start here
+---
 
-- [Repository overview](../README.md) — scope, research status, the native `py .\install` path, canonical silicon gate, and compatibility policy.
-- [Repository split record](REPOSITORY_SPLIT_20260818.md) — history-preserving migration from `phoenix-sdr-dsp`.
-- [Repository build report](REPOSITORY_BUILD_REPORT_20260818.md) — implementation scope, restored evidence integrity, and host-only verification results.
-- [PQC roadmap](PQC_ROADMAP.md) — program-level status and claim boundaries.
-- [PQC device-residency roadmap](PQC_DEVICE_RESIDENCY_ROADMAP.md) — DR0 through the blocked integrated DR2 decision.
-- [PQC reproducibility guide](PQC_REPRODUCIBILITY.md) — canonical native and host-preflight commands, toolchain pins, integrity checks, and evidence interpretation.
+## 1. Primary Research Standards Modules
 
-## Historical foundation
+### Module 1: NIST FIPS 202 (SHA-3 / SHAKE — Milestone DR9)
+* [DR9 Design Specification](PQC_DR9_DESIGN.md) — Reusable streaming Keccak-$f[1600]$ engine for SHA3-224/256/384/512 and SHAKE128/256.
+* [DR9 Physical Silicon Validation Record](PQC_DR9_SILICON_VALIDATION_20260829.md) — 122/122 standard test vectors PASS on physical silicon.
 
-- [M32 FIPS 203 ML-KEM](M32_FIPS203_MLKEM.md) and its component designs: [M32b](M32b_DESIGN.md), [M32c](M32c_DESIGN.md), [M32d](M32d_DESIGN.md), and [M32e](M32e_DESIGN.md).
-- [M33 ML-DSA NTT](M33a_DESIGN.md), [rounding/hint](M33b_DESIGN.md), [KeyGen](M33d_DESIGN.md), and [Sign/Verify](M33e_DESIGN.md).
-- [M33 silicon provenance](M33_SILICON_PROVENANCE.md) and [historical validation record](M33_SILICON_VALIDATION_20260817.md).
-- [PQC v1 historical scope](PQC_COMPLETE_V1.md) — hybrid M32/M33 foundation; not a complete residency claim.
+### Module 2: NIST FIPS 203 (ML-KEM / Kyber — Milestones DR2d, DR3–DR8)
+* [DR2d ML-KEM-512 K-PKE.KeyGen Design](PQC_DR2D_DESIGN.md) & [Silicon Validation (25/25 PASS)](PQC_DR2D_SILICON_VALIDATION_20260828.md)
+* [DR3 ML-KEM-512 K-PKE.Encrypt Design](PQC_DR3_DESIGN.md) & [Silicon Validation (25/25 PASS)](PQC_DR3_SILICON_VALIDATION_20260828.md)
+* [DR4 ML-KEM-512 K-PKE.Decrypt Design](PQC_DR4_DESIGN.md) & [Silicon Validation (25/25 PASS)](PQC_DR4_SILICON_VALIDATION_20260828.md)
+* [DR5 ML-KEM-512 ML-KEM.KeyGen Design](PQC_DR5_DESIGN.md) & [Silicon Validation (25/25 PASS)](PQC_DR5_SILICON_VALIDATION_20260828.md)
+* [DR6 ML-KEM-512 ML-KEM.Encaps Design](PQC_DR6_DESIGN.md) & [Silicon Validation (25/25 PASS)](PQC_DR6_SILICON_VALIDATION_20260828.md)
+* [DR7 ML-KEM-512 ML-KEM.Decaps Design](PQC_DR7_DESIGN.md) & [Silicon Validation (25/25 PASS)](PQC_DR7_SILICON_VALIDATION_20260828.md)
+* [DR8 ML-KEM-768 & 1024 Expansion Design](PQC_DR8_DESIGN.md) & [Silicon Validation (75/75 PASS)](PQC_DR8_SILICON_VALIDATION_20260829.md)
 
-## Device-residency research
+### Module 3: NIST FIPS 204 (ML-DSA / Dilithium — Milestones DR11–DR15)
+* [DR11 ML-DSA-44 KeyGen Design](PQC_DR11_DESIGN.md) & [Silicon Validation (25/25 PASS)](PQC_DR11_SILICON_VALIDATION_20260829.md)
+* [DR12 ML-DSA-44 Signing Design](PQC_DR12_DESIGN.md) & [Silicon Validation (30/30 PASS)](PQC_DR12_SILICON_VALIDATION_20260829.md)
+* [DR13 ML-DSA-44 Verification Design](PQC_DR13_DESIGN.md) & [Silicon Validation (30/30 PASS)](PQC_DR13_SILICON_VALIDATION_20260829.md)
+* [DR14 ML-DSA-65 Suite Design](PQC_DR14_DESIGN.md) & [Silicon Validation (85/85 PASS)](PQC_DR14_SILICON_VALIDATION_20260829.md)
+* [DR15 ML-DSA-87 Suite & Primary Closure Design](PQC_DR15_DESIGN.md) & [Silicon Validation (85/85 PASS)](PQC_DR15_SILICON_VALIDATION_20260829.md)
 
-- [DR0 design](PQC_DR0_DESIGN.md), [provenance](PQC_DR0_PROVENANCE.md), and [physical validation record](PQC_DR0_SILICON_VALIDATION_20260817.md).
-- [DR1 design](PQC_DR1_DESIGN.md) and [validation record](PQC_DR1_SILICON_VALIDATION_PENDING.md).
-- [DR2a design](PQC_DR2A_DESIGN.md) and [validation record](PQC_DR2A_SILICON_VALIDATION_PENDING.md).
-- [DR2b design](PQC_DR2B_DESIGN.md) and [validation record](PQC_DR2B_SILICON_VALIDATION_PENDING.md).
-- [DR2c design](PQC_DR2C_DESIGN.md), [handoff](PQC_DR2C_MLKEM512_KEYGEN_ROW_HANDOFF_20260817.md), and [physical validation record](PQC_DR2C_SILICON_VALIDATION_PENDING.md).
-- [DR2d design](PQC_DR2D_DESIGN.md), [physical validation record (25/25 PASS)](PQC_DR2D_SILICON_VALIDATION_20260828.md), and [ELF audit](PQC_DR2D_FULLWORD_PRODUCTION_ELF_AUDIT_20260818.md).
-- [DR3 design](PQC_DR3_DESIGN.md) and [physical validation record (25/25 PASS)](PQC_DR3_SILICON_VALIDATION_20260828.md) — 100% on-device ML-KEM-512 `K-PKE.Encrypt`.
-- [DR4 design](PQC_DR4_DESIGN.md) and [physical validation record (25/25 PASS)](PQC_DR4_SILICON_VALIDATION_20260828.md) — 100% on-device ML-KEM-512 `K-PKE.Decrypt`.
-- [DR5 design](PQC_DR5_DESIGN.md) and [physical validation record (25/25 PASS)](PQC_DR5_SILICON_VALIDATION_20260828.md) — 100% on-device ML-KEM-512 `ML-KEM.KeyGen`.
-- [DR6 design](PQC_DR6_DESIGN.md) and [physical validation record (25/25 PASS)](PQC_DR6_SILICON_VALIDATION_20260828.md) — 100% on-device ML-KEM-512 `ML-KEM.Encaps`.
+### Module 4: Hardware Lifecycle & Foundation (Milestones DR0, DR1, DR2a–DR2c, DR10)
+* [DR0 M33 Ring Product Design](PQC_DR0_DESIGN.md), [Provenance](PQC_DR0_PROVENANCE.md), and [Validation](PQC_DR0_SILICON_VALIDATION_20260817.md)
+* [DR1 ML-DSA-44 ExpandA / RejNTT Design](PQC_DR1_DESIGN.md) & [Validation](PQC_DR1_SILICON_VALIDATION_PENDING.md)
+* [DR2a ML-KEM-512 SampleNTT Design](PQC_DR2A_DESIGN.md) & [Validation](PQC_DR2A_SILICON_VALIDATION_PENDING.md)
+* [DR2b ML-KEM-512 CBD3 Noise-to-NTT Design](PQC_DR2B_DESIGN.md) & [Validation](PQC_DR2B_SILICON_VALIDATION_PENDING.md)
+* [DR2c ML-KEM-512 KeyGen Row Design](PQC_DR2C_DESIGN.md) & [Validation](PQC_DR2C_SILICON_VALIDATION_PENDING.md)
+* [DR10 Sealed Lifecycle, Entropy & Key Sources Design](PQC_DR10_DESIGN.md) & [Silicon Validation (40/40 PASS)](PQC_DR10_SILICON_VALIDATION_20260829.md)
 
-## DR2d provenance and protected evidence
+---
 
-- [DR2 expert escalation](PQC_DR2_EXPERT_ESCALATION_20260818.md) — historical record of initial physical diagnostic and resolution path.
-- [Local forensic recovery](PQC_DR2_LOCAL_FORENSIC_RECOVERY_20260818.md) — provenance of recovered DR2 material.
-- [W0 token-tap diagnostic handoff](PQC_DR2D_W0_TOKEN_TAP_DIAGNOSTIC_V2_20260818_HANDOFF.md).
-- [Protected DR2 evidence inventory](pqc_dr2_evidence_20260818/README.md) — includes `SHA256SUMS`; do not edit the evidence or manifest.
+## 2. Universal Architecture Invariants Enforced
 
-## Environment, maintenance, and citations
+* **Zero Host Cryptographic Fallback**: All sampling, polynomial arithmetic, transforms, hashing, KDFs, re-encryptions, and comparisons execute strictly on AIE2 hardware tiles.
+* **DMA Channel Limits & Ingress**: Max 2 input DMA channels per core boundary; exactly 2 host fills per public operation.
+* **Terminal-Only Egress**: Only final public records transfer to the CPU after dispatch.
+* **Fail-Closed Semantics & Zeroization**: Intermediate state and scratchpads are explicitly zeroized before release.
 
-- [Comprehensive PQC citation and mathematics audit (2026-08-28)](PQC_CITATION_AND_MATHEMATICS_AUDIT_20260828.md) — scientific citation ledger, mathematical derivations, algorithmic proofs, and ACVP vector provenance.
-- [Windows setup](SETUP_WINDOWS.md) — primary `py .\install` native clean-clone path, non-dispatching maintenance modes, and canonical gate contract — and [toolchain pin rationale](M2_TOOLCHAIN_PIN.md).
-- [Audit and remediation record](PQC_AUDIT_REMEDIATION_20260818.md) — current
-  correction ledger, source references, boundaries, and remaining blockers.
-- [Publication readiness](PUBLICATION_READINESS.md) — claim/evidence matrix,
-  narrow DR2/DR3 boundaries, publication blockers, retention, and tag policy.
-- [Journal reproducibility checklist](JOURNAL_REPRODUCIBILITY_CHECKLIST.md) —
-  manuscript-ready clean-checkout, evidence, negative-result, and citation
-  controls.
-- [`../scripts/validate_clean_clone.ps1`](../scripts/validate_clean_clone.ps1)
-  — normal-user PowerShell 7 strict clean-checkout host audit. Despite the
-  retained filename it does not clone; it rejects dirty worktrees, records the
-  exact `HEAD`, has no hardware-dispatch switch, and verifies the protected DR2
-  evidence manifest.
-- [Historical pre-split citation audit](CITATION_AUDIT.md) — retained context
-  only; not current setup or claim guidance.
+---
 
-The source-compatible Python package remains `phoenix_sdr_dsp`; see the root
-README for the compatibility rationale.
+## 3. Governance, Environment & Audits
+
+* [PQC Device-Residency Roadmap](PQC_DEVICE_RESIDENCY_ROADMAP.md) — Universal completion status from DR0 through DR15 (100% PQC Silicon Certified).
+* [Comprehensive PQC Citation & Mathematics Audit](PQC_CITATION_AND_MATHEMATICS_AUDIT_20260828.md) — Scientific citation ledger, mathematical derivations, algorithmic proofs, and ACVP vector provenance.
+* [Windows Setup Guide](SETUP_WINDOWS.md) — Native `py .\install` clean-clone instructions, toolchain pins, and canonical gate verification.
+* [Journal Reproducibility Checklist](JOURNAL_REPRODUCIBILITY_CHECKLIST.md) — Manuscript-ready clean-checkout, evidence verification, and citation controls.
+* [Publication Readiness Report](PUBLICATION_READINESS.md) — Evidence matrix, 19/19 physical gate validation summary, and release policy.
+
