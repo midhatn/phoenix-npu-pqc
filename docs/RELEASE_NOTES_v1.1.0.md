@@ -30,7 +30,7 @@ We announce the formal release of **Phoenix NPU PQC & QKD v1.1.0**, establishing
 * **Fail-Closed Semantics & Zeroization**: Full memory scrubbing inside C++ kernels and host staging buffers.
 
 ### 4. Publication & Research Artifacts
-* Zenodo DOI Reference: `10.5281/zenodo.22160353`
+* Zenodo DOI Reference: `10.5281/zenodo.22162273`
 * Comprehensive Silicon Architecture Whitepaper (v2): `docs/phoenix_npu_xdna1_architecture_v2.md`
 * Vendor-Agnostic ETSI GS QKD 014 Integration Guide: `docs/ID_QUANTIQUE_QKD_INTEGRATION.md`
 * Silicon Validation Report: `docs/HYBRID_QKD_PQC_SILICON_REPORT.md`

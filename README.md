@@ -8,7 +8,7 @@
 ![Research: PQC & QKD Defense-in-Depth](https://img.shields.io/badge/Research-PQC%20%26%20QKD%20Defense--in--Depth-8a2be2)
 ![Standards: FIPS 202 / 203 / 204 · ETSI GS QKD 014 · NIST SP 800-56C](https://img.shields.io/badge/Standards-FIPS%20202%2F203%2F204%20%C2%B7%20ETSI%20014%20%C2%B7%20SP%20800--56C-005ea8)
 ![Status: 100% Silicon Certified (839/839 PASS across 23 Gates)](https://img.shields.io/badge/Status-100%25%20Silicon%20Certified%20%C2%B7%20839%2F839%20PASS-brightgreen)
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.22160353.svg)](https://doi.org/10.5281/zenodo.22160353)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.22162273.svg)](https://doi.org/10.5281/zenodo.22162273)
 
 **World's first 100% device-resident hardware realization of finalized NIST Post-Quantum Cryptography standards (FIPS 202, FIPS 203, FIPS 204) and ETSI GS QKD 014 Quantum Key Distribution (ID Quantique Cerberis XGR compatible) on the AMD Phoenix NPU (AIE2 / XDNA1 Architecture).**
 
@@ -306,8 +306,8 @@ cd phoenix-npu-pqc
   year = {2026},
   publisher = {Zenodo},
   version = {1.1.0},
-  doi = {10.5281/zenodo.22160353},
-  url = {https://doi.org/10.5281/zenodo.22160353}
+  doi = {10.5281/zenodo.22162273},
+  url = {https://doi.org/10.5281/zenodo.22162273}
 }
 ```
 

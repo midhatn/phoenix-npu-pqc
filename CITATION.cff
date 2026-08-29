@@ -5,7 +5,7 @@ abstract: "A complete device-resident hardware implementation of the finalized N
 type: software
 version: "1.1.0"
 date-released: "2026-08-29"
-doi: "10.5281/zenodo.22160353"
+doi: "10.5281/zenodo.22162273"
 authors:
   - family-names: "Nashar"
     given-names: "Midhat"
@@ -38,8 +38,8 @@ preferred-citation:
       given-names: "Midhat"
   year: 2026
   version: "1.1.0"
-  doi: "10.5281/zenodo.22160353"
-  url: "https://doi.org/10.5281/zenodo.22160353"
+  doi: "10.5281/zenodo.22162273"
+  url: "https://doi.org/10.5281/zenodo.22162273"
 references:
   - type: generic
     title: "ETSI GS QKD 014: Quantum Key Distribution (QKD); Protocol and data format of REST-based key delivery API"
