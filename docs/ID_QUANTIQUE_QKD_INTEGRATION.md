@@ -1,13 +1,16 @@
-# ID Quantique (IDQ) Cerberis XGR & ETSI GS QKD 014 Integration Guide
+# ETSI GS QKD 014 Vendor-Agnostic QKD Integration Guide
+## Commercial Reference Implementation: ID Quantique (IDQ) Cerberis XGR & Clavis 3
 
 ## 1. Architectural Overview
 
-This document specifies the integration of commercial **ID Quantique (IDQ)** Quantum Key Distribution systems (specifically **Cerberis XGR** and **Clavis 3** series) with the **AMD Phoenix NPU (AIE2 / XDNA1 Architecture)**.
+This document specifies the vendor-agnostic integration of **Quantum Key Distribution (QKD)** Key Management Entities (KMEs) with the **AMD Phoenix NPU (AIE2 / XDNA1 Architecture)** via the open international standard **ETSI GS QKD 014 (v1.1.1 & v1.3.1)** ("Protocol and data format of REST-based key delivery API").
+
+While **ID Quantique (IDQ) Cerberis XGR** and **Clavis 3** systems serve as our primary concrete reference implementation, the protocol and binary data model are identical across all ETSI 014 compliant hardware (including **Toshiba Europe QKD Networks**, **Quantum Xchange Phio TX**, **QTI QuAKE**, **KETS Quantum**, and **OpenQKD/EuroQCI** testbeds).
 
 ```
                       +-------------------------------------------------------------+
-                      |         ID Quantique Cerberis XGR KMS Appliance             |
-                      |          (ETSI GS QKD 014 REST Key Delivery API)            |
+                      |       Universal ETSI GS QKD 014 Compliant KMS Appliance     |
+                      |          (e.g., ID Quantique Cerberis, Toshiba QKD, etc.)   |
                       +------------------------------+------------------------------+
                                                      |
                                    HTTPS / mTLS      | ETSI 014 JSON Key Container
@@ -29,17 +32,17 @@ This document specifies the integration of commercial **ID Quantique (IDQ)** Qua
 
 ---
 
-## 2. ETSI GS QKD 014 REST API Specification
+## 2. Universal ETSI GS QKD 014 REST API Specification
 
-ID Quantique systems implement the standardized European Telecommunications Standards Institute (ETSI) REST API:
+Every compliant QKD appliance exposes three core REST endpoints over mutual TLS (mTLS):
 
 ### 1. Check Key Buffer & KME Status
 * **Endpoint**: `GET /api/v1/keys/{slave_sae_id}/status`
 * **Response**:
 ```json
 {
-  "source_KME_ID": "IDQ-CERBERIS-XGR-GENEVA-01",
-  "target_KME_ID": "IDQ-CERBERIS-XGR-LAUSANNE-02",
+  "source_KME_ID": "KME-GENEVA-NODE-01",
+  "target_KME_ID": "KME-LAUSANNE-NODE-02",
   "master_SAE_ID": "SAE-NODE-A-NPU",
   "slave_SAE_ID": "SAE-NODE-B-NPU",
   "key_size": 256,
@@ -82,7 +85,7 @@ ID Quantique systems implement the standardized European Telecommunications Stan
 
 ## 3. Physical Execution on AMD Phoenix NPU
 
-Researchers can reproduce the complete ID Quantique silicon validation suite on their physical AMD Phoenix hardware using the following command:
+Researchers can reproduce the complete vendor-agnostic ETSI 014 silicon validation suite (using the ID Quantique Cerberis reference model) on their physical AMD Phoenix hardware using the following command:
 
 ```powershell
 & "C:\phoenix-sdr-dsp\third_party\mlir-aie\ironenv\Scripts\python.exe" tests/pqc_device_resident/test_idq_etsi014_qkd_silicon.py
