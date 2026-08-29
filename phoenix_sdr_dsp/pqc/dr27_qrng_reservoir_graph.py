@@ -10,7 +10,7 @@ Standards & Resource Citations:
    - Continuous online and preflight health testing for random bit generator entropy sources.
 3. AMD XDNA1 / AIE2 Architecture & MLIR-AIE (IRON 1.4.1):
    - Tile SRAM ring buffer, ObjectFIFO zero-copy descriptors, and hardware-enforced isolation.
-4. DOI: 10.5281/zenodo.22162273.
+4. DOI: 10.5281/zenodo.22164124.
 """
 from pathlib import Path
 from typing import Any, Tuple, Dict, Optional

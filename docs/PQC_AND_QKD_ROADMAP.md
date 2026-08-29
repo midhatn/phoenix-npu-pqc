@@ -10,7 +10,7 @@
 ![Target: AMD Phoenix NPU (AIE2 / XDNA1)](https://img.shields.io/badge/Hardware-AMD%20Phoenix%20AIE2%20(512--bit%20SIMD)-red)
 ![Residency: 100% On-Device Silicon](https://img.shields.io/badge/Residency-100%25%20On--Device%20(Zero%20Host%20Fallback)-brightgreen)
 ![Status: v1.1.0 Certified (851/851 PASS)](https://img.shields.io/badge/Status-v1.1.0%20Certified%20%C2%B7%20851%2F851%20PASS-brightgreen)
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.22162273.svg)](https://doi.org/10.5281/zenodo.22162273)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.22164124.svg)](https://doi.org/10.5281/zenodo.22164124)
 
 </div>
 

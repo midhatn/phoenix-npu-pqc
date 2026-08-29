@@ -8,7 +8,7 @@
 ![Research: PQC & QKD Defense-in-Depth](https://img.shields.io/badge/Research-PQC%20%26%20QKD%20Defense--in--Depth-8a2be2)
 ![Standards: FIPS 202 / 203 / 204 · ETSI 014 · QRNG · OpenSSL 3 · PKCS#11 · SP 800-56C](https://img.shields.io/badge/Standards-FIPS%20202%2F203%2F204%20%C2%B7%20ETSI%20014%20%C2%B7%20QRNG%20%C2%B7%20OpenSSL%20%C2%B7%20PKCS%2311-005ea8)
 ![Status: v1.2.0 Silicon Certified (851/851 PASS across 25 Gates)](https://img.shields.io/badge/Status-v1.2.0%20Silicon%20Certified%20%C2%B7%20851%2F851%20PASS-brightgreen)
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.22162273.svg)](https://doi.org/10.5281/zenodo.22162273)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.22164124.svg)](https://doi.org/10.5281/zenodo.22164124)
 
 **World's first 100% device-resident hardware realization of finalized NIST Post-Quantum Cryptography standards (FIPS 202, FIPS 203, FIPS 204) and ETSI GS QKD 014 Quantum Key Distribution (ID Quantique Cerberis XGR compatible) on the AMD Phoenix NPU (AIE2 / XDNA1 Architecture).**
 
@@ -270,6 +270,10 @@ Open **`http://localhost:3000`** in your browser. For an exhaustive, step-by-ste
 
 ## 7. Formal Academic & Standards Citations
 
+v1.2.0 Phoenix NPU PQC: Device-Resident Post-Quantum Cryptography on AMD Phoenix NPU
+[DOI: 10.5281/zenodo.22164124](https://doi.org/10.5281/zenodo.22164124)
+[Phoenix NPU PQC & QKD v1.2.0: QRNG-OPENAPI, OpenSSL 3.x Provider & PKCS#11 HSM (25 Gates Silicon Certified)](https://github.com/midhatn/phoenix-npu-pqc/releases/tag/v1.2.0)
+
 ```bibtex
 @standard{fips202_2024,
   title={{FIPS PUB 202: SHA-3 Standard: Permutation-Based Hash and Extendable-Output Functions}},
@@ -330,9 +334,9 @@ Open **`http://localhost:3000`** in your browser. For an exhaustive, step-by-ste
   title     = {{Phoenix NPU PQC Frontend: Interactive Web Dashboard & Silicon Playground for AMD Phoenix NPU}},
   year      = {2026},
   publisher = {Zenodo},
-  version   = {1.1.0},
-  doi       = {10.5281/zenodo.22162273},
-  url       = {https://doi.org/10.5281/zenodo.22162273}
+  version   = {1.2.0},
+  doi       = {10.5281/zenodo.22164124},
+  url       = {https://doi.org/10.5281/zenodo.22164124}
 }
 
 @software{nashar2026phoenix_qkd,
@@ -340,9 +344,9 @@ Open **`http://localhost:3000`** in your browser. For an exhaustive, step-by-ste
   title = {{Phoenix NPU PQC & QKD: 100\% Device-Resident Post-Quantum Cryptography & Quantum Key Distribution on AMD Phoenix NPU}},
   year = {2026},
   publisher = {Zenodo},
-  version = {1.1.0},
-  doi = {10.5281/zenodo.22162273},
-  url = {https://doi.org/10.5281/zenodo.22162273}
+  version = {1.2.0},
+  doi = {10.5281/zenodo.22164124},
+  url = {https://doi.org/10.5281/zenodo.22164124}
 }
 ```
 

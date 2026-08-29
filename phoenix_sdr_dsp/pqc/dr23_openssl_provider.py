@@ -14,7 +14,7 @@ Standards & Resource Citations:
 4. NIST FIPS 202 (SHA-3 / SHAKE Permutations)
 5. ETSI GS QKD 014 v1.1.1 & NIST SP 800-56C Rev. 2 (Hybrid QKD-ML-KEM Combiner)
 6. AMD Phoenix AIE2 / XDNA1 Architecture: Zero Host Fallback Silicon Execution.
-7. DOI: 10.5281/zenodo.22162273.
+7. DOI: 10.5281/zenodo.22164124.
 """
 
 import os

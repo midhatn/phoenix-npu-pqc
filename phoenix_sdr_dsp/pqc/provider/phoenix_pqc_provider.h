@@ -7,7 +7,7 @@
  * 1. OpenSSL 3.0+ Provider API Specification
  * 2. NIST FIPS 203 (ML-KEM) & NIST FIPS 204 (ML-DSA)
  * 3. ETSI GS QKD 014 v1.1.1 (Hybrid QKD KEM)
- * 4. DOI: 10.5281/zenodo.22162273
+ * 4. DOI: 10.5281/zenodo.22164124
  */
 
 #ifndef PHOENIX_PQC_PROVIDER_H

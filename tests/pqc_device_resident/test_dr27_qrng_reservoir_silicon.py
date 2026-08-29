@@ -10,7 +10,7 @@ Standards & Resource Citations:
 4. NIST FIPS 203 (ML-KEM) & NIST FIPS 204 (ML-DSA) Seeding & Key Generation
 5. ETSI GS QKD 014 v1.1.1: REST-based Key Delivery Protocol
 6. AMD AIE2 Architecture: Tile SRAM Ring Buffer & ObjectFIFO Pipeline
-7. DOI: 10.5281/zenodo.22162273
+7. DOI: 10.5281/zenodo.22164124
 """
 import os
 import sys

@@ -11,7 +11,7 @@ Standards & Resource Citations:
 2. NIST FIPS 203 & NIST FIPS 204.
 3. ETSI GS QKD 014 v1.1.1 (Quantum Key Ingress to Hardware HSM).
 4. AMD Phoenix AIE2 Architecture: 100% Device-Resident Silicon Execution.
-5. DOI: 10.5281/zenodo.22162273.
+5. DOI: 10.5281/zenodo.22164124.
 """
 
 import os

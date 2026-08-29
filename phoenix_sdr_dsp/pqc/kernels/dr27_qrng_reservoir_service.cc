@@ -14,7 +14,7 @@
  *      * Low-water mark <= 1 slot (<= 6.25% ~= 5%) -> STATE_1_DEGRADED_A.
  *      * High-water mark >= 5 slots (>= 31.25% >= 30%) -> STATE_0_FULL_HYBRID.
  * 4. ETSI GS QKD 014 v1.1.1 (2019-02): Quantum Key Distribution REST-based Key Delivery API.
- * 5. DOI: 10.5281/zenodo.22162273.
+ * 5. DOI: 10.5281/zenodo.22164124.
  */
 #include <stdint.h>
 #include <stddef.h>

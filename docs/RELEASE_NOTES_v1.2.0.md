@@ -3,7 +3,7 @@
 **Release Date:** August 29, 2026  
 **Target Hardware:** AMD Phoenix / Hawk Point APU (Ryzen 7 7840HS / Ryzen 9 7940HS w/ AIE2 / XDNA1 NPU)  
 **Silicon Verification:** 25 / 25 Gates PASS (100.00%) · 851 / 851 Test Cases Bit-Exact on Physical Silicon in 33.21s  
-**DOI:** [10.5281/zenodo.22162273](https://doi.org/10.5281/zenodo.22162273)  
+**DOI:** [10.5281/zenodo.22164124](https://doi.org/10.5281/zenodo.22164124)  
 
 ---
 

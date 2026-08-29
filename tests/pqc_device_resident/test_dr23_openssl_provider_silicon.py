@@ -9,7 +9,7 @@ Standards & Resource Citations:
 3. NIST FIPS 203 (ML-KEM) & NIST FIPS 204 (ML-DSA)
 4. ETSI GS QKD 014 v1.1.1 & NIST SP 800-56C Rev. 2
 5. AMD Phoenix AIE2 Architecture: Zero Host Fallback Silicon Execution
-6. DOI: 10.5281/zenodo.22162273
+6. DOI: 10.5281/zenodo.22164124
 """
 
 import os

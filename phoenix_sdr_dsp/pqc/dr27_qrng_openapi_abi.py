@@ -16,7 +16,7 @@ Standards & Resource Citations:
    - Title: Recommendation for Key-Derivation Methods in Key-Establishment Schemes.
 4. AMD Phoenix APU (Ryzen 7 7840HS / Ryzen 9 7940HS) AIE2 / XDNA1 Architecture:
    - MLIR-AIE (IRON) ObjectFIFO & Tile SRAM memory mapping.
-5. DOI Reference: 10.5281/zenodo.22162273.
+5. DOI Reference: 10.5281/zenodo.22164124.
 """
 import json
 import base64

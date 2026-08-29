@@ -10,7 +10,7 @@ Standards & Resource Citations:
    - Health test execution over streaming entropy windows prior to NPU DMA dispatch.
 3. ETSI GS QKD 014 v1.1.1 (2019-02):
    - Transport security boundary separation: zero host key storage with immediate hardware offload.
-4. DOI: 10.5281/zenodo.22162273.
+4. DOI: 10.5281/zenodo.22164124.
 """
 import os
 import json
