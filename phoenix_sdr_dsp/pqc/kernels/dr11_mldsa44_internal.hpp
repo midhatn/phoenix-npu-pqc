@@ -126,6 +126,10 @@ __attribute__((noinline)) static void ntt_kernel(int32_t coeffs[256]) {
       }
     }
   }
+  DR11_DISABLE_UNROLL
+  for (uint32_t j = 0; j < 256; ++j) {
+    coeffs[j] = canonicalize(coeffs[j]);
+  }
 }
 
 // Inverse NTT on 256 coefficients (in place)

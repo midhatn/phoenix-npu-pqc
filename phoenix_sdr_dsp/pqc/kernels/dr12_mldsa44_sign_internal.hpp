@@ -256,14 +256,14 @@ __attribute__((noinline)) static void decode_sk_t0_poly(const uint8_t in[416], i
     const uint32_t v6 = (b9 >> 6) | (b10 << 2) | (b11 << 10);
     const uint32_t v7 = (b11 >> 3) | (b12 << 5);
 
-    t0[i * 8 + 0] = (1 << 12) - static_cast<int32_t>(v0 & 0x1FFF);
-    t0[i * 8 + 1] = (1 << 12) - static_cast<int32_t>(v1 & 0x1FFF);
-    t0[i * 8 + 2] = (1 << 12) - static_cast<int32_t>(v2 & 0x1FFF);
-    t0[i * 8 + 3] = (1 << 12) - static_cast<int32_t>(v3 & 0x1FFF);
-    t0[i * 8 + 4] = (1 << 12) - static_cast<int32_t>(v4 & 0x1FFF);
-    t0[i * 8 + 5] = (1 << 12) - static_cast<int32_t>(v5 & 0x1FFF);
-    t0[i * 8 + 6] = (1 << 12) - static_cast<int32_t>(v6 & 0x1FFF);
-    t0[i * 8 + 7] = (1 << 12) - static_cast<int32_t>(v7 & 0x1FFF);
+    t0[i * 8 + 0] = canonicalize((1 << 12) - static_cast<int32_t>(v0 & 0x1FFF));
+    t0[i * 8 + 1] = canonicalize((1 << 12) - static_cast<int32_t>(v1 & 0x1FFF));
+    t0[i * 8 + 2] = canonicalize((1 << 12) - static_cast<int32_t>(v2 & 0x1FFF));
+    t0[i * 8 + 3] = canonicalize((1 << 12) - static_cast<int32_t>(v3 & 0x1FFF));
+    t0[i * 8 + 4] = canonicalize((1 << 12) - static_cast<int32_t>(v4 & 0x1FFF));
+    t0[i * 8 + 5] = canonicalize((1 << 12) - static_cast<int32_t>(v5 & 0x1FFF));
+    t0[i * 8 + 6] = canonicalize((1 << 12) - static_cast<int32_t>(v6 & 0x1FFF));
+    t0[i * 8 + 7] = canonicalize((1 << 12) - static_cast<int32_t>(v7 & 0x1FFF));
   }
 }
 

@@ -815,19 +815,16 @@ closure record and explicit acceptance.
 
 ### 12.6 Decision
 
-| Field | Record |
-|---|---|
 | Reviewer / user | Midhat Nashar |
-| Review date | 2026-08-17 (Initial), 2026-08-28 (DR2d-DR7), 2026-08-29 (DR8-DR13 Silicon Closure) |
+| Review date | 2026-08-17 (Initial), 2026-08-28 (DR2d-DR7), 2026-08-29 (DR8-DR14 Silicon Closure) |
 | Overall roadmap decision | **APPROVED & ACTIVE** |
-| Completed & Validated | DR0, DR1, DR2a, DR2b, DR2c, DR2d, DR3, DR4, DR5, DR6, DR7, DR8, DR9, DR10, DR11, DR12, DR13 (100% Silicon Validated, 566/566 PASS) |
-| Next Immediate Milestone | **DR14 (Complete NIST FIPS 204 ML-DSA-65 Parameter-Set Expansion)** |
-| Approved sequence | DR14 through DR15 for full FIPS 202, 203, 204 on-device completion |
+| Completed & Validated | DR0, DR1, DR2a, DR2b, DR2c, DR2d, DR3, DR4, DR5, DR6, DR7, DR8, DR9, DR10, DR11, DR12, DR13, DR14 (100% Silicon Validated, 651/651 PASS across 17 Gates) |
+| Next Immediate Milestone | **DR15 (Complete NIST FIPS 204 ML-DSA-87 & Final FIPS 202/203/204 Unified Multi-Algorithm Engine Closure)** |
+| Approved sequence | DR15 for full FIPS 202, 203, 204 on-device completion |
 | Required changes | FIPS 205 and FIPS 206 retained as unnumbered future work |
 | Deferred boundaries | All FIPS 205 and FIPS 206 DR numbering and operation boundaries |
-| Acceptance reference | DR13 100% Silicon Pass (30/30 ACVP) on AMD Phoenix NPU (2026-08-29) |
+| Acceptance reference | DR14 100% Silicon Pass (85/85 ACVP) on AMD Phoenix NPU (2026-08-29) |
 
-DR0 through DR13 are **CLOSED / PHYSICALLY VALIDATED ON SILICON (566 / 566 CASES PASS)**.
+DR0 through DR14 are **CLOSED / PHYSICALLY VALIDATED ON SILICON (651 / 651 CASES PASS)**.
 
-The immediate next milestone to implement is **DR14 (Complete NIST FIPS 204 ML-DSA-65 Parameter-Set Expansion)**,
-followed by DR15 (ML-DSA-87 and primary FIPS 202/203/204 closure).
+The immediate next milestone to implement is **DR15 (Complete NIST FIPS 204 ML-DSA-87 & Final FIPS 202/203/204 Multi-Algorithm Integration Closure)**.
