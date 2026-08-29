@@ -40,7 +40,9 @@ Gentleman-Sande butterflies, bit-reversed input, standard-order output, plus a t
 
 Because the NTT factors $X^{256}+1$ into quadratic factors, each pointwise product is a polynomial multiplication modulo $X^2 - \gamma$ with $\gamma = \pm\zeta^{2\mathrm{brv}_7(k)+1}$:
 
-$$(a_0 + a_1 X)(b_0 + b_1 X) \bmod (X^2 - \gamma) \;=\; (a_0 b_0 + \gamma a_1 b_1) + (a_0 b_1 + a_1 b_0)\,X.$$
+$$
+(a_0 + a_1 X)(b_0 + b_1 X) \bmod (X^2 - \gamma) \;=\; (a_0 b_0 + \gamma a_1 b_1) + (a_0 b_1 + a_1 b_0)\,X.
+$$
 
 `poly_basemul_montgomery` iterates over 64 index blocks; the +/- pairing captures the two conjugate roots per bit-reversal orbit.
 

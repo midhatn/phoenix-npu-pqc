@@ -57,20 +57,35 @@ This repository contains the complete, reproducible, and physically verified res
 
 ### 3.1 Ring Arithmetic & Moduli
 The lattice operations operate in the quotient ring $\mathcal{R}_q = \mathbb{Z}_q[X]/(X^n + 1)$ where $n = 256$:
-- **ML-KEM**: $q = 3329 = 13 \cdot 256 + 1$, with primitive $256$-th root of unity $\zeta = 17$.
-- **ML-DSA**: $q = 8380417 = 2^{23} - 2^{13} + 1$, with primitive $512$-th root of unity $\zeta = 1753$.
+- **ML-KEM**: $q = 3329 = 13 \cdot 256 + 1$, with primitive 256-th root of unity $\zeta = 17$.
+- **ML-DSA**: $q = 8380417 = 2^{23} - 2^{13} + 1$, with primitive 512-th root of unity $\zeta = 1753$.
 
 ### 3.2 Forward & Inverse Number Theoretic Transform (NTT)
 The NTT transforms polynomial multiplication from $\mathcal{O}(n^2)$ to $\mathcal{O}(n \log n)$:
-$$\widehat{a}_j = \sum_{i=0}^{n-1} a_i \zeta^{(2 \cdot \text{bitrev}(j) + 1) \cdot i} \pmod q$$
+
+$$
+\widehat{a}_j = \sum_{i=0}^{n-1} a_i \zeta^{(2 \cdot \text{bitrev}(j) + 1) \cdot i} \pmod q
+$$
+
 Pointwise multiplication in the NTT domain:
-$$\widehat{c} = \widehat{a} \circ \widehat{b} \pmod q$$
+
+$$
+\widehat{c} = \widehat{a} \circ \widehat{b} \pmod q
+$$
+
 The Inverse NTT reconstructs the standard polynomial coefficients:
-$$a_i = n^{-1} \sum_{j=0}^{n-1} \widehat{a}_j \zeta^{-(2 \cdot \text{bitrev}(j) + 1) \cdot i} \pmod q$$
+
+$$
+a_i = n^{-1} \sum_{j=0}^{n-1} \widehat{a}_j \zeta^{-(2 \cdot \text{bitrev}(j) + 1) \cdot i} \pmod q
+$$
 
 ### 3.3 Montgomery Arithmetic
 All modular arithmetic on AIE2 uses Montgomery reduction ($R = 2^{32} \pmod q$):
-$$\text{MontReduce}(T) = (T + (T \cdot q^{-1} \bmod R) \cdot q) / R$$
+
+$$
+\text{MontReduce}(T) = (T + (T \cdot q^{-1} \bmod R) \cdot q) / R
+$$
+
 where $q^{-1} = 62209 \pmod{2^{32}}$ for ML-KEM and $q^{-1} = 58728449 \pmod{2^{32}}$ for ML-DSA.
 
 ### 3.4 NIST FIPS 202 Keccak-p[1600, 24] Permutation

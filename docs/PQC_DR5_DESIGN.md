@@ -24,7 +24,11 @@ The implementation satisfies the strict 100% NPU residency invariant:
    - Worker W5 performs $\text{ByteEncode}_{12}(\widehat{\mathbf{t}})$ and concatenates $\rho$ to produce the encapsulation key $ek = \text{ByteEncode}_{12}(\widehat{\mathbf{t}}) \parallel \rho$ (800 bytes).
    - Worker W5 computes $H(ek) = \text{SHA3-256}(ek)$ (32 bytes) strictly within AIE tile memory.
    - Worker W5 encodes $dk_{PKE} = \text{ByteEncode}_{12}(\widehat{\mathbf{s}})$ (768 bytes) and packs the full decapsulation key:
-     $$dk = dk_{PKE} \parallel ek \parallel H(ek) \parallel z \quad (1632\text{ bytes})$$
+
+$$
+dk = dk_{PKE} \parallel ek \parallel H(ek) \parallel z \quad (1632\text{ bytes})
+$$
+
 6. **Terminal-Only Egress:** Only the final packed result record ($2452$ bytes: 20-byte header + 800-byte $ek$ + 1632-byte $dk$) transfers to the CPU after dispatch.
 
 ---

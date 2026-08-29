@@ -48,7 +48,7 @@ Both sequences are chosen so that for every input in $[0, q-1]$ they yield the s
 
 ### 2.2 ByteEncode_d / ByteDecode_d
 
-FIPS 203 §4.2.1 defines `ByteEncode_d(F)` as writing the integer coefficients of $F$ as $d$-bit little-endian chunks and packing them into a byte array of length $32d$. `ByteDecode_d` is the inverse. For $d = 12$ the encoding is lossless for canonical ML-KEM coefficients because $q=3329 < 2^{12}$and$\lceil \log_2 q \rceil = 12$; for $d < 12$ the encoding assumes each coefficient already fits in $d$ bits (which the caller ensures via `Compress`).
+FIPS 203 §4.2.1 defines `ByteEncode_d(F)` as writing the integer coefficients of $F$ as $d$ bit little-endian chunks and packing them into a byte array of length $32d$. `ByteDecode_d` is the inverse. For $d = 12$ the encoding is lossless for canonical ML-KEM coefficients because $q=3329 < 2^{12}$and$\lceil \log_2 q \rceil = 12$; for $d < 12$ the encoding assumes each coefficient already fits in $d$ bits (which the caller ensures via `Compress`).
 
 The pq-crystals kernel handles two special cases inline:
 

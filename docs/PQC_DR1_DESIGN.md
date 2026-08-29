@@ -9,7 +9,9 @@ compiler-reported sizes, incident history, and claim boundary.
 `DR1_MLDSA44_EXPANDA_REJNTT` generates **one** ML-DSA-44 matrix polynomial per
 request:
 
-$$\hat A[i][j] = \mathrm{RejNTTPoly}(\mathrm{SHAKE128}(\rho\mathbin\Vert[j]\mathbin\Vert[i]))$$
+$$
+\hat A[i][j] = \mathrm{RejNTTPoly}(\mathrm{SHAKE128}(\rho\mathbin\Vert[j]\mathbin\Vert[i]))
+$$
 
 where `j` is the column byte and `i` is the row byte, each in `0..3`.  This is
 intentionally not a generic SHAKE service, not a full matrix operation, and

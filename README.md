@@ -8,7 +8,6 @@
 ![Research: Post-Quantum Cryptography](https://img.shields.io/badge/Research-Post--Quantum%20Cryptography-8a2be2)
 ![Standards: FIPS 202 / 203 / 204](https://img.shields.io/badge/Standards-FIPS%20202%20%2F%20203%20%2F%20204-005ea8)
 ![Status: 100% PQC Silicon Certified (736/736 PASS across 19 Gates)](https://img.shields.io/badge/Status-100%25%20PQC%20Silicon%20Certified%20%C2%B7%20736%2F736%20PASS-brightgreen)
-[![CI](https://github.com/midhatn/phoenix-npu-pqc/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/midhatn/phoenix-npu-pqc/actions/workflows/ci.yml)
 
 **World's first 100% device-resident hardware implementation of the finalized NIST Post-Quantum Cryptography standards on the AMD Phoenix NPU (AIE2 / XDNA1 Architecture).**
 
@@ -123,8 +122,8 @@ The universal master silicon test suite ([`tests/pqc_device_resident/test_all_si
 
 All lattice operations are evaluated in the quotient polynomial ring $\mathcal{R}_q = \mathbb{Z}_q[X]/(X^n + 1)$ with degree $n = 256$:
 
-* **NIST FIPS 203 (ML-KEM)**: $q = 3329 = 13 \cdot 256 + 1$, primitive $256$-th root of unity $\zeta = 17 \pmod{3329}$.
-* **NIST FIPS 204 (ML-DSA)**: $q = 8380417 = 2^{23} - 2^{13} + 1$, primitive $512$-th root of unity $\zeta = 1753 \pmod{8380417}$.
+* **NIST FIPS 203 (ML-KEM)**: $q = 3329 = 13 \cdot 256 + 1$, primitive 256-th root of unity $\zeta = 17 \pmod{3329}$.
+* **NIST FIPS 204 (ML-DSA)**: $q = 8380417 = 2^{23} - 2^{13} + 1$, primitive 512-th root of unity $\zeta = 1753 \pmod{8380417}$.
 
 ### 5.2 Fast Barrett and Montgomery Modular Reductions
 

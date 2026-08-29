@@ -44,7 +44,11 @@ $$
 This is the minimum bounded iteration limit described in FIPS 203 Appendix B.
 The sampler parses each three-byte group as
 
-$$d_1=b_0+256(b_1\bmod16), \qquad d_2=\lfloor b_1/16\rfloor+16b_2,$$accepting each value only when it is less than$q=3329$.  It freezes the
+$$
+d_1=b_0+256(b_1\bmod16), \qquad d_2=\lfloor b_1/16\rfloor+16b_2,
+$$
+
+accepting each value only when it is less than$q=3329$.  It freezes the
 first 256 accepted coefficients but still drains the remaining scheduled
 tokens.  If fewer than 256 coefficients are accepted after all 280 iterations,
 it clears local state and produces a fixed zero-payload `LIMIT_EXCEEDED`

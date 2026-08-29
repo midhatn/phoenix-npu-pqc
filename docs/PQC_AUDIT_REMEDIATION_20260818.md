@@ -80,7 +80,13 @@ accepting an incomplete polynomial.
    and classified as access/publication risks.
 10. **GitHub math rendering.** Maintained Markdown outside the immutable
     evidence bundle now uses GitHub-supported `$...$` inline delimiters and
-    standalone `$$...$$` display delimiters instead of `\(...\)` and
+    standalone `
+
+$$
+...
+$$
+
+` display delimiters instead of `\(...\)` and
     `\[...\]`. The normalization excludes fenced and inline code examples.
     GitHub's supported syntax is documented at
     https://docs.github.com/en/get-started/writing-on-github/working-with-advanced-formatting/writing-mathematical-expressions.

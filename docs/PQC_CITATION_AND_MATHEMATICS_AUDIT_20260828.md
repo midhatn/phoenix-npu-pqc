@@ -16,7 +16,7 @@ This document establishes the publication-grade scientific, algorithmic, and mic
 
 | Identifier | Full Title | Organization / Year | Canonical DOI / URL | Role in Repository |
 | :--- | :--- | :--- | :--- | :--- |
-| **FIPS 202** | *SHA-3 Standard: Permutation-Based Hash and Extendable-Output Functions* | NIST (2015) | [DOI: 10.6028/NIST.FIPS.202](https://doi.org/10.6028/NIST.FIPS.202) | Keccak-$f[1600]$, SHA3-224/256/384/512, SHAKE128/256 |
+| **FIPS 202** | *SHA-3 Standard: Permutation-Based Hash and Extendable-Output Functions* | NIST (2015) | [DOI: 10.6028/NIST.FIPS.202](https://doi.org/10.6028/NIST.FIPS.202) | Keccak-f[1600], SHA3-224/256/384/512, SHAKE128/256 |
 | **FIPS 203** | *Module-Lattice-Based Key-Encapsulation Mechanism Standard (ML-KEM)* | NIST (2024) | [DOI: 10.6028/NIST.FIPS.203](https://doi.org/10.6028/NIST.FIPS.203) | ML-KEM-512, ML-KEM-768, ML-KEM-1024 parameter sets, KeyGen, Encaps, Decaps |
 | **FIPS 204** | *Module-Lattice-Based Digital Signature Standard (ML-DSA)* | NIST (2024) | [DOI: 10.6028/NIST.FIPS.204](https://doi.org/10.6028/NIST.FIPS.204) | ML-DSA-44, ML-DSA-65, ML-DSA-87 parameter sets, KeyGen, Sign, Verify |
 | **NIST SP 800-185** | *SHA-3 Derived Functions: cSHAKE, KMAC, TupleHash, ParallelHash* | NIST (2016) | [DOI: 10.6028/NIST.SP.800-185](https://doi.org/10.6028/NIST.SP.800-185) | Domain separation and customizable extendable output functions |
@@ -29,32 +29,50 @@ This document establishes the publication-grade scientific, algorithmic, and mic
 The lattice operations operate in the quotient ring $\mathcal{R}_q = \mathbb{Z}_q[X]/(X^n + 1)$ with $n = 256$:
 - **ML-KEM (FIPS 203)**:
   - Modulus: $q = 3329 = 13 \cdot 256 + 1$.
-  - Twiddle factors: $\zeta = 17$ (primitive $256$-th root of unity).
+  - Twiddle factors: $\zeta = 17$ (primitive 256-th root of unity).
   - Matrix dimensions $k \in \{2, 3, 4\}$ corresponding to ML-KEM-512, 768, 1024.
 - **ML-DSA (FIPS 204)**:
   - Modulus: $q = 8380417 = 2^{23} - 2^{13} + 1$.
-  - Twiddle factors: $\zeta = 1753$ (primitive $512$-th root of unity).
+  - Twiddle factors: $\zeta = 1753$ (primitive 512-th root of unity).
   - Matrix dimensions $(k, l) \in \{(4, 4), (6, 5), (8, 7)\}$ corresponding to ML-DSA-44, 65, 87.
 
 ### 3.2 Number-Theoretic Transforms (NTT / INTT)
 * **Cooley-Tukey Radix-2 Forward NTT**:
-  $$\widehat{a}_j = \sum_{i=0}^{n-1} a_i \zeta^{(2 \cdot \text{bitrev}(j) + 1) \cdot i} \pmod q$$
+
+$$
+\widehat{a}_j = \sum_{i=0}^{n-1} a_i \zeta^{(2 \cdot \text{bitrev}(j) + 1) \cdot i} \pmod q
+$$
+
   * *Citation*: Cooley, J. W., & Tukey, J. W. (1965). *An algorithm for the machine calculation of complex Fourier series*. *Mathematics of Computation*, 19(90), 297–301. [DOI: 10.1090/S0025-5718-1965-0178586-1](https://doi.org/10.1090/S0025-5718-1965-0178586-1).
 * **Gentleman-Sande Inverse NTT (INTT)**:
-  $$a_i = n^{-1} \sum_{j=0}^{n-1} \widehat{a}_j \zeta^{-(2 \cdot \text{bitrev}(j) + 1) \cdot i} \pmod q$$
+
+$$
+a_i = n^{-1} \sum_{j=0}^{n-1} \widehat{a}_j \zeta^{-(2 \cdot \text{bitrev}(j) + 1) \cdot i} \pmod q
+$$
+
   * *Citation*: Gentleman, W. M., & Sande, G. (1966). *Fast Fourier Transforms—for fun and profit*. *AFIPS '66*, pp. 563–578. [DOI: 10.1145/1464291.1464352](https://doi.org/10.1145/1464291.1464352).
 
 ### 3.3 Montgomery Modular Arithmetic
 All modular arithmetic on AIE2 uses Montgomery reduction ($R = 2^{32} \pmod q$):
-$$\text{MontReduce}(T) = (T + (T \cdot q^{-1} \bmod R) \cdot q) / R$$
+
+$$
+\text{MontReduce}(T) = (T + (T \cdot q^{-1} \bmod R) \cdot q) / R
+$$
+
 where $q^{-1} = 62209 \pmod{2^{32}}$ for ML-KEM and $q^{-1} = 58728449 \pmod{2^{32}}$ for ML-DSA.
 * *Citation*: Montgomery, P. L. (1985). *Modular multiplication without trial division*. *Mathematics of Computation*, 44(170), 519–521. [DOI: 10.1090/S0025-5718-1985-0777282-X](https://doi.org/10.1090/S0025-5718-1985-0777282-X).
 
 ### 3.4 Barrett Compression & Constant-Time Reductions
 * *Citation*: Barrett, P. (1986). *Implementing the Rivest Shamir and Adleman Public Key Encryption Algorithm on a Standard Digital Signal Processor*. *CRYPTO '86*, LNCS 263, pp. 311–323. [DOI: 10.1007/3-540-47721-7_24](https://doi.org/10.1007/3-540-47721-7_24).
 * **Exact Linear Closed-Form Compressions (AIE2 Invariant)**:
-  $$\text{Compress}_4(x) = \left\lfloor \frac{x \cdot 315 + 32701}{2^{16}} \right\rfloor \land \text{0x0F} \equiv \left\lfloor \frac{x \cdot 16 + 1664}{3329} \right\rfloor \bmod 16$$
-  $$\text{Compress}_{10}(x) = \left\lfloor \frac{x \cdot 161271 + 261911}{2^{19}} \right\rfloor \land \text{0x3FF} \equiv \left\lfloor \frac{x \cdot 1024 + 1664}{3329} \right\rfloor \bmod 1024$$
+
+$$
+\text{Compress}_4(x) = \left\lfloor \frac{x \cdot 315 + 32701}{2^{16}} \right\rfloor \land \text{0x0F} \equiv \left\lfloor \frac{x \cdot 16 + 1664}{3329} \right\rfloor \bmod 16
+$$
+
+$$
+\text{Compress}_{10}(x) = \left\lfloor \frac{x \cdot 161271 + 261911}{2^{19}} \right\rfloor \land \text{0x3FF} \equiv \left\lfloor \frac{x \cdot 1024 + 1664}{3329} \right\rfloor \bmod 1024
+$$
 
 ---
 

@@ -370,7 +370,7 @@ Design record: [`docs/PQC_DR9_DESIGN.md`](PQC_DR9_DESIGN.md).
 | Function scope | Full FIPS 202 coverage: SHA3-224 ($r=144$), SHA3-256 ($r=136$), SHA3-384 ($r=104$), SHA3-512 ($r=72$), SHAKE128 ($r=168$), SHAKE256 ($r=136$). |
 | Public ingress | Packed request buffer (up to 2048 B) plus descriptor buffer (16 B); exactly two host fills per operation. |
 | Terminal output | Sealed terminal record (1044 B) containing digest/XOF bytes and on-chip hardware CRC32. |
-| Device residency | 100% on-device Keccak-$f[1600]$ permutation, streaming multi-block absorption, exact domain suffixes (`0x06` for SHA3, `0x1F` for SHAKE), multi-rate 10*1 padding, multi-block squeeze, zeroization, and CRC32 sealing. |
+| Device residency | 100% on-device Keccak-f[1600] permutation, streaming multi-block absorption, exact domain suffixes (`0x06` for SHA3, `0x1F` for SHAKE), multi-rate 10*1 padding, multi-block squeeze, zeroization, and CRC32 sealing. |
 | Prohibited paths | No host CPU cryptographic fallback or intermediate sponge continuation. |
 | Hardware fit | Compiled under 12 KiB instruction footprint (within the 16 KiB limit) with 8 KiB stack allocation. |
 | Validation corpus | **122 / 122 PASS** across all 6 functions on physical silicon. |

@@ -672,10 +672,8 @@ from tests.pqc_device_resident.test_dr2d_mlkem512_kpke_keygen import (
     PRE_SILICON_CORPUS,
 )
 
-
 def sha(data):
     return hashlib.sha256(data).hexdigest()
-
 
 def poly12(data):
     out = []
@@ -684,7 +682,6 @@ def poly12(data):
         out.append(data[j] | ((data[j + 1] & 0x0F) << 8))
         out.append((data[j + 1] >> 4) | (data[j + 2] << 4))
     return out
-
 
 case = PRE_SILICON_CORPUS[0]
 tc_id = int(case.label[-2:])
@@ -1144,14 +1141,11 @@ case = PRE_SILICON_CORPUS[0]
 g = hashlib.sha3_512(case.d + bytes((2,))).digest()
 rho, sigma = g[:32], g[32:]
 
-
 def first_ntt(prf):
     return ntt_reference(cbd3_reference(prf))[0]
 
-
 def bit_reverse_byte(x):
     return int(f"{x:08b}"[::-1], 2)
-
 
 sigma_candidates = {
     "canonical_sigma": sigma,
@@ -1166,7 +1160,6 @@ for shift in range(1, 32):
 for offset in range(64):
     doubled = g + g
     sigma_candidates[f"g_cyclic_window_{offset}"] = doubled[offset:offset + 32]
-
 
 def prf_pair(sig, mode):
     if mode == "canonical":
@@ -1197,7 +1190,6 @@ def prf_pair(sig, mode):
         )
     raise AssertionError(mode)
 
-
 def stage(prf, mode):
     if mode == "exact_136_plus_56":
         return prf
@@ -1214,7 +1206,6 @@ def stage(prf, mode):
     if mode == "bit_reverse_each_byte":
         return bytes(bit_reverse_byte(x) for x in prf)
     raise AssertionError(mode)
-
 
 prf_modes = (
     "canonical",
@@ -1234,14 +1225,12 @@ stage_modes = (
     "bit_reverse_each_byte",
 )
 
-
 def distance(got):
     total = 0
     for a, b in zip(got, ACTUAL):
         d = (a - b) % Q
         total += min(d, Q - d)
     return total
-
 
 rows = []
 for sigma_name, sig in sigma_candidates.items():

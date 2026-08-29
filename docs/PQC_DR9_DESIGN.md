@@ -16,7 +16,7 @@ Milestone **DR9** provides a complete, reusable, on-device NIST FIPS 202 cryptog
 
 ### 2.1 Sponge Construction & State Management
 - **State Array**: 1600-bit (200-byte) internal Keccak state represented as an 8-byte aligned array of 25 64-bit lanes.
-- **Multi-Block Absorb**: Streaming absorption of arbitrary-length input messages up to buffer capacity (2048 bytes per request) using tile-local Keccak-$f[1600]$ rounds.
+- **Multi-Block Absorb**: Streaming absorption of arbitrary-length input messages up to buffer capacity (2048 bytes per request) using tile-local Keccak-f[1600] rounds.
 - **Exact Domain Suffix & 10*1 Padding**:
   - SHA3 functions: Suffix byte `0x06`
   - SHAKE functions: Suffix byte `0x1F`

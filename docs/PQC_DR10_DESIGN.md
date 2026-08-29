@@ -13,7 +13,10 @@ DR10 guarantees that secret keys, randomness seeds, derived intermediate key tok
 ### 2.1 Mode 0: External Raw Ingress & On-Chip Conditioning
 - **Contract**: The host supplies raw unconditioned entropy (64 bytes) via DMA.
 - **On-Device Derivation**: The NPU performs domain-separated cryptographic conditioning on-chip via SHA3-256:
-  $$K_{\text{session}} = \text{SHA3-256}(\text{entropy} \parallel \text{domain\_id} \parallel \text{epoch})$$
+
+$$
+K_{\text{session}} = \text{SHA3-256}(\text{entropy} \parallel \text{domain\_id} \parallel \text{epoch})
+$$
 - The derived session key is directly stored in the tile-resident sealed session register.
 
 ### 2.2 Mode 2: Authenticated External / QKD Key Material Ingress

@@ -49,7 +49,6 @@ W4 row1_accumulate ─ final(2,112) ─► W5 serialize ─► result(1,588)
 | W4 | row-1 MultiplyNTTs accumulation/final token | 2,048 B | 160 B | 1,583 B |
 | W5 | canonical serializer and terminal commit | 2,048 B | 48 B | 826 B |
 
-
 *Measured locally with host `g++ -O2 -fstack-usage` and `size`; these are
 only comparative host estimates, not Phoenix program-memory or stack evidence.
 W0's local CBD3/NTT frame contains `uint32_t coefficients[256]` (1,024 B),

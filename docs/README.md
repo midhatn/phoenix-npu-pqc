@@ -7,7 +7,7 @@ This index organizes all mathematical specifications, architectural designs, mic
 ## 1. Primary Research Standards Modules
 
 ### Module 1: NIST FIPS 202 (SHA-3 / SHAKE — Milestone DR9)
-* [DR9 Design Specification](PQC_DR9_DESIGN.md) — Reusable streaming Keccak-$f[1600]$ engine for SHA3-224/256/384/512 and SHAKE128/256.
+* [DR9 Design Specification](PQC_DR9_DESIGN.md) — Reusable streaming Keccak-f[1600] engine for SHA3-224/256/384/512 and SHAKE128/256.
 * [DR9 Physical Silicon Validation Record](PQC_DR9_SILICON_VALIDATION_20260829.md) — 122/122 standard test vectors PASS on physical silicon.
 
 ### Module 2: NIST FIPS 203 (ML-KEM / Kyber — Milestones DR2d, DR3–DR8)

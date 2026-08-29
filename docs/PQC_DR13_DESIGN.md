@@ -30,7 +30,7 @@ ML-DSA signature verification requires performing modular arithmetic in $R_q$, m
    - Reconstruct $\mathbf{w}_1'[i] = \text{UseHint}(h[i], \mathbf{w}_{\text{approx}}[i], lpha = 190464)$.
    - Encode $\mathbf{w}_1' \to 768$ bytes.
 4. **Challenge Equality & Sealing**:
-   - Compute $c' = \text{SHAKE256}(\mu \parallel \text{w1_bytes}, 32)$.
+   - Compute $c' = \text{SHAKE256}(\mu \parallel \text{w1\_bytes}, 32)$.
    - Valid $\iff c' == \widetilde{c} \land \text{fail\_flag} == 0$.
    - Seal 28-byte result record with hardware CRC32.
 
