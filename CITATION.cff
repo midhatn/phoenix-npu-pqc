@@ -1,9 +1,9 @@
 cff-version: 1.2.0
 message: "If you use this research repository, please cite it using the metadata below."
-title: "Phoenix NPU PQC: Device-Resident Post-Quantum Cryptography on AMD Phoenix NPU"
-abstract: "A complete device-resident hardware implementation of the finalized NIST Post-Quantum Cryptography standards (FIPS 202 SHA-3/SHAKE, FIPS 203 ML-KEM, and FIPS 204 ML-DSA) on the AMD Phoenix NPU (Ryzen 7 7840HS / Ryzen 9 7940HS w/ AIE2 / XDNA1 Architecture). Validated across 19 physical silicon gates (736/736 test cases PASS in 23.98s) with zero host CPU cryptographic fallback."
+title: "Phoenix NPU PQC & QKD: 100% Device-Resident Post-Quantum Cryptography & Quantum Key Distribution on AMD Phoenix NPU"
+abstract: "A complete device-resident hardware implementation of the finalized NIST Post-Quantum Cryptography standards (FIPS 202 SHA-3/SHAKE, FIPS 203 ML-KEM, and FIPS 204 ML-DSA) and ETSI GS QKD 014 Quantum Key Distribution (ID Quantique Cerberis XGR compatible) on the AMD Phoenix NPU (Ryzen 7 7840HS / Ryzen 9 7940HS w/ AIE2 / XDNA1 Architecture). Validated across 23 physical silicon gates (839/839 test cases PASS in 35.98s) with zero host CPU cryptographic fallback."
 type: software
-version: "1.0.0"
+version: "1.1.0"
 date-released: "2026-08-29"
 doi: "10.5281/zenodo.22160353"
 authors:
@@ -15,6 +15,11 @@ url: "https://github.com/midhatn/phoenix-npu-pqc"
 license: Apache-2.0
 keywords:
   - "post-quantum cryptography"
+  - "quantum key distribution"
+  - "QKD"
+  - "ETSI GS QKD 014"
+  - "ID Quantique"
+  - "NIST SP 800-56C"
   - "ML-KEM"
   - "ML-DSA"
   - "FIPS 202"
@@ -24,61 +29,45 @@ keywords:
   - "Phoenix NPU"
   - "XDNA1"
   - "AIE2"
-  - "MLIR-AIE"
-  - "LLVM-AIE"
-  - "XRT"
   - "device residency"
 preferred-citation:
   type: software
-  title: "Phoenix NPU PQC: Device-Resident Post-Quantum Cryptography on AMD Phoenix NPU"
+  title: "Phoenix NPU PQC & QKD: 100% Device-Resident Post-Quantum Cryptography & Quantum Key Distribution on AMD Phoenix NPU"
   authors:
     - family-names: "Nashar"
       given-names: "Midhat"
   year: 2026
-  version: "1.0.0"
+  version: "1.1.0"
   doi: "10.5281/zenodo.22160353"
   url: "https://doi.org/10.5281/zenodo.22160353"
 references:
+  - type: generic
+    title: "ETSI GS QKD 014: Quantum Key Distribution (QKD); Protocol and data format of REST-based key delivery API"
+    authors:
+      - name: "European Telecommunications Standards Institute"
+    year: 2023
+    url: "https://www.etsi.org/deliver/etsi_gs/QKD/001_099/014/01.03.01_60/gs_QKD014v010301p.pdf"
+  - type: generic
+    title: "NIST SP 800-56C Rev. 2: Recommendation for Key-Derivation Methods in Key-Establishment Schemes"
+    authors:
+      - name: "National Institute of Standards and Technology"
+    year: 2020
+    doi: "10.6028/NIST.SP.800-56Cr2"
   - type: generic
     title: "FIPS 202: SHA-3 Standard: Permutation-Based Hash and Extendable-Output Functions"
     authors:
       - name: "National Institute of Standards and Technology"
     year: 2015
-    url: "https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.202.pdf"
     doi: "10.6028/NIST.FIPS.202"
   - type: generic
     title: "FIPS 203: Module-Lattice-Based Key-Encapsulation Mechanism Standard"
     authors:
       - name: "National Institute of Standards and Technology"
     year: 2024
-    url: "https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.203.pdf"
     doi: "10.6028/NIST.FIPS.203"
   - type: generic
     title: "FIPS 204: Module-Lattice-Based Digital Signature Standard"
     authors:
       - name: "National Institute of Standards and Technology"
     year: 2024
-    url: "https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.204.pdf"
     doi: "10.6028/NIST.FIPS.204"
-  - type: software
-    title: "mlir-aie: MLIR-based tooling for AMD AIEngine processors"
-    authors:
-      - name: "AMD (Xilinx) Research Labs"
-    repository-code: "https://github.com/Xilinx/mlir-aie"
-    url: "https://github.com/Xilinx/mlir-aie/releases/tag/v1.4.1"
-    version: "1.4.1+13 (commit 3ca0193)"
-    license: "Apache-2.0"
-  - type: software
-    title: "llvm-aie: LLVM-based backend for AMD AIEngine cores"
-    authors:
-      - name: "AMD (Xilinx) Research Labs"
-    repository-code: "https://github.com/Xilinx/llvm-aie"
-    version: "21.0.0.2026080301+c9c5ecb7"
-    license: "Apache-2.0"
-  - type: software
-    title: "XRT: Xilinx Runtime"
-    authors:
-      - name: "AMD (Xilinx)"
-    repository-code: "https://github.com/Xilinx/XRT"
-    version: "2.21.0"
-    license: "Apache-2.0"
