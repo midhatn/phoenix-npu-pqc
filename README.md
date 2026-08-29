@@ -294,9 +294,51 @@ $$
 
 ---
 
-## 6. Hardware Pipeline Topology & Dataflow
+## 6. Hardware Architecture, Topology & Benchmarks
 
-Each cryptographic operation is mapped across dedicated AIE2 compute tiles connected via hardware ObjectFIFOs:
+### 6.1 End-to-End System Architecture
+
+```mermaid
+flowchart TD
+    subgraph Standards["1. Cryptographic Standards Layer"]
+        FIPS202["NIST FIPS 202<br/>SHA3-224..512 / SHAKE128..256"]
+        FIPS203["NIST FIPS 203<br/>ML-KEM-512 / 768 / 1024"]
+        FIPS204["NIST FIPS 204<br/>ML-DSA-44 / 65 / 87"]
+        Foundation["Lifecycle & Foundation<br/>QKD Ingress / Sealed State"]
+    end
+
+    subgraph Toolchain["2. Compilation & Runtime Toolchain"]
+        Peano["Peano LLVM-AIE 21.0.0<br/>Scalar & 512-bit Vector C++"]
+        MLIR["MLIR-AIE 1.4.1 (IRON)<br/>Tile Graph & ObjectFIFOs"]
+        XRT["XRT 2.21.0 / AMD XDNA Driver<br/>Zero-Copy DMA Dispatch"]
+    end
+
+    subgraph Silicon["3. Physical AMD Phoenix NPU (AIE2 / XDNA1)"]
+        W0["Worker 0: Ingress / PRF / CBD Noise<br/>(RAM: 14 KiB / Text: 7.2 KiB)"]
+        W1["Worker 1: Forward NTT / SampleNTT<br/>(RAM: 44 KiB / Text: 8.6 KiB)"]
+        W2["Worker 2: Matrix Mul & Accumulate<br/>(RAM: 44 KiB / Text: 6.4 KiB)"]
+        W3["Worker 3: INTT / Compress / Sealing<br/>(RAM: 48 KiB / Text: 9.8 KiB)"]
+        
+        W0 -->|"Token 0 (ObjectFIFO)"| W1
+        W1 -->|"Token 1 (ObjectFIFO)"| W2
+        W2 -->|"Token 2 (ObjectFIFO)"| W3
+        W0 -.->|"Secret Key Material"| W3
+    end
+
+    subgraph Egress["4. Hardware Verification & Egress"]
+        Envelope["Sealed Result Envelope<br/>(Terminal Output + Status + CRC32)"]
+        HostCPU["Host CPU (Verification Only)<br/>Zero Fallback Computation"]
+    end
+
+    Standards --> Toolchain
+    Toolchain --> Silicon
+    W3 --> Envelope
+    Envelope --> HostCPU
+```
+
+### 6.2 Tile Array Topology & Inter-Tile Communication
+
+Each cryptographic operation is mapped across dedicated AIE2 compute tiles connected via zero-copy hardware ObjectFIFOs:
 
 ```
                       AMD PHOENIX NPU AIE2 TILE ARRAY (XDNA1)
@@ -318,14 +360,34 @@ Each cryptographic operation is mapped across dedicated AIE2 compute tiles conne
          [Sealed Result Envelope] (Hardware CRC32 + Status Verified)
 ```
 
+### 6.3 Performance & Microarchitectural Benchmarks
+
+All 19 hardware validation gates execute in **23.98 seconds** across 736 test cases on physical Phoenix silicon. Full benchmark metrics are recorded in [`docs/BENCHMARKS.md`](docs/BENCHMARKS.md):
+
+| Standard | Operation / Pipeline | Total Silicon Cases | Silicon Runtime | Per-Op Latency | Tile Memory Limit Compliance |
+|---|---|:---:|:---:|:---:|:---:|
+| **FIPS 202** | SHA-3 & SHAKE Service (DR9) | 122 | 0.90 s | **7.4 ms** | **PASSED** (< 16 KiB text, < 64 KiB RAM) |
+| **FIPS 203** | ML-KEM-512 Suite (DR2d, DR3-DR7) | 150 | 4.60 s | **30.7 ms** | **PASSED** (< 16 KiB text, < 64 KiB RAM) |
+| **FIPS 203** | ML-KEM-768 & 1024 Expansion (DR8) | 75 | 1.83 s | **24.4 ms** | **PASSED** (< 16 KiB text, < 64 KiB RAM) |
+| **FIPS 204** | ML-DSA-44 Suite (DR1, DR11-DR13) | 118 | 4.94 s | **41.9 ms** | **PASSED** (< 16 KiB text, < 64 KiB RAM) |
+| **FIPS 204** | ML-DSA-65 & ML-DSA-87 (DR14, DR15) | 170 | 7.59 s | **44.6 ms** | **PASSED** (< 16 KiB text, < 64 KiB RAM) |
+| **Foundation**| Ring Unit, Noise, Lifecycle (DR0, DR2a-c, DR10) | 101 | 4.12 s | **40.8 ms** | **PASSED** (< 16 KiB text, < 64 KiB RAM) |
+| **TOTAL** | **Universal 19-Gate Master Suite** | **736** | **23.98 s** | **32.6 ms (avg)** | **100% Hardware Respected** |
+
 ---
 
 ## 7. How to Reproduce on Physical Hardware
 
-### System Prerequisites
-* **APU**: AMD Ryzen 7 7840HS, Ryzen 9 7940HS, Ryzen 7 8845HS, or Ryzen 9 8945HS with XDNA1 NPU.
-* **Operating System**: Windows 11 (build 22621+) with AMD NPU driver `10.1109.8.100`+.
-* **Software Toolchain**: MLIR-AIE 1.4.1, Peano LLVM-AIE Compiler, XRT 2.20.0+.
+### System Prerequisites & Pinned Toolchain
+
+The physical hardware execution environment is specified in [`toolchain.yaml`](toolchain.yaml) and [`docs/SETUP_WINDOWS.md`](docs/SETUP_WINDOWS.md):
+
+* **Target APU**: AMD Ryzen 7 7840HS, Ryzen 9 7940HS, Ryzen 7 8845HS, or Ryzen 9 8945HS with XDNA1 AIE2 NPU.
+* **Operating System**: Windows 11 64-bit (build 22621+) with AMD NPU driver `10.1109.8.100`+.
+* **MLIR-AIE (IRON)**: Version `v1.4.1+13` (commit [`3ca0193`](https://github.com/Xilinx/mlir-aie/releases/tag/v1.4.1)).
+* **LLVM-AIE (Peano)**: Version `21.0.0.2026080301+c9c5ecb7` ([Peano release tree](https://github.com/Xilinx/llvm-aie)).
+* **XRT Runtime**: Version `2.21.0` (archive `2.21.75` SDK for Windows, [`xrt_sdk`](https://github.com/Xilinx/XRT)).
+* **Python**: Python 3.10 - 3.13 64-bit.
 
 ### Execution Commands
 ```powershell

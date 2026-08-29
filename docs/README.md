@@ -47,7 +47,7 @@ This index organizes all mathematical specifications, architectural designs, mic
 
 ## 3. Governance, Environment & Audits
 
-* [PQC Device-Residency Roadmap](PQC_DEVICE_RESIDENCY_ROADMAP.md) — Universal completion status from DR0 through DR15 (100% PQC Silicon Certified).
+* [Performance & Microarchitectural Benchmarks](BENCHMARKS.md) — Empirical execution latency, memory footprint, and tile budgets across all 19 silicon gates.\n* [Changelog](../CHANGELOG.md) — Version release history and milestone progression from DR0 to DR15.\n* [PQC Device-Residency Roadmap](PQC_DEVICE_RESIDENCY_ROADMAP.md) — Universal completion status from DR0 through DR15 (100% PQC Silicon Certified).
 * [Comprehensive PQC Citation & Mathematics Audit](PQC_CITATION_AND_MATHEMATICS_AUDIT_20260828.md) — Scientific citation ledger, mathematical derivations, algorithmic proofs, and ACVP vector provenance.
 * [Windows Setup Guide](SETUP_WINDOWS.md) — Native `py .\install` clean-clone instructions, toolchain pins, and canonical gate verification.
 * [Journal Reproducibility Checklist](JOURNAL_REPRODUCIBILITY_CHECKLIST.md) — Manuscript-ready clean-checkout, evidence verification, and citation controls.
