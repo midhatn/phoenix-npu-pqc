@@ -9,7 +9,7 @@
 ![Entropy: QRNG-OPENAPI v1.0](https://img.shields.io/badge/Entropy-QRNG--OPENAPI%20v1.0-blueviolet)
 ![Target: AMD Phoenix NPU (AIE2 / XDNA1)](https://img.shields.io/badge/Hardware-AMD%20Phoenix%20AIE2%20(512--bit%20SIMD)-red)
 ![Residency: 100% On-Device Silicon](https://img.shields.io/badge/Residency-100%25%20On--Device%20(Zero%20Host%20Fallback)-brightgreen)
-![Status: v1.1.0 Certified (839/839 PASS)](https://img.shields.io/badge/Status-v1.1.0%20Certified%20%C2%B7%20839%2F839%20PASS-brightgreen)
+![Status: v1.1.0 Certified (851/851 PASS)](https://img.shields.io/badge/Status-v1.1.0%20Certified%20%C2%B7%20851%2F851%20PASS-brightgreen)
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.22162273.svg)](https://doi.org/10.5281/zenodo.22162273)
 
 </div>
@@ -93,7 +93,8 @@ This architecture ensures full physical and mathematical resilience: if the phys
 
 | Standard / Organization | Specification Reference | Role in Hybrid Pipeline | AIE2 Implementation Milestone | Status |
 |---|---|---|---|:---:|
-| **Palo Alto / Consortium** | **QRNG-OPENAPI (v1.0)** | REST Entropy Ingestion (`/v1/entropy`, `/v1/healthtest`) | **DR27a** (Host Ingress Daemon) | *Planned v1.2* |
+| **Palo Alto / Consortium** | **QRNG-OPENAPI (v1.0)** | REST Entropy Ingestion & SRAM Reservoir | **DR27** (Ingress + Reservoir Core) | **100% PASS** |
+| **OpenSSL / OASIS** | **OpenSSL 3.x / PKCS#11 v3.0** | Native Provider Plugin & Cryptoki HSM Token | **DR23** (OpenSSL + HSM Token) | **100% PASS** |
 | **ETSI** | **ETSI GS QKD 014 (v1.1.1 / v1.3.1)** | REST Key Delivery API for KME Ingress | **DR16** (Sealed Key Ingress) | **100% PASS** |
 | **ETSI** | **ETSI GS QKD 015 (v2.1.1)** | Orchestration and Control-Plane Security | **DR17** (Asymmetric Auth Control) | **100% PASS** |
 | **NIST** | **FIPS PUB 204 (2024)** | ML-DSA Digital Signature Verification | **DR11–DR15, DR17** (Auth Hub) | **100% PASS** |
@@ -110,7 +111,7 @@ This architecture ensures full physical and mathematical resilience: if the phys
 
 ---
 
-## 3. Five Core Modules in v1.1.0 (23 Silicon Gates · 839 Test Cases)
+## 3. Core Modules in v1.1.0 (25 Silicon Gates · 851 Test Cases)
 
 ### Module 1: NIST FIPS 202 (SHA-3 / SHAKE — Milestone DR9)
 * **Status**: 100% Silicon Certified (**122 / 122 PASS**).
@@ -129,7 +130,12 @@ This architecture ensures full physical and mathematical resilience: if the phys
 * **Milestone DR17 (Gate 20)**: ML-DSA Asymmetric QKD Control Authenticator (`dr17_mldsa_qkd_auth_service.cc`) — **25 / 25 PASS**.
 * **Milestone DR18 (Gate 21)**: NIST SP 800-56C Dual Combiner (`dr18_dual_key_combiner_service.cc`) — **30 / 30 PASS**.
 * **Milestone DR19 (Gate 22)**: Full-Duplex Session Orchestrator (`dr19_hybrid_session_service.cc`) — **20 / 20 PASS**.
-* **Milestone DR20 (Gate 23)**: Universal Master Silicon Suite (`run_all_silicon_tests.py`) — **839 / 839 PASS in 36.86s**.
+* **Milestone DR20**: Universal Master Silicon Suite Integration.
+
+### Module 6: True Quantum Entropy, Providers & Tokens (Milestones DR27, DR23)
+* **Milestone DR27 (Gate 23)**: QRNG-OPENAPI v1.0 Ingress & On-Device Reservoir (`dr27_qrng_reservoir_service.cc`) — **6 / 6 PASS**.
+* **Milestone DR23 (Gate 24)**: OpenSSL 3.x Native Provider & OASIS PKCS#11 v3.0 HSM Token (`dr23_openssl_provider.py`, `dr23_pkcs11_hsm.py`) — **6 / 6 PASS**.
+* **Universal Master Silicon Suite ([`run_all_silicon_tests.py`](file:///C:/Users/midhat/.gemini/antigravity/scratch/phoenix-npu-pqc/run_all_silicon_tests.py))**: **25/25 Gates PASS (100.00%) · 851 / 851 Tests PASS in 33.21s**.
 
 ---
 
@@ -291,5 +297,5 @@ A rigorous cryptographic and physical accelerator roadmap must candidly address 
 | Version | Status | Modules Included | Milestones | Physical Silicon Status |
 |---|---|---|---|:---:|
 | **v1.0.0** | **Released** | Modules 1, 2, 3, 4 (PQC Core) | **DR0–DR15** (19 Gates) | **736 / 736 PASS** (23.98s) |
-| **v1.1.0** | **Released (Current)** | Modules 1–5 (PQC + Hybrid QKD) | **DR0–DR20** (23 Gates) | **839 / 839 PASS** (36.86s) |
-| **v1.2.0** | **Planned** | Modules 6–9 (Extensions, Providers, Entropy, CNSA 2.0) | **DR21–DR30** (36 Gates) | *In Development* |
+| **v1.1.0** | **Released (Current)** | Modules 1–6 (PQC + Hybrid QKD + QRNG + OpenSSL/PKCS11) | **DR0–DR20, DR23, DR27** (25 Gates) | **851 / 851 PASS** (33.21s) |
+| **v1.2.0** | **Planned** | Modules 7–9 (FIPS 205/206, Side-Channel, CNSA 2.0, 5G SUCI) | **DR21–DR22, DR24–DR26, DR28–DR30** | *In Development* |
