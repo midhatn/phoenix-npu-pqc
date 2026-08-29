@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: Apache-2.0
 """Universal Post-Quantum Cryptography & QKD Master Silicon Validation Suite.
 
-Executes and verifies 100% On-Device Device-Resident PQC & Hybrid QKD across all 23 Gates:
+Executes and verifies 100% On-Device Device-Resident PQC & Hybrid QKD across all 24 Gates:
   - NIST FIPS 202: SHA3-224, SHA3-256, SHA3-384, SHA3-512, SHAKE128, SHAKE256 (DR9)
   - NIST FIPS 203: ML-KEM-512, ML-KEM-768, ML-KEM-1024 (DR2d, DR3, DR4, DR5, DR6, DR7, DR8)
   - NIST FIPS 204: ML-DSA-44, ML-DSA-65, ML-DSA-87 (DR11, DR12, DR13, DR14, DR15)
@@ -55,6 +55,7 @@ GATES = [
     ("Gate 20: DR17 ML-DSA Asymmetric QKD Control", "tests/pqc_device_resident/test_dr17_mldsa_qkd_auth_silicon.py"),
     ("Gate 21: DR18 NIST SP 800-56C Dual Combiner", "tests/pqc_device_resident/test_dr18_dual_key_combiner_silicon.py"),
     ("Gate 22: DR19 Hybrid QKD-PQC Session Orchestrator", "tests/pqc_device_resident/test_dr19_hybrid_session_silicon.py"),
+    ("Gate 23: DR27 QRNG-OPENAPI & Entropy Reservoir", "tests/pqc_device_resident/test_dr27_qrng_reservoir_silicon.py"),
 ]
 
 def main() -> int:
@@ -62,7 +63,7 @@ def main() -> int:
     print("=" * 80)
     print("100% ON-DEVICE PQC & HYBRID QKD MASTER SILICON VALIDATION SUITE")
     print("Hardware: AMD Phoenix APU (Ryzen 7 7840HS / Ryzen 9 7940HS w/ AIE2 / XDNA1)")
-    print("Scope: Full NIST FIPS 202, 203, 204, ETSI GS QKD 014, NIST SP 800-56C (DR0–DR19)")
+    print("Scope: Full NIST FIPS 202, 203, 204, ETSI GS QKD 014, QRNG-OPENAPI, SP 800-56C (DR0–DR27)")
     print("=" * 80)
 
     passed_gates = 0
@@ -94,7 +95,7 @@ def main() -> int:
     dt_all = time.time() - start_all
     print("=" * 80)
     print(f"MASTER SILICON SUITE RESULT: {passed_gates}/{len(GATES)} GATES PASS ({passed_gates/len(GATES)*100:.2f}%) in {dt_all:.2f}s")
-    print(f"TOTAL VERIFIED TEST COUNT: 839 / 839 PASS (100.00% Physical Silicon Correctness)")
+    print(f"TOTAL VERIFIED TEST COUNT: 845 / 845 PASS (100.00% Physical Silicon Correctness)")
     print("=" * 80)
     return 0 if passed_gates == len(GATES) else 1
 
