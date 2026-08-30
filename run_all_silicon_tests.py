@@ -63,6 +63,7 @@ GATES = [
     ("Gate 28: DR29 NSA CNSA 2.0 Distributed Engine", "tests/pqc_device_resident/test_dr29_cnsa_silicon.py"),
     ("Gate 29: DR31 X.509 Post-Quantum PKI Engine", "tests/pqc_device_resident/test_dr31_pki_silicon.py"),
     ("Gate 30: DR32 NIST ACVP Compliance Harness", "tests/pqc_device_resident/test_dr32_acvp_silicon.py"),
+    ("Gate 31: DR35 AIE2 Silicon Visualizer", "tests/pqc_device_resident/test_dr35_visualizer_silicon.py"),
 ]
 
 def main() -> int:
