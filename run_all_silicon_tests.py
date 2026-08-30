@@ -67,12 +67,15 @@ def main() -> int:
     print("=" * 80)
 
     passed_gates = 0
+    failed_gates = 0
+    skipped_gates = 0
     python_exe = str(IRONENV_PYTHON) if IRONENV_PYTHON.is_file() else sys.executable
 
     for gate_name, script_path in GATES:
         full_path = REPO_ROOT / script_path
         if not full_path.exists():
             print(f"[-] {gate_name:<52} : SKIPPED (File not found: {script_path})")
+            skipped_gates += 1
             continue
 
         t0 = time.time()
@@ -88,16 +91,28 @@ def main() -> int:
             passed_gates += 1
             print(f"[+] {gate_name:<52} : PASS ({dt:5.2f}s)")
         else:
+            failed_gates += 1
             print(f"[-] {gate_name:<52} : FAIL ({dt:5.2f}s, exit {res.returncode})")
             if res.stderr:
                 print(f"    ERROR: {res.stderr.strip()[:180]}")
+            elif res.stdout:
+                lines = [l for l in res.stdout.strip().splitlines() if l]
+                if lines:
+                    print(f"    OUTPUT: {lines[-1][:180]}")
 
     dt_all = time.time() - start_all
+    total_gates = len(GATES)
+    pass_pct = (passed_gates / total_gates * 100.0) if total_gates > 0 else 0.0
+
     print("=" * 80)
-    print(f"MASTER SILICON SUITE RESULT: {passed_gates}/{len(GATES)} GATES PASS ({passed_gates/len(GATES)*100:.2f}%) in {dt_all:.2f}s")
-    print(f"TOTAL VERIFIED TEST COUNT: 857 / 857 PASS (100.00% Physical Silicon Correctness)")
+    if failed_gates == 0 and skipped_gates == 0:
+        print(f"MASTER SILICON SUITE RESULT: {passed_gates}/{total_gates} GATES PASS (100.00%) in {dt_all:.2f}s")
+        print(f"STATUS: ALL {passed_gates} VERIFIED GATES PASSED (100.00% Physical Silicon Correctness)")
+    else:
+        print(f"MASTER SILICON SUITE RESULT: {passed_gates}/{total_gates} GATES PASS ({pass_pct:.2f}%) in {dt_all:.2f}s")
+        print(f"VALIDATION FAILED: {failed_gates} failed, {skipped_gates} skipped out of {total_gates} total gates.")
     print("=" * 80)
-    return 0 if passed_gates == len(GATES) else 1
+    return 0 if (failed_gates == 0 and skipped_gates == 0) else 1
 
 if __name__ == "__main__":
     sys.exit(main())
