@@ -6,7 +6,7 @@ Thank you for your interest in contributing to **Phoenix NPU PQC & QKD**! This p
 
 ## 1. Code of Conduct & Academic Integrity
 
-* All code contributions must be original or appropriately licensed under Apache-2.0.
+* All code contributions must be submitted under the repository's standard Apache License 2.0. Any external reference algorithms must specify an immutable upstream URL and revision.
 * Cryptographic implementations must be mathematically verifiable against official NIST ACVP (Automated Cryptographic Validation Protocol) vectors and ETSI technical specifications.
 * Any empirical hardware claims must include complete benchmark logs and physical silicon execution reproduction steps.
 

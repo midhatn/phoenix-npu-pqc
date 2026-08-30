@@ -230,18 +230,18 @@ Any developer or researcher can clone and reproduce the entire 100% on-device PQ
 
 ---
 
-### 6.2 Option A: Automated CLI Master Silicon Suite (23 Gates · 839 Tests)
+### 6.2 Option A: Automated CLI Master Silicon Suite (24 Gates Verified)
 
 ```powershell
 # 1. Clone the core repository
 git clone https://github.com/midhatn/phoenix-npu-pqc.git
 cd phoenix-npu-pqc
 
-# 2. Run the Master 23-Gate Silicon Certification Suite (839 / 839 PASS)
-python run_all_silicon_tests.py
+# 2. Bootstrap & verify environment
+py .\install
 
-# 3. Run the ID Quantique / ETSI GS QKD 014 Ingress & Fusing Suite
-python tests/pqc_device_resident/test_idq_etsi014_qkd_silicon.py
+# 3. Run the Master Silicon Certification Suite
+python run_all_silicon_tests.py
 ```
 
 ---

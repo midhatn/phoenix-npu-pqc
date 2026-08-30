@@ -3,7 +3,7 @@ message: "If you use this research repository, please cite it using the metadata
 title: "Phoenix NPU PQC & QKD: 100% Device-Resident Post-Quantum Cryptography & Quantum Key Distribution on AMD Phoenix NPU"
 abstract: "A complete device-resident hardware implementation of the finalized NIST Post-Quantum Cryptography standards (FIPS 202 SHA-3/SHAKE, FIPS 203 ML-KEM, and FIPS 204 ML-DSA) and ETSI GS QKD 014 Quantum Key Distribution (ID Quantique Cerberis XGR compatible) on the AMD Phoenix NPU (Ryzen 7 7840HS / Ryzen 9 7940HS w/ AIE2 / XDNA1 Architecture). Validated across 25 physical silicon gates (851/851 test cases PASS in 33.21s) with zero host CPU cryptographic fallback."
 type: software
-version: "1.2.0"
+version: "1.0.0"
 date-released: "2026-08-29"
 authors:
   - family-names: "Nashar"
@@ -39,7 +39,7 @@ preferred-citation:
     - family-names: "Nashar"
       given-names: "Midhat"
   year: 2026
-  version: "1.2.0"
+  version: "1.0.0"
   url: "https://github.com/midhatn/phoenix-npu-pqc"
 references:
   - type: generic

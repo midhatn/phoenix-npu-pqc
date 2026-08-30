@@ -159,10 +159,10 @@ To prevent session re-negotiation spikes ("state flapping") when QKD key arrival
 
 | Operational State | Trigger Condition | Active Cryptographic Mechanisms | Resulting Security Posture |
 |---|---|---|---|
-| **State 0: Full Hybrid** | Reservoir capacity $> 30\%$; QRNG healthy; fiber active. | $\text{KMAC256}(K_{\text{QKD}} \parallel K_{\text{PQC}})$ + QRNG Seed + FIPS 204 Auth. | **Maximum Resilience**: Immune to optical intercept and mathematical cryptanalysis. |
-| **State 1: Degraded Mode A (Algorithmic Primary)** | Reservoir capacity drops $< 5\%$; fiber cut or KMS exhaustion. | FIPS 203 (ML-KEM) + QRNG/TRNG Seed + FIPS 204 Auth. | **High Security**: Zero packet drops; protected mathematically by lattice hardness. |
+| **State 0: Full Hybrid** | Reservoir capacity > 30%; QRNG healthy; fiber active. | KMAC256($K_{\text{QKD}} \parallel K_{\text{PQC}}$) + QRNG Seed + FIPS 204 Auth. | **Maximum Resilience**: Immune to optical intercept and mathematical cryptanalysis. |
+| **State 1: Degraded Mode A (Algorithmic Primary)** | Reservoir capacity drops < 5%; fiber cut or KMS exhaustion. | FIPS 203 (ML-KEM) + QRNG/TRNG Seed + FIPS 204 Auth. | **High Security**: Zero packet drops; protected mathematically by lattice hardness. |
 | **State 2: Degraded Mode B (Physical Fallback)** | Theoretical vulnerability published against Module Lattice ring. | QKD Key Stream ($K_{\text{QKD}}$) + Classical ECDH / Pre-shared Key. | **High Security**: Protected by physical quantum mechanics while lattice algorithms patch. |
-| **State 3: Autonomous Mode** | Remote QRNG REST endpoint unreachable or latency $> 50\text{ ms}$. | Hardware TRNG + FIPS 202 SHAKE-256 + FIPS 203/204. | **High Security**: Eliminates external network dependency during network floods. |
+| **State 3: Autonomous Mode** | Remote QRNG REST endpoint unreachable or latency > 50 ms. | Hardware TRNG + FIPS 202 SHAKE-256 + FIPS 203/204. | **High Security**: Eliminates external network dependency during network floods. |
 | **State 4: Zeroize / Panic** | Enclosure intrusion, chassis breach, or bus-glitch alert. | Immediate hardware write of `0x00` across all tile SRAM key registers. | **Fail-Safe**: Cryptographic zeroization prevents key extraction under physical capture. |
 
 ---
