@@ -58,6 +58,7 @@ GATES = [
     ("Gate 23: DR27 QRNG-OPENAPI & Entropy Reservoir", "tests/pqc_device_resident/test_dr27_qrng_reservoir_silicon.py"),
     ("Gate 24: DR23 OpenSSL 3.x Provider & PKCS#11 HSM", "tests/pqc_device_resident/test_dr23_openssl_provider_silicon.py"),
     ("Gate 25: DR21 NIST FIPS 205 (SLH-DSA / SPHINCS+)", "tests/pqc_device_resident/test_dr21_slhdsa_silicon.py"),
+    ("Gate 26: DR28 NIST SP 800-208 LMS Verifier", "tests/pqc_device_resident/test_dr28_lms_silicon.py"),
 ]
 
 def main() -> int:

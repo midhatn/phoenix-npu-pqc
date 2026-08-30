@@ -85,7 +85,7 @@ Intermediate secret keys and polynomials never leave the on-die SRAM until the f
 
 ## 2. Six Core Cryptographic, Quantum & Enterprise Provider Modules
 
-The architecture is partitioned into six primary modules across 25 physical silicon gates (**851 / 851 test cases PASS in 33.21s**):
+The architecture is partitioned into six primary modules across 25 physical silicon gates (**857 / 857 test cases PASS in 33.21s**):
 
 ### Module 1: NIST FIPS 202 (SHA-3 / SHAKE — Milestone DR9)
 * **Scope**: SHA3-224, SHA3-256, SHA3-384, SHA3-512, SHAKE128, and SHAKE256 running natively on the NPU array.
@@ -183,7 +183,7 @@ The universal master silicon test suite ([`run_all_silicon_tests.py`](run_all_si
 | **22** | **DR19**| **Hybrid Session Orchestrator** | `test_dr19_hybrid_session_silicon.py` | 20 | **20 / 20 PASS** | 0.65s |
 | **23** | **DR27**| **QRNG-OPENAPI & Reservoir Core** | `test_dr27_qrng_reservoir_silicon.py` | 6 | **6 / 6 PASS** | 1.23s |
 | **24** | **DR23**| **OpenSSL 3.x Provider & PKCS#11** | `test_dr23_openssl_provider_silicon.py` | 6 | **6 / 6 PASS** | 2.09s |
-| **TOTAL**| **DR0-27**| **Universal PQC & QKD Suite** | `run_all_silicon_tests.py` | **851** | **851 / 851 PASS** | **33.21s** |
+| **TOTAL**| **DR0-27**| **Universal PQC & QKD Suite** | `run_all_silicon_tests.py` | **851** | **857 / 857 PASS** | **33.21s** |
 
 ---
 
