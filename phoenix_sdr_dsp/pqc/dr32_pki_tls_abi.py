@@ -1,11 +1,7 @@
 # SPDX-License-Identifier: Apache-2.0
 """
-Milestone DR32: Post-Quantum X.509 PKI Certificate Authority & TLS 1.3 Handshake ABI
---------------------------------------------------------------------------------------
-Compliant with ITU-T X.509, IETF RFC 5280, RFC 8446 (TLS 1.3), RFC 9370,
-NIST FIPS 203 (ML-KEM), NIST FIPS 204 (ML-DSA), and NIST FIPS 205 (SLH-DSA).
-Target: AMD Phoenix NPU (AIE2 / XDNA1 Architecture).
-DOI: 10.5281/zenodo.22164124
+Post-Quantum X.509 PKI & TLS 1.3 Handshake Formatting Utility.
+Helper structures and ASN.1/DER encoding utilities for PQC keys and certificates.
 """
 
 import os

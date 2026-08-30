@@ -1,16 +1,7 @@
 # SPDX-License-Identifier: Apache-2.0
 """
-Milestone DR27a: QRNG-OPENAPI Sealed Host Ingress Daemon.
-
-Standards & Resource Citations:
-1. Palo Alto Networks QRNG-OPENAPI Specification (v1.0):
-   - Implementation of `/v1/entropy` (POST) and `/v1/healthtest` (GET) endpoints.
-   - Standard JSON envelope with metadata: version, timestamp, source_id, quality, entropy_b64.
-2. NIST Special Publication 800-90B (Recommendation for the Entropy Sources Used for Random Bit Generation):
-   - Health test execution over streaming entropy windows prior to NPU DMA dispatch.
-3. ETSI GS QKD 014 v1.1.1 (2019-02):
-   - Transport security boundary separation: zero host key storage with immediate hardware offload.
-4. DOI: 10.5281/zenodo.22164124.
+QRNG-OPENAPI Host Ingress Daemon.
+Implementation of local REST server endpoints for entropy streaming.
 """
 import os
 import json

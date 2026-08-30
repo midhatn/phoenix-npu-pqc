@@ -1,16 +1,7 @@
 # SPDX-License-Identifier: Apache-2.0
 """
-Device-Resident Silicon Test Suite: Milestone DR27 (Gate 24).
-QRNG-OPENAPI Ingress & NPU-Resident Token-Bucket Key/Entropy Reservoir on AMD Phoenix NPU (AIE2 / XDNA1).
-
-Standards & Resource Citations:
-1. Palo Alto Networks QRNG-OPENAPI Specification (v1.0)
-2. NIST Special Publication 800-90B: Section 4.4.1 (RCT) & Section 4.4.2 (APT)
-3. NIST Special Publication 800-56C Rev. 2: Two-Step Key Derivation
-4. NIST FIPS 203 (ML-KEM) & NIST FIPS 204 (ML-DSA) Seeding & Key Generation
-5. ETSI GS QKD 014 v1.1.1: REST-based Key Delivery Protocol
-6. AMD AIE2 Architecture: Tile SRAM Ring Buffer & ObjectFIFO Pipeline
-7. DOI: 10.5281/zenodo.22164124
+Silicon Test Suite: QRNG-OPENAPI Ingress & Token-Bucket Key/Entropy Reservoir.
+Tests entropy buffer management on AMD Phoenix NPU (AIE2 / XDNA1).
 """
 import os
 import sys

@@ -1,10 +1,7 @@
 # SPDX-License-Identifier: Apache-2.0
 """
-Milestone DR21: NIST FIPS 205 (SLH-DSA / SPHINCS+) On-Device Stateless Signatures ABI
--------------------------------------------------------------------------------------
+NIST FIPS 205 (SLH-DSA / SPHINCS+) Parameter Definitions and Types.
 Compliant with NIST FIPS PUB 205 (August 2024).
-Target: AMD Phoenix NPU (AIE2 / XDNA1 Architecture).
-DOI: 10.5281/zenodo.22164124
 """
 
 import struct

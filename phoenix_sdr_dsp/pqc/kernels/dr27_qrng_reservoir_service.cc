@@ -1,21 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
-/**
- * Milestone DR27: QRNG-OPENAPI Ingress & NPU-Resident Token-Bucket Key/Entropy Reservoir.
- * Target Hardware: AMD Phoenix APU (Ryzen 7 7840HS / Ryzen 9 7940HS w/ AIE2 / XDNA1 Architecture).
- *
- * Standards & Resource Citations:
- * 1. Palo Alto Networks QRNG-OPENAPI Specification (v1.0):
- *    - Standard REST/mTLS interface for hardware entropy appliance ingestion.
- *    - Ingress Opcode OP_INGRESS (0x0001), Drain Opcode OP_DRAIN (0x0002).
- * 2. NIST Special Publication 800-90B (Section 4.4.1 & 4.4.2):
- *    - Preflight Health Cutoffs: Repetition Count Test (RCT cutoff = 10), Adaptive Proportion Test (APT cutoff = 177).
- * 3. Operational Resilience & Hysteresis State Machine:
- *    - Anti-flapping dual-threshold trigger:
- *      * Low-water mark <= 1 slot (<= 6.25% ~= 5%) -> STATE_1_DEGRADED_A.
- *      * High-water mark >= 5 slots (>= 31.25% >= 30%) -> STATE_0_FULL_HYBRID.
- * 4. ETSI GS QKD 014 v1.1.1 (2019-02): Quantum Key Distribution REST-based Key Delivery API.
- * 5. DOI: 10.5281/zenodo.22164124.
- */
+// QRNG Ingress & Token-Bucket Entropy Buffer Queue Kernel for AIE2.
 #include <stdint.h>
 #include <stddef.h>
 

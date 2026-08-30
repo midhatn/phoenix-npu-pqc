@@ -1,16 +1,7 @@
 # SPDX-License-Identifier: Apache-2.0
 """
-Milestone DR27: QRNG-OPENAPI Ingress & NPU-Resident Token-Bucket Key/Entropy Reservoir on AMD Phoenix NPU (AIE2).
-100% Device-Resident Entropy Management with Hysteresis & SP 800-90B Preflight Enforcement.
-
-Standards & Resource Citations:
-1. Palo Alto Networks QRNG-OPENAPI Specification (v1.0):
-   - Ingress endpoints, entropy block encapsulation, and source identification.
-2. NIST Special Publication 800-90B (Jan 2018):
-   - Continuous online and preflight health testing for random bit generator entropy sources.
-3. AMD XDNA1 / AIE2 Architecture & MLIR-AIE (IRON 1.4.1):
-   - Tile SRAM ring buffer, ObjectFIFO zero-copy descriptors, and hardware-enforced isolation.
-4. DOI: 10.5281/zenodo.22164124.
+QRNG-OPENAPI Ingress & Token-Bucket Entropy Reservoir Graph.
+Manages entropy buffer ingress and drainage on AIE2 tile memory.
 """
 from pathlib import Path
 from typing import Any, Tuple, Dict, Optional

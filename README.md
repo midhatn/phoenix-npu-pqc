@@ -6,13 +6,12 @@
 ![Target: AMD Phoenix NPU](https://img.shields.io/badge/Target-AMD%20Ryzen%20AI%20NPU%20(AIE2)-blue)
 ![Architecture: XDNA1 AIE2 ML](https://img.shields.io/badge/Architecture-XDNA1%20AIE2%20(512--bit%20SIMD)-red)
 ![Research: PQC & QKD Defense-in-Depth](https://img.shields.io/badge/Research-PQC%20%26%20QKD%20Defense--in--Depth-8a2be2)
-![Standards: FIPS 202 / 203 / 204 · ETSI 014 · QRNG · OpenSSL 3 · PKCS#11 · SP 800-56C](https://img.shields.io/badge/Standards-FIPS%20202%2F203%2F204%20%C2%B7%20ETSI%20014%20%C2%B7%20QRNG%20%C2%B7%20OpenSSL%20%C2%B7%20PKCS%2311-005ea8)
-![Status: v1.2.0 Silicon Certified (857/857 PASS across 26 Gates)](https://img.shields.io/badge/Status-v1.2.0%20Silicon%20Certified%20%C2%B7%20857%2F857%20PASS-brightgreen)
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.22164124.svg)](https://doi.org/10.5281/zenodo.22164124)
+![Standards: FIPS 202 / 203 / 204 · ETSI 014 · QRNG · SP 800-56C](https://img.shields.io/badge/Standards-FIPS%20202%2F203%2F204%20%C2%B7%20ETSI%20014%20%C2%B7%20QRNG-005ea8)
+![Status: 24 Hardware Silicon Gates Verified](https://img.shields.io/badge/Status-24%20Hardware%20Gates%20PASS-brightgreen)
 
-**World's first 100% device-resident hardware realization of finalized NIST Post-Quantum Cryptography standards (FIPS 202, FIPS 203, FIPS 204) and ETSI GS QKD 014 Quantum Key Distribution (ID Quantique Cerberis XGR compatible) on the AMD Phoenix NPU (AIE2 / XDNA1 Architecture).**
+**Hardware realization of finalized NIST Post-Quantum Cryptography standards (FIPS 202, FIPS 203, FIPS 204) and ETSI GS QKD 014 Quantum Key Distribution on the AMD Phoenix NPU (AIE2 / XDNA1 Architecture).**
 
-[Full Silicon Architecture Whitepaper (v2)](docs/phoenix_npu_xdna1_architecture_v2.md) · [PQC & QKD Hardware Roadmap (v1.2.0)](docs/PQC_AND_QKD_ROADMAP.md) · [Silicon Validation Report](docs/HYBRID_QKD_PQC_SILICON_REPORT.md) · [Interactive Frontend](https://github.com/midhatn/phoenix-npu-pqc-frontend)
+[Full Silicon Architecture Whitepaper (v2)](docs/phoenix_npu_xdna1_architecture_v2.md) · [PQC & QKD Hardware Roadmap](docs/PQC_AND_QKD_ROADMAP.md) · [Forensic Audit Report](docs/FORENSIC_AUDIT_REPORT.md) · [Interactive Frontend](https://github.com/midhatn/phoenix-npu-pqc-frontend)
 
 </div>
 
@@ -268,11 +267,7 @@ Open **`http://localhost:3000`** in your browser. For an exhaustive, step-by-ste
 
 ---
 
-## 7. Formal Academic & Standards Citations
-
-v1.2.0 Phoenix NPU PQC: Device-Resident Post-Quantum Cryptography on AMD Phoenix NPU
-[DOI: 10.5281/zenodo.22164124](https://doi.org/10.5281/zenodo.22164124)
-[Phoenix NPU PQC & QKD v1.2.0: QRNG-OPENAPI, OpenSSL 3.x Provider & PKCS#11 HSM (25 Gates Silicon Certified)](https://github.com/midhatn/phoenix-npu-pqc/releases/tag/v1.2.0)
+## 7. Standards & Academic Citations
 
 ```bibtex
 @standard{fips202_2024,
@@ -329,24 +324,11 @@ v1.2.0 Phoenix NPU PQC: Device-Resident Post-Quantum Cryptography on AMD Phoenix
   doi={10.1103/RevModPhys.74.145}
 }
 
-@software{nashar2026phoenix_frontend,
-  author    = {Midhat Nashar},
-  title     = {{Phoenix NPU PQC Frontend: Interactive Web Dashboard & Silicon Playground for AMD Phoenix NPU}},
-  year      = {2026},
-  publisher = {Zenodo},
-  version   = {1.2.0},
-  doi       = {10.5281/zenodo.22164124},
-  url       = {https://doi.org/10.5281/zenodo.22164124}
-}
-
-@software{nashar2026phoenix_qkd,
+@software{nashar2026phoenix_pqc,
   author = {Midhat Nashar},
-  title = {{Phoenix NPU PQC & QKD: 100\% Device-Resident Post-Quantum Cryptography & Quantum Key Distribution on AMD Phoenix NPU}},
-  year = {2026},
-  publisher = {Zenodo},
-  version = {1.2.0},
-  doi = {10.5281/zenodo.22164124},
-  url = {https://doi.org/10.5281/zenodo.22164124}
+  title  = {{Phoenix NPU PQC & QKD: Post-Quantum Cryptography & Quantum Key Distribution on AMD Phoenix NPU}},
+  year   = {2026},
+  url    = {https://github.com/midhatn/phoenix-npu-pqc}
 }
 ```
 

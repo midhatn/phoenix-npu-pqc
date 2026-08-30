@@ -1,20 +1,7 @@
 # SPDX-License-Identifier: Apache-2.0
 """
-Milestone DR23: OpenSSL 3.x Native Provider Plugin (`phoenix-pqc-provider`).
-Enables drop-in hardware post-quantum cryptographic acceleration for OpenSSL 3.x,
-Nginx, Envoy, Apache, OpenSSH, and enterprise TLS stacks.
-
-Standards & Resource Citations:
-1. OpenSSL 3.0+ Provider API Specification (OSSL_PROVIDER, OSSL_DISPATCH, OSSL_ALGORITHM):
-   - Key Management (OSSL_OP_KEYMGMT = 10)
-   - Key Encapsulation Mechanism (OSSL_OP_KEM = 14)
-   - Asymmetric Digital Signatures (OSSL_OP_SIGNATURE = 12)
-2. NIST FIPS 203 (ML-KEM-512, ML-KEM-768, ML-KEM-1024)
-3. NIST FIPS 204 (ML-DSA-44, ML-DSA-65, ML-DSA-87)
-4. NIST FIPS 202 (SHA-3 / SHAKE Permutations)
-5. ETSI GS QKD 014 v1.1.1 & NIST SP 800-56C Rev. 2 (Hybrid QKD-ML-KEM Combiner)
-6. AMD Phoenix AIE2 / XDNA1 Architecture: Zero Host Fallback Silicon Execution.
-7. DOI: 10.5281/zenodo.22164124.
+OpenSSL 3.x Provider Python Dispatch Prototype.
+High-level prototype wrapper dispatching cryptographic requests to AIE2 graphs.
 """
 
 import os

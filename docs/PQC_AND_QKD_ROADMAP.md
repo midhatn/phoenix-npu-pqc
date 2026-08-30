@@ -1,16 +1,14 @@
-# Hybrid PQC & QKD Hardware Roadmap (v1.2.0 Certified · v1.3.0 Planned)
-## Complete Standards Compliance, Architecture, and Design Requirements (DR) for Hybrid Execution on AMD Phoenix NPU (AIE2 / XDNA1)
+# Hybrid PQC & QKD Hardware Roadmap
+## Standards Compliance, Architecture, and Design Requirements (DR) for Execution on AMD Phoenix NPU (AIE2 / XDNA1)
 
 <div align="center">
 
-![Standard: NIST FIPS 202 / 203 / 204 / 205 / 206](https://img.shields.io/badge/Standards-NIST%20FIPS%20202%2F203%2F204%2F205%2F206-005ea8)
-![Standard: ETSI GS QKD 014 / 015](https://img.shields.io/badge/QKD%20Standard-ETSI%20GS%20QKD%20014%20%2F%20015-purple)
-![Standard: NIST SP 800-56C Rev 2 · SP 800-227](https://img.shields.io/badge/Key%20Combiner-NIST%20SP%20800--56C%20Rev%202%20%C2%B7%20SP%20800--227-green)
+![Standard: NIST FIPS 202 / 203 / 204](https://img.shields.io/badge/Standards-NIST%20FIPS%20202%2F203%2F204-005ea8)
+![Standard: ETSI GS QKD 014](https://img.shields.io/badge/QKD%20Standard-ETSI%20GS%20QKD%20014-purple)
+![Standard: NIST SP 800-56C Rev 2](https://img.shields.io/badge/Key%20Combiner-NIST%20SP%20800--56C%20Rev%202-green)
 ![Entropy: QRNG-OPENAPI v1.0](https://img.shields.io/badge/Entropy-QRNG--OPENAPI%20v1.0-blueviolet)
-![Target: AMD Phoenix NPU (AIE2 / XDNA1)](https://img.shields.io/badge/Hardware-AMD%20Phoenix%20AIE2%20(512--bit%20SIMD)-red)
-![Residency: 100% On-Device Silicon](https://img.shields.io/badge/Residency-100%25%20On--Device%20(Zero%20Host%20Fallback)-brightgreen)
-![Status: v1.2.0 Certified (851/851 PASS)](https://img.shields.io/badge/Status-v1.2.0%20Certified%20%C2%B7%20851%2F851%20PASS-brightgreen)
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.22164124.svg)](https://doi.org/10.5281/zenodo.22164124)
+![Target: AMD Phoenix NPU (AIE2 / XDNA1)](https://img.shields.io/badge/Hardware-AMD%20Phoenix%20AIE2-red)
+![Status: 24 Hardware Gates PASS](https://img.shields.io/badge/Status-24%20Hardware%20Gates%20PASS-brightgreen)
 
 </div>
 

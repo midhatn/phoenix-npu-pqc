@@ -1,17 +1,7 @@
 # SPDX-License-Identifier: Apache-2.0
 """
-Milestone DR23: OASIS PKCS #11 v3.0 Hardware Security Module (HSM) Cryptoki Token Interface.
-Exposes hardware-resident PQC and Hybrid QKD capabilities via the standard PKCS#11 API.
-
-Standards & Resource Citations:
-1. OASIS PKCS #11 Cryptographic Token Interface Standard (v3.0 / v2.40):
-   - Cryptoki Session Management, Token Info, and Object Management.
-   - PQC Extension Mechanisms: CKM_ML_KEM_KEY_PAIR_GEN, CKM_ML_KEM_ENCAPSULATE, CKM_ML_KEM_DECAPSULATE,
-     CKM_ML_DSA_KEY_PAIR_GEN, CKM_ML_DSA, CKM_HYBRID_QKD_ML_KEM.
-2. NIST FIPS 203 & NIST FIPS 204.
-3. ETSI GS QKD 014 v1.1.1 (Quantum Key Ingress to Hardware HSM).
-4. AMD Phoenix AIE2 Architecture: 100% Device-Resident Silicon Execution.
-5. DOI: 10.5281/zenodo.22164124.
+PKCS #11 Token Interface Prototype.
+High-level Python wrapper emulating Cryptoki token interface dispatching to AIE2 graphs.
 """
 
 import os

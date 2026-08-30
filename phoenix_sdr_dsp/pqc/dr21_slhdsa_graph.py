@@ -1,9 +1,7 @@
 # SPDX-License-Identifier: Apache-2.0
 """
-Milestone DR21: NIST FIPS 205 (SLH-DSA / SPHINCS+) Graph on AMD Phoenix AIE2.
-100% On-Device Stateless Hash-Based Signatures (Tile 3,2).
+NIST FIPS 205 (SLH-DSA / SPHINCS+) Pure-Python CPU Reference Implementation.
 Compliant with NIST FIPS PUB 205 (August 2024).
-DOI: 10.5281/zenodo.22164124
 """
 
 import os
@@ -18,7 +16,7 @@ import numpy as np
 from . import dr21_slhdsa_abi as abi
 from .dr21_slhdsa_abi import SLHDSA_PARAMS, ADRS, ADRS_TYPE_WOTS_HASH, ADRS_TYPE_WOTS_PK, ADRS_TYPE_TREE, ADRS_TYPE_FORS_TREE, ADRS_TYPE_FORS_ROOTS, ADRS_TYPE_WOTS_PRF, ADRS_TYPE_FORS_PRF
 
-BACKEND_LABEL = "dr21-slhdsa:silicon"
+BACKEND_LABEL = "host-cpu-reference"
 
 # SHAKE-256 Primitives for NIST FIPS 205 (SHAKE instantiated parameters)
 def _shake256(data: bytes, outlen: int) -> bytes:

@@ -56,8 +56,6 @@ GATES = [
     ("Gate 21: DR18 NIST SP 800-56C Dual Combiner", "tests/pqc_device_resident/test_dr18_dual_key_combiner_silicon.py"),
     ("Gate 22: DR19 Hybrid QKD-PQC Session Orchestrator", "tests/pqc_device_resident/test_dr19_hybrid_session_silicon.py"),
     ("Gate 23: DR27 QRNG-OPENAPI & Entropy Reservoir", "tests/pqc_device_resident/test_dr27_qrng_reservoir_silicon.py"),
-    ("Gate 24: DR23 OpenSSL 3.x Provider & PKCS#11 HSM", "tests/pqc_device_resident/test_dr23_openssl_provider_silicon.py"),
-    ("Gate 25: DR21 NIST FIPS 205 (SLH-DSA / SPHINCS+)", "tests/pqc_device_resident/test_dr21_slhdsa_silicon.py"),
 ]
 
 def main() -> int:
@@ -65,7 +63,7 @@ def main() -> int:
     print("=" * 80)
     print("100% ON-DEVICE PQC & HYBRID QKD MASTER SILICON VALIDATION SUITE")
     print("Hardware: AMD Phoenix APU (Ryzen 7 7840HS / Ryzen 9 7940HS w/ AIE2 / XDNA1)")
-    print("Scope: Full NIST FIPS 202, 203, 204, 205, ETSI GS QKD 014, QRNG-OPENAPI, OpenSSL 3.x, PKCS#11, SP 800-56C (DR0–DR27, DR21)")
+    print("Scope: Verified Hardware Gates (DR0–DR19, DR27)")
     print("=" * 80)
 
     passed_gates = 0
