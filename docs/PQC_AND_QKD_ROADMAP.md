@@ -118,7 +118,35 @@ This architecture ensures full physical and mathematical resilience: if the phys
 
 ---
 
-## 3. Core Modules in v1.1.0 (25 Silicon Gates · 851 Test Cases)
+
+---
+
+## 3. Global Industry Best Practices & Sovereign Agency Standards Alignment
+
+To ensure that `phoenix-npu-pqc` satisfies the strictest compliance mandates for commercial enterprise, banking, defense, and sovereign government deployments, the architecture formally incorporates the published guidance and best practices from global leaders:
+
+### 1. ID Quantique (IDQ) — Defense-in-Depth & Q-KMS Best Practices
+* **Defense-in-Depth Principle**: Neither QKD nor software PQC is deployed in isolation. Physical quantum secrecy ($K_{\text{QKD}}$) and mathematical lattice hardness ($K_{\text{PQC}}$) are fused via NIST SP 800-56C combiners inside AIE2 SRAM (**DR18 / DR19**).
+* **Quantum Key Management System (Q-KMS)**: Implements standard key lifecycle state machines (STORED, RESERVED, CONSUMED, REVOKED, EXPIRED) with UUID tracking and mutual post-quantum authentication across inter-KME links (**DR16 / DR41**).
+* **Continuous Quantum Entropy Monitoring**: Incorporates real-time Repetition Count Tests (RCT) and Adaptive Proportion Tests (APT) to validate raw quantum noise before pool ingestion (**DR27 / DR43**).
+
+### 2. BSI (Federal Office for Information Security, Germany — TR-02102-1 & AIS 31)
+* **Mandatory Hybrid Key Exchange**: BSI TR-02102-1 explicitly mandates hybrid modes (`X25519MLKEM768` and `SecP384R1MLKEM1024`) for sovereign/banking infrastructure to prevent single-algorithm vulnerability (**DR37**).
+* **BSI AIS 31 Physical Entropy Battery**: Continuous hardware randomness certification via Tests T0 through T8 to ensure physical entropy generation adheres to PTG.3 / Class Q.2 requirements (**DR38**).
+
+### 3. ANSSI (National Cybersecurity Agency of France — Scientific & Technical Guidance)
+* **Dual-Algorithm Composite Digital Signatures**: ANSSI strongly recommends that digital signatures protecting long-term authenticity use composite verification (`Ed25519 + ML-DSA-44` and `ECDSA-P256 + ML-DSA-65`) where both signatures must validate to prevent compromise (**DR42**).
+* **Direct Hybrid KEMs**: Combines recognized pre-quantum elliptic curves over post-quantum lattice mechanisms to mitigate Store-Now-Decrypt-Later (SNDL) espionage (**DR18 / DR37**).
+
+### 4. NSA / CISA (Commercial National Security Algorithm Suite — CNSA 2.0)
+* **Category 5 Security Mandate**: Full multi-tile hardware support for Level 5 parameter sets (**ML-KEM-1024** and **ML-DSA-87**) with spatial SRAM clustering (**DR29**).
+* **Stateful Firmware Verification**: Mandates NIST SP 800-208 (LMS) for immutable secure boot and bitstream attestation (**DR28 / DR34**).
+
+### 5. Open Quantum Safe (liboqs / PQClean) & Academic Side-Channel Best Practices
+* **Zero-Leakage Constant-Time Enforcement**: Microarchitectural side-channel verification using `dudect` and Welch's $t$-test on live hardware cycle distributions (**DR39**).
+* **Cross-Platform Determinism & Golden KATs**: Ingestion and validation against the global OQS / PQClean test database (**DR40**).
+
+## 4. Core Modules in v1.1.0 (25 Silicon Gates · 851 Test Cases)
 
 ### Module 1: NIST FIPS 202 (SHA-3 / SHAKE — Milestone DR9)
 * **Status**: 100% Silicon Certified (**122 / 122 PASS**).
@@ -146,7 +174,7 @@ This architecture ensures full physical and mathematical resilience: if the phys
 
 ---
 
-## 4. Operational Resilience & Hysteresis Control Loop
+## 5. Operational Resilience & Hysteresis Control Loop
 
 To prevent session re-negotiation spikes ("state flapping") when QKD key arrival rates fluctuate under high wire-speed network loads, the state machine incorporates a strict hysteresis loop tied to the **DR27b Key Reservoir**:
 
@@ -176,7 +204,7 @@ To prevent session re-negotiation spikes ("state flapping") when QKD key arrival
 
 ---
 
-## 5. Future Roadmap: Version 1.2.0 (Planned Milestones)
+## 6. Future Roadmap: Version 1.2.0 (Planned Milestones)
 
 ```
 ========================================================================================================================
