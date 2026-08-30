@@ -60,6 +60,7 @@ GATES = [
     ("Gate 25: DR21 NIST FIPS 205 (SLH-DSA / SPHINCS+)", "tests/pqc_device_resident/test_dr21_slhdsa_silicon.py"),
     ("Gate 26: DR28 NIST SP 800-208 LMS Verifier", "tests/pqc_device_resident/test_dr28_lms_silicon.py"),
     ("Gate 27: DR25 Masked Arithmetic & On-Chip PRNG", "tests/pqc_device_resident/test_dr25_masking_silicon.py"),
+    ("Gate 28: DR29 NSA CNSA 2.0 Distributed Engine", "tests/pqc_device_resident/test_dr29_cnsa_silicon.py"),
 ]
 
 def main() -> int:

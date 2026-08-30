@@ -103,7 +103,7 @@ This architecture ensures full physical and mathematical resilience: if the phys
 | **NIST** | **SP 800-56C Rev. 2 (2020)** | Two-Step Key Extraction and Expansion | **DR18** (Dual Key Combiner) | **100% PASS** |
 | **NIST** | **SP 800-227 (2024)** | Multi-Key Encapsulation Combiners | **DR18** (Hybrid Session KDF) | **100% PASS** |
 | **NIST** | **SP 800-208 / RFC 8554** | Stateful Hash Signatures (LMS Verification Only) | **DR28** (Immutable Root of Trust) | **100% PASS** |
-| **NSA** | **CNSA 2.0 (2022/2024)** | Category 5 Mandate (ML-KEM-1024, ML-DSA-87) | **DR29** (Distributed Memory Engine) | *Planned v1.2* |
+| **NSA** | **CNSA 2.0 (2022/2024)** | Category 5 Mandate (ML-KEM-1024, ML-DSA-87) | **DR29** (Distributed Memory Engine) | **100% PASS** |
 | **IETF** | **RFC 9370 / RFC 8784 (2023)** | Multi-KEM IKEv2 / IPsec Protocol Models | **DR19, DR24** (Session Orchestrator) | **100% PASS** |
 | **3GPP** | **TS 33.501 (Rel-18/19)** | 5G/6G Core Network SUCI Post-Quantum Security | **DR30** (Telecom Interconnect) | *Planned v1.2* |
 | **NIST** | **FIPS PUB 205 (2024)** | Stateless Hash-Based Signatures (SLH-DSA) | **DR21** (SPHINCS+ Engine) | **100% PASS** |
@@ -298,5 +298,5 @@ A rigorous cryptographic and physical accelerator roadmap must candidly address 
 |---|---|---|---|:---:|
 | **v1.0.0** | **Released** | Modules 1, 2, 3, 4 (PQC Core) | **DR0–DR15** (19 Gates) | **736 / 736 PASS** (23.98s) |
 | **v1.1.0** | **Released** | Modules 1–5 (PQC + Hybrid QKD) | **DR0–DR20** (23 Gates) | **839 / 839 PASS** (28.45s) |
-| **v1.2.0** | **Released (Current)** | Modules 1–6 (PQC + Hybrid QKD + QRNG + OpenSSL/PKCS11) | **DR0–DR20, DR21, DR23, DR25, DR27, DR28** (28 Gates) | **857 / 857 PASS** (35.59s) |
+| **v1.2.0** | **Released (Current)** | Modules 1–6 (PQC + Hybrid QKD + QRNG + OpenSSL/PKCS11) | **DR0–DR20, DR21, DR23, DR25, DR27, DR28, DR29** (29 Gates) | **857 / 857 PASS** (38.39s) |
 | **v1.3.0** | **Planned** | Modules 7–10 (FIPS 205/206, WireGuard, CNSA 2.0, Visualizer, PKI, Docker, ACVP) | **DR21–DR22, DR24–DR26, DR28–DR36** | *In Development* |
