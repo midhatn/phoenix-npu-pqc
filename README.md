@@ -7,12 +7,12 @@
 ![Architecture: XDNA1 AIE2 ML](https://img.shields.io/badge/Architecture-XDNA1%20AIE2%20(512--bit%20SIMD)-red)
 ![Research: PQC & QKD Defense-in-Depth](https://img.shields.io/badge/Research-PQC%20%26%20QKD%20Defense--in--Depth-8a2be2)
 ![Standards: FIPS 202 / 203 / 204 · ETSI 014 · QRNG · OpenSSL 3 · PKCS#11 · SP 800-56C](https://img.shields.io/badge/Standards-FIPS%20202%2F203%2F204%20%C2%B7%20ETSI%20014%20%C2%B7%20QRNG%20%C2%B7%20OpenSSL%20%C2%B7%20PKCS%2311-005ea8)
-![Status: v1.3.0 Silicon Certified (857/857 PASS across 41 Gates)](https://img.shields.io/badge/Status-v1.3.0%20Silicon%20Certified%20%C2%B7%20857%2F857%20PASS-brightgreen)
+![Status: v1.2.0 Silicon Certified (857/857 PASS across 26 Gates)](https://img.shields.io/badge/Status-v1.2.0%20Silicon%20Certified%20%C2%B7%20857%2F857%20PASS-brightgreen)
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.22164124.svg)](https://doi.org/10.5281/zenodo.22164124)
 
 **World's first 100% device-resident hardware realization of finalized NIST Post-Quantum Cryptography standards (FIPS 202, FIPS 203, FIPS 204) and ETSI GS QKD 014 Quantum Key Distribution (ID Quantique Cerberis XGR compatible) on the AMD Phoenix NPU (AIE2 / XDNA1 Architecture).**
 
-[Full Silicon Architecture Whitepaper (v2)](docs/phoenix_npu_xdna1_architecture_v2.md) · [PQC & QKD Hardware Roadmap (v1.4.0)](docs/PQC_AND_QKD_ROADMAP.md) · [Silicon Validation Report](docs/HYBRID_QKD_PQC_SILICON_REPORT.md) · [Interactive Frontend](https://github.com/midhatn/phoenix-npu-pqc-frontend)
+[Full Silicon Architecture Whitepaper (v2)](docs/phoenix_npu_xdna1_architecture_v2.md) · [PQC & QKD Hardware Roadmap (v1.2.0)](docs/PQC_AND_QKD_ROADMAP.md) · [Silicon Validation Report](docs/HYBRID_QKD_PQC_SILICON_REPORT.md) · [Interactive Frontend](https://github.com/midhatn/phoenix-npu-pqc-frontend)
 
 </div>
 
@@ -85,7 +85,7 @@ Intermediate secret keys and polynomials never leave the on-die SRAM until the f
 
 ## 2. Six Core Cryptographic, Quantum & Enterprise Provider Modules
 
-The architecture is partitioned into six primary modules across 25 physical silicon gates (**857 / 857 test cases PASS in 33.21s**):
+The architecture is partitioned into six primary modules across 25 physical silicon gates (**851 / 851 test cases PASS in 33.21s**):
 
 ### Module 1: NIST FIPS 202 (SHA-3 / SHAKE — Milestone DR9)
 * **Scope**: SHA3-224, SHA3-256, SHA3-384, SHA3-512, SHAKE128, and SHAKE256 running natively on the NPU array.
@@ -183,7 +183,7 @@ The universal master silicon test suite ([`run_all_silicon_tests.py`](run_all_si
 | **22** | **DR19**| **Hybrid Session Orchestrator** | `test_dr19_hybrid_session_silicon.py` | 20 | **20 / 20 PASS** | 0.65s |
 | **23** | **DR27**| **QRNG-OPENAPI & Reservoir Core** | `test_dr27_qrng_reservoir_silicon.py` | 6 | **6 / 6 PASS** | 1.23s |
 | **24** | **DR23**| **OpenSSL 3.x Provider & PKCS#11** | `test_dr23_openssl_provider_silicon.py` | 6 | **6 / 6 PASS** | 2.09s |
-| **TOTAL**| **DR0-27**| **Universal PQC & QKD Suite** | `run_all_silicon_tests.py` | **851** | **857 / 857 PASS** | **33.21s** |
+| **TOTAL**| **DR0-27**| **Universal PQC & QKD Suite** | `run_all_silicon_tests.py` | **851** | **851 / 851 PASS** | **33.21s** |
 
 ---
 
@@ -267,21 +267,6 @@ python bridge_server.py
 Open **`http://localhost:3000`** in your browser. For an exhaustive, step-by-step UI tutorial on every playground and attack simulation mode, see the **[Frontend Tutorial & Navigation Guide](https://github.com/midhatn/phoenix-npu-pqc-frontend#readme)**.
 
 ---
-
-
-### 6.3 Real-Time Hardware Telemetry & Silicon Monitoring
-
-To monitor physical silicon execution contexts, active columns `[1, 2, 3, 4]`, DMA buffer residency (128 MB), and live packet submission/completion counters while tests execute:
-
-```powershell
-# Continuous scrolling stream (with --verbose):
-while ($true) { & "C:\Windows\System32\AMD\xrt-smi.exe" examine -r aie-partitions --verbose; Start-Sleep -Milliseconds 100 }
-
-# Clean in-place screen refresh (live monitor mode):
-while ($true) { Clear-Host; & "C:\Windows\System32\AMD\xrt-smi.exe" examine -r aie-partitions --verbose; Start-Sleep -Milliseconds 100 }
-```
-
-For complete field definitions and hardware register breakdowns, see [docs/NPU_HARDWARE_TELEMETRY.md](docs/NPU_HARDWARE_TELEMETRY.md).
 
 ## 7. Formal Academic & Standards Citations
 

@@ -1,4 +1,4 @@
-# Hybrid PQC & QKD Hardware Roadmap (v1.3.0 Certified · v1.4.0 Planned)
+# Hybrid PQC & QKD Hardware Roadmap (v1.2.0 Certified · v1.3.0 Planned)
 ## Complete Standards Compliance, Architecture, and Design Requirements (DR) for Hybrid Execution on AMD Phoenix NPU (AIE2 / XDNA1)
 
 <div align="center">
@@ -102,51 +102,16 @@ This architecture ensures full physical and mathematical resilience: if the phys
 | **NIST** | **FIPS PUB 202 (2015)** | SHA-3 / SHAKE / Keccak-f[1600] Permutations | **DR9, DR18, DR25** (Hashing/Expansion) | **100% PASS** |
 | **NIST** | **SP 800-56C Rev. 2 (2020)** | Two-Step Key Extraction and Expansion | **DR18** (Dual Key Combiner) | **100% PASS** |
 | **NIST** | **SP 800-227 (2024)** | Multi-Key Encapsulation Combiners | **DR18** (Hybrid Session KDF) | **100% PASS** |
-| **NIST** | **SP 800-208 / RFC 8554** | Stateful Hash Signatures (LMS Verification Only) | **DR28** (Immutable Root of Trust) | **100% PASS** |
-| **NSA** | **CNSA 2.0 (2022/2024)** | Category 5 Mandate (ML-KEM-1024, ML-DSA-87) | **DR29** (Distributed Memory Engine) | **100% PASS** |
+| **NIST** | **SP 800-208 / RFC 8554** | Stateful Hash Signatures (LMS Verification Only) | **DR28** (Immutable Root of Trust) | *Planned v1.2* |
+| **NSA** | **CNSA 2.0 (2022/2024)** | Category 5 Mandate (ML-KEM-1024, ML-DSA-87) | **DR29** (Distributed Memory Engine) | *Planned v1.2* |
 | **IETF** | **RFC 9370 / RFC 8784 (2023)** | Multi-KEM IKEv2 / IPsec Protocol Models | **DR19, DR24** (Session Orchestrator) | **100% PASS** |
 | **3GPP** | **TS 33.501 (Rel-18/19)** | 5G/6G Core Network SUCI Post-Quantum Security | **DR30** (Telecom Interconnect) | *Planned v1.2* |
-| **NIST** | **FIPS PUB 205 (2024)** | Stateless Hash-Based Signatures (SLH-DSA) | **DR21** (SPHINCS+ Engine) | **100% PASS** |
+| **NIST** | **FIPS PUB 205 (2024)** | Stateless Hash-Based Signatures (SLH-DSA) | **DR21** (SPHINCS+ Engine) | *Planned v1.2* |
 | **NIST** | **FIPS PUB 206 (2025)** | Fast-Fourier Lattice Signatures (FN-DSA) | **DR22** (Falcon Verification Core) | *Planned v1.2* |
-| **ETSI / BSI** | **ETSI TS 103 744 / BSI TR-02102-1** | Dual-Scheme Hybrid KEM Engine (X25519MLKEM768) | **DR37** (Hybrid KEM Engine) | **100% PASS** |
-| **NIST / BSI** | **NIST SP 800-22 / BSI AIS 31** | Statistical Randomness & Entropy Battery Suite | **DR38** (Randomness Battery) | **100% PASS** |
-| **Side-Channel** | **dudect / ISO/IEC 17825** | Constant-Time Microarchitectural Leakage Verifier | **DR39** (Timing Leakage Engine) | **100% PASS** |
-| **OQS / ECRYPT** | **liboqs / eBACS Benchmark** | OQS Cross-Validation & Cycle Benchmark Harness | **DR40** (OQS Benchmark Core) | *Planned v1.4* |
-| **ETSI / IDQ** | **ETSI GS QKD 004 / 015** | Q-KMS Multi-Node Key Lifecycle & Authorization | **DR41** (Q-KMS Key Lifecycle) | *Planned v1.4* |
-| **ANSSI / IETF** | **ANSSI Guidelines / RFC 9618** | Dual-Algorithm Composite Digital Signatures | **DR42** (Composite Signatures) | *Planned v1.4* |
-| **NIST / IDQ** | **NIST SP 800-90B / AIS 31** | Continuous On-Chip QRNG Health Testing (RCT/APT) | **DR43** (Continuous Health Core) | *Planned v1.4* |
 
 ---
 
-
----
-
-## 3. Global Industry Best Practices & Sovereign Agency Standards Alignment
-
-To ensure that `phoenix-npu-pqc` satisfies the strictest compliance mandates for commercial enterprise, banking, defense, and sovereign government deployments, the architecture formally incorporates the published guidance and best practices from global leaders:
-
-### 1. ID Quantique (IDQ) — Defense-in-Depth & Q-KMS Best Practices
-* **Defense-in-Depth Principle**: Neither QKD nor software PQC is deployed in isolation. Physical quantum secrecy ($K_{\text{QKD}}$) and mathematical lattice hardness ($K_{\text{PQC}}$) are fused via NIST SP 800-56C combiners inside AIE2 SRAM (**DR18 / DR19**).
-* **Quantum Key Management System (Q-KMS)**: Implements standard key lifecycle state machines (STORED, RESERVED, CONSUMED, REVOKED, EXPIRED) with UUID tracking and mutual post-quantum authentication across inter-KME links (**DR16 / DR41**).
-* **Continuous Quantum Entropy Monitoring**: Incorporates real-time Repetition Count Tests (RCT) and Adaptive Proportion Tests (APT) to validate raw quantum noise before pool ingestion (**DR27 / DR43**).
-
-### 2. BSI (Federal Office for Information Security, Germany — TR-02102-1 & AIS 31)
-* **Mandatory Hybrid Key Exchange**: BSI TR-02102-1 explicitly mandates hybrid modes (`X25519MLKEM768` and `SecP384R1MLKEM1024`) for sovereign/banking infrastructure to prevent single-algorithm vulnerability (**DR37**).
-* **BSI AIS 31 Physical Entropy Battery**: Continuous hardware randomness certification via Tests T0 through T8 to ensure physical entropy generation adheres to PTG.3 / Class Q.2 requirements (**DR38**).
-
-### 3. ANSSI (National Cybersecurity Agency of France — Scientific & Technical Guidance)
-* **Dual-Algorithm Composite Digital Signatures**: ANSSI strongly recommends that digital signatures protecting long-term authenticity use composite verification (`Ed25519 + ML-DSA-44` and `ECDSA-P256 + ML-DSA-65`) where both signatures must validate to prevent compromise (**DR42**).
-* **Direct Hybrid KEMs**: Combines recognized pre-quantum elliptic curves over post-quantum lattice mechanisms to mitigate Store-Now-Decrypt-Later (SNDL) espionage (**DR18 / DR37**).
-
-### 4. NSA / CISA (Commercial National Security Algorithm Suite — CNSA 2.0)
-* **Category 5 Security Mandate**: Full multi-tile hardware support for Level 5 parameter sets (**ML-KEM-1024** and **ML-DSA-87**) with spatial SRAM clustering (**DR29**).
-* **Stateful Firmware Verification**: Mandates NIST SP 800-208 (LMS) for immutable secure boot and bitstream attestation (**DR28 / DR34**).
-
-### 5. Open Quantum Safe (liboqs / PQClean) & Academic Side-Channel Best Practices
-* **Zero-Leakage Constant-Time Enforcement**: Microarchitectural side-channel verification using `dudect` and Welch's $t$-test on live hardware cycle distributions (**DR39**).
-* **Cross-Platform Determinism & Golden KATs**: Ingestion and validation against the global OQS / PQClean test database (**DR40**).
-
-## 4. Core Modules in v1.1.0 (25 Silicon Gates · 851 Test Cases)
+## 3. Core Modules in v1.1.0 (25 Silicon Gates · 851 Test Cases)
 
 ### Module 1: NIST FIPS 202 (SHA-3 / SHAKE — Milestone DR9)
 * **Status**: 100% Silicon Certified (**122 / 122 PASS**).
@@ -174,7 +139,7 @@ To ensure that `phoenix-npu-pqc` satisfies the strictest compliance mandates for
 
 ---
 
-## 5. Operational Resilience & Hysteresis Control Loop
+## 4. Operational Resilience & Hysteresis Control Loop
 
 To prevent session re-negotiation spikes ("state flapping") when QKD key arrival rates fluctuate under high wire-speed network loads, the state machine incorporates a strict hysteresis loop tied to the **DR27b Key Reservoir**:
 
@@ -204,7 +169,7 @@ To prevent session re-negotiation spikes ("state flapping") when QKD key arrival
 
 ---
 
-## 6. Future Roadmap: Version 1.2.0 (Planned Milestones)
+## 5. Future Roadmap: Version 1.2.0 (Planned Milestones)
 
 ```
 ========================================================================================================================
@@ -287,67 +252,7 @@ To prevent session re-negotiation spikes ("state flapping") when QKD key arrival
 
 ---
 
-
----
-
-## 7. Version 1.4.0 Roadmap: Enterprise Sovereign Compliance & Advanced Test Batteries
-
-```
-========================================================================================================================
-                                     PHOENIX NPU PQC & QKD ROADMAP: v1.4.0
-========================================================================================================================
-
-[MODULE 15] Sovereign Hybrid Standards (BSI Germany, ANSSI France, ETSI)
-  • Milestone DR37: ETSI TS 103 744 & BSI TR-02102-1 Dual-Scheme Hybrid KEM Engine (X25519MLKEM768 & SecP384R1MLKEM1024).
-  • Milestone DR41: ETSI GS QKD 004 / 015 Quantum Key Management System (Q-KMS) Multi-Node Lifecycle Core.
-  • Milestone DR42: ANSSI Composite Digital Signatures (Ed25519 + ML-DSA-44 & ECDSA-P256 + ML-DSA-65).
-
-[MODULE 16] Advanced International Test Batteries & Side-Channel Assurance
-  • Milestone DR38: NIST SP 800-22 (15 Battery Tests) & BSI AIS 31 Hardware Randomness Suite.
-  • Milestone DR39: dudect Microarchitectural Constant-Time Side-Channel Leakage Verifier (Welch's t-test).
-  • Milestone DR40: Open Quantum Safe (liboqs / PQClean) Cross-Validation & eBACS Benchmark Harness.
-  • Milestone DR43: NIST SP 800-90B & BSI AIS 31 Continuous On-Chip QRNG Health Testing (RCT / APT).
-========================================================================================================================
-```
-
-### Detailed v1.4.0 Milestone Specifications & Hardware Feasibility:
-
-#### Milestone DR37: ETSI TS 103 744 & BSI TR-02102-1 Hybrid KEM Engine
-* **Standards**: ETSI TS 103 744, BSI TR-02102-1 (2025/2026), ANSSI Hybrid KEM Guidelines, IETF RFC 9954.
-* **Objective**: Hardware acceleration of sovereign hybrid key exchanges (`X25519MLKEM768` and `SecP384R1MLKEM1024`).
-* **Hardware Feasibility (Phoenix AIE2)**: **100% FEASIBLE**. 512-bit vector ALU handles Curve25519 scalar multiplication in Tile (1,2) with $< 2\text{ KiB}$ SRAM footprint alongside ML-KEM-768 in Tiles (2,0..2,3) and HKDF in Tile (3,2).
-
-#### Milestone DR38: NIST SP 800-22 & BSI AIS 31 Hardware Randomness Battery
-* **Standards**: NIST SP 800-22 Rev. 1a (15 Statistical Tests: Monobit, Runs, Spectral DFT, Maurer's, Serial, etc.) & BSI AIS 31 (T0..T8).
-* **Objective**: Full statistical validation of true quantum entropy from DR27 QRNG reservoir and on-chip DR25 PRNG streams.
-* **Hardware Feasibility (Phoenix AIE2)**: **100% FEASIBLE**. Utilizes Row 1 MemTiles (2,048 KiB shared SRAM) for streaming 128 KiB sample buffers and Tile (2,2) SIMD population count / FFT accumulator.
-
-#### Milestone DR39: `dudect` Microarchitectural Side-Channel Leakage Verifier
-* **Standards**: Academic `dudect` statistical leakage detection, ISO/IEC 17825.
-* **Objective**: Statistical proof of constant-time execution ($p > 0.001$) across live AIE2 core cycle distributions.
-* **Hardware Feasibility (Phoenix AIE2)**: **100% FEASIBLE**. AIE2 core cycle registers (`cycle_lo`, `cycle_hi`) operate at 1.0 GHz, providing cycle-exact timing resolution.
-
-#### Milestone DR40: Open Quantum Safe (liboqs / PQClean) Cross-Validation & eBACS Benchmark
-* **Standards**: Open Quantum Safe (liboqs / OQS), PQClean, ECRYPT eBACS / SUPERCOP.
-* **Objective**: Automated ingestion of the entire OQS/PQClean test database with cycle-accurate latency benchmarks.
-* **Hardware Feasibility (Phoenix AIE2)**: **100% FEASIBLE**. Evaluates directly against on-device AIE2 cryptographic drivers with zero host emulation.
-
-#### Milestone DR41: ETSI GS QKD 004 / 015 Q-KMS Multi-Node Lifecycle Core
-* **Standards**: ETSI GS QKD 004, ETSI GS QKD 015, ID Quantique Cerberis XGR / Clavis 3.
-* **Objective**: Standardized key lifecycle states (STORED, RESERVED, CONSUMED, REVOKED, EXPIRED) with mutual ML-DSA-44 authorization.
-* **Hardware Feasibility (Phoenix AIE2)**: **100% FEASIBLE**. Tile (0,1) SRAM supports up to 1,024 active optical keys with UUID indexing.
-
-#### Milestone DR42: ANSSI Composite Digital Signatures
-* **Standards**: ANSSI Post-Quantum Signature Guidelines, IETF RFC 9618 Composite Signatures.
-* **Objective**: Co-scheduled dual-signature generation and verification (`Ed25519 + ML-DSA-44` and `ECDSA-P256 + ML-DSA-65`).
-* **Hardware Feasibility (Phoenix AIE2)**: **100% FEASIBLE**. Dual-signature container easily fits in $< 4\text{ KiB}$ memory buffer.
-
-#### Milestone DR43: NIST SP 800-90B & BSI AIS 31 Continuous On-Chip QRNG Health Testing
-* **Standards**: NIST SP 800-90B, BSI AIS 31, ID Quantique Quantis QRNG standard.
-* **Objective**: Continuous Repetition Count Test (RCT) and Adaptive Proportion Test (APT) with on-chip min-entropy estimation ($H_\infty \ge 7.99\text{ b/B}$).
-* **Hardware Feasibility (Phoenix AIE2)**: **100% FEASIBLE**. Windowed sliding buffer of 1,024 samples requires $< 1\text{ KiB}$ SRAM in Tile (0,1).
-
-## 8. Architectural Feasibility, Risk Analysis & Proven Mitigations
+## 6. Architectural Feasibility, Risk Analysis & Proven Mitigations
 
 A rigorous cryptographic and physical accelerator roadmap must candidly address potential hardware bottlenecks and prove that no unsolvable engineering dead-ends exist:
 
@@ -387,11 +292,11 @@ A rigorous cryptographic and physical accelerator roadmap must candidly address 
 
 ---
 
-## 9. Version History & Milestone Release Matrix
+## 7. Version History & Milestone Release Matrix
 
 | Version | Status | Modules Included | Milestones | Physical Silicon Status |
 |---|---|---|---|:---:|
 | **v1.0.0** | **Released** | Modules 1, 2, 3, 4 (PQC Core) | **DR0–DR15** (19 Gates) | **736 / 736 PASS** (23.98s) |
 | **v1.1.0** | **Released** | Modules 1–5 (PQC + Hybrid QKD) | **DR0–DR20** (23 Gates) | **839 / 839 PASS** (28.45s) |
-| **v1.3.0** | **Released (Current)** | Modules 1–14 (PQC + QKD + CNSA + PKI + ACVP + Remote Attestation + Formal Proofs) | **DR0–DR20, DR21, DR23, DR25, DR27, DR28, DR29, DR31, DR32, DR34, DR35, DR36, DR37, DR38, DR39, DR40, DR41, DR42, DR43** (41 Gates) | **857 / 857 PASS** (56.32s) |
-| **v1.4.0** | **Planned** | Modules 15–16 (BSI/ANSSI Hybrid KEM, NIST SP 800-22 Randomness, dudect, OQS, Q-KMS, Composite Signatures, QRNG Health) | **DR37, DR38, DR39, DR40, DR41, DR42, DR43** | *Planned (100% Hardware Feasible)* |
+| **v1.2.0** | **Released (Current)** | Modules 1–6 (PQC + Hybrid QKD + QRNG + OpenSSL/PKCS11) | **DR0–DR20, DR23, DR27** (25 Gates) | **851 / 851 PASS** (33.21s) |
+| **v1.3.0** | **Planned** | Modules 7–10 (FIPS 205/206, WireGuard, CNSA 2.0, Visualizer, PKI, Docker, ACVP) | **DR21–DR22, DR24–DR26, DR28–DR36** | *In Development* |

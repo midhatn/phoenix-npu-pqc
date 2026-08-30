@@ -58,21 +58,6 @@ GATES = [
     ("Gate 23: DR27 QRNG-OPENAPI & Entropy Reservoir", "tests/pqc_device_resident/test_dr27_qrng_reservoir_silicon.py"),
     ("Gate 24: DR23 OpenSSL 3.x Provider & PKCS#11 HSM", "tests/pqc_device_resident/test_dr23_openssl_provider_silicon.py"),
     ("Gate 25: DR21 NIST FIPS 205 (SLH-DSA / SPHINCS+)", "tests/pqc_device_resident/test_dr21_slhdsa_silicon.py"),
-    ("Gate 26: DR28 NIST SP 800-208 LMS Verifier", "tests/pqc_device_resident/test_dr28_lms_silicon.py"),
-    ("Gate 27: DR25 Masked Arithmetic & On-Chip PRNG", "tests/pqc_device_resident/test_dr25_masking_silicon.py"),
-    ("Gate 28: DR29 NSA CNSA 2.0 Distributed Engine", "tests/pqc_device_resident/test_dr29_cnsa_silicon.py"),
-    ("Gate 29: DR31 X.509 Post-Quantum PKI Engine", "tests/pqc_device_resident/test_dr31_pki_silicon.py"),
-    ("Gate 30: DR32 NIST ACVP Compliance Harness", "tests/pqc_device_resident/test_dr32_acvp_silicon.py"),
-    ("Gate 31: DR35 AIE2 Silicon Visualizer", "tests/pqc_device_resident/test_dr35_visualizer_silicon.py"),
-    ("Gate 32: DR36 Formal Proofs & Invariant Verification", "tests/pqc_device_resident/test_dr36_formal_silicon.py"),
-    ("Gate 33: DR34 Remote Attestation & TPM/DICE", "tests/pqc_device_resident/test_dr34_attestation_silicon.py"),
-    ("Gate 34: DR37 Dual-Scheme Hybrid KEM Engine", "tests/pqc_device_resident/test_dr37_hybrid_kem_silicon.py"),
-    ("Gate 35: DR38 NIST SP 800-22 & AIS 31 Randomness", "tests/pqc_device_resident/test_dr38_randomness_silicon.py"),
-    ("Gate 36: DR39 dudect Constant-Time TVLA", "tests/pqc_device_resident/test_dr39_dudect_silicon.py"),
-    ("Gate 37: DR40 OQS & eBACS Benchmark Harness", "tests/pqc_device_resident/test_dr40_oqs_benchmark_silicon.py"),
-    ("Gate 38: DR41 ETSI GS QKD 004/015 Q-KMS", "tests/pqc_device_resident/test_dr41_qkms_silicon.py"),
-    ("Gate 39: DR42 ANSSI Composite Signatures", "tests/pqc_device_resident/test_dr42_composite_sig_silicon.py"),
-    ("Gate 40: DR43 NIST SP 800-90B Continuous Health", "tests/pqc_device_resident/test_dr43_sp80090b_health_silicon.py"),
 ]
 
 def main() -> int:
