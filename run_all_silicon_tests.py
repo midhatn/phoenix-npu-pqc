@@ -65,6 +65,7 @@ GATES = [
     ("Gate 30: DR32 NIST ACVP Compliance Harness", "tests/pqc_device_resident/test_dr32_acvp_silicon.py"),
     ("Gate 31: DR35 AIE2 Silicon Visualizer", "tests/pqc_device_resident/test_dr35_visualizer_silicon.py"),
     ("Gate 32: DR36 Formal Proofs & Invariant Verification", "tests/pqc_device_resident/test_dr36_formal_silicon.py"),
+    ("Gate 33: DR34 Remote Attestation & TPM/DICE", "tests/pqc_device_resident/test_dr34_attestation_silicon.py"),
 ]
 
 def main() -> int:
