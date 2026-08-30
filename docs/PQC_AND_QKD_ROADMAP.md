@@ -109,7 +109,7 @@ This architecture ensures full physical and mathematical resilience: if the phys
 | **NIST** | **FIPS PUB 205 (2024)** | Stateless Hash-Based Signatures (SLH-DSA) | **DR21** (SPHINCS+ Engine) | **100% PASS** |
 | **NIST** | **FIPS PUB 206 (2025)** | Fast-Fourier Lattice Signatures (FN-DSA) | **DR22** (Falcon Verification Core) | *Planned v1.2* |
 | **ETSI / BSI** | **ETSI TS 103 744 / BSI TR-02102-1** | Dual-Scheme Hybrid KEM Engine (X25519MLKEM768) | **DR37** (Hybrid KEM Engine) | **100% PASS** |
-| **NIST / BSI** | **NIST SP 800-22 / BSI AIS 31** | Statistical Randomness & Entropy Battery Suite | **DR38** (Randomness Battery) | *Planned v1.4* |
+| **NIST / BSI** | **NIST SP 800-22 / BSI AIS 31** | Statistical Randomness & Entropy Battery Suite | **DR38** (Randomness Battery) | **100% PASS** |
 | **Side-Channel** | **dudect / ISO/IEC 17825** | Constant-Time Microarchitectural Leakage Verifier | **DR39** (Timing Leakage Engine) | *Planned v1.4* |
 | **OQS / ECRYPT** | **liboqs / eBACS Benchmark** | OQS Cross-Validation & Cycle Benchmark Harness | **DR40** (OQS Benchmark Core) | *Planned v1.4* |
 | **ETSI / IDQ** | **ETSI GS QKD 004 / 015** | Q-KMS Multi-Node Key Lifecycle & Authorization | **DR41** (Q-KMS Key Lifecycle) | *Planned v1.4* |
@@ -393,5 +393,5 @@ A rigorous cryptographic and physical accelerator roadmap must candidly address 
 |---|---|---|---|:---:|
 | **v1.0.0** | **Released** | Modules 1, 2, 3, 4 (PQC Core) | **DR0–DR15** (19 Gates) | **736 / 736 PASS** (23.98s) |
 | **v1.1.0** | **Released** | Modules 1–5 (PQC + Hybrid QKD) | **DR0–DR20** (23 Gates) | **839 / 839 PASS** (28.45s) |
-| **v1.3.0** | **Released (Current)** | Modules 1–14 (PQC + QKD + CNSA + PKI + ACVP + Remote Attestation + Formal Proofs) | **DR0–DR20, DR21, DR23, DR25, DR27, DR28, DR29, DR31, DR32, DR34, DR35, DR36, DR37** (35 Gates) | **857 / 857 PASS** (46.37s) |
+| **v1.3.0** | **Released (Current)** | Modules 1–14 (PQC + QKD + CNSA + PKI + ACVP + Remote Attestation + Formal Proofs) | **DR0–DR20, DR21, DR23, DR25, DR27, DR28, DR29, DR31, DR32, DR34, DR35, DR36, DR37, DR38** (36 Gates) | **857 / 857 PASS** (47.14s) |
 | **v1.4.0** | **Planned** | Modules 15–16 (BSI/ANSSI Hybrid KEM, NIST SP 800-22 Randomness, dudect, OQS, Q-KMS, Composite Signatures, QRNG Health) | **DR37, DR38, DR39, DR40, DR41, DR42, DR43** | *Planned (100% Hardware Feasible)* |

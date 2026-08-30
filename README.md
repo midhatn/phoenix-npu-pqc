@@ -7,7 +7,7 @@
 ![Architecture: XDNA1 AIE2 ML](https://img.shields.io/badge/Architecture-XDNA1%20AIE2%20(512--bit%20SIMD)-red)
 ![Research: PQC & QKD Defense-in-Depth](https://img.shields.io/badge/Research-PQC%20%26%20QKD%20Defense--in--Depth-8a2be2)
 ![Standards: FIPS 202 / 203 / 204 · ETSI 014 · QRNG · OpenSSL 3 · PKCS#11 · SP 800-56C](https://img.shields.io/badge/Standards-FIPS%20202%2F203%2F204%20%C2%B7%20ETSI%20014%20%C2%B7%20QRNG%20%C2%B7%20OpenSSL%20%C2%B7%20PKCS%2311-005ea8)
-![Status: v1.3.0 Silicon Certified (857/857 PASS across 35 Gates)](https://img.shields.io/badge/Status-v1.3.0%20Silicon%20Certified%20%C2%B7%20857%2F857%20PASS-brightgreen)
+![Status: v1.3.0 Silicon Certified (857/857 PASS across 36 Gates)](https://img.shields.io/badge/Status-v1.3.0%20Silicon%20Certified%20%C2%B7%20857%2F857%20PASS-brightgreen)
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.22164124.svg)](https://doi.org/10.5281/zenodo.22164124)
 
 **World's first 100% device-resident hardware realization of finalized NIST Post-Quantum Cryptography standards (FIPS 202, FIPS 203, FIPS 204) and ETSI GS QKD 014 Quantum Key Distribution (ID Quantique Cerberis XGR compatible) on the AMD Phoenix NPU (AIE2 / XDNA1 Architecture).**

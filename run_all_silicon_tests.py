@@ -67,6 +67,7 @@ GATES = [
     ("Gate 32: DR36 Formal Proofs & Invariant Verification", "tests/pqc_device_resident/test_dr36_formal_silicon.py"),
     ("Gate 33: DR34 Remote Attestation & TPM/DICE", "tests/pqc_device_resident/test_dr34_attestation_silicon.py"),
     ("Gate 34: DR37 Dual-Scheme Hybrid KEM Engine", "tests/pqc_device_resident/test_dr37_hybrid_kem_silicon.py"),
+    ("Gate 35: DR38 NIST SP 800-22 & AIS 31 Randomness", "tests/pqc_device_resident/test_dr38_randomness_silicon.py"),
 ]
 
 def main() -> int:
