@@ -71,6 +71,7 @@ GATES = [
     ("Gate 36: DR39 dudect Constant-Time TVLA", "tests/pqc_device_resident/test_dr39_dudect_silicon.py"),
     ("Gate 37: DR40 OQS & eBACS Benchmark Harness", "tests/pqc_device_resident/test_dr40_oqs_benchmark_silicon.py"),
     ("Gate 38: DR41 ETSI GS QKD 004/015 Q-KMS", "tests/pqc_device_resident/test_dr41_qkms_silicon.py"),
+    ("Gate 39: DR42 ANSSI Composite Signatures", "tests/pqc_device_resident/test_dr42_composite_sig_silicon.py"),
 ]
 
 def main() -> int:
