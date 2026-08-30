@@ -37,6 +37,22 @@ IRONENV = (
 )
 IRONENV_PYTHON = IRONENV / "Scripts" / "python.exe"
 
+REJECTED_MARKERS: tuple[str, ...] = (
+    "unavailable",
+    "fallback",
+    "diagnostic-only",
+    "no silicon",
+    "simulat",
+    "emulat",
+    ":reference",
+    "reference backend",
+    "host backend",
+    "host-safe",
+    "skip",
+    "generic-only",
+    "generic backend",
+)
+
 
 @dataclass(frozen=True)
 class NativeGate:

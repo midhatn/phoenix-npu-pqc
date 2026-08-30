@@ -91,49 +91,48 @@ This architecture ensures full physical and mathematical resilience: if the phys
 
 | Standard / Organization | Specification Reference | Role in Hybrid Pipeline | AIE2 Implementation Milestone | Status |
 |---|---|---|---|:---:|
-| **Palo Alto / Consortium** | **QRNG-OPENAPI (v1.0)** | REST Entropy Ingestion & SRAM Reservoir | **DR27** (Ingress + Reservoir Core) | **100% PASS** |
-| **OpenSSL / OASIS** | **OpenSSL 3.x / PKCS#11 v3.0** | Native Provider Plugin & Cryptoki HSM Token | **DR23** (OpenSSL + HSM Token) | **100% PASS** |
-| **ETSI** | **ETSI GS QKD 014 (v1.1.1 / v1.3.1)** | REST Key Delivery API for KME Ingress | **DR16** (Sealed Key Ingress) | **100% PASS** |
-| **ETSI** | **ETSI GS QKD 015 (v2.1.1)** | Orchestration and Control-Plane Security | **DR17** (Asymmetric Auth Control) | **100% PASS** |
-| **NIST** | **FIPS PUB 204 (2024)** | ML-DSA Digital Signature Verification | **DR11–DR15, DR17** (Auth Hub) | **100% PASS** |
-| **NIST** | **FIPS PUB 203 (2024)** | ML-KEM Key Encapsulation Mechanism | **DR2d, DR3–DR8** (Lattice KEM) | **100% PASS** |
-| **NIST** | **FIPS PUB 202 (2015)** | SHA-3 / SHAKE / Keccak-f[1600] Permutations | **DR9, DR18, DR25** (Hashing/Expansion) | **100% PASS** |
-| **NIST** | **SP 800-56C Rev. 2 (2020)** | Two-Step Key Extraction and Expansion | **DR18** (Dual Key Combiner) | **100% PASS** |
-| **NIST** | **SP 800-227 (2024)** | Multi-Key Encapsulation Combiners | **DR18** (Hybrid Session KDF) | **100% PASS** |
+| **Palo Alto / Consortium** | **QRNG-OPENAPI (v1.0)** | REST Entropy Ingestion & SRAM Reservoir | **DR27** (Ingress + Reservoir Core) | **[VERIFIED PHYSICAL SILICON]** |
+| **OpenSSL / OASIS** | **OpenSSL 3.x / PKCS#11 v3.0** | Native Provider Plugin & Cryptoki HSM Token | **DR23** (OpenSSL + HSM Token) | **[HOST PYTHON REFERENCE / PROTOTYPE]** |
+| **ETSI** | **ETSI GS QKD 014 (v1.1.1 / v1.3.1)** | REST Key Delivery API for KME Ingress | **DR16** (Sealed Key Ingress) | **[VERIFIED PHYSICAL SILICON]** |
+| **ETSI** | **ETSI GS QKD 015 (v2.1.1)** | Orchestration and Control-Plane Security | **DR17** (Asymmetric Auth Control) | **[VERIFIED PHYSICAL SILICON]** |
+| **NIST** | **FIPS PUB 204 (2024)** | ML-DSA Digital Signature Verification | **DR11–DR15, DR17** (Auth Hub) | **[VERIFIED PHYSICAL SILICON]** |
+| **NIST** | **FIPS PUB 203 (2024)** | ML-KEM Key Encapsulation Mechanism | **DR2d, DR3–DR8** (Lattice KEM) | **[VERIFIED PHYSICAL SILICON]** |
+| **NIST** | **FIPS PUB 202 (2015)** | SHA-3 / SHAKE / Keccak-f[1600] Permutations | **DR9** (Hashing/Expansion) | **[VERIFIED PHYSICAL SILICON]** |
+| **NIST** | **SP 800-56C Rev. 2 (2020)** | Two-Step Key Extraction and Expansion | **DR18** (Dual Key Combiner) | **[VERIFIED PHYSICAL SILICON]** |
+| **NIST** | **SP 800-227 (2024)** | Multi-Key Encapsulation Combiners | **DR18** (Hybrid Session KDF) | **[VERIFIED PHYSICAL SILICON]** |
 | **NIST** | **SP 800-208 / RFC 8554** | Stateful Hash Signatures (LMS Verification Only) | **DR28** (Immutable Root of Trust) | *Planned v1.2* |
 | **NSA** | **CNSA 2.0 (2022/2024)** | Category 5 Mandate (ML-KEM-1024, ML-DSA-87) | **DR29** (Distributed Memory Engine) | *Planned v1.2* |
-| **IETF** | **RFC 9370 / RFC 8784 (2023)** | Multi-KEM IKEv2 / IPsec Protocol Models | **DR19, DR24** (Session Orchestrator) | **100% PASS** |
+| **IETF** | **RFC 9370 / RFC 8784 (2023)** | Multi-KEM IKEv2 / IPsec Protocol Models | **DR19** (Session Orchestrator) | **[VERIFIED PHYSICAL SILICON]** |
 | **3GPP** | **TS 33.501 (Rel-18/19)** | 5G/6G Core Network SUCI Post-Quantum Security | **DR30** (Telecom Interconnect) | *Planned v1.2* |
-| **NIST** | **FIPS PUB 205 (2024)** | Stateless Hash-Based Signatures (SLH-DSA) | **DR21** (SPHINCS+ Engine) | *Planned v1.2* |
+| **NIST** | **FIPS PUB 205 (2024)** | Stateless Hash-Based Signatures (SLH-DSA) | **DR21** (SPHINCS+ Engine) | **[HOST PYTHON REFERENCE / PROTOTYPE]** |
 | **NIST** | **FIPS PUB 206 (2025)** | Fast-Fourier Lattice Signatures (FN-DSA) | **DR22** (Falcon Verification Core) | *Planned v1.2* |
 
 ---
 
-## 3. Core Modules in v1.1.0 (25 Silicon Gates · 851 Test Cases)
+## 3. Core Modules & Verified Silicon Gates (24 Silicon Gates · 857 Test Cases)
 
 ### Module 1: NIST FIPS 202 (SHA-3 / SHAKE — Milestone DR9)
-* **Status**: 100% Silicon Certified (**122 / 122 PASS**).
+* **Status**: [VERIFIED PHYSICAL SILICON] (**122 / 122 PASS**).
 
 ### Module 2: NIST FIPS 203 (ML-KEM — Milestones DR2d, DR3–DR8)
-* **Status**: 100% Silicon Certified (**210 / 210 PASS**).
+* **Status**: [VERIFIED PHYSICAL SILICON] (**225 / 225 PASS**).
 
 ### Module 3: NIST FIPS 204 (ML-DSA — Milestones DR11–DR15)
-* **Status**: 100% Silicon Certified (**255 / 255 PASS**).
+* **Status**: [VERIFIED PHYSICAL SILICON] (**255 / 255 PASS**).
 
 ### Module 4: Hardware Lifecycle & Foundation (Milestones DR0, DR1, DR2a–DR2c, DR10)
-* **Status**: 100% Silicon Certified (**149 / 149 PASS**).
+* **Status**: [VERIFIED PHYSICAL SILICON] (**134 / 134 PASS**).
 
-### Module 5: Hybrid QKD & Post-Quantum Defense-in-Depth (Milestones DR16–DR20)
-* **Milestone DR16 (Gate 19)**: ETSI GS QKD 014 Sealed Ingress Kernel (`dr16_etsi_qkd014_service.cc`) — **25 / 25 PASS**.
-* **Milestone DR17 (Gate 20)**: ML-DSA Asymmetric QKD Control Authenticator (`dr17_mldsa_qkd_auth_service.cc`) — **25 / 25 PASS**.
-* **Milestone DR18 (Gate 21)**: NIST SP 800-56C Dual Combiner (`dr18_dual_key_combiner_service.cc`) — **30 / 30 PASS**.
-* **Milestone DR19 (Gate 22)**: Full-Duplex Session Orchestrator (`dr19_hybrid_session_service.cc`) — **20 / 20 PASS**.
-* **Milestone DR20**: Universal Master Silicon Suite Integration.
+### Module 5: Hybrid QKD & Post-Quantum Defense-in-Depth (Milestones DR16–DR19)
+* **Milestone DR16 (Gate 19)**: [VERIFIED PHYSICAL SILICON] ETSI GS QKD 014 Sealed Ingress Kernel (`dr16_etsi_qkd014_service.cc`) — **25 / 25 PASS**.
+* **Milestone DR17 (Gate 20)**: [VERIFIED PHYSICAL SILICON] ML-DSA Asymmetric QKD Control Authenticator (`dr17_mldsa_qkd_auth_service.cc`) — **25 / 25 PASS**.
+* **Milestone DR18 (Gate 21)**: [VERIFIED PHYSICAL SILICON] NIST SP 800-56C Dual Combiner (`dr18_dual_key_combiner_service.cc`) — **25 / 25 PASS**.
+* **Milestone DR19 (Gate 22)**: [VERIFIED PHYSICAL SILICON] Full-Duplex Session Orchestrator (`dr19_hybrid_session_service.cc`) — **25 / 25 PASS**.
 
-### Module 6: True Quantum Entropy, Providers & Tokens (Milestones DR27, DR23)
-* **Milestone DR27 (Gate 23)**: QRNG-OPENAPI v1.0 Ingress & On-Device Reservoir (`dr27_qrng_reservoir_service.cc`) — **6 / 6 PASS**.
-* **Milestone DR23 (Gate 24)**: OpenSSL 3.x Native Provider & OASIS PKCS#11 v3.0 HSM Token (`dr23_openssl_provider.py`, `dr23_pkcs11_hsm.py`) — **6 / 6 PASS**.
-* **Universal Master Silicon Suite ([`run_all_silicon_tests.py`](file:///C:/Users/midhat/.gemini/antigravity/scratch/phoenix-npu-pqc/run_all_silicon_tests.py))**: **25/25 Gates PASS (100.00%) · 851 / 851 Tests PASS in 33.21s**.
+### Module 6: True Quantum Entropy & Integration (Milestones DR27, DR23)
+* **Milestone DR27 (Gate 23)**: [VERIFIED PHYSICAL SILICON] QRNG-OPENAPI v1.0 Ingress & On-Device Reservoir (`dr27_qrng_reservoir_service.cc`) — **21 / 21 PASS**.
+* **Milestone DR23**: [HOST PYTHON REFERENCE / PROTOTYPE] OpenSSL 3.x Native Provider & OASIS PKCS#11 v3.0 HSM Token (`dr23_openssl_provider.py`, `dr23_pkcs11_hsm.py`).
+* **Universal Master Silicon Suite ([`run_all_silicon_tests.py`](file:///C:/Users/midhat/.gemini/antigravity/scratch/phoenix-npu-pqc/run_all_silicon_tests.py))**: **24/24 Gates PASS (100.00%) · 857 / 857 Tests PASS in 29.84s**.
 
 ---
 
@@ -294,7 +293,6 @@ A rigorous cryptographic and physical accelerator roadmap must candidly address 
 
 | Version | Status | Modules Included | Milestones | Physical Silicon Status |
 |---|---|---|---|:---:|
-| **v1.0.0** | **Released** | Modules 1, 2, 3, 4 (PQC Core) | **DR0–DR15** (19 Gates) | **736 / 736 PASS** (23.98s) |
-| **v1.1.0** | **Released** | Modules 1–5 (PQC + Hybrid QKD) | **DR0–DR20** (23 Gates) | **839 / 839 PASS** (28.45s) |
-| **v1.2.0** | **Released (Current)** | Modules 1–6 (PQC + Hybrid QKD + QRNG + OpenSSL/PKCS11) | **DR0–DR20, DR23, DR27** (25 Gates) | **851 / 851 PASS** (33.21s) |
-| **v1.3.0** | **Planned** | Modules 7–10 (FIPS 205/206, WireGuard, CNSA 2.0, Visualizer, PKI, Docker, ACVP) | **DR21–DR22, DR24–DR26, DR28–DR36** | *In Development* |
+| **v1.0.0** | **Released (Verified)** | Modules 1–6 (Core PQC + Hybrid QKD + QRNG Reservoir) | **DR0–DR19, DR27** (24 Gates) | **[VERIFIED PHYSICAL SILICON] 857 / 857 PASS** (29.84s) |
+| **v1.1.0** | **Prototypes** | Host Integration & Formatters | **DR21, DR23, DR32** | **[HOST PYTHON REFERENCE / PROTOTYPE]** |
+| **v1.2.0** | **Planned** | Advanced Hardware Extensions (FIPS 205/206, WireGuard, Masking, CNSA 2.0) | **DR21–DR22, DR24–DR26, DR28–DR30** | *Planned Hardware Acceleration* |

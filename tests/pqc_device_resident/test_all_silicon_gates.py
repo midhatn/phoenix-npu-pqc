@@ -19,7 +19,7 @@ import subprocess
 from pathlib import Path
 import os
 
-REPO_ROOT = Path(__file__).resolve().parents[2]s[2]
+REPO_ROOT = Path(__file__).resolve().parents[2]
 IRONENV = (
     Path(os.environ["IRONENV_DIR"])
     if "IRONENV_DIR" in os.environ

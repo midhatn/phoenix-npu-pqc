@@ -51,11 +51,11 @@ All native C++ Peano LLVM-AIE kernels must conform to the physical AIE2 compute 
 git clone https://github.com/<your-username>/phoenix-npu-pqc.git
 cd phoenix-npu-pqc
 
-# 2. Run master 23-gate silicon test suite
+# 2. Run master 24-gate silicon test suite
 & "C:\phoenix-sdr-dsp\third_party\mlir-aie\ironenv\Scripts\python.exe" run_all_silicon_tests.py
 
 # 3. Run ETSI GS QKD 014 live integration test
-& "C:\phoenix-sdr-dsp\third_party\mlir-aie\ironenv\Scripts\python.exe" tests/pqc_device_resident/test_idq_etsi014_qkd_silicon.py
+& "C:\phoenix-sdr-dsp\third_party\mlir-aie\ironenv\Scripts\python.exe" tests/pqc_device_resident/test_dr16_etsi_qkd014_silicon.py
 ```
 
 ---

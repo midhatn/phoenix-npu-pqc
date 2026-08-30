@@ -265,22 +265,19 @@ def run_mlkem512_kpke_keygen(
             d_t = XRTTensor(d_np, dtype=np.uint8)
             descriptor_t = XRTTensor(descriptor_np, dtype=np.uint8)
             result_t = XRTTensor(result_np, dtype=np.uint8)
-            from phoenix_sdr_dsp.pqc import dr5_mlkem512_keygen_graph as dr5_graph
-            ek_kem, dk_kem = dr5_graph.run_mlkem512_keygen(d_bytes, b"\x00" * 32, request_id)
-            payload = ek_kem[:abi.EK_PKE_BYTES] + dk_kem[:abi.DK_PKE_BYTES]
-            struct.pack_into(
-                "<IIIHHI",
-                result_np,
-                0,
-                abi.RESULT_MAGIC,
-                request_id,
-                abi.STATUS_OK,
-                abi.EK_PKE_BYTES,
-                abi.DK_PKE_BYTES,
-                zlib.crc32(payload) & 0xFFFFFFFF,
+            _program()(
+                d_t,
+                descriptor_t,
+                result_t,
+                d_slots=abi.D_BYTES,
+                descriptor_slots=abi.DESCRIPTOR_BYTES,
+                secret_token_slots=abi.SECRET_TOKEN_BYTES,
+                state_token_slots=abi.ROW_STATE_TOKEN_BYTES,
+                matrix_token_slots=abi.ROW_MATRIX_TOKEN_BYTES,
+                final_token_slots=abi.PRIVATE_TOKEN_BYTES,
+                result_slots=abi.RESULT_BYTES,
+                element_type=np.uint8,
             )
-            result_np[abi.RESULT_HEADER_BYTES:abi.RESULT_BYTES] = np.frombuffer(payload, dtype=np.uint8)
-            result_t._data[:abi.RESULT_BYTES] = result_np[:abi.RESULT_BYTES]
             result_t.to("cpu")
         except Exception as exc:
             raise NativeBackendUnavailable(
