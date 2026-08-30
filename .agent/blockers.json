@@ -1,0 +1,13 @@
+{
+  "schema_version": 1,
+  "blockers": [
+    {
+      "id": "DR20-SCOPE",
+      "dr": "DR20",
+      "category": "specification",
+      "status": "OPEN",
+      "summary": "No authoritative DR20 scope was supplied.",
+      "next_action": "Repository owner must define DR20 or explicitly reserve the identifier."
+    }
+  ]
+}

@@ -1,0 +1,53 @@
+{
+  "schema_version": 1,
+  "tasks": [
+    {
+      "id": "BASELINE-001",
+      "dr": "DR0",
+      "title": "Trace DR0 from test entrypoint to generated AIE2 artifact and physical dispatch",
+      "status": "READY",
+      "depends_on": [],
+      "acceptance_command": "python tools/verify_agent_change.py"
+    },
+    {
+      "id": "BASELINE-002",
+      "dr": "DR1",
+      "title": "Trace DR1 and prove full-buffer oracle independence",
+      "status": "PENDING",
+      "depends_on": ["BASELINE-001"],
+      "acceptance_command": "python tools/verify_agent_change.py"
+    },
+    {
+      "id": "BASELINE-RUNNERS",
+      "dr": null,
+      "title": "Remove hardcoded physical pass totals and require structured gate results",
+      "status": "READY",
+      "depends_on": [],
+      "acceptance_command": "python tools/verify_agent_change.py --all"
+    },
+    {
+      "id": "POLICY-HOST-CRYPTO",
+      "dr": null,
+      "title": "Separate host oracle imports from DR10, DR17, DR18, and DR27 physical paths",
+      "status": "PENDING",
+      "depends_on": ["BASELINE-RUNNERS"],
+      "acceptance_command": "python tools/verify_agent_change.py --all"
+    },
+    {
+      "id": "POLICY-BACKEND-EVIDENCE",
+      "dr": null,
+      "title": "Replace self-declared physical backend labels with structured runtime evidence",
+      "status": "PENDING",
+      "depends_on": ["BASELINE-RUNNERS"],
+      "acceptance_command": "python tools/verify_agent_change.py --all"
+    },
+    {
+      "id": "POLICY-FULL-BUFFER",
+      "dr": null,
+      "title": "Audit and replace potentially partial DR14 physical comparisons",
+      "status": "PENDING",
+      "depends_on": ["BASELINE-RUNNERS"],
+      "acceptance_command": "python tools/verify_agent_change.py --all"
+    }
+  ]
+}

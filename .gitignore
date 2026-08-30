@@ -70,6 +70,13 @@ _scratch_*/
 # The protected DR2 forensic capture includes one required raw byte stream.
 !docs/pqc_dr2_evidence_20260818/PQC_DR2D_W0_token_tap_tcId01_raw_20260818.bin
 
+# Agent continuity state and validation schemas are source-controlled policy.
+!.agent/
+!.agent/*.json
+!.agent/*.jsonl
+!schemas/
+!schemas/*.json
+
 # Confidential & Private Business / Investor Pitches
 private_pitch/
 confidential/
