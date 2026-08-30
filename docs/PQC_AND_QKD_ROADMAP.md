@@ -298,5 +298,5 @@ A rigorous cryptographic and physical accelerator roadmap must candidly address 
 |---|---|---|---|:---:|
 | **v1.0.0** | **Released** | Modules 1, 2, 3, 4 (PQC Core) | **DR0–DR15** (19 Gates) | **736 / 736 PASS** (23.98s) |
 | **v1.1.0** | **Released** | Modules 1–5 (PQC + Hybrid QKD) | **DR0–DR20** (23 Gates) | **839 / 839 PASS** (28.45s) |
-| **v1.2.0** | **Released (Current)** | Modules 1–6 (PQC + Hybrid QKD + QRNG + OpenSSL/PKCS11) | **DR0–DR20, DR21, DR23, DR25, DR27, DR28, DR29, DR31** (30 Gates) | **857 / 857 PASS** (40.83s) |
+| **v1.2.0** | **Released (Current)** | Modules 1–6 (PQC + Hybrid QKD + QRNG + OpenSSL/PKCS11) | **DR0–DR20, DR21, DR23, DR25, DR27, DR28, DR29, DR31, DR32** (31 Gates) | **857 / 857 PASS** (42.02s) |
 | **v1.3.0** | **Planned** | Modules 7–10 (FIPS 205/206, WireGuard, CNSA 2.0, Visualizer, PKI, Docker, ACVP) | **DR21–DR22, DR24–DR26, DR28–DR36** | *In Development* |
