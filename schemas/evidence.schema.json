@@ -1,0 +1,136 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/midhatn/phoenix-npu-pqc/schemas/evidence.schema.json",
+  "title": "Phoenix NPU physical-silicon evidence manifest",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "dr_id",
+    "evidence_class",
+    "repository",
+    "hardware",
+    "toolchain",
+    "execution",
+    "comparisons",
+    "negative_tests",
+    "artifacts"
+  ],
+  "properties": {
+    "schema_version": {"const": 1},
+    "dr_id": {"pattern": "^DR(?:[0-9]+|2[a-d])$"},
+    "evidence_class": {"const": "BIT_EXACT_PHYSICAL_SILICON"},
+    "repository": {
+      "type": "object",
+      "required": ["commit", "clean"],
+      "properties": {
+        "commit": {"pattern": "^[0-9a-f]{40}$"},
+        "clean": {"const": true}
+      }
+    },
+    "hardware": {
+      "type": "object",
+      "required": [
+        "physical_device",
+        "device_name",
+        "device_id",
+        "driver",
+        "firmware"
+      ],
+      "properties": {
+        "physical_device": {"const": true},
+        "device_name": {"type": "string", "minLength": 1},
+        "device_id": {"type": "string", "minLength": 1},
+        "driver": {"type": "string", "minLength": 1},
+        "firmware": {"type": "string", "minLength": 1}
+      }
+    },
+    "toolchain": {
+      "type": "object",
+      "required": ["python", "mlir_aie", "llvm_aie", "xrt"],
+      "additionalProperties": {"type": "string", "minLength": 1}
+    },
+    "execution": {
+      "type": "object",
+      "required": [
+        "command",
+        "started_at",
+        "ended_at",
+        "exit_code",
+        "physical_dispatches",
+        "cases_selected",
+        "cases_executed",
+        "cases_passed",
+        "cases_failed",
+        "cases_skipped",
+        "cases_xfailed"
+      ],
+      "properties": {
+        "command": {"type": "array", "minItems": 1, "items": {"type": "string"}},
+        "started_at": {"type": "string", "format": "date-time"},
+        "ended_at": {"type": "string", "format": "date-time"},
+        "exit_code": {"const": 0},
+        "physical_dispatches": {"type": "integer", "minimum": 1},
+        "cases_selected": {"type": "integer", "minimum": 1},
+        "cases_executed": {"type": "integer", "minimum": 1},
+        "cases_passed": {"type": "integer", "minimum": 1},
+        "cases_failed": {"const": 0},
+        "cases_skipped": {"const": 0},
+        "cases_xfailed": {"const": 0}
+      }
+    },
+    "comparisons": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": [
+          "case_id",
+          "full_buffer",
+          "expected_sha256",
+          "actual_sha256"
+        ],
+        "properties": {
+          "case_id": {"type": "string", "minLength": 1},
+          "full_buffer": {"const": true},
+          "expected_sha256": {"pattern": "^[0-9a-f]{64}$"},
+          "actual_sha256": {"pattern": "^[0-9a-f]{64}$"}
+        }
+      }
+    },
+    "negative_tests": {
+      "type": "object",
+      "required": [
+        "device_absence_nonzero",
+        "host_reference_disabled_pass"
+      ],
+      "properties": {
+        "device_absence_nonzero": {"const": true},
+        "host_reference_disabled_pass": {"const": true}
+      }
+    },
+    "artifacts": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["role", "path", "sha256"],
+        "properties": {
+          "role": {
+            "enum": [
+              "device_info",
+              "compiler_log",
+              "runtime_log",
+              "case_results",
+              "aie_artifact",
+              "graph_ir",
+              "source_snapshot",
+              "other"
+            ]
+          },
+          "path": {"type": "string", "minLength": 1},
+          "sha256": {"pattern": "^[0-9a-f]{64}$"}
+        }
+      }
+    }
+  }
+}
