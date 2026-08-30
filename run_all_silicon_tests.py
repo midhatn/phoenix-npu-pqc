@@ -72,6 +72,7 @@ GATES = [
     ("Gate 37: DR40 OQS & eBACS Benchmark Harness", "tests/pqc_device_resident/test_dr40_oqs_benchmark_silicon.py"),
     ("Gate 38: DR41 ETSI GS QKD 004/015 Q-KMS", "tests/pqc_device_resident/test_dr41_qkms_silicon.py"),
     ("Gate 39: DR42 ANSSI Composite Signatures", "tests/pqc_device_resident/test_dr42_composite_sig_silicon.py"),
+    ("Gate 40: DR43 NIST SP 800-90B Continuous Health", "tests/pqc_device_resident/test_dr43_sp80090b_health_silicon.py"),
 ]
 
 def main() -> int:
