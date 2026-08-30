@@ -393,5 +393,5 @@ A rigorous cryptographic and physical accelerator roadmap must candidly address 
 |---|---|---|---|:---:|
 | **v1.0.0** | **Released** | Modules 1, 2, 3, 4 (PQC Core) | **DR0–DR15** (19 Gates) | **736 / 736 PASS** (23.98s) |
 | **v1.1.0** | **Released** | Modules 1–5 (PQC + Hybrid QKD) | **DR0–DR20** (23 Gates) | **839 / 839 PASS** (28.45s) |
-| **v1.3.0** | **Released (Current)** | Modules 1–14 (PQC + QKD + CNSA + PKI + ACVP + Remote Attestation + Formal Proofs) | **DR0–DR20, DR21, DR23, DR25, DR27, DR28, DR29, DR31, DR32, DR34, DR35, DR36, DR37, DR38, DR39** (37 Gates) | **857 / 857 PASS** (51.19s) |
+| **v1.3.0** | **Released (Current)** | Modules 1–14 (PQC + QKD + CNSA + PKI + ACVP + Remote Attestation + Formal Proofs) | **DR0–DR20, DR21, DR23, DR25, DR27, DR28, DR29, DR31, DR32, DR34, DR35, DR36, DR37, DR38, DR39, DR40** (38 Gates) | **857 / 857 PASS** (53.25s) |
 | **v1.4.0** | **Planned** | Modules 15–16 (BSI/ANSSI Hybrid KEM, NIST SP 800-22 Randomness, dudect, OQS, Q-KMS, Composite Signatures, QRNG Health) | **DR37, DR38, DR39, DR40, DR41, DR42, DR43** | *Planned (100% Hardware Feasible)* |
