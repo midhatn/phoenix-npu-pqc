@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 # SPDX-License-Identifier: Apache-2.0
 """Master Silicon Validation Suite (Physical Silicon Execution).
 
@@ -25,17 +26,17 @@ runtime verification. No physical PASS pathway exists in this baseline stage.
 from __future__ import annotations
 
 import argparse
-from dataclasses import dataclass
-from datetime import datetime, timezone
 import hashlib
 import json
 import os
-from pathlib import Path
 import re
 import secrets
 import subprocess
 import sys
 import time
+from dataclasses import dataclass
+from datetime import datetime, timezone
+from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parent
 TESTS_DIR = REPO_ROOT / "tests" / "pqc_device_resident"
