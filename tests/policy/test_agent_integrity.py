@@ -1346,6 +1346,307 @@ class KernelIntegrityAndAntiFabricationTests(unittest.TestCase):
         findings = self.scan_cpp(code)
         self.assertEqual(findings, [])
 
+    def test_review_finding_1_production_model_verified_hardware_is_caught(self):
+        doc = "The production model was verified on Phoenix AIE2 hardware.\n"
+        findings = self.scan_md(doc)
+        self.assertTrue(
+            any(f.rule == "DOC001" and f.severity == "critical" for f in findings)
+        )
+
+    def test_review_finding_2_accounting_malformed_10x_is_caught(self):
+        table = (
+            "| Gate | Selected | Executed | Matching | Failing |\n"
+            "| :--- | :---: | :---: | :---: | :---: |\n"
+            "| DR0 | 10x | 10 | 10 | 0 |\n"
+            "| Total | 10 | 10 | 10 | 0 |\n"
+        )
+        findings = self.scan_md(table)
+        self.assertTrue(
+            any(
+                f.rule == "DOC004"
+                and f.severity == "critical"
+                and "Malformed numeric cell" in f.message
+                for f in findings
+            )
+        )
+
+    def test_review_finding_3_accounting_partition_mismatch_is_caught(self):
+        table = (
+            "| Gate | Selected | Executed | Matching | Failing |\n"
+            "| :--- | :---: | :---: | :---: | :---: |\n"
+            "| DR0 | 10 | 10 | 10 | 5 |\n"
+            "| Total | 10 | 10 | 10 | 5 |\n"
+        )
+        findings = self.scan_md(table)
+        self.assertTrue(
+            any(
+                f.rule == "DOC004"
+                and f.severity == "critical"
+                and "Row partition mismatch" in f.message
+                for f in findings
+            )
+        )
+
+    def test_review_finding_4_accounting_fabricated_dr999_is_caught(self):
+        table = (
+            "| Gate | Selected | Executed | Matching | Failing |\n"
+            "| :--- | :---: | :---: | :---: | :---: |\n"
+            "| DR999 | 10 | 10 | 10 | 0 |\n"
+            "| Total | 10 | 10 | 10 | 0 |\n"
+        )
+        findings = self.scan_md(table)
+        self.assertTrue(
+            any(
+                f.rule == "DOC005"
+                and f.severity == "critical"
+                and "DR999" in f.message
+                for f in findings
+            )
+        )
+
+    def test_review_finding_5_multiline_known_vector_branch_is_caught(self):
+        code = (
+            "int check(int request_id) {\n"
+            "    if (\n"
+            "        request_id == 0x90000001\n"
+            "    ) {\n"
+            "        return expected;\n"
+            "    }\n"
+            "    return 0;\n"
+            "}\n"
+        )
+        findings = self.scan_cpp(code)
+        self.assertTrue(
+            any(f.rule == "CPP006" and f.severity == "critical" for f in findings)
+        )
+
+    def test_review_finding_6_multiline_fallback_call_is_caught(self):
+        code = (
+            "void run() {\n"
+            "    run_host_fallback\n"
+            "        (input, output);\n"
+            "}\n"
+        )
+        findings = self.scan_cpp(code)
+        self.assertTrue(
+            any(f.rule == "CPP008" and f.severity == "critical" for f in findings)
+        )
+
+    def test_multiline_cpp_switch_case_on_request_id_is_caught(self):
+        code = (
+            "int check(int request_id) {\n"
+            "    switch (request_id) {\n"
+            "        case 0x90000001:\n"
+            "            return 1;\n"
+            "        default:\n"
+            "            return 0;\n"
+            "    }\n"
+            "}\n"
+        )
+        findings = self.scan_cpp(code)
+        self.assertTrue(
+            any(f.rule == "CPP006" and f.severity == "critical" for f in findings)
+        )
+
+    def test_multiline_cpp_ternary_on_tc_id_is_caught(self):
+        code = (
+            "int check(int tc_id) {\n"
+            "    return (tc_id == 42) ? 1 : 0;\n"
+            "}\n"
+        )
+        findings = self.scan_cpp(code)
+        self.assertTrue(
+            any(f.rule == "CPP006" and f.severity == "critical" for f in findings)
+        )
+
+    def test_multiline_cpp_reversed_operands_known_vector_is_caught(self):
+        code = (
+            "int check(int request_id) {\n"
+            "    if (0x90000001 == request_id) {\n"
+            "        return 1;\n"
+            "    }\n"
+            "    return 0;\n"
+            "}\n"
+        )
+        findings = self.scan_cpp(code)
+        self.assertTrue(
+            any(f.rule == "CPP006" and f.severity == "critical" for f in findings)
+        )
+
+    def test_multiline_cpp_std_copy_expected_is_caught(self):
+        code = (
+            "void copy_out(uint8_t* dst) {\n"
+            "    std::copy(\n"
+            "        expected_output,\n"
+            "        expected_output + 32,\n"
+            "        dst\n"
+            "    );\n"
+            "}\n"
+        )
+        findings = self.scan_cpp(code)
+        self.assertTrue(
+            any(f.rule == "CPP007" and f.severity == "critical" for f in findings)
+        )
+
+    def test_cpp_comments_and_strings_with_test_ids_not_flagged(self):
+        code = (
+            "// Note: ACVP request_id == 0x90000001 describes the normative format\n"
+            '/* Multi-line comment referencing\n'
+            '   run_host_fallback(x, y);\n'
+            '   memcpy(out, expected_output, 32);\n'
+            '*/\n'
+            'const char* desc = "request_id == 0x90000001 or run_host_fallback()";\n'
+            "void valid_function(uint8_t* buf) {\n"
+            "    buf[0] = 0x01;\n"
+            "}\n"
+        )
+        findings = self.scan_cpp(code)
+        self.assertEqual(findings, [])
+
+    def test_mixed_line_prohibits_and_confirmed_on_silicon_is_caught(self):
+        doc = "This policy prohibits unsupported claims; the kernel was confirmed on silicon.\n"
+        findings = self.scan_md(doc)
+        self.assertTrue(
+            any(f.rule == "DOC001" and f.severity == "critical" for f in findings)
+        )
+
+    def test_bullet_with_verify_making_physical_claim_is_caught(self):
+        doc = "- Verify that the kernel was confirmed on silicon.\n"
+        findings = self.scan_md(doc)
+        self.assertTrue(
+            any(f.rule == "DOC001" and f.severity == "critical" for f in findings)
+        )
+
+    def test_bullet_with_validate_making_physical_claim_is_caught(self):
+        doc = "- Validate the module was physically verified.\n"
+        findings = self.scan_md(doc)
+        self.assertTrue(
+            any(f.rule == "DOC001" and f.severity == "critical" for f in findings)
+        )
+
+    def test_legitimate_negative_physical_statements_are_clean(self):
+        doc = (
+            "This result is not physically verified.\n"
+            "Physically verified cases: 0\n"
+            "0 independently physically verified gates\n"
+            "- It does not claim performance, latency, throughput, power, utilization, constant-time resistance, or side-channel immunity.\n"
+        )
+        findings = self.scan_md(doc)
+        blocking = [f for f in findings if f.severity == "critical"]
+        self.assertEqual(blocking, [])
+
+    def test_accounting_table_inconsistent_row_width_is_detected(self):
+        table = (
+            "| Gate | Selected | Executed | Matching | Failing |\n"
+            "| :--- | :---: | :---: | :---: | :---: |\n"
+            "| DR0 | 10 | 10 | 10 |\n"
+            "| Total | 10 | 10 | 10 | 0 |\n"
+        )
+        findings = self.scan_md(table)
+        self.assertTrue(
+            any(
+                f.rule == "DOC004"
+                and f.severity == "critical"
+                and "Inconsistent table row width" in f.message
+                for f in findings
+            )
+        )
+
+    def test_accounting_table_selected_less_than_executed_is_detected(self):
+        table = (
+            "| Gate | Selected | Executed | Matching | Failing |\n"
+            "| :--- | :---: | :---: | :---: | :---: |\n"
+            "| DR0 | 5 | 10 | 10 | 0 |\n"
+            "| Total | 5 | 10 | 10 | 0 |\n"
+        )
+        findings = self.scan_md(table)
+        self.assertTrue(
+            any(
+                f.rule == "DOC004"
+                and f.severity == "critical"
+                and "cases_executed (10) > cases_selected (5)" in f.message
+                for f in findings
+            )
+        )
+
+    def test_canonical_accounting_table_missing_canonical_gate_is_detected(self):
+        table = (
+            "# Master Physical Silicon Regression Suite Accounting\n\n"
+            "| Gate | Selected | Executed | Matching | Failing |\n"
+            "| :--- | :---: | :---: | :---: | :---: |\n"
+            "| DR0 | 24 | 24 | 24 | 0 |\n"
+            "| DR1 | 33 | 33 | 33 | 0 |\n"
+            "| Total | 57 | 57 | 57 | 0 |\n"
+        )
+        findings = self.scan_md(table)
+        self.assertTrue(
+            any(
+                f.rule == "DOC005"
+                and f.severity == "critical"
+                and "Missing canonical gate" in f.message
+                for f in findings
+            )
+        )
+
+    def test_canonical_accounting_table_out_of_order_is_detected(self):
+        table = (
+            "# Master Silicon Accounting\n\n"
+            "| Gate | Selected | Executed | Matching | Failing |\n"
+            "| :--- | :---: | :---: | :---: | :---: |\n"
+            "| DR1 | 33 | 33 | 33 | 0 |\n"
+            "| DR0 | 24 | 24 | 24 | 0 |\n"
+            "| Total | 57 | 57 | 57 | 0 |\n"
+        )
+        findings = self.scan_md(table)
+        self.assertTrue(
+            any(
+                f.rule == "DOC005"
+                and f.severity == "critical"
+                and "out of order" in f.message
+                for f in findings
+            )
+        )
+
+    def test_canonical_accounting_table_missing_total_row_is_detected(self):
+        table = (
+            "# Master Silicon Regression Suite Accounting\n\n"
+            "| Gate | Selected | Executed | Matching | Failing |\n"
+            "| :--- | :---: | :---: | :---: | :---: |\n"
+            "| DR0 | 24 | 24 | 24 | 0 |\n"
+        )
+        findings = self.scan_md(table)
+        self.assertTrue(
+            any(
+                f.rule == "DOC005"
+                and f.severity == "critical"
+                and "Missing required Total row" in f.message
+                for f in findings
+            )
+        )
+
+    def test_complete_valid_canonical_accounting_table_passes(self):
+        from run_all_silicon_tests import GATES
+        lines = [
+            "# Master Physical Silicon Regression Suite Accounting\n",
+            "| Gate | Selected | Executed | Matching | Failing |",
+            "| :--- | :---: | :---: | :---: | :---: |",
+        ]
+        tot_sel = 0
+        tot_exec = 0
+        tot_match = 0
+        for g in GATES:
+            gid = g.gate_id.upper()
+            cnt = g.expected_total
+            lines.append(f"| {gid} | {cnt} | {cnt} | {cnt} | 0 |")
+            tot_sel += cnt
+            tot_exec += cnt
+            tot_match += cnt
+        lines.append(f"| Total | {tot_sel} | {tot_exec} | {tot_match} | 0 |")
+        table = "\n".join(lines) + "\n"
+        findings = self.scan_md(table)
+        blocking = [f for f in findings if f.severity == "critical"]
+        self.assertEqual(blocking, [])
+
 
 if __name__ == "__main__":
     unittest.main()

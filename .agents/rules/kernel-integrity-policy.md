@@ -155,8 +155,10 @@ Build cache behavior must be transparently reported and verified:
 
 A bounded repair on one deliverable must not cause unintended regressions in other gates:
 
-- **Regression Audit**: All canonical silicon gates must be executed following a change.
-- **Merge Blocker**: If an unrelated gate experiences a status change, count change, or failure regression, the pull request is blocked from merging until the cause is fully reconciled.
+- **Regression Audit Scope**:
+  - For any change that affects kernels, graphs, device runtime, compilation, dispatch, serialization, shared cryptographic code, or hardware-facing behavior, all canonical silicon gates must be executed following the change to ensure zero regressions across unrelated gates.
+  - For policy-only, documentation-only, metadata-only, and scanner-test-only changes, the applicable host-safe validation suite, policy scanners, and CI checks must be executed and succeed; physical hardware execution is neither required nor claimed when no hardware-affecting path is changed.
+- **Merge Blocker**: If an unrelated gate experiences a status change, count change, or failure regression during hardware-affecting changes, the pull request is blocked from merging until the cause is fully reconciled.
 - **Isolation Rule**: Do not attempt to repair an unrelated gate on the current bounded repair branch.
 
 ---
