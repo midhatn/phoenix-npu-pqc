@@ -5,6 +5,8 @@ All five transition records are private ObjectFIFO payloads with independent
 fixed layouts across Phoenix AIE tiles.
 """
 
+import hashlib
+import os
 from pathlib import Path
 from typing import Any
 
@@ -13,11 +15,42 @@ import numpy as np
 from . import dr6_mlkem512_encaps_abi as abi
 
 BACKEND_LABEL = "dr6-mlkem512-encaps:silicon"
+KERNEL_REL_PATH = "phoenix_sdr_dsp/pqc/kernels/dr6_mlkem512_encaps_derive.cc"
 _PROGRAM: Any | None = None
 
 
 class NativeBackendUnavailable(RuntimeError):
     """The native IRON/XRT DR6 backend is unavailable or failed closed."""
+
+
+def check_emulation_and_redirection_excluded() -> None:
+    """Fail closed if XCL_EMULATION_MODE or XRT_INI_PATH runtime redirection variables are set."""
+    emulation_mode = os.environ.get("XCL_EMULATION_MODE")
+    if emulation_mode and emulation_mode.strip():
+        raise NativeBackendUnavailable(
+            f"Physical silicon execution rejected: XCL_EMULATION_MODE={emulation_mode!r} is set. "
+            "Hardware ground truth forbids simulation or emulation backends."
+        )
+    xrt_ini = os.environ.get("XRT_INI_PATH")
+    if xrt_ini and xrt_ini.strip():
+        raise NativeBackendUnavailable(
+            f"Physical silicon execution rejected: XRT_INI_PATH={xrt_ini!r} is set. "
+            "Hardware ground truth forbids custom runtime configuration redirection."
+        )
+
+
+def get_kernel_artifact_info(repo_root: Path | None = None) -> dict[str, Any]:
+    """Return verified path and SHA-256 digest of the DR6 AIE2 kernel source."""
+    root = repo_root or Path(__file__).resolve().parents[2]
+    kernel_path = root / KERNEL_REL_PATH
+    if not kernel_path.is_file():
+        raise FileNotFoundError(f"Kernel source file not found: {kernel_path}")
+    data = kernel_path.read_bytes()
+    return {
+        "path": KERNEL_REL_PATH,
+        "size_bytes": len(data),
+        "sha256": hashlib.sha256(data).hexdigest().lower(),
+    }
 
 
 def _clear_host_staging(array: np.ndarray, tensor: Any | None) -> None:
@@ -35,6 +68,7 @@ def _clear_host_staging(array: np.ndarray, tensor: Any | None) -> None:
 
 
 def _load_iron() -> tuple[Any, ...]:
+    check_emulation_and_redirection_excluded()
     try:
         from aie import iron
         from aie.iron import (
@@ -303,7 +337,10 @@ def run_mlkem512_encaps(
 run = run_mlkem512_encaps
 __all__ = [
     "BACKEND_LABEL",
+    "KERNEL_REL_PATH",
     "NativeBackendUnavailable",
+    "check_emulation_and_redirection_excluded",
+    "get_kernel_artifact_info",
     "require_hardware_runtime",
     "run",
     "run_mlkem512_encaps",
