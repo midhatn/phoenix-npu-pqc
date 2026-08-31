@@ -2,35 +2,51 @@
   "schema_version": 1,
   "tasks": [
     {
-      "id": "BASELINE-001",
-      "dr": "DR0",
-      "title": "Trace DR0 from test entrypoint to generated AIE2 artifact and physical dispatch",
-      "status": "READY",
-      "depends_on": [],
-      "acceptance_command": "python tools/verify_agent_change.py"
-    },
-    {
-      "id": "BASELINE-002",
-      "dr": "DR1",
-      "title": "Trace DR1 and prove full-buffer oracle independence",
-      "status": "PENDING",
-      "depends_on": ["BASELINE-001"],
-      "acceptance_command": "python tools/verify_agent_change.py"
-    },
-    {
       "id": "BASELINE-RUNNERS",
       "dr": null,
-      "title": "Remove hardcoded physical pass totals and require structured gate results",
+      "title": "Enforce fail-closed machine-readable evidence protocol and claim-validation baseline in silicon runners",
+      "status": "IN_PROGRESS",
+      "depends_on": [],
+      "acceptance_command": "python -m unittest -v tests/test_canonical_silicon_runner_behavior.py"
+    },
+    {
+      "id": "DR0-TRACE-DISPATCH",
+      "dr": "DR0",
+      "title": "Trace DR0 real XRT/IRON dispatch path and identify documented runtime APIs",
       "status": "READY",
       "depends_on": [],
-      "acceptance_command": "python tools/verify_agent_change.py --all"
+      "acceptance_command": "python tools/verify_agent_change.py"
+    },
+    {
+      "id": "DR0-EVIDENCE-DESIGN",
+      "dr": "DR0",
+      "title": "Design independent evidence collection from DR0 ground truth",
+      "status": "PENDING",
+      "depends_on": ["DR0-TRACE-DISPATCH"],
+      "acceptance_command": "python tools/verify_agent_change.py"
+    },
+    {
+      "id": "DR0-MIGRATE",
+      "dr": "DR0",
+      "title": "Migrate DR0 to emit framed evidence and verify parent corroboration",
+      "status": "PENDING",
+      "depends_on": ["DR0-EVIDENCE-DESIGN"],
+      "acceptance_command": "python tools/verify_agent_change.py"
+    },
+    {
+      "id": "GENERALIZE-RUNNERS",
+      "dr": null,
+      "title": "Generalize independent evidence collection across DR1-DR15",
+      "status": "PENDING",
+      "depends_on": ["DR0-MIGRATE"],
+      "acceptance_command": "python tools/verify_agent_change.py"
     },
     {
       "id": "POLICY-HOST-CRYPTO",
       "dr": null,
       "title": "Separate host oracle imports from DR10, DR17, DR18, and DR27 physical paths",
       "status": "PENDING",
-      "depends_on": ["BASELINE-RUNNERS"],
+      "depends_on": ["GENERALIZE-RUNNERS"],
       "acceptance_command": "python tools/verify_agent_change.py --all"
     },
     {
@@ -38,7 +54,7 @@
       "dr": null,
       "title": "Replace self-declared physical backend labels with structured runtime evidence",
       "status": "PENDING",
-      "depends_on": ["BASELINE-RUNNERS"],
+      "depends_on": ["GENERALIZE-RUNNERS"],
       "acceptance_command": "python tools/verify_agent_change.py --all"
     },
     {
@@ -46,7 +62,7 @@
       "dr": null,
       "title": "Audit and replace potentially partial DR14 physical comparisons",
       "status": "PENDING",
-      "depends_on": ["BASELINE-RUNNERS"],
+      "depends_on": ["GENERALIZE-RUNNERS"],
       "acceptance_command": "python tools/verify_agent_change.py --all"
     }
   ]

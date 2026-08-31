@@ -1,11 +1,12 @@
 # SPDX-License-Identifier: Apache-2.0
 from __future__ import annotations
 import ast
-import unittest
 from pathlib import Path
+import unittest
 
 REPO = Path(__file__).resolve().parents[1]
 CANONICAL_RUNNER = REPO / 'run_all_silicon_tests.py'
+RESIDENT_RUNNER = REPO / 'tests' / 'pqc_device_resident' / 'test_all_silicon_gates.py'
 HOST_PREFLIGHT_RUNNER = REPO / 'run_all_pqc_tests.py'
 INSTALL_LAUNCHER = REPO / 'install'
 INSTALL_IMPLEMENTATION = REPO / 'install.py'
@@ -34,8 +35,35 @@ EXPECTED_GATES = (
 )
 EXPECTED_CASE_TOTAL = 736
 
+EXPECTED_EXTENSION_GATES = (
+    ('DR16', 'test_dr16_etsi_qkd014_silicon.py', 'dr16-etsi014:silicon', 25),
+    ('DR17', 'test_dr17_mldsa_qkd_auth_silicon.py', 'dr17-mldsa-auth:silicon', 25),
+    ('DR18', 'test_dr18_dual_key_combiner_silicon.py', 'dr18-dual-combiner:silicon', 25),
+    ('DR19', 'test_dr19_hybrid_session_silicon.py', 'dr19-hybrid-session:silicon', 25),
+    ('DR27', 'test_dr27_qrng_reservoir_silicon.py', 'dr27-qrng-reservoir:silicon', 21),
+)
+EXPECTED_EXTENSION_CASE_TOTAL = 121
+
+EXPECTED_REJECTED_MARKERS = (
+    "unavailable",
+    "fallback",
+    "diagnostic-only",
+    "no silicon",
+    "simulat",
+    "emulat",
+    ":reference",
+    "reference backend",
+    "host backend",
+    "host-safe",
+    "skip",
+    "generic-only",
+    "generic backend",
+)
+
+
 def _module(path: Path) -> ast.Module:
     return ast.parse(path.read_text(encoding='utf-8'), filename=str(path))
+
 
 def _assignment(module: ast.Module, name: str) -> ast.expr:
     for node in module.body:
@@ -49,8 +77,9 @@ def _assignment(module: ast.Module, name: str) -> ast.expr:
                     return node.value
     raise AssertionError(f'assignment {name} not found')
 
-def _gate_calls(module: ast.Module) -> list[dict[str, object]]:
-    gates_node = _assignment(module, 'GATES')
+
+def _gate_calls(module: ast.Module, tuple_name: str = 'GATES') -> list[dict[str, object]]:
+    gates_node = _assignment(module, tuple_name)
     assert isinstance(gates_node, ast.Tuple)
     gates = []
     for element in gates_node.elts:
@@ -66,6 +95,7 @@ def _gate_calls(module: ast.Module) -> list[dict[str, object]]:
         gates.append(fields)
     return gates
 
+
 class CanonicalSiliconRunnerContractTests(unittest.TestCase):
     def setUp(self) -> None:
         self.module = _module(CANONICAL_RUNNER)
@@ -73,8 +103,11 @@ class CanonicalSiliconRunnerContractTests(unittest.TestCase):
     def test_runner_exists(self) -> None:
         self.assertTrue(CANONICAL_RUNNER.is_file())
 
+    def test_resident_runner_exists(self) -> None:
+        self.assertTrue(RESIDENT_RUNNER.is_file())
+
     def test_gate_count_and_order(self) -> None:
-        gates = _gate_calls(self.module)
+        gates = _gate_calls(self.module, 'GATES')
         self.assertEqual(len(gates), len(EXPECTED_GATES))
         for actual, (exp_id, exp_script, exp_label, exp_total) in zip(gates, EXPECTED_GATES):
             self.assertEqual(actual['gate_id'], exp_id)
@@ -86,9 +119,44 @@ class CanonicalSiliconRunnerContractTests(unittest.TestCase):
         total = sum(t for _, _, _, t in EXPECTED_GATES)
         self.assertEqual(total, EXPECTED_CASE_TOTAL)
 
+    def test_extension_gates_count_and_order(self) -> None:
+        ext_gates = _gate_calls(self.module, 'EXTENSION_GATES')
+        self.assertEqual(len(ext_gates), len(EXPECTED_EXTENSION_GATES))
+        for actual, (exp_id, exp_script, exp_label, exp_total) in zip(ext_gates, EXPECTED_EXTENSION_GATES):
+            self.assertEqual(actual['gate_id'], exp_id)
+            self.assertEqual(actual['script'], exp_script)
+            self.assertEqual(actual['backend_label'], exp_label)
+            self.assertEqual(actual['expected_total'], exp_total)
+
+    def test_extension_expected_case_total(self) -> None:
+        total = sum(t for _, _, _, t in EXPECTED_EXTENSION_GATES)
+        self.assertEqual(total, EXPECTED_EXTENSION_CASE_TOTAL)
+
     def test_gate_scripts_exist_in_tree(self) -> None:
         for _, script_name, _, _ in EXPECTED_GATES:
             self.assertTrue((GATE_DIRECTORY / script_name).is_file(), f'missing: {script_name}')
+
+    def test_extension_gate_scripts_exist_in_tree(self) -> None:
+        for _, script_name, _, _ in EXPECTED_EXTENSION_GATES:
+            self.assertTrue((GATE_DIRECTORY / script_name).is_file(), f'missing extension: {script_name}')
+
+    def test_rejected_markers_contract(self) -> None:
+        rejected_node = _assignment(self.module, 'REJECTED_MARKERS')
+        assert isinstance(rejected_node, ast.Tuple)
+        markers = tuple(
+            elt.value for elt in rejected_node.elts if isinstance(elt, ast.Constant)
+        )
+        self.assertEqual(markers, EXPECTED_REJECTED_MARKERS)
+
+    def test_result_marker_constants(self) -> None:
+        start_marker = _assignment(self.module, 'RESULT_START_MARKER')
+        assert isinstance(start_marker, ast.Constant)
+        self.assertEqual(start_marker.value, "<<<PQC_SILICON_GATE_RESULT_V1>>>")
+
+        end_marker = _assignment(self.module, 'RESULT_END_MARKER')
+        assert isinstance(end_marker, ast.Constant)
+        self.assertEqual(end_marker.value, "<<<END_PQC_SILICON_GATE_RESULT_V1>>>")
+
 
 if __name__ == '__main__':
     unittest.main()

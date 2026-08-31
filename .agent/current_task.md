@@ -2,12 +2,12 @@
 
 ## Task
 
-`BASELINE-001`: Trace DR0 from its test entrypoint through the IRON graph,
-Peano-generated AIE2 artifact, XRT physical dispatch, and complete independent
-output comparison.
+`BASELINE-RUNNERS`: Enforce fail-closed machine-readable evidence protocol and claim-validation baseline in silicon runners.
 
-## Completion rule
+## Status
 
-Do not change DR0 from `UNREVIEWED` based on historical logs or test names.
-Record new evidence and use the guarded promotion tool for any physical-silicon
-status.
+`IN_PROGRESS` (claim-validation baseline implemented, awaiting human review).
+The current code implements claim-format validation and source/file integrity checking; it does not yet corroborate physical device identity, dispatch, or KAT buffers.
+Existing unmigrated production gate scripts remain classified as `BLOCKED`.
+Child-emitted JSON records remain classified as `SELF_REPORTED_UNVERIFIED`.
+Do not proceed to gate migration or commit/push changes until human review is complete.

@@ -4,10 +4,10 @@
 
 - Baseline commit: `f51c602834a40c175184b43635504b7b474111ab`
 - Phase: forensic revalidation
-- Current DR: DR0
+- Current task: `BASELINE-RUNNERS` (IN_PROGRESS, claim-validation baseline implemented, awaiting review)
 - Physical hardware availability: not yet checked
+- Physical silicon execution: none performed in this session
 
 ## Next action
 
-Trace `tests/pqc_device_resident/test_m33_product_dr0.py` through every callable
-to identify the exact host/runtime/NPU boundary before changing its status.
+Await human review of the claim-validation baseline and DR0 runtime findings before proceeding to task `DR0-TRACE-DISPATCH` / `DR0-EVIDENCE-DESIGN`.
