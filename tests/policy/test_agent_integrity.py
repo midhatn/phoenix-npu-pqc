@@ -517,65 +517,44 @@ class RepositoryLocationTests(unittest.TestCase):
 class SuiteAccountingInvariantTests(unittest.TestCase):
     """Dynamic suite accounting invariant tests ensuring zero hardcoded arithmetic errors."""
 
-    def test_suite_accounting_invariant_and_non_negativity(self) -> None:
-        """Invariant: matching_cases + failing_cases + blocked_cases == selected_cases, all >= 0."""
-        from run_all_silicon_tests import GATES
+    def test_dynamic_suite_aggregation_and_partition_invariant(self) -> None:
+        """Construct GateExecutionResult fixtures and verify production aggregation invariants."""
+        from run_all_silicon_tests import GATES, GateExecutionResult, summarize_suite_execution, STATUS_SELF_REPORTED_UNVERIFIED, STATUS_FAIL
 
-        # Baseline ground truth mapping derived directly from per-gate structured execution records
-        gate_outcomes: dict[str, dict[str, int]] = {
-            "DR0": {"matching": 24, "failing": 0, "blocked": 0},
-            "DR1": {"matching": 33, "failing": 0, "blocked": 0},
-            "DR2a": {"matching": 13, "failing": 0, "blocked": 0},
-            "DR2b": {"matching": 13, "failing": 0, "blocked": 0},
-            "DR2c": {"matching": 11, "failing": 0, "blocked": 0},
-            "DR2d": {"matching": 0, "failing": 25, "blocked": 0},
-            "DR3": {"matching": 25, "failing": 0, "blocked": 0},
-            "DR4": {"matching": 25, "failing": 0, "blocked": 0},
-            "DR5": {"matching": 25, "failing": 0, "blocked": 0},
-            "DR6": {"matching": 25, "failing": 0, "blocked": 0},
-            "DR7": {"matching": 25, "failing": 0, "blocked": 0},
-            "DR8": {"matching": 75, "failing": 0, "blocked": 0},
-            "DR9": {"matching": 122, "failing": 0, "blocked": 0},
-            "DR10": {"matching": 40, "failing": 0, "blocked": 0},
-            "DR11": {"matching": 25, "failing": 0, "blocked": 0},
-            "DR12": {"matching": 30, "failing": 0, "blocked": 0},
-            "DR13": {"matching": 30, "failing": 0, "blocked": 0},
-            "DR14": {"matching": 72, "failing": 13, "blocked": 0},
-            "DR15": {"matching": 49, "failing": 36, "blocked": 0},
-        }
-
-        total_matching = 0
-        total_failing = 0
-        total_blocked = 0
-        total_selected = 0
-
+        results: list[GateExecutionResult] = []
         for gate in GATES:
-            self.assertIn(gate.gate_id, gate_outcomes)
-            record = gate_outcomes[gate.gate_id]
-            m = record["matching"]
-            f = record["failing"]
-            b = record["blocked"]
-            s = gate.expected_total
+            failed_count = 25 if gate.gate_id == "DR2d" else (13 if gate.gate_id == "DR14" else (36 if gate.gate_id == "DR15" else 0))
+            unverified_count = gate.expected_total - failed_count
+            res = GateExecutionResult(
+                gate=gate,
+                success=False,
+                status=STATUS_FAIL if failed_count > 0 else STATUS_SELF_REPORTED_UNVERIFIED,
+                exit_code=1 if failed_count > 0 else 0,
+                cases_selected=gate.expected_total,
+                cases_executed=gate.expected_total,
+                cases_passed=0,
+                cases_failed=failed_count,
+                cases_unverified=unverified_count,
+                cases_skipped=0,
+                cases_xfailed=0,
+                case_results=(),
+                duration_seconds=0.1,
+            )
+            results.append(res)
 
-            self.assertGreaterEqual(m, 0)
-            self.assertGreaterEqual(f, 0)
-            self.assertGreaterEqual(b, 0)
-            self.assertGreaterEqual(s, 0)
-            self.assertEqual(m + f + b, s, msg=f"Gate {gate.gate_id} cases partition failed: {m} + {f} + {b} != {s}")
+        summary = summarize_suite_execution(results, GATES)
+        summary.validate_invariants()
 
-            total_matching += m
-            total_failing += f
-            total_blocked += b
-            total_selected += s
-
-        self.assertEqual(total_selected, 736)
-        self.assertEqual(total_matching, 662)
-        self.assertEqual(total_failing, 74)
-        self.assertEqual(total_blocked, 0)
+        self.assertEqual(summary.total_cases_selected, 736)
+        self.assertEqual(summary.total_cases_executed, 736)
+        self.assertEqual(summary.total_cases_matching, 662)
+        self.assertEqual(summary.total_cases_failed, 74)
+        self.assertEqual(summary.total_cases_blocked, 0)
+        self.assertEqual(summary.total_cases_physically_verified, 0)
+        self.assertEqual(summary.total_cases_unverified_provenance, 736)
         self.assertEqual(
-            total_matching + total_failing + total_blocked,
-            total_selected,
-            msg=f"Suite accounting invariant failed: {total_matching} + {total_failing} + {total_blocked} != {total_selected}",
+            summary.total_cases_matching + summary.total_cases_failed + summary.total_cases_blocked,
+            summary.total_cases_selected,
         )
 
 

@@ -244,8 +244,7 @@ Record all of the following:
 6. confirmation of exactly two shim MM2S channels and one terminal S2MM
    channel, with no shim route/allocation for any `dr2d_*token` FIFO;
 7. explicit distinction between output correctness evidence and unvalidated
-   <!-- [CLAIM-PROVENANCE: status=HISTORICAL; source=pqc_dr2d_silicon_validation_pending; classification=SELF_REPORTED_UNVERIFIED] -->
-   remanence, side-channel, constant-time, performance, CMVP, or certification
+      remanence, side-channel, constant-time, performance, CMVP, or certification are not claimed
    claims.
 
 A missing runtime must print `unavailable` and exit 2; it is not a pass.
