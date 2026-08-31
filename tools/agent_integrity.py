@@ -62,7 +62,7 @@ SELF_DECLARED_BACKEND_RE = re.compile(
 SHA256_RE = re.compile(r"^[0-9a-f]{64}$")
 COMMIT_RE = re.compile(r"^[0-9a-f]{40}$")
 
-from run_all_silicon_tests import EXTENSION_GATES, GATES
+from run_all_silicon_tests import EXTENSION_GATES, GATES  # noqa: E402
 
 CANONICAL_GATE_MAP = {g.gate_id.upper(): g for g in GATES}
 CANONICAL_GATE_ORDER = [g.gate_id.upper() for g in GATES]
@@ -1444,9 +1444,7 @@ def validate_markdown_accounting_tables(
                                     re.IGNORECASE,
                                 )
                                 if g_match:
-                                    norm_gid = (
-                                        g_match.group(1).upper().replace(" ", "")
-                                    )
+                                    norm_gid = g_match.group(1).upper().replace(" ", "")
                                     gate_sequence.append(norm_gid)
                                     if norm_gid in gate_ids_seen:
                                         findings.append(
@@ -1561,17 +1559,11 @@ def validate_markdown_accounting_tables(
                         sel = row_counts.get("selected")
                         exec_cnt = row_counts.get("executed")
                         match_cnt = row_counts.get("matching")
-                        fail_cnt = row_counts.get("failing") or row_counts.get(
-                            "failed"
-                        )
+                        fail_cnt = row_counts.get("failing") or row_counts.get("failed")
                         pass_cnt = row_counts.get("passed")
                         blk_cnt = row_counts.get("blocked", 0)
 
-                        if (
-                            sel is not None
-                            and exec_cnt is not None
-                            and sel < exec_cnt
-                        ):
+                        if sel is not None and exec_cnt is not None and sel < exec_cnt:
                             findings.append(
                                 Finding(
                                     norm_path,

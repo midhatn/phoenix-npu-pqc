@@ -1397,9 +1397,7 @@ class KernelIntegrityAndAntiFabricationTests(unittest.TestCase):
         findings = self.scan_md(table)
         self.assertTrue(
             any(
-                f.rule == "DOC005"
-                and f.severity == "critical"
-                and "DR999" in f.message
+                f.rule == "DOC005" and f.severity == "critical" and "DR999" in f.message
                 for f in findings
             )
         )
@@ -1421,12 +1419,7 @@ class KernelIntegrityAndAntiFabricationTests(unittest.TestCase):
         )
 
     def test_review_finding_6_multiline_fallback_call_is_caught(self):
-        code = (
-            "void run() {\n"
-            "    run_host_fallback\n"
-            "        (input, output);\n"
-            "}\n"
-        )
+        code = "void run() {\n    run_host_fallback\n        (input, output);\n}\n"
         findings = self.scan_cpp(code)
         self.assertTrue(
             any(f.rule == "CPP008" and f.severity == "critical" for f in findings)
@@ -1449,11 +1442,7 @@ class KernelIntegrityAndAntiFabricationTests(unittest.TestCase):
         )
 
     def test_multiline_cpp_ternary_on_tc_id_is_caught(self):
-        code = (
-            "int check(int tc_id) {\n"
-            "    return (tc_id == 42) ? 1 : 0;\n"
-            "}\n"
-        )
+        code = "int check(int tc_id) {\n    return (tc_id == 42) ? 1 : 0;\n}\n"
         findings = self.scan_cpp(code)
         self.assertTrue(
             any(f.rule == "CPP006" and f.severity == "critical" for f in findings)
@@ -1491,10 +1480,10 @@ class KernelIntegrityAndAntiFabricationTests(unittest.TestCase):
     def test_cpp_comments_and_strings_with_test_ids_not_flagged(self):
         code = (
             "// Note: ACVP request_id == 0x90000001 describes the normative format\n"
-            '/* Multi-line comment referencing\n'
-            '   run_host_fallback(x, y);\n'
-            '   memcpy(out, expected_output, 32);\n'
-            '*/\n'
+            "/* Multi-line comment referencing\n"
+            "   run_host_fallback(x, y);\n"
+            "   memcpy(out, expected_output, 32);\n"
+            "*/\n"
             'const char* desc = "request_id == 0x90000001 or run_host_fallback()";\n'
             "void valid_function(uint8_t* buf) {\n"
             "    buf[0] = 0x01;\n"
@@ -1626,6 +1615,7 @@ class KernelIntegrityAndAntiFabricationTests(unittest.TestCase):
 
     def test_complete_valid_canonical_accounting_table_passes(self):
         from run_all_silicon_tests import GATES
+
         lines = [
             "# Master Physical Silicon Regression Suite Accounting\n",
             "| Gate | Selected | Executed | Matching | Failing |",
