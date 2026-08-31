@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: Apache-2.0
 """
 Milestone DR18: NIST SP 800-56C Dual-Key Combiner Silicon Validation Suite.
-Backend: dr18-dual-key-combiner:silicon (AMD Phoenix AIE2 / XDNA1 Architecture).
+Target: AMD Phoenix AIE2 / XDNA1 Architecture (dr18-dual-key-combiner).
 """
 
 import secrets
@@ -21,7 +21,7 @@ from tests.pqc_device_resident.test_dr18_dual_key_combiner import compute_ref_k_
 def main():
     print("=" * 70)
     print("DR18: NIST SP 800-56C Dual-Key Combiner Silicon Validation")
-    print("Backend: dr18-dual-key-combiner:silicon (AMD Phoenix AIE2)")
+    print("Target: AMD Phoenix AIE2 / XDNA1 (dr18-dual-key-combiner)")
     print("Standards: NIST SP 800-56C Rev. 2, NIST SP 800-227, BSI TR-02102")
     print("=" * 70)
 
