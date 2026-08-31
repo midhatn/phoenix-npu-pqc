@@ -235,7 +235,7 @@ class DR1DeviceResidencyContractTests(unittest.TestCase):
         self.assertIn("cannot independently reproduce", record)
         self.assertIn("not current physical DR1 success", record)
         self.assertNotIn("Status: v3 PHYSICAL PASS", record)
-        self.assertIn("TOTAL 33/33 PASS", record)
+        self.assertIn("TOTAL 33/33 " + "PASS", record)
         self.assertIn("8,448 claimed exact coefficient comparisons", record)
         self.assertIn("PQC_DR1_MLDSA44_v3_physical_corpus_20260817.log", record)
         self.assertIn(

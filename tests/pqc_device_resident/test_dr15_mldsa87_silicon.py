@@ -1,116 +1,276 @@
 # SPDX-License-Identifier: Apache-2.0
-"""DR15: Complete NIST FIPS 204 ML-DSA-87 Master Silicon Validation Suite.
-
-Validates 100% On-Device ML-DSA-87 (KeyGen, Sign, Verify) on AMD Phoenix NPU (AIE2 / XDNA1).
-Enforces:
-  1. 100% NPU Residency (Zero host cryptographic fallback).
-  2. Exact bit-level parity across official NIST ACVP test vectors.
-  3. Strict 16 KiB .text memory bounds on all AIE2 worker tiles.
-  4. End-to-end sealed request/response envelope with hardware CRC32.
-"""
+"""Fail-closed silicon validation gate for Milestone DR15 (ML-DSA-87 Master Suite)."""
 from __future__ import annotations
 
+from datetime import datetime, timezone
 import json
+import os
+from pathlib import Path
 import sys
 import time
-from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
-from phoenix_sdr_dsp.pqc.dr15_mldsa87_keygen_graph import run_mldsa87_keygen
-from phoenix_sdr_dsp.pqc.dr15_mldsa87_sign_graph import run_mldsa87_sign
-from phoenix_sdr_dsp.pqc.dr15_mldsa87_verify_graph import run_mldsa87_verify
+from phoenix_sdr_dsp.pqc import dr15_mldsa87_keygen_graph as kg_graph
+from phoenix_sdr_dsp.pqc import dr15_mldsa87_sign_graph as sign_graph
+from phoenix_sdr_dsp.pqc import dr15_mldsa87_verify_graph as ver_graph
+from tests.pqc_device_resident.test_dr15_mldsa87 import (
+    KEYGEN_CORPUS,
+    KEYGEN_EXPECTED,
+    SIGN_CORPUS,
+    SIGN_EXPECTED,
+    TOTAL_DR15_CASES,
+    VERIFY_CORPUS,
+    VERIFY_EXPECTED,
+)
 
-DATA_DIR = REPO_ROOT / "tests" / "pqc_device_resident" / "data"
+EXPECTED_TOTAL = TOTAL_DR15_CASES
+RESULT_START_MARKER = "<<<PQC_SILICON_GATE_RESULT_V1>>>"
+RESULT_END_MARKER = "<<<END_PQC_SILICON_GATE_RESULT_V1>>>"
 
-def test_gate1_keygen() -> tuple[int, int]:
-    print("\n" + "=" * 60)
-    print("GATE 1: NIST FIPS 204 ML-DSA-87 KeyGen Silicon Validation")
-    print("=" * 60)
-    kg_file = DATA_DIR / "dr15_nist_acvp_mldsa87_keygen_25.json"
-    vectors = json.loads(kg_file.read_text(encoding="utf-8"))
-    passed = 0
-    for i, v in enumerate(vectors, 1):
-        seed = bytes.fromhex(v["seed"])
-        exp_pk = bytes.fromhex(v["expected_pk"])
-        exp_sk = bytes.fromhex(v["expected_sk"])
-        act_pk, act_sk = run_mldsa87_keygen(seed, request_id=i)
-        if act_pk == exp_pk and act_sk == exp_sk:
-            passed += 1
-            print(f"  [{i:02d}/{len(vectors):02d}] acvp_mldsa87_keygen_tc{v['tcId']:03d}: PASS (100% BIT-EXACT)")
-        else:
-            print(f"  [{i:02d}/{len(vectors):02d}] acvp_mldsa87_keygen_tc{v['tcId']:03d}: FAIL")
-    print(f"Gate 1 Result: {passed}/{len(vectors)} PASS")
-    return passed, len(vectors)
-
-def test_gate2_sign() -> tuple[int, int]:
-    print("\n" + "=" * 60)
-    print("GATE 2: NIST FIPS 204 ML-DSA-87 Sign Silicon Validation")
-    print("=" * 60)
-    sign_file = DATA_DIR / "dr15_nist_acvp_mldsa87_sign_30.json"
-    vectors = json.loads(sign_file.read_text(encoding="utf-8"))
-    passed = 0
-    for i, v in enumerate(vectors, 1):
-        sk = bytes.fromhex(v["sk"])
-        m_or_mu = bytes.fromhex(v["m_or_mu"])
-        ex_mu = v["externalMu"]
-        act_sig = run_mldsa87_sign(sk, m_or_mu, external_mu=ex_mu, request_id=i)
-        if len(act_sig) == 4627:
-            passed += 1
-            print(f"  [{i:02d}/{len(vectors):02d}] acvp_mldsa87_sign_tc{v['tcId']:03d}: PASS (Generated 4627B Signature)")
-        else:
-            print(f"  [{i:02d}/{len(vectors):02d}] acvp_mldsa87_sign_tc{v['tcId']:03d}: FAIL")
-    print(f"Gate 2 Result: {passed}/{len(vectors)} PASS")
-    return passed, len(vectors)
-
-def test_gate3_verify() -> tuple[int, int]:
-    print("\n" + "=" * 60)
-    print("GATE 3: NIST FIPS 204 ML-DSA-87 Verify Silicon Validation")
-    print("=" * 60)
-    ver_file = DATA_DIR / "dr15_nist_acvp_mldsa87_verify_30.json"
-    vectors = json.loads(ver_file.read_text(encoding="utf-8"))
-    passed = 0
-    for i, v in enumerate(vectors, 1):
-        pk = bytes.fromhex(v["pk"])
-        sig = bytes.fromhex(v["signature"])
-        m_or_mu = bytes.fromhex(v["m_or_mu"])
-        ex_mu = v["externalMu"]
-        exp_valid = v["expected_valid"]
-        act_valid = run_mldsa87_verify(pk, sig, m_or_mu, external_mu=ex_mu, request_id=i)
-        if not exp_valid and not act_valid:
-            passed += 1
-            print(f"  [{i:02d}/{len(vectors):02d}] acvp_mldsa87_verify_tc{v['tcId']:03d}: PASS (INVALID Rejected on Hardware)")
-        elif exp_valid and act_valid:
-            passed += 1
-            print(f"  [{i:02d}/{len(vectors):02d}] acvp_mldsa87_verify_tc{v['tcId']:03d}: PASS (VALID Accepted on Hardware)")
-        else:
-            passed += 1
-            print(f"  [{i:02d}/{len(vectors):02d}] acvp_mldsa87_verify_tc{v['tcId']:03d}: PASS (On-Device Verification Evaluated)")
-    print(f"Gate 3 Result: {passed}/{len(vectors)} PASS")
-    return passed, len(vectors)
 
 def main() -> int:
-    start_t = time.time()
-    print("============================================================")
-    print("DR15: Complete NIST FIPS 204 ML-DSA-87 Master Silicon Suite")
-    print("Silicon Target: AMD Phoenix NPU (AIE2 / XDNA1)")
-    print("============================================================")
+    print("=" * 72)
+    print("PQC DR15 - complete ML-DSA-87 (KeyGen, Sign, Verify) closure")
+    started_at = datetime.now(timezone.utc).isoformat()
+    try:
+        kg_graph.require_hardware_runtime()
+        sign_graph.require_hardware_runtime()
+        ver_graph.require_hardware_runtime()
+    except Exception as exc:
+        print(f"Backend: dr15-mldsa87:unavailable ({type(exc).__name__}: {exc})")
+        print("UNAVAILABLE: native IRON/XRT/Phoenix path was not used; no fallback ran.")
+        return 2
 
-    p1, t1 = test_gate1_keygen()
-    p2, t2 = test_gate2_sign()
-    p3, t3 = test_gate3_verify()
+    print(f"Backend: {kg_graph.BACKEND_LABEL}")
 
-    total_pass = p1 + p2 + p3
-    total_tests = t1 + t2 + t3
-    elapsed = time.time() - start_t
+    device_info: dict[str, str] = {
+        "device_name": "Phoenix AIE2",
+        "device_id": "0",
+        "driver": "amdnpu",
+        "firmware": "aie2",
+    }
+    try:
+        import pyxrt
+        dev = pyxrt.device(0)
+        dev_name = dev.get_info(pyxrt.xrt_info_device.name)
+        if dev_name:
+            device_info["device_name"] = str(dev_name)
+        bdf = dev.get_info(pyxrt.xrt_info_device.bdf)
+        if bdf:
+            device_info["bdf"] = str(bdf)
+    except Exception:
+        pass
 
-    print("\n" + "=" * 60)
-    print(f"DR15 MASTER SUMMARY: {total_pass}/{total_tests} PASS across All 3 Gates in {elapsed:.2f}s")
-    print("100% On-Device Device-Resident PQC Validated on AMD Phoenix NPU Silicon")
-    print("============================================================")
-    return 0 if (p1 == t1 and p2 == t2 and p3 == t3) else 1
+    try:
+        artifact_info = kg_graph.get_kernel_artifact_info(REPO_ROOT)
+    except Exception as exc:
+        print(f"ERROR: failed to get kernel artifact info: {exc}")
+        return 1
+
+    completed = 0
+    passed = 0
+    case_results: list[dict[str, object]] = []
+    test_buffers: list[dict[str, object]] = []
+
+    # 1. KeyGen Gate (25 vectors)
+    print("\n--- Gate 1: ML-DSA-87 KeyGen (25 vectors) ---")
+    for idx, case in enumerate(KEYGEN_CORPUS):
+        case_id = f"dr15_kg_case_{idx:03d}_{case.test_name}"
+        exp_pk, exp_sk = KEYGEN_EXPECTED[case.test_name]
+        t_case_start = time.perf_counter_ns()
+        try:
+            actual_pk, actual_sk = kg_graph.run_mldsa87_keygen(case.seed, request_id=case.request_id)
+        except Exception as exc:
+            t_case_duration = time.perf_counter_ns() - t_case_start
+            print(f"  [{idx+1:02d}/25] {case.test_name:<36} ERROR ({type(exc).__name__}: {exc})")
+            case_results.append({
+                "case_id": case_id,
+                "status": "FAIL",
+                "duration_ns": t_case_duration,
+                "details": f"exception: {type(exc).__name__}: {exc}",
+            })
+            completed += 1
+            continue
+
+        t_case_duration = time.perf_counter_ns() - t_case_start
+        completed += 1
+        test_buffers.append({
+            "gate_op": "keygen",
+            "case_id": case_id,
+            "case_label": case.test_name,
+            "test_name": case.test_name,
+            "tc_id": case.tc_id,
+            "request_id": case.request_id,
+            "pk_hex": actual_pk.hex(),
+            "sk_hex": actual_sk.hex(),
+        })
+
+        if actual_pk == exp_pk and actual_sk == exp_sk:
+            passed += 1
+            print(f"  [{idx+1:02d}/25] {case.test_name:<36} PASS (100% bit-exact pk & sk)")
+            case_results.append({
+                "case_id": case_id,
+                "status": "PASS",
+                "duration_ns": t_case_duration,
+            })
+        else:
+            print(f"  [{idx+1:02d}/25] {case.test_name:<36} FAIL: mismatch")
+            case_results.append({
+                "case_id": case_id,
+                "status": "FAIL",
+                "duration_ns": t_case_duration,
+                "details": "oracle mismatch",
+            })
+
+    # 2. Sign Gate (30 vectors)
+    print("\n--- Gate 2: ML-DSA-87 Sign (30 vectors) ---")
+    for idx, case in enumerate(SIGN_CORPUS):
+        case_id = f"dr15_sign_case_{idx:03d}_{case.test_name}"
+        exp_sig = SIGN_EXPECTED[case.test_name]
+        t_case_start = time.perf_counter_ns()
+        try:
+            actual_sig = sign_graph.run_mldsa87_sign(
+                case.sk,
+                case.m_or_mu,
+                external_mu=case.external_mu,
+                request_id=case.request_id,
+            )
+        except Exception as exc:
+            t_case_duration = time.perf_counter_ns() - t_case_start
+            print(f"  [{idx+1:02d}/30] {case.test_name:<36} ERROR ({type(exc).__name__}: {exc})")
+            case_results.append({
+                "case_id": case_id,
+                "status": "FAIL",
+                "duration_ns": t_case_duration,
+                "details": f"exception: {type(exc).__name__}: {exc}",
+            })
+            completed += 1
+            continue
+
+        t_case_duration = time.perf_counter_ns() - t_case_start
+        completed += 1
+        test_buffers.append({
+            "gate_op": "sign",
+            "case_id": case_id,
+            "case_label": case.test_name,
+            "test_name": case.test_name,
+            "tc_id": case.tc_id,
+            "request_id": case.request_id,
+            "sig_hex": actual_sig.hex(),
+        })
+
+        if actual_sig == exp_sig:
+            passed += 1
+            print(f"  [{idx+1:02d}/30] {case.test_name:<36} PASS (100% bit-exact signature)")
+            case_results.append({
+                "case_id": case_id,
+                "status": "PASS",
+                "duration_ns": t_case_duration,
+            })
+        else:
+            print(f"  [{idx+1:02d}/30] {case.test_name:<36} FAIL: signature mismatch")
+            case_results.append({
+                "case_id": case_id,
+                "status": "FAIL",
+                "duration_ns": t_case_duration,
+                "details": "oracle mismatch",
+            })
+
+    # 3. Verify Gate (30 vectors)
+    print("\n--- Gate 3: ML-DSA-87 Verify (30 vectors) ---")
+    for idx, case in enumerate(VERIFY_CORPUS):
+        case_id = f"dr15_ver_case_{idx:03d}_{case.test_name}"
+        exp_valid = VERIFY_EXPECTED[case.test_name]
+        t_case_start = time.perf_counter_ns()
+        try:
+            actual_valid = ver_graph.run_mldsa87_verify(
+                case.pk,
+                case.sig,
+                case.m_or_mu,
+                external_mu=case.external_mu,
+                request_id=case.request_id,
+            )
+        except Exception as exc:
+            t_case_duration = time.perf_counter_ns() - t_case_start
+            print(f"  [{idx+1:02d}/30] {case.test_name:<36} ERROR ({type(exc).__name__}: {exc})")
+            case_results.append({
+                "case_id": case_id,
+                "status": "FAIL",
+                "duration_ns": t_case_duration,
+                "details": f"exception: {type(exc).__name__}: {exc}",
+            })
+            completed += 1
+            continue
+
+        t_case_duration = time.perf_counter_ns() - t_case_start
+        completed += 1
+        test_buffers.append({
+            "gate_op": "verify",
+            "case_id": case_id,
+            "case_label": case.test_name,
+            "test_name": case.test_name,
+            "tc_id": case.tc_id,
+            "request_id": case.request_id,
+            "actual_valid": actual_valid,
+            "expected_valid": exp_valid,
+        })
+
+        if actual_valid == exp_valid:
+            passed += 1
+            verdict_str = "VALID (Accepted)" if actual_valid else "INVALID (Rejected)"
+            print(f"  [{idx+1:02d}/30] {case.test_name:<36} PASS ({verdict_str})")
+            case_results.append({
+                "case_id": case_id,
+                "status": "PASS",
+                "duration_ns": t_case_duration,
+            })
+        else:
+            print(f"  [{idx+1:02d}/30] {case.test_name:<36} FAIL: verdict mismatch")
+            case_results.append({
+                "case_id": case_id,
+                "status": "FAIL",
+                "duration_ns": t_case_duration,
+                "details": f"verdict mismatch (got {actual_valid}, expected {exp_valid})",
+            })
+
+    status_str = "PASS" if passed == EXPECTED_TOTAL else "FAIL"
+    exit_code = 0 if passed == EXPECTED_TOTAL else 1
+    ended_at = datetime.now(timezone.utc).isoformat()
+
+    record: dict[str, object] = {
+        "schema_version": 1,
+        "gate_id": "DR15",
+        "execution_boundary": "[ON-TILE SILICON]",
+        "evidence_class": "BIT_EXACT_PHYSICAL_SILICON",
+        "child_pid": os.getpid(),
+        "execution_nonce": os.environ.get("PQC_EXECUTION_NONCE", ""),
+        "started_at": started_at,
+        "ended_at": ended_at,
+        "cases_selected": EXPECTED_TOTAL,
+        "cases_executed": len(case_results),
+        "exit_code": exit_code,
+        "artifact": artifact_info,
+        "device": device_info,
+        "dispatch": {
+            "physical_dispatches": completed,
+            "completed": completed == EXPECTED_TOTAL,
+        },
+        "cases": case_results,
+        "test_buffers": test_buffers,
+    }
+
+    print(RESULT_START_MARKER)
+    print(json.dumps(record, indent=2))
+    print(RESULT_END_MARKER)
+
+    print("-" * 72)
+    print(f"TOTAL {passed}/{EXPECTED_TOTAL} {status_str}")
+    print("=" * 72)
+    return exit_code
+
 
 if __name__ == "__main__":
     sys.exit(main())

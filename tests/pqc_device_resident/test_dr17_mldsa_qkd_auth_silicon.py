@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: Apache-2.0
 """
 Milestone DR17: ML-DSA Asymmetric QKD Control Plane Authenticator Silicon Validation Suite.
-Backend: dr17-mldsa-qkd-auth:silicon (AMD Phoenix AIE2 / XDNA1 Architecture).
+Target: AMD Phoenix AIE2 / XDNA1 Architecture (dr17-mldsa-qkd-auth).
 """
 
 import os
@@ -9,7 +9,6 @@ import secrets
 import sys
 import time
 import uuid
-from hashlib import shake_256
 from pathlib import Path
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
@@ -22,11 +21,12 @@ from phoenix_sdr_dsp.pqc import dr11_mldsa44_keygen_graph as kg44
 from phoenix_sdr_dsp.pqc import dr12_mldsa44_sign_graph as sign44
 from phoenix_sdr_dsp.pqc import dr14_mldsa65_keygen_graph as kg65
 from phoenix_sdr_dsp.pqc import dr14_mldsa65_sign_graph as sign65
+from tests.pqc_device_resident.test_dr17_mldsa_qkd_auth import compute_mldsa65_mu
 
 def main():
     print("=" * 70)
     print("DR17: ML-DSA Asymmetric QKD Control Plane Authenticator Validation")
-    print("Backend: dr17-mldsa-qkd-auth:silicon (AMD Phoenix AIE2)")
+    print("Target: AMD Phoenix AIE2 / XDNA1 (dr17-mldsa-qkd-auth)")
     print("Standards: NIST FIPS 204 (ML-DSA), ETSI GS QKD 015")
     print("=" * 70)
 
@@ -58,8 +58,7 @@ def main():
         master = f"QKD_NODE_A_65_{i}"
         slave = f"QKD_NODE_B_65_{i}"
         manifest = abi.pack_dr17_manifest(master, slave, key_id, epoch, nonce)
-        tr = shake_256(pk65).digest(64)
-        mu = shake_256(tr + manifest).digest(64)
+        mu = compute_mldsa65_mu(pk65, manifest)
         sig = sign65.run_mldsa65_sign(sk65, mu, external_mu=True)
         test_cases.append((f"auth_valid_mldsa65_{i:02d}", "ML-DSA-65", pk65, master, slave, key_id, epoch, nonce, sig, True))
 

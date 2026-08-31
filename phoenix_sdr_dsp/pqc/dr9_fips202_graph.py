@@ -1,6 +1,8 @@
 # SPDX-License-Identifier: Apache-2.0
 """DR9 Reusable NIST FIPS 202 NPU Service Graph on AMD Phoenix AIE2."""
 
+import hashlib
+import os
 from pathlib import Path
 from typing import Any
 import numpy as np
@@ -8,16 +10,60 @@ import numpy as np
 from . import dr9_fips202_unified_abi as abi
 
 BACKEND_LABEL = "dr9-fips202:silicon"
+KERNEL_REL_PATH = "phoenix_sdr_dsp/pqc/kernels/dr9_fips202_service.cc"
 _PROGRAM: Any | None = None
 
 REQ_BYTES = 2048
 DESCRIPTOR_BYTES = 16
 RESULT_BYTES = 1044
 
+
 class NativeBackendUnavailable(RuntimeError):
     """The native IRON/XRT DR9 backend is unavailable or failed closed."""
 
+
+def check_emulation_and_redirection_excluded() -> None:
+    """Fail closed if XCL_EMULATION_MODE or XRT_INI_PATH runtime redirection variables are set."""
+    emulation_mode = os.environ.get("XCL_EMULATION_MODE")
+    if emulation_mode and emulation_mode.strip():
+        raise NativeBackendUnavailable(
+            f"Physical silicon execution rejected: XCL_EMULATION_MODE={emulation_mode!r} is set. "
+            "Hardware ground truth forbids simulation or emulation backends."
+        )
+    xrt_ini = os.environ.get("XRT_INI_PATH")
+    if xrt_ini and xrt_ini.strip():
+        raise NativeBackendUnavailable(
+            f"Physical silicon execution rejected: XRT_INI_PATH={xrt_ini!r} is set. "
+            "Hardware ground truth forbids custom runtime configuration redirection."
+        )
+
+
+def require_hardware_runtime() -> None:
+    """Check hardware runtime availability and fail closed if unavailable."""
+    check_emulation_and_redirection_excluded()
+    try:
+        import pyxrt
+        dev = pyxrt.device(0)
+    except Exception as exc:
+        raise NativeBackendUnavailable("DR9 physical silicon requires XRT device(0)") from exc
+
+
+def get_kernel_artifact_info(repo_root: Path | None = None) -> dict[str, Any]:
+    """Return verified path and SHA-256 digest of the DR9 AIE2 kernel source."""
+    root = repo_root or Path(__file__).resolve().parents[2]
+    kernel_path = root / KERNEL_REL_PATH
+    if not kernel_path.is_file():
+        raise FileNotFoundError(f"Kernel source file not found: {kernel_path}")
+    data = kernel_path.read_bytes()
+    return {
+        "path": KERNEL_REL_PATH,
+        "size_bytes": len(data),
+        "sha256": hashlib.sha256(data).hexdigest().lower(),
+    }
+
+
 def _load_iron() -> tuple[Any, ...]:
+    check_emulation_and_redirection_excluded()
     try:
         from aie import iron
         from aie.iron import (
@@ -195,3 +241,17 @@ def run_fips202_service(func_name: str, msg: bytes, out_len: int | None = None, 
         raise RuntimeError(f"DR9 FIPS 202 service returned error status {status}")
 
     return digest
+
+
+__all__ = [
+    "BACKEND_LABEL",
+    "DESCRIPTOR_BYTES",
+    "KERNEL_REL_PATH",
+    "NativeBackendUnavailable",
+    "REQ_BYTES",
+    "RESULT_BYTES",
+    "check_emulation_and_redirection_excluded",
+    "get_kernel_artifact_info",
+    "require_hardware_runtime",
+    "run_fips202_service",
+]

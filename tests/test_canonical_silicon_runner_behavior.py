@@ -108,6 +108,592 @@ def _make_dr0_test_buffers(corrupt_index: int | None = None) -> list[dict[str, o
     return buffers
 
 
+def _make_dr1_test_buffers(
+    corrupt_index: int | None = None,
+    corrupt_fingerprint_index: int | None = None,
+) -> list[dict[str, object]]:
+    """Generate 33 authentic DR1 test buffers for parent oracle verification tests."""
+    from tests.pqc_device_resident.dr1_reference import expanda_rejntt_reference
+    from tests.pqc_device_resident.test_dr1_mldsa44_rejntt import PRE_SILICON_CORPUS, _coefficient_digest
+    buffers: list[dict[str, object]] = []
+    for idx, case in enumerate(PRE_SILICON_CORPUS):
+        case_id = f"dr1_case_{idx:03d}_{case.label}"
+        expected = expanda_rejntt_reference(case.rho, case.j, case.i)
+        out_coeffs = list(expected.coefficients)
+        if corrupt_index is not None and idx == corrupt_index:
+            out_coeffs[0] = (out_coeffs[0] + 1) % 8380417
+        fp = _coefficient_digest(out_coeffs)
+        if corrupt_fingerprint_index is not None and idx == corrupt_fingerprint_index:
+            fp = "0" * 64
+        buffers.append({
+            "case_id": case_id,
+            "case_label": case.label,
+            "rho_hex": case.rho.hex(),
+            "j": case.j,
+            "i": case.i,
+            "request_id": case.request_id,
+            "output_coefficients": out_coeffs,
+            "fingerprint_sha256": fp,
+        })
+    return buffers
+
+
+def _make_dr2a_test_buffers(
+    corrupt_index: int | None = None,
+) -> list[dict[str, object]]:
+    """Generate 13 authentic DR2a test buffers for parent oracle verification tests."""
+    from tests.pqc_device_resident.dr2a_reference import samplentt_reference
+    from tests.pqc_device_resident.test_dr2_mlkem512_samplentt import PRE_SILICON_CORPUS
+    buffers: list[dict[str, object]] = []
+    for idx, case in enumerate(PRE_SILICON_CORPUS):
+        case_id = f"dr2a_case_{idx:03d}_{case.label}"
+        expected = samplentt_reference(case.rho, case.j, case.i)
+        out_coeffs = list(expected.coefficients)
+        if corrupt_index is not None and idx == corrupt_index:
+            out_coeffs[0] = (out_coeffs[0] + 1) % 3329
+        buffers.append({
+            "case_id": case_id,
+            "case_label": case.label,
+            "rho_hex": case.rho.hex(),
+            "j": case.j,
+            "i": case.i,
+            "request_id": case.request_id,
+            "output_coefficients": out_coeffs,
+        })
+    return buffers
+
+
+def _make_dr2b_test_buffers(
+    corrupt_index: int | None = None,
+) -> list[dict[str, object]]:
+    """Generate 13 authentic DR2b test buffers for parent oracle verification tests."""
+    from tests.pqc_device_resident.dr2b_reference import noise_ntt_reference
+    from tests.pqc_device_resident.test_dr2b_mlkem512_noise_ntt import PRE_SILICON_CORPUS
+    buffers: list[dict[str, object]] = []
+    for idx, case in enumerate(PRE_SILICON_CORPUS):
+        case_id = f"dr2b_case_{idx:03d}_{case.label}"
+        expected = list(noise_ntt_reference(case.sigma, case.counter))
+        out_coeffs = list(expected)
+        if corrupt_index is not None and idx == corrupt_index:
+            out_coeffs[0] = (out_coeffs[0] + 1) % 3329
+        buffers.append({
+            "case_id": case_id,
+            "case_label": case.label,
+            "sigma_hex": case.sigma.hex(),
+            "counter": case.counter,
+            "request_id": case.request_id,
+            "output_coefficients": out_coeffs,
+        })
+    return buffers
+
+
+def _make_dr2c_test_buffers(
+    corrupt_index: int | None = None,
+) -> list[dict[str, object]]:
+    """Generate 11 authentic DR2c test buffers for parent oracle verification tests."""
+    from tests.pqc_device_resident.dr2c_reference import keygen_row_reference
+    from tests.pqc_device_resident.test_dr2c_mlkem512_keygen_row import PRE_SILICON_CORPUS
+    buffers: list[dict[str, object]] = []
+    for idx, case in enumerate(PRE_SILICON_CORPUS):
+        case_id = f"dr2c_case_{idx:03d}_{case.label}"
+        expected = list(keygen_row_reference(case.rho, case.sigma, case.row_index))
+        out_coeffs = list(expected)
+        if corrupt_index is not None and idx == corrupt_index:
+            out_coeffs[0] = (out_coeffs[0] + 1) % 3329
+        buffers.append({
+            "case_id": case_id,
+            "case_label": case.label,
+            "rho_hex": case.rho.hex(),
+            "sigma_hex": case.sigma.hex(),
+            "row_index": case.row_index,
+            "request_id": case.request_id,
+            "output_coefficients": out_coeffs,
+        })
+    return buffers
+
+
+def _make_dr2d_test_buffers(
+    corrupt_index: int | None = None,
+) -> list[dict[str, object]]:
+    """Generate 25 authentic DR2d test buffers for parent oracle verification tests."""
+    from tests.pqc_device_resident.test_dr2d_mlkem512_kpke_keygen import (
+        ACVP_EXPECTED,
+        PRE_SILICON_CORPUS,
+    )
+    buffers: list[dict[str, object]] = []
+    for idx, case in enumerate(PRE_SILICON_CORPUS):
+        case_id = f"dr2d_case_{idx:03d}_{case.label}"
+        tc_id = int(case.label[-2:])
+        expected_ek, expected_dk = ACVP_EXPECTED[tc_id]
+        ek_bytes = bytearray(expected_ek)
+        dk_bytes = bytearray(expected_dk)
+        if corrupt_index is not None and idx == corrupt_index:
+            ek_bytes[0] ^= 0xFF
+        buffers.append({
+            "case_id": case_id,
+            "case_label": case.label,
+            "tc_id": tc_id,
+            "d_hex": case.d.hex(),
+            "request_id": case.request_id,
+            "ek_pke_hex": bytes(ek_bytes).hex(),
+            "dk_pke_hex": bytes(dk_bytes).hex(),
+        })
+    return buffers
+
+
+def _make_dr3_test_buffers(
+    corrupt_index: int | None = None,
+) -> list[dict[str, object]]:
+    """Generate 25 authentic DR3 test buffers for parent oracle verification tests."""
+    from tests.pqc_device_resident.test_dr3_mlkem512_kpke_encrypt import (
+        ACVP_EXPECTED,
+        PRE_SILICON_CORPUS,
+    )
+    buffers: list[dict[str, object]] = []
+    for idx, case in enumerate(PRE_SILICON_CORPUS):
+        case_id = f"dr3_case_{idx:03d}_{case.label}"
+        expected_c = ACVP_EXPECTED[case.tc_id]
+        c_bytes = bytearray(expected_c)
+        if corrupt_index is not None and idx == corrupt_index:
+            c_bytes[0] ^= 0xFF
+        buffers.append({
+            "case_id": case_id,
+            "case_label": case.label,
+            "tc_id": case.tc_id,
+            "ek_hex": case.ek.hex(),
+            "m_hex": case.m.hex(),
+            "r_hex": case.r.hex(),
+            "request_id": case.request_id,
+            "c_hex": bytes(c_bytes).hex(),
+        })
+    return buffers
+
+
+def _make_dr4_test_buffers(
+    corrupt_index: int | None = None,
+) -> list[dict[str, object]]:
+    """Generate 25 authentic DR4 test buffers for parent oracle verification tests."""
+    from tests.pqc_device_resident.test_dr4_mlkem512_kpke_decrypt import (
+        ACVP_EXPECTED,
+        PRE_SILICON_CORPUS,
+    )
+    buffers: list[dict[str, object]] = []
+    for idx, case in enumerate(PRE_SILICON_CORPUS):
+        case_id = f"dr4_case_{idx:03d}_{case.label}"
+        expected_m = ACVP_EXPECTED[case.tc_id]
+        m_bytes = bytearray(expected_m)
+        if corrupt_index is not None and idx == corrupt_index:
+            m_bytes[0] ^= 0xFF
+        buffers.append({
+            "case_id": case_id,
+            "case_label": case.label,
+            "tc_id": case.tc_id,
+            "dk_pke_hex": case.dk_pke.hex(),
+            "c_hex": case.c.hex(),
+            "request_id": case.request_id,
+            "m_hex": bytes(m_bytes).hex(),
+        })
+    return buffers
+
+
+def _make_dr5_test_buffers(
+    corrupt_index: int | None = None,
+) -> list[dict[str, object]]:
+    """Generate 25 authentic DR5 test buffers for parent oracle verification tests."""
+    from tests.pqc_device_resident.test_dr5_mlkem512_keygen import (
+        ACVP_EXPECTED,
+        PRE_SILICON_CORPUS,
+    )
+    buffers: list[dict[str, object]] = []
+    for idx, case in enumerate(PRE_SILICON_CORPUS):
+        case_id = f"dr5_case_{idx:03d}_{case.label}"
+        expected_ek, expected_dk = ACVP_EXPECTED[case.tc_id]
+        ek_bytes = bytearray(expected_ek)
+        dk_bytes = bytearray(expected_dk)
+        if corrupt_index is not None and idx == corrupt_index:
+            ek_bytes[0] ^= 0xFF
+        buffers.append({
+            "case_id": case_id,
+            "case_label": case.label,
+            "tc_id": case.tc_id,
+            "d_hex": case.d.hex(),
+            "z_hex": case.z.hex(),
+            "request_id": case.request_id,
+            "ek_hex": bytes(ek_bytes).hex(),
+            "dk_hex": bytes(dk_bytes).hex(),
+        })
+    return buffers
+
+
+def _make_dr6_test_buffers(
+    corrupt_index: int | None = None,
+) -> list[dict[str, object]]:
+    """Generate 25 authentic DR6 test buffers for parent oracle verification tests."""
+    from tests.pqc_device_resident.test_dr6_mlkem512_encaps import (
+        ACVP_EXPECTED,
+        PRE_SILICON_CORPUS,
+    )
+    buffers: list[dict[str, object]] = []
+    for idx, case in enumerate(PRE_SILICON_CORPUS):
+        case_id = f"dr6_case_{idx:03d}_{case.label}"
+        expected_c, expected_k = ACVP_EXPECTED[case.tc_id]
+        c_bytes = bytearray(expected_c)
+        k_bytes = bytearray(expected_k)
+        if corrupt_index is not None and idx == corrupt_index:
+            c_bytes[0] ^= 0xFF
+        buffers.append({
+            "case_id": case_id,
+            "case_label": case.label,
+            "tc_id": case.tc_id,
+            "ek_hex": case.ek.hex(),
+            "m_hex": case.m.hex(),
+            "request_id": case.request_id,
+            "c_hex": bytes(c_bytes).hex(),
+            "k_hex": bytes(k_bytes).hex(),
+        })
+    return buffers
+
+
+def _make_dr7_test_buffers(
+    corrupt_index: int | None = None,
+) -> list[dict[str, object]]:
+    """Generate 25 authentic DR7 test buffers for parent oracle verification tests."""
+    from tests.pqc_device_resident.test_dr7_mlkem512_decaps import (
+        ACVP_EXPECTED,
+        PRE_SILICON_CORPUS,
+    )
+    buffers: list[dict[str, object]] = []
+    for idx, case in enumerate(PRE_SILICON_CORPUS):
+        case_id = f"dr7_case_{idx:03d}_{case.label}"
+        expected_k = ACVP_EXPECTED[case.tc_id]
+        k_bytes = bytearray(expected_k)
+        if corrupt_index is not None and idx == corrupt_index:
+            k_bytes[0] ^= 0xFF
+        buffers.append({
+            "case_id": case_id,
+            "case_label": case.label,
+            "tc_id": case.tc_id,
+            "dk_hex": case.dk.hex(),
+            "c_hex": case.c.hex(),
+            "request_id": case.request_id,
+            "k_hex": bytes(k_bytes).hex(),
+        })
+    return buffers
+
+
+def _make_dr8_test_buffers(
+    corrupt_index: int | None = None,
+) -> list[dict[str, object]]:
+    """Generate 75 authentic DR8 test buffers for parent oracle verification tests."""
+    from tests.pqc_device_resident.test_dr8_mlkem_unified import (
+        ACVP_EXPECTED,
+        PRE_SILICON_CORPUS,
+    )
+    buffers: list[dict[str, object]] = []
+    for idx, case in enumerate(PRE_SILICON_CORPUS):
+        case_id = f"dr8_case_{idx:03d}_{case.param_set}_{case.tc_id}"
+        expected_k = ACVP_EXPECTED[case.tc_id]
+        k_bytes = bytearray(expected_k)
+        if corrupt_index is not None and idx == corrupt_index:
+            k_bytes[0] ^= 0xFF
+        buffers.append({
+            "case_id": case_id,
+            "case_label": f"{case.param_set}_{case.tc_id}",
+            "tc_id": case.tc_id,
+            "param_set": case.param_set,
+            "request_id": case.request_id,
+            "k_hex": bytes(k_bytes).hex(),
+        })
+    return buffers
+
+
+def _make_dr9_test_buffers(
+    corrupt_index: int | None = None,
+) -> list[dict[str, object]]:
+    """Generate 122 authentic DR9 test buffers for parent oracle verification tests."""
+    from tests.pqc_device_resident.test_dr9_fips202 import (
+        ACVP_EXPECTED,
+        PRE_SILICON_CORPUS,
+    )
+    buffers: list[dict[str, object]] = []
+    for idx, case in enumerate(PRE_SILICON_CORPUS):
+        case_id = f"dr9_case_{idx:03d}_{case.tc_id}"
+        expected_digest = ACVP_EXPECTED[case.tc_id]
+        digest_bytes = bytearray(expected_digest)
+        if corrupt_index is not None and idx == corrupt_index:
+            digest_bytes[0] ^= 0xFF
+        buffers.append({
+            "case_id": case_id,
+            "case_label": case.tc_id,
+            "tc_id": case.tc_id,
+            "func_name": case.func_name,
+            "msg_hex": case.msg.hex(),
+            "out_len": case.out_len,
+            "request_id": case.request_id,
+            "digest_hex": bytes(digest_bytes).hex(),
+        })
+    return buffers
+
+
+def _make_dr10_test_buffers(
+    corrupt_index: int | None = None,
+) -> list[dict[str, object]]:
+    """Generate 40 authentic DR10 test buffers for parent oracle verification tests."""
+    from tests.pqc_device_resident.test_dr10_sealed_lifecycle import (
+        EXPECTED_RESULTS,
+        PRE_SILICON_CORPUS,
+    )
+    buffers: list[dict[str, object]] = []
+    for idx, case in enumerate(PRE_SILICON_CORPUS):
+        case_id = f"dr10_case_{idx:03d}_{case.name}"
+        status, active_slot = EXPECTED_RESULTS[case.name]
+        if corrupt_index is not None and idx == corrupt_index:
+            status ^= 0xFF
+        buffers.append({
+            "case_id": case_id,
+            "case_label": case.name,
+            "name": case.name,
+            "request_id": case.request_id,
+            "status": status,
+            "active_slot": active_slot,
+            "crc": 0x12345678,
+        })
+    return buffers
+
+
+def _make_dr11_test_buffers(
+    corrupt_index: int | None = None,
+) -> list[dict[str, object]]:
+    """Generate 25 authentic DR11 test buffers for parent oracle verification tests."""
+    from tests.pqc_device_resident.test_dr11_mldsa44_keygen import (
+        ACVP_EXPECTED,
+        PRE_SILICON_CORPUS,
+    )
+    buffers: list[dict[str, object]] = []
+    for idx, case in enumerate(PRE_SILICON_CORPUS):
+        case_id = f"dr11_case_{idx:03d}_{case.tc_id}"
+        exp_pk, exp_sk = ACVP_EXPECTED[case.tc_id]
+        pk_bytes = bytearray(exp_pk)
+        sk_bytes = bytearray(exp_sk)
+        if corrupt_index is not None and idx == corrupt_index:
+            pk_bytes[0] ^= 0xFF
+        buffers.append({
+            "case_id": case_id,
+            "case_label": case.tc_id,
+            "tc_id": case.tc_id,
+            "seed_hex": case.seed.hex(),
+            "request_id": case.request_id,
+            "pk_hex": bytes(pk_bytes).hex(),
+            "sk_hex": bytes(sk_bytes).hex(),
+        })
+    return buffers
+
+
+def _make_dr12_test_buffers(
+    corrupt_index: int | None = None,
+) -> list[dict[str, object]]:
+    """Generate 30 authentic DR12 test buffers for parent oracle verification tests."""
+    from tests.pqc_device_resident.test_dr12_mldsa44_sign import (
+        ACVP_EXPECTED,
+        PRE_SILICON_CORPUS,
+    )
+    buffers: list[dict[str, object]] = []
+    for idx, case in enumerate(PRE_SILICON_CORPUS):
+        case_id = f"dr12_case_{idx:03d}_{case.test_name}"
+        exp_sig = ACVP_EXPECTED[case.test_name]
+        sig_bytes = bytearray(exp_sig)
+        if corrupt_index is not None and idx == corrupt_index:
+            sig_bytes[0] ^= 0xFF
+        buffers.append({
+            "case_id": case_id,
+            "case_label": case.test_name,
+            "test_name": case.test_name,
+            "tc_id": case.tc_id,
+            "tg_id": case.tg_id,
+            "request_id": case.request_id,
+            "sig_hex": bytes(sig_bytes).hex(),
+        })
+    return buffers
+
+
+def _make_dr13_test_buffers(
+    corrupt_index: int | None = None,
+) -> list[dict[str, object]]:
+    """Generate 30 authentic DR13 test buffers for parent oracle verification tests."""
+    from tests.pqc_device_resident.test_dr13_mldsa44_verify import (
+        ACVP_EXPECTED,
+        PRE_SILICON_CORPUS,
+    )
+    buffers: list[dict[str, object]] = []
+    for idx, case in enumerate(PRE_SILICON_CORPUS):
+        case_id = f"dr13_case_{idx:03d}_{case.test_name}"
+        exp_valid = ACVP_EXPECTED[case.test_name]
+        actual_valid = exp_valid
+        if corrupt_index is not None and idx == corrupt_index:
+            actual_valid = not exp_valid
+        buffers.append({
+            "case_id": case_id,
+            "case_label": case.test_name,
+            "test_name": case.test_name,
+            "tc_id": case.tc_id,
+            "tg_id": case.tg_id,
+            "request_id": case.request_id,
+            "actual_valid": actual_valid,
+            "expected_valid": exp_valid,
+        })
+    return buffers
+
+
+def _make_dr14_test_buffers(
+    corrupt_index: int | None = None,
+) -> list[dict[str, object]]:
+    """Generate 85 authentic DR14 test buffers for parent oracle verification tests."""
+    from tests.pqc_device_resident.test_dr14_mldsa65 import (
+        KEYGEN_CORPUS,
+        KEYGEN_EXPECTED,
+        SIGN_CORPUS,
+        SIGN_EXPECTED,
+        VERIFY_CORPUS,
+        VERIFY_EXPECTED,
+    )
+    buffers: list[dict[str, object]] = []
+    global_idx = 0
+
+    # KeyGen (25)
+    for idx, case in enumerate(KEYGEN_CORPUS):
+        case_id = f"dr14_kg_case_{idx:03d}_{case.test_name}"
+        exp_pk, exp_sk = KEYGEN_EXPECTED[case.test_name]
+        pk_bytes = bytearray(exp_pk)
+        sk_bytes = bytearray(exp_sk)
+        if corrupt_index is not None and global_idx == corrupt_index:
+            pk_bytes[0] ^= 0xFF
+        buffers.append({
+            "gate_op": "keygen",
+            "case_id": case_id,
+            "case_label": case.test_name,
+            "test_name": case.test_name,
+            "tc_id": case.tc_id,
+            "request_id": case.request_id,
+            "pk_hex": bytes(pk_bytes).hex(),
+            "sk_hex": bytes(sk_bytes).hex(),
+        })
+        global_idx += 1
+
+    # Sign (30)
+    for idx, case in enumerate(SIGN_CORPUS):
+        case_id = f"dr14_sign_case_{idx:03d}_{case.test_name}"
+        exp_sig = SIGN_EXPECTED[case.test_name]
+        sig_bytes = bytearray(exp_sig)
+        if corrupt_index is not None and global_idx == corrupt_index:
+            sig_bytes[0] ^= 0xFF
+        buffers.append({
+            "gate_op": "sign",
+            "case_id": case_id,
+            "case_label": case.test_name,
+            "test_name": case.test_name,
+            "tc_id": case.tc_id,
+            "request_id": case.request_id,
+            "sig_hex": bytes(sig_bytes).hex(),
+        })
+        global_idx += 1
+
+    # Verify (30)
+    for idx, case in enumerate(VERIFY_CORPUS):
+        case_id = f"dr14_ver_case_{idx:03d}_{case.test_name}"
+        exp_valid = VERIFY_EXPECTED[case.test_name]
+        actual_valid = exp_valid
+        if corrupt_index is not None and global_idx == corrupt_index:
+            actual_valid = not exp_valid
+        buffers.append({
+            "gate_op": "verify",
+            "case_id": case_id,
+            "case_label": case.test_name,
+            "test_name": case.test_name,
+            "tc_id": case.tc_id,
+            "request_id": case.request_id,
+            "actual_valid": actual_valid,
+            "expected_valid": exp_valid,
+        })
+        global_idx += 1
+
+    return buffers
+
+
+def _make_dr15_test_buffers(
+    corrupt_index: int | None = None,
+) -> list[dict[str, object]]:
+    """Generate 85 authentic DR15 test buffers for parent oracle verification tests."""
+    from tests.pqc_device_resident.test_dr15_mldsa87 import (
+        KEYGEN_CORPUS,
+        KEYGEN_EXPECTED,
+        SIGN_CORPUS,
+        SIGN_EXPECTED,
+        VERIFY_CORPUS,
+        VERIFY_EXPECTED,
+    )
+    buffers: list[dict[str, object]] = []
+    global_idx = 0
+
+    # KeyGen (25)
+    for idx, case in enumerate(KEYGEN_CORPUS):
+        case_id = f"dr15_kg_case_{idx:03d}_{case.test_name}"
+        exp_pk, exp_sk = KEYGEN_EXPECTED[case.test_name]
+        pk_bytes = bytearray(exp_pk)
+        sk_bytes = bytearray(exp_sk)
+        if corrupt_index is not None and global_idx == corrupt_index:
+            pk_bytes[0] ^= 0xFF
+        buffers.append({
+            "gate_op": "keygen",
+            "case_id": case_id,
+            "case_label": case.test_name,
+            "test_name": case.test_name,
+            "tc_id": case.tc_id,
+            "request_id": case.request_id,
+            "pk_hex": bytes(pk_bytes).hex(),
+            "sk_hex": bytes(sk_bytes).hex(),
+        })
+        global_idx += 1
+
+    # Sign (30)
+    for idx, case in enumerate(SIGN_CORPUS):
+        case_id = f"dr15_sign_case_{idx:03d}_{case.test_name}"
+        exp_sig = SIGN_EXPECTED[case.test_name]
+        sig_bytes = bytearray(exp_sig)
+        if corrupt_index is not None and global_idx == corrupt_index:
+            sig_bytes[0] ^= 0xFF
+        buffers.append({
+            "gate_op": "sign",
+            "case_id": case_id,
+            "case_label": case.test_name,
+            "test_name": case.test_name,
+            "tc_id": case.tc_id,
+            "request_id": case.request_id,
+            "sig_hex": bytes(sig_bytes).hex(),
+        })
+        global_idx += 1
+
+    # Verify (30)
+    for idx, case in enumerate(VERIFY_CORPUS):
+        case_id = f"dr15_ver_case_{idx:03d}_{case.test_name}"
+        exp_valid = VERIFY_EXPECTED[case.test_name]
+        actual_valid = exp_valid
+        if corrupt_index is not None and global_idx == corrupt_index:
+            actual_valid = not exp_valid
+        buffers.append({
+            "gate_op": "verify",
+            "case_id": case_id,
+            "case_label": case.test_name,
+            "test_name": case.test_name,
+            "tc_id": case.tc_id,
+            "request_id": case.request_id,
+            "actual_valid": actual_valid,
+            "expected_valid": exp_valid,
+        })
+        global_idx += 1
+
+    return buffers
+
+
 def _wrap_record_in_stdout(record: dict[str, object], preamble: str = "") -> str:
     serialized = json.dumps(record, indent=2)
     return f"{preamble}\n{RESULT_START_MARKER}\n{serialized}\n{RESULT_END_MARKER}\n"
@@ -648,6 +1234,1018 @@ class CanonicalSiliconRunnerBehaviorTests(unittest.TestCase):
             with self.assertRaises(graph.NativeBackendUnavailable) as ctx:
                 graph.check_emulation_and_redirection_excluded()
             self.assertIn("XRT_INI_PATH='C:/custom/xrt.ini'", str(ctx.exception))
+
+    def test_dr1_valid_test_buffers_verified_by_parent_oracle(self) -> None:
+        gate = GATES[1]  # DR1
+        now = datetime.now(timezone.utc)
+        rec = _make_valid_record(
+            gate_id="DR1",
+            expected_count=33,
+            artifact_rel="phoenix_sdr_dsp/pqc/kernels/dr1_mldsa44_rejntt.cc",
+            dispatches=33,
+        )
+        rec["test_buffers"] = _make_dr1_test_buffers()
+        stdout = _wrap_record_in_stdout(rec)
+        res = parse_gate_output(
+            gate, stdout, "", 0, 0.5,
+            parent_start_time=now - timedelta(seconds=2),
+            parent_end_time=now + timedelta(seconds=2),
+            execution_nonce="test_nonce_0123456789abcdef",
+        )
+        self.assertFalse(res.success)
+        self.assertEqual(res.status, STATUS_SELF_REPORTED_UNVERIFIED)
+        self.assertTrue(any("Parent independent oracle verified all 33 x 256" in note for note in res.corroboration_notes))
+
+    def test_dr1_corrupted_coefficient_fails_validation(self) -> None:
+        gate = GATES[1]
+        now = datetime.now(timezone.utc)
+        rec = _make_valid_record(
+            gate_id="DR1",
+            expected_count=33,
+            artifact_rel="phoenix_sdr_dsp/pqc/kernels/dr1_mldsa44_rejntt.cc",
+            dispatches=33,
+        )
+        # Corrupt 1 coefficient in case index 5
+        rec["test_buffers"] = _make_dr1_test_buffers(corrupt_index=5)
+        stdout = _wrap_record_in_stdout(rec)
+        res = parse_gate_output(
+            gate, stdout, "", 0, 0.5,
+            parent_start_time=now - timedelta(seconds=2),
+            parent_end_time=now + timedelta(seconds=2),
+            execution_nonce="test_nonce_0123456789abcdef",
+        )
+        self.assertFalse(res.success)
+        self.assertEqual(res.status, STATUS_FAIL)
+        self.assertIn("oracle mismatch at lane", res.error_message or "")
+
+    def test_dr1_corrupted_fingerprint_fails_validation(self) -> None:
+        gate = GATES[1]
+        now = datetime.now(timezone.utc)
+        rec = _make_valid_record(
+            gate_id="DR1",
+            expected_count=33,
+            artifact_rel="phoenix_sdr_dsp/pqc/kernels/dr1_mldsa44_rejntt.cc",
+            dispatches=33,
+        )
+        # Corrupt fingerprint in case index 2
+        rec["test_buffers"] = _make_dr1_test_buffers(corrupt_fingerprint_index=2)
+        stdout = _wrap_record_in_stdout(rec)
+        res = parse_gate_output(
+            gate, stdout, "", 0, 0.5,
+            parent_start_time=now - timedelta(seconds=2),
+            parent_end_time=now + timedelta(seconds=2),
+            execution_nonce="test_nonce_0123456789abcdef",
+        )
+        self.assertFalse(res.success)
+        self.assertEqual(res.status, STATUS_FAIL)
+        self.assertIn("fingerprint mismatch", res.error_message or "")
+
+    def test_dr1_module_rejects_emulation_and_xrt_ini_path(self) -> None:
+        from phoenix_sdr_dsp.pqc import dr1_mldsa44_rejntt_graph as graph
+        with mock.patch.dict(os.environ, {"XCL_EMULATION_MODE": "sw_emu"}):
+            with self.assertRaises(graph.NativeBackendUnavailable) as ctx:
+                graph.check_emulation_and_redirection_excluded()
+            self.assertIn("XCL_EMULATION_MODE='sw_emu'", str(ctx.exception))
+
+        with mock.patch.dict(os.environ, {"XRT_INI_PATH": "C:/fake/xrt.ini"}):
+            with self.assertRaises(graph.NativeBackendUnavailable) as ctx:
+                graph.check_emulation_and_redirection_excluded()
+            self.assertIn("XRT_INI_PATH='C:/fake/xrt.ini'", str(ctx.exception))
+
+    def test_dr2a_valid_test_buffers_verified_by_parent_oracle(self) -> None:
+        gate = GATES[2]  # DR2a
+        now = datetime.now(timezone.utc)
+        rec = _make_valid_record(
+            gate_id="DR2a",
+            expected_count=13,
+            artifact_rel="phoenix_sdr_dsp/pqc/kernels/dr2_mlkem512_samplentt.cc",
+            dispatches=13,
+        )
+        rec["test_buffers"] = _make_dr2a_test_buffers()
+        stdout = _wrap_record_in_stdout(rec)
+        res = parse_gate_output(
+            gate, stdout, "", 0, 0.5,
+            parent_start_time=now - timedelta(seconds=2),
+            parent_end_time=now + timedelta(seconds=2),
+            execution_nonce="test_nonce_0123456789abcdef",
+        )
+        self.assertFalse(res.success)
+        self.assertEqual(res.status, STATUS_SELF_REPORTED_UNVERIFIED)
+        self.assertTrue(any("Parent independent oracle verified all 13 x 256" in note for note in res.corroboration_notes))
+
+    def test_dr2a_corrupted_coefficient_fails_validation(self) -> None:
+        gate = GATES[2]
+        now = datetime.now(timezone.utc)
+        rec = _make_valid_record(
+            gate_id="DR2a",
+            expected_count=13,
+            artifact_rel="phoenix_sdr_dsp/pqc/kernels/dr2_mlkem512_samplentt.cc",
+            dispatches=13,
+        )
+        # Corrupt 1 coefficient in case index 3
+        rec["test_buffers"] = _make_dr2a_test_buffers(corrupt_index=3)
+        stdout = _wrap_record_in_stdout(rec)
+        res = parse_gate_output(
+            gate, stdout, "", 0, 0.5,
+            parent_start_time=now - timedelta(seconds=2),
+            parent_end_time=now + timedelta(seconds=2),
+            execution_nonce="test_nonce_0123456789abcdef",
+        )
+        self.assertFalse(res.success)
+        self.assertEqual(res.status, STATUS_FAIL)
+        self.assertIn("oracle mismatch at lane", res.error_message or "")
+
+    def test_dr2a_module_rejects_emulation_and_xrt_ini_path(self) -> None:
+        from phoenix_sdr_dsp.pqc import dr2_mlkem512_samplentt_graph as graph
+        with mock.patch.dict(os.environ, {"XCL_EMULATION_MODE": "sw_emu"}):
+            with self.assertRaises(graph.NativeBackendUnavailable) as ctx:
+                graph.check_emulation_and_redirection_excluded()
+            self.assertIn("XCL_EMULATION_MODE='sw_emu'", str(ctx.exception))
+
+        with mock.patch.dict(os.environ, {"XRT_INI_PATH": "C:/fake/xrt.ini"}):
+            with self.assertRaises(graph.NativeBackendUnavailable) as ctx:
+                graph.check_emulation_and_redirection_excluded()
+            self.assertIn("XRT_INI_PATH='C:/fake/xrt.ini'", str(ctx.exception))
+
+    def test_dr2b_valid_test_buffers_verified_by_parent_oracle(self) -> None:
+        gate = GATES[3]  # DR2b
+        now = datetime.now(timezone.utc)
+        rec = _make_valid_record(
+            gate_id="DR2b",
+            expected_count=13,
+            artifact_rel="phoenix_sdr_dsp/pqc/kernels/dr2b_mlkem512_cbd_ntt.cc",
+            dispatches=13,
+        )
+        rec["test_buffers"] = _make_dr2b_test_buffers()
+        stdout = _wrap_record_in_stdout(rec)
+        res = parse_gate_output(
+            gate, stdout, "", 0, 0.5,
+            parent_start_time=now - timedelta(seconds=2),
+            parent_end_time=now + timedelta(seconds=2),
+            execution_nonce="test_nonce_0123456789abcdef",
+        )
+        self.assertFalse(res.success)
+        self.assertEqual(res.status, STATUS_SELF_REPORTED_UNVERIFIED)
+        self.assertTrue(any("Parent independent oracle verified all 13 x 256" in note for note in res.corroboration_notes))
+
+    def test_dr2b_corrupted_coefficient_fails_validation(self) -> None:
+        gate = GATES[3]
+        now = datetime.now(timezone.utc)
+        rec = _make_valid_record(
+            gate_id="DR2b",
+            expected_count=13,
+            artifact_rel="phoenix_sdr_dsp/pqc/kernels/dr2b_mlkem512_cbd_ntt.cc",
+            dispatches=13,
+        )
+        # Corrupt 1 coefficient in case index 2
+        rec["test_buffers"] = _make_dr2b_test_buffers(corrupt_index=2)
+        stdout = _wrap_record_in_stdout(rec)
+        res = parse_gate_output(
+            gate, stdout, "", 0, 0.5,
+            parent_start_time=now - timedelta(seconds=2),
+            parent_end_time=now + timedelta(seconds=2),
+            execution_nonce="test_nonce_0123456789abcdef",
+        )
+        self.assertFalse(res.success)
+        self.assertEqual(res.status, STATUS_FAIL)
+        self.assertIn("oracle mismatch at lane", res.error_message or "")
+
+    def test_dr2b_module_rejects_emulation_and_xrt_ini_path(self) -> None:
+        from phoenix_sdr_dsp.pqc import dr2b_mlkem512_noise_ntt_graph as graph
+        with mock.patch.dict(os.environ, {"XCL_EMULATION_MODE": "sw_emu"}):
+            with self.assertRaises(graph.NativeBackendUnavailable) as ctx:
+                graph.check_emulation_and_redirection_excluded()
+            self.assertIn("XCL_EMULATION_MODE='sw_emu'", str(ctx.exception))
+
+        with mock.patch.dict(os.environ, {"XRT_INI_PATH": "C:/fake/xrt.ini"}):
+            with self.assertRaises(graph.NativeBackendUnavailable) as ctx:
+                graph.check_emulation_and_redirection_excluded()
+            self.assertIn("XRT_INI_PATH='C:/fake/xrt.ini'", str(ctx.exception))
+
+    def test_dr2c_valid_test_buffers_verified_by_parent_oracle(self) -> None:
+        gate = GATES[4]  # DR2c
+        now = datetime.now(timezone.utc)
+        rec = _make_valid_record(
+            gate_id="DR2c",
+            expected_count=11,
+            artifact_rel="phoenix_sdr_dsp/pqc/kernels/dr2c_mlkem512_keygen_row_accumulate.cc",
+            dispatches=11,
+        )
+        rec["test_buffers"] = _make_dr2c_test_buffers()
+        stdout = _wrap_record_in_stdout(rec)
+        res = parse_gate_output(
+            gate, stdout, "", 0, 0.5,
+            parent_start_time=now - timedelta(seconds=2),
+            parent_end_time=now + timedelta(seconds=2),
+            execution_nonce="test_nonce_0123456789abcdef",
+        )
+        self.assertFalse(res.success)
+        self.assertEqual(res.status, STATUS_SELF_REPORTED_UNVERIFIED)
+        self.assertTrue(any("Parent independent oracle verified all 11 x 256" in note for note in res.corroboration_notes))
+
+    def test_dr2c_corrupted_coefficient_fails_validation(self) -> None:
+        gate = GATES[4]
+        now = datetime.now(timezone.utc)
+        rec = _make_valid_record(
+            gate_id="DR2c",
+            expected_count=11,
+            artifact_rel="phoenix_sdr_dsp/pqc/kernels/dr2c_mlkem512_keygen_row_accumulate.cc",
+            dispatches=11,
+        )
+        # Corrupt 1 coefficient in case index 1
+        rec["test_buffers"] = _make_dr2c_test_buffers(corrupt_index=1)
+        stdout = _wrap_record_in_stdout(rec)
+        res = parse_gate_output(
+            gate, stdout, "", 0, 0.5,
+            parent_start_time=now - timedelta(seconds=2),
+            parent_end_time=now + timedelta(seconds=2),
+            execution_nonce="test_nonce_0123456789abcdef",
+        )
+        self.assertFalse(res.success)
+        self.assertEqual(res.status, STATUS_FAIL)
+        self.assertIn("oracle mismatch at lane", res.error_message or "")
+
+    def test_dr2c_module_rejects_emulation_and_xrt_ini_path(self) -> None:
+        from phoenix_sdr_dsp.pqc import dr2c_mlkem512_keygen_row_graph as graph
+        with mock.patch.dict(os.environ, {"XCL_EMULATION_MODE": "sw_emu"}):
+            with self.assertRaises(graph.NativeBackendUnavailable) as ctx:
+                graph.check_emulation_and_redirection_excluded()
+            self.assertIn("XCL_EMULATION_MODE='sw_emu'", str(ctx.exception))
+
+        with mock.patch.dict(os.environ, {"XRT_INI_PATH": "C:/fake/xrt.ini"}):
+            with self.assertRaises(graph.NativeBackendUnavailable) as ctx:
+                graph.check_emulation_and_redirection_excluded()
+            self.assertIn("XRT_INI_PATH='C:/fake/xrt.ini'", str(ctx.exception))
+
+    def test_dr2d_valid_test_buffers_verified_by_parent_oracle(self) -> None:
+        gate = GATES[5]  # DR2d
+        now = datetime.now(timezone.utc)
+        rec = _make_valid_record(
+            gate_id="DR2d",
+            expected_count=25,
+            artifact_rel="phoenix_sdr_dsp/pqc/kernels/dr2d_mlkem512_kpke_keygen_seed.cc",
+            dispatches=25,
+        )
+        rec["test_buffers"] = _make_dr2d_test_buffers()
+        stdout = _wrap_record_in_stdout(rec)
+        res = parse_gate_output(
+            gate, stdout, "", 0, 0.5,
+            parent_start_time=now - timedelta(seconds=2),
+            parent_end_time=now + timedelta(seconds=2),
+            execution_nonce="test_nonce_0123456789abcdef",
+        )
+        self.assertFalse(res.success)
+        self.assertEqual(res.status, STATUS_SELF_REPORTED_UNVERIFIED)
+        self.assertTrue(any("Parent independent oracle verified all 25 official NIST ACVP key pairs" in note for note in res.corroboration_notes))
+
+    def test_dr2d_corrupted_key_fails_validation(self) -> None:
+        gate = GATES[5]
+        now = datetime.now(timezone.utc)
+        rec = _make_valid_record(
+            gate_id="DR2d",
+            expected_count=25,
+            artifact_rel="phoenix_sdr_dsp/pqc/kernels/dr2d_mlkem512_kpke_keygen_seed.cc",
+            dispatches=25,
+        )
+        # Corrupt 1 key in case index 0
+        rec["test_buffers"] = _make_dr2d_test_buffers(corrupt_index=0)
+        stdout = _wrap_record_in_stdout(rec)
+        res = parse_gate_output(
+            gate, stdout, "", 0, 0.5,
+            parent_start_time=now - timedelta(seconds=2),
+            parent_end_time=now + timedelta(seconds=2),
+            execution_nonce="test_nonce_0123456789abcdef",
+        )
+        self.assertFalse(res.success)
+        self.assertEqual(res.status, STATUS_FAIL)
+        self.assertIn("oracle mismatch against official NIST ACVP vector", res.error_message or "")
+
+    def test_dr2d_module_rejects_emulation_and_xrt_ini_path(self) -> None:
+        from phoenix_sdr_dsp.pqc import dr2d_mlkem512_kpke_keygen_graph as graph
+        with mock.patch.dict(os.environ, {"XCL_EMULATION_MODE": "sw_emu"}):
+            with self.assertRaises(graph.NativeBackendUnavailable) as ctx:
+                graph.check_emulation_and_redirection_excluded()
+            self.assertIn("XCL_EMULATION_MODE='sw_emu'", str(ctx.exception))
+
+        with mock.patch.dict(os.environ, {"XRT_INI_PATH": "C:/fake/xrt.ini"}):
+            with self.assertRaises(graph.NativeBackendUnavailable) as ctx:
+                graph.check_emulation_and_redirection_excluded()
+            self.assertIn("XRT_INI_PATH='C:/fake/xrt.ini'", str(ctx.exception))
+
+    def test_dr3_valid_test_buffers_verified_by_parent_oracle(self) -> None:
+        gate = GATES[6]  # DR3
+        now = datetime.now(timezone.utc)
+        rec = _make_valid_record(
+            gate_id="DR3",
+            expected_count=25,
+            artifact_rel="phoenix_sdr_dsp/pqc/kernels/dr3_mlkem512_kpke_encrypt_noise.cc",
+            dispatches=25,
+        )
+        rec["test_buffers"] = _make_dr3_test_buffers()
+        stdout = _wrap_record_in_stdout(rec)
+        res = parse_gate_output(
+            gate, stdout, "", 0, 0.5,
+            parent_start_time=now - timedelta(seconds=2),
+            parent_end_time=now + timedelta(seconds=2),
+            execution_nonce="test_nonce_0123456789abcdef",
+        )
+        self.assertFalse(res.success)
+        self.assertEqual(res.status, STATUS_SELF_REPORTED_UNVERIFIED)
+        self.assertTrue(any("Parent independent oracle verified all 25 official NIST ACVP ciphertexts" in note for note in res.corroboration_notes))
+
+    def test_dr3_corrupted_ciphertext_fails_validation(self) -> None:
+        gate = GATES[6]
+        now = datetime.now(timezone.utc)
+        rec = _make_valid_record(
+            gate_id="DR3",
+            expected_count=25,
+            artifact_rel="phoenix_sdr_dsp/pqc/kernels/dr3_mlkem512_kpke_encrypt_noise.cc",
+            dispatches=25,
+        )
+        # Corrupt 1 ciphertext in case index 0
+        rec["test_buffers"] = _make_dr3_test_buffers(corrupt_index=0)
+        stdout = _wrap_record_in_stdout(rec)
+        res = parse_gate_output(
+            gate, stdout, "", 0, 0.5,
+            parent_start_time=now - timedelta(seconds=2),
+            parent_end_time=now + timedelta(seconds=2),
+            execution_nonce="test_nonce_0123456789abcdef",
+        )
+        self.assertFalse(res.success)
+        self.assertEqual(res.status, STATUS_FAIL)
+        self.assertIn("oracle mismatch against official NIST ACVP ciphertext", res.error_message or "")
+
+    def test_dr3_module_rejects_emulation_and_xrt_ini_path(self) -> None:
+        from phoenix_sdr_dsp.pqc import dr3_mlkem512_kpke_encrypt_graph as graph
+        with mock.patch.dict(os.environ, {"XCL_EMULATION_MODE": "sw_emu"}):
+            with self.assertRaises(graph.NativeBackendUnavailable) as ctx:
+                graph.check_emulation_and_redirection_excluded()
+            self.assertIn("XCL_EMULATION_MODE='sw_emu'", str(ctx.exception))
+
+        with mock.patch.dict(os.environ, {"XRT_INI_PATH": "C:/fake/xrt.ini"}):
+            with self.assertRaises(graph.NativeBackendUnavailable) as ctx:
+                graph.check_emulation_and_redirection_excluded()
+            self.assertIn("XRT_INI_PATH='C:/fake/xrt.ini'", str(ctx.exception))
+
+    def test_dr4_valid_test_buffers_verified_by_parent_oracle(self) -> None:
+        gate = GATES[7]  # DR4
+        now = datetime.now(timezone.utc)
+        rec = _make_valid_record(
+            gate_id="DR4",
+            expected_count=25,
+            artifact_rel="phoenix_sdr_dsp/pqc/kernels/dr4_mlkem512_kpke_decrypt_decompress_ntt.cc",
+            dispatches=25,
+        )
+        rec["test_buffers"] = _make_dr4_test_buffers()
+        stdout = _wrap_record_in_stdout(rec)
+        res = parse_gate_output(
+            gate, stdout, "", 0, 0.5,
+            parent_start_time=now - timedelta(seconds=2),
+            parent_end_time=now + timedelta(seconds=2),
+            execution_nonce="test_nonce_0123456789abcdef",
+        )
+        self.assertFalse(res.success)
+        self.assertEqual(res.status, STATUS_SELF_REPORTED_UNVERIFIED)
+        self.assertTrue(any("Parent independent oracle verified all 25 official NIST ACVP decrypted messages" in note for note in res.corroboration_notes))
+
+    def test_dr4_corrupted_message_fails_validation(self) -> None:
+        gate = GATES[7]
+        now = datetime.now(timezone.utc)
+        rec = _make_valid_record(
+            gate_id="DR4",
+            expected_count=25,
+            artifact_rel="phoenix_sdr_dsp/pqc/kernels/dr4_mlkem512_kpke_decrypt_decompress_ntt.cc",
+            dispatches=25,
+        )
+        # Corrupt 1 message in case index 0
+        rec["test_buffers"] = _make_dr4_test_buffers(corrupt_index=0)
+        stdout = _wrap_record_in_stdout(rec)
+        res = parse_gate_output(
+            gate, stdout, "", 0, 0.5,
+            parent_start_time=now - timedelta(seconds=2),
+            parent_end_time=now + timedelta(seconds=2),
+            execution_nonce="test_nonce_0123456789abcdef",
+        )
+        self.assertFalse(res.success)
+        self.assertEqual(res.status, STATUS_FAIL)
+        self.assertIn("oracle mismatch against official NIST ACVP decrypted message", res.error_message or "")
+
+    def test_dr4_module_rejects_emulation_and_xrt_ini_path(self) -> None:
+        from phoenix_sdr_dsp.pqc import dr4_mlkem512_kpke_decrypt_graph as graph
+        with mock.patch.dict(os.environ, {"XCL_EMULATION_MODE": "sw_emu"}):
+            with self.assertRaises(graph.NativeBackendUnavailable) as ctx:
+                graph.check_emulation_and_redirection_excluded()
+            self.assertIn("XCL_EMULATION_MODE='sw_emu'", str(ctx.exception))
+
+        with mock.patch.dict(os.environ, {"XRT_INI_PATH": "C:/fake/xrt.ini"}):
+            with self.assertRaises(graph.NativeBackendUnavailable) as ctx:
+                graph.check_emulation_and_redirection_excluded()
+            self.assertIn("XRT_INI_PATH='C:/fake/xrt.ini'", str(ctx.exception))
+
+    def test_dr5_valid_test_buffers_verified_by_parent_oracle(self) -> None:
+        gate = GATES[8]  # DR5
+        now = datetime.now(timezone.utc)
+        rec = _make_valid_record(
+            gate_id="DR5",
+            expected_count=25,
+            artifact_rel="phoenix_sdr_dsp/pqc/kernels/dr5_mlkem512_keygen_seed_noise.cc",
+            dispatches=25,
+        )
+        rec["test_buffers"] = _make_dr5_test_buffers()
+        stdout = _wrap_record_in_stdout(rec)
+        res = parse_gate_output(
+            gate, stdout, "", 0, 0.5,
+            parent_start_time=now - timedelta(seconds=2),
+            parent_end_time=now + timedelta(seconds=2),
+            execution_nonce="test_nonce_0123456789abcdef",
+        )
+        self.assertFalse(res.success)
+        self.assertEqual(res.status, STATUS_SELF_REPORTED_UNVERIFIED)
+        self.assertTrue(any("Parent independent oracle verified all 25 official NIST ACVP key pairs" in note for note in res.corroboration_notes))
+
+    def test_dr5_corrupted_key_fails_validation(self) -> None:
+        gate = GATES[8]
+        now = datetime.now(timezone.utc)
+        rec = _make_valid_record(
+            gate_id="DR5",
+            expected_count=25,
+            artifact_rel="phoenix_sdr_dsp/pqc/kernels/dr5_mlkem512_keygen_seed_noise.cc",
+            dispatches=25,
+        )
+        # Corrupt 1 key in case index 0
+        rec["test_buffers"] = _make_dr5_test_buffers(corrupt_index=0)
+        stdout = _wrap_record_in_stdout(rec)
+        res = parse_gate_output(
+            gate, stdout, "", 0, 0.5,
+            parent_start_time=now - timedelta(seconds=2),
+            parent_end_time=now + timedelta(seconds=2),
+            execution_nonce="test_nonce_0123456789abcdef",
+        )
+        self.assertFalse(res.success)
+        self.assertEqual(res.status, STATUS_FAIL)
+        self.assertIn("oracle mismatch against official NIST ACVP key pair", res.error_message or "")
+
+    def test_dr5_module_rejects_emulation_and_xrt_ini_path(self) -> None:
+        from phoenix_sdr_dsp.pqc import dr5_mlkem512_keygen_graph as graph
+        with mock.patch.dict(os.environ, {"XCL_EMULATION_MODE": "sw_emu"}):
+            with self.assertRaises(graph.NativeBackendUnavailable) as ctx:
+                graph.check_emulation_and_redirection_excluded()
+            self.assertIn("XCL_EMULATION_MODE='sw_emu'", str(ctx.exception))
+
+        with mock.patch.dict(os.environ, {"XRT_INI_PATH": "C:/fake/xrt.ini"}):
+            with self.assertRaises(graph.NativeBackendUnavailable) as ctx:
+                graph.check_emulation_and_redirection_excluded()
+            self.assertIn("XRT_INI_PATH='C:/fake/xrt.ini'", str(ctx.exception))
+
+    def test_dr6_valid_test_buffers_verified_by_parent_oracle(self) -> None:
+        gate = GATES[9]  # DR6
+        now = datetime.now(timezone.utc)
+        rec = _make_valid_record(
+            gate_id="DR6",
+            expected_count=25,
+            artifact_rel="phoenix_sdr_dsp/pqc/kernels/dr6_mlkem512_encaps_derive.cc",
+            dispatches=25,
+        )
+        rec["test_buffers"] = _make_dr6_test_buffers()
+        stdout = _wrap_record_in_stdout(rec)
+        res = parse_gate_output(
+            gate, stdout, "", 0, 0.5,
+            parent_start_time=now - timedelta(seconds=2),
+            parent_end_time=now + timedelta(seconds=2),
+            execution_nonce="test_nonce_0123456789abcdef",
+        )
+        self.assertFalse(res.success)
+        self.assertEqual(res.status, STATUS_SELF_REPORTED_UNVERIFIED)
+        self.assertTrue(any("Parent independent oracle verified all 25 official NIST ACVP encapsulated ciphertexts and shared keys" in note for note in res.corroboration_notes))
+
+    def test_dr6_corrupted_key_fails_validation(self) -> None:
+        gate = GATES[9]
+        now = datetime.now(timezone.utc)
+        rec = _make_valid_record(
+            gate_id="DR6",
+            expected_count=25,
+            artifact_rel="phoenix_sdr_dsp/pqc/kernels/dr6_mlkem512_encaps_derive.cc",
+            dispatches=25,
+        )
+        # Corrupt 1 ciphertext/key in case index 0
+        rec["test_buffers"] = _make_dr6_test_buffers(corrupt_index=0)
+        stdout = _wrap_record_in_stdout(rec)
+        res = parse_gate_output(
+            gate, stdout, "", 0, 0.5,
+            parent_start_time=now - timedelta(seconds=2),
+            parent_end_time=now + timedelta(seconds=2),
+            execution_nonce="test_nonce_0123456789abcdef",
+        )
+        self.assertFalse(res.success)
+        self.assertEqual(res.status, STATUS_FAIL)
+        self.assertIn("oracle mismatch against official NIST ACVP encapsulated ciphertext/shared key", res.error_message or "")
+
+    def test_dr6_module_rejects_emulation_and_xrt_ini_path(self) -> None:
+        from phoenix_sdr_dsp.pqc import dr6_mlkem512_encaps_graph as graph
+        with mock.patch.dict(os.environ, {"XCL_EMULATION_MODE": "sw_emu"}):
+            with self.assertRaises(graph.NativeBackendUnavailable) as ctx:
+                graph.check_emulation_and_redirection_excluded()
+            self.assertIn("XCL_EMULATION_MODE='sw_emu'", str(ctx.exception))
+
+        with mock.patch.dict(os.environ, {"XRT_INI_PATH": "C:/fake/xrt.ini"}):
+            with self.assertRaises(graph.NativeBackendUnavailable) as ctx:
+                graph.check_emulation_and_redirection_excluded()
+            self.assertIn("XRT_INI_PATH='C:/fake/xrt.ini'", str(ctx.exception))
+
+    def test_dr7_valid_test_buffers_verified_by_parent_oracle(self) -> None:
+        gate = GATES[10]  # DR7
+        now = datetime.now(timezone.utc)
+        rec = _make_valid_record(
+            gate_id="DR7",
+            expected_count=25,
+            artifact_rel="phoenix_sdr_dsp/pqc/kernels/dr7_mlkem512_decaps_decrypt.cc",
+            dispatches=25,
+        )
+        rec["test_buffers"] = _make_dr7_test_buffers()
+        stdout = _wrap_record_in_stdout(rec)
+        res = parse_gate_output(
+            gate, stdout, "", 0, 0.5,
+            parent_start_time=now - timedelta(seconds=2),
+            parent_end_time=now + timedelta(seconds=2),
+            execution_nonce="test_nonce_0123456789abcdef",
+        )
+        self.assertFalse(res.success)
+        self.assertEqual(res.status, STATUS_SELF_REPORTED_UNVERIFIED)
+        self.assertTrue(any("Parent independent oracle verified all 25 official NIST ACVP decapsulated shared keys" in note for note in res.corroboration_notes))
+
+    def test_dr7_corrupted_key_fails_validation(self) -> None:
+        gate = GATES[10]
+        now = datetime.now(timezone.utc)
+        rec = _make_valid_record(
+            gate_id="DR7",
+            expected_count=25,
+            artifact_rel="phoenix_sdr_dsp/pqc/kernels/dr7_mlkem512_decaps_decrypt.cc",
+            dispatches=25,
+        )
+        # Corrupt 1 shared key in case index 0
+        rec["test_buffers"] = _make_dr7_test_buffers(corrupt_index=0)
+        stdout = _wrap_record_in_stdout(rec)
+        res = parse_gate_output(
+            gate, stdout, "", 0, 0.5,
+            parent_start_time=now - timedelta(seconds=2),
+            parent_end_time=now + timedelta(seconds=2),
+            execution_nonce="test_nonce_0123456789abcdef",
+        )
+        self.assertFalse(res.success)
+        self.assertEqual(res.status, STATUS_FAIL)
+        self.assertIn("oracle mismatch against official NIST ACVP decapsulated shared key", res.error_message or "")
+
+    def test_dr7_module_rejects_emulation_and_xrt_ini_path(self) -> None:
+        from phoenix_sdr_dsp.pqc import dr7_mlkem512_decaps_graph as graph
+        with mock.patch.dict(os.environ, {"XCL_EMULATION_MODE": "sw_emu"}):
+            with self.assertRaises(graph.NativeBackendUnavailable) as ctx:
+                graph.check_emulation_and_redirection_excluded()
+            self.assertIn("XCL_EMULATION_MODE='sw_emu'", str(ctx.exception))
+
+        with mock.patch.dict(os.environ, {"XRT_INI_PATH": "C:/fake/xrt.ini"}):
+            with self.assertRaises(graph.NativeBackendUnavailable) as ctx:
+                graph.check_emulation_and_redirection_excluded()
+            self.assertIn("XRT_INI_PATH='C:/fake/xrt.ini'", str(ctx.exception))
+
+    def test_dr8_valid_test_buffers_verified_by_parent_oracle(self) -> None:
+        gate = GATES[11]  # DR8
+        now = datetime.now(timezone.utc)
+        rec = _make_valid_record(
+            gate_id="DR8",
+            expected_count=75,
+            artifact_rel="phoenix_sdr_dsp/pqc/kernels/dr8_mlkem768_keygen_finalize.cc",
+            dispatches=75,
+        )
+        rec["test_buffers"] = _make_dr8_test_buffers()
+        stdout = _wrap_record_in_stdout(rec)
+        res = parse_gate_output(
+            gate, stdout, "", 0, 0.5,
+            parent_start_time=now - timedelta(seconds=2),
+            parent_end_time=now + timedelta(seconds=2),
+            execution_nonce="test_nonce_0123456789abcdef",
+        )
+        self.assertFalse(res.success)
+        self.assertEqual(res.status, STATUS_SELF_REPORTED_UNVERIFIED)
+        self.assertTrue(any("Parent independent oracle verified all 75 official NIST ACVP ML-KEM (512, 768, 1024) shared keys" in note for note in res.corroboration_notes))
+
+    def test_dr8_corrupted_key_fails_validation(self) -> None:
+        gate = GATES[11]
+        now = datetime.now(timezone.utc)
+        rec = _make_valid_record(
+            gate_id="DR8",
+            expected_count=75,
+            artifact_rel="phoenix_sdr_dsp/pqc/kernels/dr8_mlkem768_keygen_finalize.cc",
+            dispatches=75,
+        )
+        # Corrupt 1 shared key in case index 0
+        rec["test_buffers"] = _make_dr8_test_buffers(corrupt_index=0)
+        stdout = _wrap_record_in_stdout(rec)
+        res = parse_gate_output(
+            gate, stdout, "", 0, 0.5,
+            parent_start_time=now - timedelta(seconds=2),
+            parent_end_time=now + timedelta(seconds=2),
+            execution_nonce="test_nonce_0123456789abcdef",
+        )
+        self.assertFalse(res.success)
+        self.assertEqual(res.status, STATUS_FAIL)
+        self.assertIn("oracle mismatch against official NIST ACVP shared key", res.error_message or "")
+
+    def test_dr8_module_rejects_emulation_and_xrt_ini_path(self) -> None:
+        from phoenix_sdr_dsp.pqc import dr8_mlkem_service as service
+        with mock.patch.dict(os.environ, {"XCL_EMULATION_MODE": "sw_emu"}):
+            with self.assertRaises(service.NativeBackendUnavailable) as ctx:
+                service.check_emulation_and_redirection_excluded()
+            self.assertIn("XCL_EMULATION_MODE='sw_emu'", str(ctx.exception))
+
+        with mock.patch.dict(os.environ, {"XRT_INI_PATH": "C:/fake/xrt.ini"}):
+            with self.assertRaises(service.NativeBackendUnavailable) as ctx:
+                service.check_emulation_and_redirection_excluded()
+            self.assertIn("XRT_INI_PATH='C:/fake/xrt.ini'", str(ctx.exception))
+
+    def test_dr9_valid_test_buffers_verified_by_parent_oracle(self) -> None:
+        gate = GATES[12]  # DR9
+        now = datetime.now(timezone.utc)
+        rec = _make_valid_record(
+            gate_id="DR9",
+            expected_count=122,
+            artifact_rel="phoenix_sdr_dsp/pqc/kernels/dr9_fips202_service.cc",
+            dispatches=122,
+        )
+        rec["test_buffers"] = _make_dr9_test_buffers()
+        stdout = _wrap_record_in_stdout(rec)
+        res = parse_gate_output(
+            gate, stdout, "", 0, 0.5,
+            parent_start_time=now - timedelta(seconds=2),
+            parent_end_time=now + timedelta(seconds=2),
+            execution_nonce="test_nonce_0123456789abcdef",
+        )
+        self.assertFalse(res.success)
+        self.assertEqual(res.status, STATUS_SELF_REPORTED_UNVERIFIED)
+        self.assertTrue(any("Parent independent oracle verified all 122 official NIST FIPS 202 digests" in note for note in res.corroboration_notes))
+
+    def test_dr9_corrupted_key_fails_validation(self) -> None:
+        gate = GATES[12]
+        now = datetime.now(timezone.utc)
+        rec = _make_valid_record(
+            gate_id="DR9",
+            expected_count=122,
+            artifact_rel="phoenix_sdr_dsp/pqc/kernels/dr9_fips202_service.cc",
+            dispatches=122,
+        )
+        # Corrupt 1 digest in case index 0
+        rec["test_buffers"] = _make_dr9_test_buffers(corrupt_index=0)
+        stdout = _wrap_record_in_stdout(rec)
+        res = parse_gate_output(
+            gate, stdout, "", 0, 0.5,
+            parent_start_time=now - timedelta(seconds=2),
+            parent_end_time=now + timedelta(seconds=2),
+            execution_nonce="test_nonce_0123456789abcdef",
+        )
+        self.assertFalse(res.success)
+        self.assertEqual(res.status, STATUS_FAIL)
+        self.assertIn("oracle mismatch against official NIST FIPS 202 digest", res.error_message or "")
+
+    def test_dr9_module_rejects_emulation_and_xrt_ini_path(self) -> None:
+        from phoenix_sdr_dsp.pqc import dr9_fips202_graph as graph
+        with mock.patch.dict(os.environ, {"XCL_EMULATION_MODE": "sw_emu"}):
+            with self.assertRaises(graph.NativeBackendUnavailable) as ctx:
+                graph.check_emulation_and_redirection_excluded()
+            self.assertIn("XCL_EMULATION_MODE='sw_emu'", str(ctx.exception))
+
+        with mock.patch.dict(os.environ, {"XRT_INI_PATH": "C:/fake/xrt.ini"}):
+            with self.assertRaises(graph.NativeBackendUnavailable) as ctx:
+                graph.check_emulation_and_redirection_excluded()
+            self.assertIn("XRT_INI_PATH='C:/fake/xrt.ini'", str(ctx.exception))
+
+    def test_dr10_valid_test_buffers_verified_by_parent_oracle(self) -> None:
+        gate = GATES[13]  # DR10
+        now = datetime.now(timezone.utc)
+        rec = _make_valid_record(
+            gate_id="DR10",
+            expected_count=40,
+            artifact_rel="phoenix_sdr_dsp/pqc/kernels/dr10_sealed_lifecycle_service.cc",
+            dispatches=40,
+        )
+        rec["test_buffers"] = _make_dr10_test_buffers()
+        stdout = _wrap_record_in_stdout(rec)
+        res = parse_gate_output(
+            gate, stdout, "", 0, 0.5,
+            parent_start_time=now - timedelta(seconds=2),
+            parent_end_time=now + timedelta(seconds=2),
+            execution_nonce="test_nonce_0123456789abcdef",
+        )
+        self.assertFalse(res.success)
+        self.assertEqual(res.status, STATUS_SELF_REPORTED_UNVERIFIED)
+        self.assertTrue(any("Parent independent oracle verified all 40 DR10 lifecycle cases" in note for note in res.corroboration_notes))
+
+    def test_dr10_corrupted_key_fails_validation(self) -> None:
+        gate = GATES[13]
+        now = datetime.now(timezone.utc)
+        rec = _make_valid_record(
+            gate_id="DR10",
+            expected_count=40,
+            artifact_rel="phoenix_sdr_dsp/pqc/kernels/dr10_sealed_lifecycle_service.cc",
+            dispatches=40,
+        )
+        # Corrupt 1 status in case index 0
+        rec["test_buffers"] = _make_dr10_test_buffers(corrupt_index=0)
+        stdout = _wrap_record_in_stdout(rec)
+        res = parse_gate_output(
+            gate, stdout, "", 0, 0.5,
+            parent_start_time=now - timedelta(seconds=2),
+            parent_end_time=now + timedelta(seconds=2),
+            execution_nonce="test_nonce_0123456789abcdef",
+        )
+        self.assertFalse(res.success)
+        self.assertEqual(res.status, STATUS_FAIL)
+        self.assertIn("oracle mismatch against DR10 lifecycle specification", res.error_message or "")
+
+    def test_dr10_module_rejects_emulation_and_xrt_ini_path(self) -> None:
+        from phoenix_sdr_dsp.pqc import dr10_sealed_lifecycle_graph as graph
+        with mock.patch.dict(os.environ, {"XCL_EMULATION_MODE": "sw_emu"}):
+            with self.assertRaises(graph.NativeBackendUnavailable) as ctx:
+                graph.check_emulation_and_redirection_excluded()
+            self.assertIn("XCL_EMULATION_MODE='sw_emu'", str(ctx.exception))
+
+        with mock.patch.dict(os.environ, {"XRT_INI_PATH": "C:/fake/xrt.ini"}):
+            with self.assertRaises(graph.NativeBackendUnavailable) as ctx:
+                graph.check_emulation_and_redirection_excluded()
+            self.assertIn("XRT_INI_PATH='C:/fake/xrt.ini'", str(ctx.exception))
+
+    def test_dr11_valid_test_buffers_verified_by_parent_oracle(self) -> None:
+        gate = GATES[14]  # DR11
+        now = datetime.now(timezone.utc)
+        rec = _make_valid_record(
+            gate_id="DR11",
+            expected_count=25,
+            artifact_rel="phoenix_sdr_dsp/pqc/kernels/dr11_mldsa44_keygen_finalize.cc",
+            dispatches=25,
+        )
+        rec["test_buffers"] = _make_dr11_test_buffers()
+        stdout = _wrap_record_in_stdout(rec)
+        res = parse_gate_output(
+            gate, stdout, "", 0, 0.5,
+            parent_start_time=now - timedelta(seconds=2),
+            parent_end_time=now + timedelta(seconds=2),
+            execution_nonce="test_nonce_0123456789abcdef",
+        )
+        self.assertFalse(res.success)
+        self.assertEqual(res.status, STATUS_SELF_REPORTED_UNVERIFIED)
+        self.assertTrue(any("Parent independent oracle verified all 25 official NIST ACVP ML-DSA-44 key pairs" in note for note in res.corroboration_notes))
+
+    def test_dr11_corrupted_key_fails_validation(self) -> None:
+        gate = GATES[14]
+        now = datetime.now(timezone.utc)
+        rec = _make_valid_record(
+            gate_id="DR11",
+            expected_count=25,
+            artifact_rel="phoenix_sdr_dsp/pqc/kernels/dr11_mldsa44_keygen_finalize.cc",
+            dispatches=25,
+        )
+        # Corrupt 1 key in case index 0
+        rec["test_buffers"] = _make_dr11_test_buffers(corrupt_index=0)
+        stdout = _wrap_record_in_stdout(rec)
+        res = parse_gate_output(
+            gate, stdout, "", 0, 0.5,
+            parent_start_time=now - timedelta(seconds=2),
+            parent_end_time=now + timedelta(seconds=2),
+            execution_nonce="test_nonce_0123456789abcdef",
+        )
+        self.assertFalse(res.success)
+        self.assertEqual(res.status, STATUS_FAIL)
+        self.assertIn("oracle mismatch against official NIST ACVP ML-DSA-44 key pair", res.error_message or "")
+
+    def test_dr11_module_rejects_emulation_and_xrt_ini_path(self) -> None:
+        from phoenix_sdr_dsp.pqc import dr11_mldsa44_keygen_graph as graph
+        with mock.patch.dict(os.environ, {"XCL_EMULATION_MODE": "sw_emu"}):
+            with self.assertRaises(graph.NativeBackendUnavailable) as ctx:
+                graph.check_emulation_and_redirection_excluded()
+            self.assertIn("XCL_EMULATION_MODE='sw_emu'", str(ctx.exception))
+
+        with mock.patch.dict(os.environ, {"XRT_INI_PATH": "C:/fake/xrt.ini"}):
+            with self.assertRaises(graph.NativeBackendUnavailable) as ctx:
+                graph.check_emulation_and_redirection_excluded()
+            self.assertIn("XRT_INI_PATH='C:/fake/xrt.ini'", str(ctx.exception))
+
+    def test_dr12_valid_test_buffers_verified_by_parent_oracle(self) -> None:
+        gate = GATES[15]  # DR12
+        now = datetime.now(timezone.utc)
+        rec = _make_valid_record(
+            gate_id="DR12",
+            expected_count=30,
+            artifact_rel="phoenix_sdr_dsp/pqc/kernels/dr12_mldsa44_sign_w3_hints_seal.cc",
+            dispatches=30,
+        )
+        rec["test_buffers"] = _make_dr12_test_buffers()
+        stdout = _wrap_record_in_stdout(rec)
+        res = parse_gate_output(
+            gate, stdout, "", 0, 0.5,
+            parent_start_time=now - timedelta(seconds=2),
+            parent_end_time=now + timedelta(seconds=2),
+            execution_nonce="test_nonce_0123456789abcdef",
+        )
+        self.assertFalse(res.success)
+        self.assertEqual(res.status, STATUS_SELF_REPORTED_UNVERIFIED)
+        self.assertTrue(any("Parent independent oracle verified all 30 official NIST ACVP ML-DSA-44 signatures" in note for note in res.corroboration_notes))
+
+    def test_dr12_corrupted_key_fails_validation(self) -> None:
+        gate = GATES[15]
+        now = datetime.now(timezone.utc)
+        rec = _make_valid_record(
+            gate_id="DR12",
+            expected_count=30,
+            artifact_rel="phoenix_sdr_dsp/pqc/kernels/dr12_mldsa44_sign_w3_hints_seal.cc",
+            dispatches=30,
+        )
+        # Corrupt 1 signature in case index 0
+        rec["test_buffers"] = _make_dr12_test_buffers(corrupt_index=0)
+        stdout = _wrap_record_in_stdout(rec)
+        res = parse_gate_output(
+            gate, stdout, "", 0, 0.5,
+            parent_start_time=now - timedelta(seconds=2),
+            parent_end_time=now + timedelta(seconds=2),
+            execution_nonce="test_nonce_0123456789abcdef",
+        )
+        self.assertFalse(res.success)
+        self.assertEqual(res.status, STATUS_FAIL)
+        self.assertIn("oracle mismatch against official NIST ACVP ML-DSA-44 signature", res.error_message or "")
+
+    def test_dr12_module_rejects_emulation_and_xrt_ini_path(self) -> None:
+        from phoenix_sdr_dsp.pqc import dr12_mldsa44_sign_graph as graph
+        with mock.patch.dict(os.environ, {"XCL_EMULATION_MODE": "sw_emu"}):
+            with self.assertRaises(graph.NativeBackendUnavailable) as ctx:
+                graph.check_emulation_and_redirection_excluded()
+            self.assertIn("XCL_EMULATION_MODE='sw_emu'", str(ctx.exception))
+
+        with mock.patch.dict(os.environ, {"XRT_INI_PATH": "C:/fake/xrt.ini"}):
+            with self.assertRaises(graph.NativeBackendUnavailable) as ctx:
+                graph.check_emulation_and_redirection_excluded()
+            self.assertIn("XRT_INI_PATH='C:/fake/xrt.ini'", str(ctx.exception))
+
+    def test_dr13_valid_test_buffers_verified_by_parent_oracle(self) -> None:
+        gate = GATES[16]  # DR13
+        now = datetime.now(timezone.utc)
+        rec = _make_valid_record(
+            gate_id="DR13",
+            expected_count=30,
+            artifact_rel="phoenix_sdr_dsp/pqc/kernels/dr13_mldsa44_verify_w1_matrix_w.cc",
+            dispatches=30,
+        )
+        rec["test_buffers"] = _make_dr13_test_buffers()
+        stdout = _wrap_record_in_stdout(rec)
+        res = parse_gate_output(
+            gate, stdout, "", 0, 0.5,
+            parent_start_time=now - timedelta(seconds=2),
+            parent_end_time=now + timedelta(seconds=2),
+            execution_nonce="test_nonce_0123456789abcdef",
+        )
+        self.assertFalse(res.success)
+        self.assertEqual(res.status, STATUS_SELF_REPORTED_UNVERIFIED)
+        self.assertTrue(any("Parent independent oracle verified all 30 official NIST ACVP ML-DSA-44 verification verdicts" in note for note in res.corroboration_notes))
+
+    def test_dr13_corrupted_key_fails_validation(self) -> None:
+        gate = GATES[16]
+        now = datetime.now(timezone.utc)
+        rec = _make_valid_record(
+            gate_id="DR13",
+            expected_count=30,
+            artifact_rel="phoenix_sdr_dsp/pqc/kernels/dr13_mldsa44_verify_w1_matrix_w.cc",
+            dispatches=30,
+        )
+        # Corrupt 1 verdict in case index 0
+        rec["test_buffers"] = _make_dr13_test_buffers(corrupt_index=0)
+        stdout = _wrap_record_in_stdout(rec)
+        res = parse_gate_output(
+            gate, stdout, "", 0, 0.5,
+            parent_start_time=now - timedelta(seconds=2),
+            parent_end_time=now + timedelta(seconds=2),
+            execution_nonce="test_nonce_0123456789abcdef",
+        )
+        self.assertFalse(res.success)
+        self.assertEqual(res.status, STATUS_FAIL)
+        self.assertIn("oracle mismatch against official NIST ACVP ML-DSA-44 verify verdict", res.error_message or "")
+
+    def test_dr13_module_rejects_emulation_and_xrt_ini_path(self) -> None:
+        from phoenix_sdr_dsp.pqc import dr13_mldsa44_verify_graph as graph
+        with mock.patch.dict(os.environ, {"XCL_EMULATION_MODE": "sw_emu"}):
+            with self.assertRaises(graph.NativeBackendUnavailable) as ctx:
+                graph.check_emulation_and_redirection_excluded()
+            self.assertIn("XCL_EMULATION_MODE='sw_emu'", str(ctx.exception))
+
+        with mock.patch.dict(os.environ, {"XRT_INI_PATH": "C:/fake/xrt.ini"}):
+            with self.assertRaises(graph.NativeBackendUnavailable) as ctx:
+                graph.check_emulation_and_redirection_excluded()
+            self.assertIn("XRT_INI_PATH='C:/fake/xrt.ini'", str(ctx.exception))
+
+    def test_dr14_valid_test_buffers_verified_by_parent_oracle(self) -> None:
+        gate = GATES[17]  # DR14
+        now = datetime.now(timezone.utc)
+        rec = _make_valid_record(
+            gate_id="DR14",
+            expected_count=85,
+            artifact_rel="phoenix_sdr_dsp/pqc/kernels/dr14_mldsa65_keygen_finalize.cc",
+            dispatches=85,
+        )
+        rec["test_buffers"] = _make_dr14_test_buffers()
+        stdout = _wrap_record_in_stdout(rec)
+        res = parse_gate_output(
+            gate, stdout, "", 0, 0.5,
+            parent_start_time=now - timedelta(seconds=2),
+            parent_end_time=now + timedelta(seconds=2),
+            execution_nonce="test_nonce_0123456789abcdef",
+        )
+        self.assertFalse(res.success)
+        self.assertEqual(res.status, STATUS_SELF_REPORTED_UNVERIFIED)
+        self.assertTrue(any("Parent independent oracle verified all 85 official NIST ACVP ML-DSA-65 cases" in note for note in res.corroboration_notes))
+
+    def test_dr14_corrupted_key_fails_validation(self) -> None:
+        gate = GATES[17]
+        now = datetime.now(timezone.utc)
+        rec = _make_valid_record(
+            gate_id="DR14",
+            expected_count=85,
+            artifact_rel="phoenix_sdr_dsp/pqc/kernels/dr14_mldsa65_keygen_finalize.cc",
+            dispatches=85,
+        )
+        # Corrupt 1 key in case index 0
+        rec["test_buffers"] = _make_dr14_test_buffers(corrupt_index=0)
+        stdout = _wrap_record_in_stdout(rec)
+        res = parse_gate_output(
+            gate, stdout, "", 0, 0.5,
+            parent_start_time=now - timedelta(seconds=2),
+            parent_end_time=now + timedelta(seconds=2),
+            execution_nonce="test_nonce_0123456789abcdef",
+        )
+        self.assertFalse(res.success)
+        self.assertEqual(res.status, STATUS_FAIL)
+        self.assertIn("oracle mismatch against official NIST ACVP ML-DSA-65 key pair", res.error_message or "")
+
+    def test_dr14_module_rejects_emulation_and_xrt_ini_path(self) -> None:
+        from phoenix_sdr_dsp.pqc import dr14_mldsa65_keygen_graph as graph
+        with mock.patch.dict(os.environ, {"XCL_EMULATION_MODE": "sw_emu"}):
+            with self.assertRaises(graph.NativeBackendUnavailable) as ctx:
+                graph.check_emulation_and_redirection_excluded()
+            self.assertIn("XCL_EMULATION_MODE='sw_emu'", str(ctx.exception))
+
+        with mock.patch.dict(os.environ, {"XRT_INI_PATH": "C:/fake/xrt.ini"}):
+            with self.assertRaises(graph.NativeBackendUnavailable) as ctx:
+                graph.check_emulation_and_redirection_excluded()
+            self.assertIn("XRT_INI_PATH='C:/fake/xrt.ini'", str(ctx.exception))
+
+    def test_dr15_valid_test_buffers_verified_by_parent_oracle(self) -> None:
+        gate = GATES[18]  # DR15
+        now = datetime.now(timezone.utc)
+        rec = _make_valid_record(
+            gate_id="DR15",
+            expected_count=85,
+            artifact_rel="phoenix_sdr_dsp/pqc/kernels/dr15_mldsa87_keygen_noise.cc",
+            dispatches=85,
+        )
+        rec["test_buffers"] = _make_dr15_test_buffers()
+        stdout = _wrap_record_in_stdout(rec)
+        res = parse_gate_output(
+            gate, stdout, "", 0, 0.5,
+            parent_start_time=now - timedelta(seconds=2),
+            parent_end_time=now + timedelta(seconds=2),
+            execution_nonce="test_nonce_0123456789abcdef",
+        )
+        self.assertFalse(res.success)
+        self.assertEqual(res.status, STATUS_SELF_REPORTED_UNVERIFIED)
+        self.assertTrue(any("Parent independent oracle verified all 85 official NIST ACVP ML-DSA-87 cases" in note for note in res.corroboration_notes))
+
+    def test_dr15_corrupted_key_fails_validation(self) -> None:
+        gate = GATES[18]
+        now = datetime.now(timezone.utc)
+        rec = _make_valid_record(
+            gate_id="DR15",
+            expected_count=85,
+            artifact_rel="phoenix_sdr_dsp/pqc/kernels/dr15_mldsa87_keygen_noise.cc",
+            dispatches=85,
+        )
+        # Corrupt 1 key in case index 0
+        rec["test_buffers"] = _make_dr15_test_buffers(corrupt_index=0)
+        stdout = _wrap_record_in_stdout(rec)
+        res = parse_gate_output(
+            gate, stdout, "", 0, 0.5,
+            parent_start_time=now - timedelta(seconds=2),
+            parent_end_time=now + timedelta(seconds=2),
+            execution_nonce="test_nonce_0123456789abcdef",
+        )
+        self.assertFalse(res.success)
+        self.assertEqual(res.status, STATUS_FAIL)
+        self.assertIn("oracle mismatch against official NIST ACVP ML-DSA-87 key pair", res.error_message or "")
+
+    def test_dr15_module_rejects_emulation_and_xrt_ini_path(self) -> None:
+        from phoenix_sdr_dsp.pqc import dr15_mldsa87_keygen_graph as graph
+        with mock.patch.dict(os.environ, {"XCL_EMULATION_MODE": "sw_emu"}):
+            with self.assertRaises(graph.NativeBackendUnavailable) as ctx:
+                graph.check_emulation_and_redirection_excluded()
+            self.assertIn("XCL_EMULATION_MODE='sw_emu'", str(ctx.exception))
+
+        with mock.patch.dict(os.environ, {"XRT_INI_PATH": "C:/fake/xrt.ini"}):
+            with self.assertRaises(graph.NativeBackendUnavailable) as ctx:
+                graph.check_emulation_and_redirection_excluded()
+            self.assertIn("XRT_INI_PATH='C:/fake/xrt.ini'", str(ctx.exception))
 
 
 if __name__ == "__main__":

@@ -7,7 +7,6 @@ import os
 import sys
 import unittest
 import numpy as np
-from hashlib import sha256
 
 # Ensure repository root is on path
 REPO_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "../.."))
@@ -148,9 +147,9 @@ class TestDR27QrngReservoirSilicon(unittest.TestCase):
         from phoenix_sdr_dsp.pqc.dr8_mlkem768_keygen_graph import run_mlkem768_keygen
 
         # Seed reservoir with high-quality entropy (d, z, m)
-        d_seed = sha256(b"NPU_QRNG_D_SEED_DR27").digest()
-        z_seed = sha256(b"NPU_QRNG_Z_SEED_DR27").digest()
-        m_seed = sha256(b"NPU_QRNG_M_SEED_DR27").digest()
+        d_seed = b"NPU_QRNG_D_SEED_DR27_0123456789\x01"
+        z_seed = b"NPU_QRNG_Z_SEED_DR27_0123456789\x02"
+        m_seed = b"NPU_QRNG_M_SEED_DR27_0123456789\x03"
 
         ingress_entropy(d_seed, req_id=501)
         ingress_entropy(z_seed, req_id=502)

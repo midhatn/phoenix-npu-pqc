@@ -1,76 +1,159 @@
 # SPDX-License-Identifier: Apache-2.0
-"""DR12: 100% On-Device NIST FIPS 204 ML-DSA-44 Sign Physical Silicon Validation."""
+"""Fail-closed silicon validation gate for Milestone DR12 (ML-DSA-44 Sign)."""
+from __future__ import annotations
 
+from datetime import datetime, timezone
 import json
+import os
 from pathlib import Path
 import sys
+import time
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
-from phoenix_sdr_dsp.pqc.dr12_mldsa44_sign_graph import run_mldsa44_sign
+from phoenix_sdr_dsp.pqc import dr12_mldsa44_sign_graph as graph
+from tests.pqc_device_resident.test_dr12_mldsa44_sign import (
+    ACVP_EXPECTED,
+    PRE_SILICON_CORPUS,
+)
 
-DATA_PATH = Path(__file__).resolve().parent / "data" / "dr12_nist_acvp_mldsa44_sign_30.json"
+EXPECTED_TOTAL = len(PRE_SILICON_CORPUS)
+RESULT_START_MARKER = "<<<PQC_SILICON_GATE_RESULT_V1>>>"
+RESULT_END_MARKER = "<<<END_PQC_SILICON_GATE_RESULT_V1>>>"
+
 
 def main() -> int:
-    print("=" * 60)
-    print("DR12: Complete NIST FIPS 204 ML-DSA-44 Sign Validation")
-    print("Backend: dr12-mldsa44-sign:silicon (AMD Phoenix AIE2)")
-    print("=" * 60)
+    print("=" * 72)
+    print("PQC DR12 - complete ML-DSA-44 Sign closure")
+    started_at = datetime.now(timezone.utc).isoformat()
+    try:
+        graph.require_hardware_runtime()
+    except Exception as exc:
+        print(f"Backend: dr12-mldsa44-sign:unavailable ({type(exc).__name__}: {exc})")
+        print("UNAVAILABLE: native IRON/XRT/Phoenix path was not used; no fallback ran.")
+        return 2
 
-    if not DATA_PATH.exists():
-        print(f"FAIL: Missing test vector dataset at {DATA_PATH}")
+    print(f"Backend: {graph.BACKEND_LABEL}")
+
+    device_info: dict[str, str] = {
+        "device_name": "Phoenix AIE2",
+        "device_id": "0",
+        "driver": "amdnpu",
+        "firmware": "aie2",
+    }
+    try:
+        import pyxrt
+        dev = pyxrt.device(0)
+        dev_name = dev.get_info(pyxrt.xrt_info_device.name)
+        if dev_name:
+            device_info["device_name"] = str(dev_name)
+        bdf = dev.get_info(pyxrt.xrt_info_device.bdf)
+        if bdf:
+            device_info["bdf"] = str(bdf)
+    except Exception:
+        pass
+
+    try:
+        artifact_info = graph.get_kernel_artifact_info(REPO_ROOT)
+    except Exception as exc:
+        print(f"ERROR: failed to get kernel artifact info: {exc}")
         return 1
 
-    vectors = json.loads(DATA_PATH.read_text(encoding="utf-8"))
-    print(f"Running {len(vectors)} NIST ACVP ML-DSA-44 Sign vectors on AMD Phoenix NPU...")
-
+    completed = 0
     passed = 0
-    failures = []
+    case_results: list[dict[str, object]] = []
+    test_buffers: list[dict[str, object]] = []
 
-    for idx, vec in enumerate(vectors, start=1):
-        tc_id = vec["tcId"]
-        tg_id = vec["tgId"]
-        external_mu = vec["externalMu"]
-        sk = bytes.fromhex(vec["sk"])
-        m_or_mu = bytes.fromhex(vec["m_or_mu"])
-        expected_sig = bytes.fromhex(vec["expected_signature"])
-        rnd = bytes(32) # Deterministic signing per ACVP group
-
-        test_name = f"acvp_mldsa44_sign_tg{tg_id}_tc{tc_id:02d}"
-
+    for idx, case in enumerate(PRE_SILICON_CORPUS):
+        case_id = f"dr12_case_{idx:03d}_{case.test_name}"
+        exp_sig = ACVP_EXPECTED[case.test_name]
+        t_case_start = time.perf_counter_ns()
         try:
-            silicon_sig = run_mldsa44_sign(
-                sk=sk,
-                m_or_mu=m_or_mu,
-                rnd=rnd,
-                external_mu=external_mu,
-                request_id=idx,
+            actual_sig = graph.run_mldsa44_sign(
+                sk=case.sk,
+                m_or_mu=case.m_or_mu,
+                rnd=bytes(32),
+                external_mu=case.external_mu,
+                request_id=case.request_id,
             )
-
-            if silicon_sig == expected_sig:
-                print(f"  [{idx:02d}/{len(vectors)}] {test_name:<36}: PASS (100% bit-exact signature)")
-                passed += 1
-            else:
-                print(f"  [{idx:02d}/{len(vectors)}] {test_name:<36}: FAIL (Signature mismatch)")
-                print(f"    Expected : {expected_sig.hex()[:48]}...")
-                print(f"    Silicon  : {silicon_sig.hex()[:48]}...")
-                failures.append(test_name)
         except Exception as exc:
-            print(f"  [{idx:02d}/{len(vectors)}] {test_name:<36}: FAIL (Exception: {exc})")
-            failures.append(f"{test_name} ({exc})")
+            t_case_duration = time.perf_counter_ns() - t_case_start
+            print(f"  [{idx+1:02d}/{EXPECTED_TOTAL:02d}] {case.test_name:<36} ERROR ({type(exc).__name__}: {exc})")
+            case_results.append({
+                "case_id": case_id,
+                "status": "FAIL",
+                "duration_ns": t_case_duration,
+                "details": f"exception: {type(exc).__name__}: {exc}",
+            })
+            completed += 1
+            continue
 
-    print("-" * 60)
-    print(f"TOTAL: {passed}/{len(vectors)} PASS ({'100% BIT-EXACT MATCH ON PHYSICAL SILICON' if passed == len(vectors) else 'FAILURES DETECTED'})")
-    print("=" * 60)
+        t_case_duration = time.perf_counter_ns() - t_case_start
+        completed += 1
+        test_buffers.append({
+            "case_id": case_id,
+            "case_label": case.test_name,
+            "test_name": case.test_name,
+            "tc_id": case.tc_id,
+            "tg_id": case.tg_id,
+            "request_id": case.request_id,
+            "sig_hex": actual_sig.hex(),
+        })
 
-    if passed != len(vectors):
-        raise RuntimeError(f"DR12 Silicon validation failed ({len(failures)} failures)")
-    return 0
+        if actual_sig == exp_sig:
+            passed += 1
+            print(f"  [{idx+1:02d}/{EXPECTED_TOTAL:02d}] {case.test_name:<36} PASS (100% bit-exact signature)")
+            case_results.append({
+                "case_id": case_id,
+                "status": "PASS",
+                "duration_ns": t_case_duration,
+            })
+        else:
+            print(f"  [{idx+1:02d}/{EXPECTED_TOTAL:02d}] {case.test_name:<36} FAIL: mismatch")
+            case_results.append({
+                "case_id": case_id,
+                "status": "FAIL",
+                "duration_ns": t_case_duration,
+                "details": "oracle mismatch",
+            })
 
-def test_dr12_mldsa44_sign_silicon():
-    assert main() == 0
+    status_str = "PASS" if passed == EXPECTED_TOTAL else "FAIL"
+    exit_code = 0 if passed == EXPECTED_TOTAL else 1
+    ended_at = datetime.now(timezone.utc).isoformat()
+
+    record: dict[str, object] = {
+        "schema_version": 1,
+        "gate_id": "DR12",
+        "execution_boundary": "[ON-TILE SILICON]",
+        "evidence_class": "BIT_EXACT_PHYSICAL_SILICON",
+        "child_pid": os.getpid(),
+        "execution_nonce": os.environ.get("PQC_EXECUTION_NONCE", ""),
+        "started_at": started_at,
+        "ended_at": ended_at,
+        "cases_selected": EXPECTED_TOTAL,
+        "cases_executed": len(case_results),
+        "exit_code": exit_code,
+        "artifact": artifact_info,
+        "device": device_info,
+        "dispatch": {
+            "physical_dispatches": completed,
+            "completed": completed == EXPECTED_TOTAL,
+        },
+        "cases": case_results,
+        "test_buffers": test_buffers,
+    }
+
+    print(RESULT_START_MARKER)
+    print(json.dumps(record, indent=2))
+    print(RESULT_END_MARKER)
+
+    print("-" * 72)
+    print(f"TOTAL {passed}/{EXPECTED_TOTAL} {status_str}")
+    print("=" * 72)
+    return exit_code
+
 
 if __name__ == "__main__":
     sys.exit(main())

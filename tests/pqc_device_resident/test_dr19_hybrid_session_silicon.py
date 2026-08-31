@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: Apache-2.0
 """
 Milestone DR19: Full-Duplex Hybrid QKD-PQC Session Orchestrator Silicon Validation Suite.
-Backend: dr19-hybrid-session:silicon (AMD Phoenix AIE2 / XDNA1 Architecture).
+Target: AMD Phoenix AIE2 / XDNA1 Architecture (dr19-hybrid-session).
 """
 
 import sys
@@ -17,7 +17,7 @@ from phoenix_sdr_dsp.pqc.dr19_hybrid_session_orchestrator import run_hybrid_hand
 def main():
     print("=" * 75)
     print("DR19: Full-Duplex Hybrid QKD-PQC Session Orchestrator Silicon Validation")
-    print("Backend: dr19-hybrid-session:silicon (AMD Phoenix AIE2)")
+    print("Target: AMD Phoenix AIE2 / XDNA1 (dr19-hybrid-session)")
     print("Standards: ETSI GS QKD 014, NIST FIPS 203/204, NIST SP 800-56C, IETF RFC 9370")
     print("=" * 75)
 

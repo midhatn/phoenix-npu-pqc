@@ -2,6 +2,14 @@
   "schema_version": 1,
   "blockers": [
     {
+      "id": "PHYSICAL-DISPATCH-CORROBORATION",
+      "dr": null,
+      "category": "hardware_evidence",
+      "status": "OPEN",
+      "summary": "Physical silicon verification across all gates remains blocked pending independent external dispatch corroboration and driver-level hardware trace verification.",
+      "next_action": "Design and implement driver-level hardware execution trace / non-bypassable physical dispatch corroborator."
+    },
+    {
       "id": "DR20-SCOPE",
       "dr": "DR20",
       "category": "specification",

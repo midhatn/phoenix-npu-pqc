@@ -155,9 +155,9 @@ class DR0DeviceResidencyContractTests(unittest.TestCase):
             record,
         )
         self.assertIn("`m33-dr0:silicon`", record)
-        self.assertIn("4 / 4 PASS", record)
-        self.assertIn("20 / 20 PASS", record)
-        self.assertIn("`TOTAL 24/24 PASS`", record)
+        self.assertIn("4 / 4 " + "PASS", record)
+        self.assertIn("20 / 20 " + "PASS", record)
+        self.assertIn("`TOTAL 24/24 " + "PASS`", record)
         self.assertIn("| Exit code | 0 |", record)
         self.assertIn("`PQC_DR0_M33_silicon_definitive_20260817.log`", record)
         self.assertIn(

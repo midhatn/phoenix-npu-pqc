@@ -648,14 +648,14 @@ def parse_gate_output(
         else:
             corroboration_notes.append(f"Child process PID verified: {child_pid}")
 
-    # 11. Parent-Side Independent Test Buffers / Oracle Verification (DR0 Scope)
+    # 11. Parent-Side Independent Test Buffers / Oracle Verification (DR0 & DR1 Scope)
     test_buffers = record.get("test_buffers")
     if test_buffers is not None:
         if not isinstance(test_buffers, list):
             failures.append("test_buffers field must be an array")
         elif len(test_buffers) != gate.expected_total:
             failures.append(f"test_buffers length ({len(test_buffers)}) != expected gate total ({gate.expected_total})")
-        else:
+        elif gate.gate_id == "DR0":
             from phoenix_sdr_dsp.pqc import abi
             buffer_mismatches = 0
             for b_idx, buf_entry in enumerate(test_buffers):
@@ -687,6 +687,678 @@ def parse_gate_output(
             if buffer_mismatches == 0 and not failures:
                 corroboration_notes.append(
                     f"Parent independent oracle verified all {len(test_buffers)} x {abi.N} output coefficients."
+                )
+        elif gate.gate_id == "DR1":
+            from tests.pqc_device_resident.dr1_reference import expanda_rejntt_reference
+            from tests.pqc_device_resident.test_dr1_mldsa44_rejntt import FINGERPRINT_BY_LABEL, _coefficient_digest
+            dr1_mismatches = 0
+            for b_idx, buf_entry in enumerate(test_buffers):
+                if not isinstance(buf_entry, dict):
+                    failures.append(f"test_buffers[{b_idx}] must be an object")
+                    continue
+                rho_hex = buf_entry.get("rho_hex")
+                j = buf_entry.get("j")
+                i = buf_entry.get("i")
+                out_coeffs = buf_entry.get("output_coefficients")
+                case_label = buf_entry.get("case_label", f"case_{b_idx}")
+                if not isinstance(rho_hex, str) or not isinstance(j, int) or not isinstance(i, int) or not isinstance(out_coeffs, list):
+                    failures.append(f"test_buffers[{b_idx}] malformed fields (expected rho_hex, j, i, output_coefficients)")
+                    continue
+                if len(out_coeffs) != 256:
+                    failures.append(f"test_buffers[{b_idx}] output_coefficients length ({len(out_coeffs)}) != 256")
+                    continue
+                try:
+                    rho = bytes.fromhex(rho_hex)
+                    expected = expanda_rejntt_reference(rho, j, i)
+                    actual_digest = _coefficient_digest(out_coeffs)
+                    if out_coeffs != list(expected.coefficients):
+                        dr1_mismatches += 1
+                        mismatch_lane = next(
+                            k for k, (got_val, want_val) in enumerate(zip(out_coeffs, expected.coefficients)) if got_val != want_val
+                        )
+                        failures.append(
+                            f"test_buffers[{b_idx}] ({case_label}) oracle mismatch at lane {mismatch_lane}: "
+                            f"got {out_coeffs[mismatch_lane]}, expected {expected.coefficients[mismatch_lane]}"
+                        )
+                    claimed_digest = buf_entry.get("fingerprint_sha256")
+                    if claimed_digest and claimed_digest != actual_digest:
+                        dr1_mismatches += 1
+                        failures.append(
+                            f"test_buffers[{b_idx}] ({case_label}) claimed fingerprint mismatch: {claimed_digest} != computed {actual_digest}"
+                        )
+                    if case_label in FINGERPRINT_BY_LABEL and actual_digest != FINGERPRINT_BY_LABEL[case_label]:
+                        dr1_mismatches += 1
+                        failures.append(
+                            f"test_buffers[{b_idx}] ({case_label}) frozen fingerprint mismatch: {actual_digest} != {FINGERPRINT_BY_LABEL[case_label]}"
+                        )
+                except Exception as exc:
+                    failures.append(f"test_buffers[{b_idx}] oracle evaluation error: {exc}")
+            if dr1_mismatches == 0 and not failures:
+                corroboration_notes.append(
+                    f"Parent independent oracle verified all {len(test_buffers)} x 256 output coefficients and fingerprints."
+                )
+        elif gate.gate_id == "DR2a":
+            from tests.pqc_device_resident.dr2a_reference import samplentt_reference
+            dr2a_mismatches = 0
+            for b_idx, buf_entry in enumerate(test_buffers):
+                if not isinstance(buf_entry, dict):
+                    failures.append(f"test_buffers[{b_idx}] must be an object")
+                    continue
+                rho_hex = buf_entry.get("rho_hex")
+                j = buf_entry.get("j")
+                i = buf_entry.get("i")
+                out_coeffs = buf_entry.get("output_coefficients")
+                case_label = buf_entry.get("case_label", f"case_{b_idx}")
+                if not isinstance(rho_hex, str) or not isinstance(j, int) or not isinstance(i, int) or not isinstance(out_coeffs, list):
+                    failures.append(f"test_buffers[{b_idx}] malformed fields (expected rho_hex, j, i, output_coefficients)")
+                    continue
+                if len(out_coeffs) != 256:
+                    failures.append(f"test_buffers[{b_idx}] output_coefficients length ({len(out_coeffs)}) != 256")
+                    continue
+                try:
+                    rho = bytes.fromhex(rho_hex)
+                    expected = samplentt_reference(rho, j, i)
+                    if expected.limit_exceeded:
+                        dr2a_mismatches += 1
+                        failures.append(f"test_buffers[{b_idx}] ({case_label}) oracle rejected: candidate block limit exceeded")
+                    elif out_coeffs != list(expected.coefficients):
+                        dr2a_mismatches += 1
+                        mismatch_lane = next(
+                            k for k, (got_val, want_val) in enumerate(zip(out_coeffs, expected.coefficients)) if got_val != want_val
+                        )
+                        failures.append(
+                            f"test_buffers[{b_idx}] ({case_label}) oracle mismatch at lane {mismatch_lane}: "
+                            f"got {out_coeffs[mismatch_lane]}, expected {expected.coefficients[mismatch_lane]}"
+                        )
+                except Exception as exc:
+                    failures.append(f"test_buffers[{b_idx}] oracle evaluation error: {exc}")
+            if dr2a_mismatches == 0 and not failures:
+                corroboration_notes.append(
+                    f"Parent independent oracle verified all {len(test_buffers)} x 256 output coefficients."
+                )
+        elif gate.gate_id == "DR2b":
+            from tests.pqc_device_resident.dr2b_reference import noise_ntt_reference
+            dr2b_mismatches = 0
+            for b_idx, buf_entry in enumerate(test_buffers):
+                if not isinstance(buf_entry, dict):
+                    failures.append(f"test_buffers[{b_idx}] must be an object")
+                    continue
+                sigma_hex = buf_entry.get("sigma_hex")
+                counter = buf_entry.get("counter")
+                out_coeffs = buf_entry.get("output_coefficients")
+                case_label = buf_entry.get("case_label", f"case_{b_idx}")
+                if not isinstance(sigma_hex, str) or not isinstance(counter, int) or not isinstance(out_coeffs, list):
+                    failures.append(f"test_buffers[{b_idx}] malformed fields (expected sigma_hex, counter, output_coefficients)")
+                    continue
+                if len(out_coeffs) != 256:
+                    failures.append(f"test_buffers[{b_idx}] output_coefficients length ({len(out_coeffs)}) != 256")
+                    continue
+                try:
+                    sigma = bytes.fromhex(sigma_hex)
+                    expected = list(noise_ntt_reference(sigma, counter))
+                    if out_coeffs != expected:
+                        dr2b_mismatches += 1
+                        mismatch_lane = next(
+                            k for k, (got_val, want_val) in enumerate(zip(out_coeffs, expected)) if got_val != want_val
+                        )
+                        failures.append(
+                            f"test_buffers[{b_idx}] ({case_label}) oracle mismatch at lane {mismatch_lane}: "
+                            f"got {out_coeffs[mismatch_lane]}, expected {expected[mismatch_lane]}"
+                        )
+                except Exception as exc:
+                    failures.append(f"test_buffers[{b_idx}] oracle evaluation error: {exc}")
+            if dr2b_mismatches == 0 and not failures:
+                corroboration_notes.append(
+                    f"Parent independent oracle verified all {len(test_buffers)} x 256 output coefficients."
+                )
+        elif gate.gate_id == "DR2c":
+            from tests.pqc_device_resident.dr2c_reference import keygen_row_reference
+            dr2c_mismatches = 0
+            for b_idx, buf_entry in enumerate(test_buffers):
+                if not isinstance(buf_entry, dict):
+                    failures.append(f"test_buffers[{b_idx}] must be an object")
+                    continue
+                rho_hex = buf_entry.get("rho_hex")
+                sigma_hex = buf_entry.get("sigma_hex")
+                row_index = buf_entry.get("row_index")
+                out_coeffs = buf_entry.get("output_coefficients")
+                case_label = buf_entry.get("case_label", f"case_{b_idx}")
+                if not isinstance(rho_hex, str) or not isinstance(sigma_hex, str) or not isinstance(row_index, int) or not isinstance(out_coeffs, list):
+                    failures.append(f"test_buffers[{b_idx}] malformed fields (expected rho_hex, sigma_hex, row_index, output_coefficients)")
+                    continue
+                if len(out_coeffs) != 256:
+                    failures.append(f"test_buffers[{b_idx}] output_coefficients length ({len(out_coeffs)}) != 256")
+                    continue
+                try:
+                    rho = bytes.fromhex(rho_hex)
+                    sigma = bytes.fromhex(sigma_hex)
+                    expected = list(keygen_row_reference(rho, sigma, row_index))
+                    if out_coeffs != expected:
+                        dr2c_mismatches += 1
+                        mismatch_lane = next(
+                            k for k, (got_val, want_val) in enumerate(zip(out_coeffs, expected)) if got_val != want_val
+                        )
+                        failures.append(
+                            f"test_buffers[{b_idx}] ({case_label}) oracle mismatch at lane {mismatch_lane}: "
+                            f"got {out_coeffs[mismatch_lane]}, expected {expected[mismatch_lane]}"
+                        )
+                except Exception as exc:
+                    failures.append(f"test_buffers[{b_idx}] oracle evaluation error: {exc}")
+            if dr2c_mismatches == 0 and not failures:
+                corroboration_notes.append(
+                    f"Parent independent oracle verified all {len(test_buffers)} x 256 output coefficients."
+                )
+        elif gate.gate_id == "DR2d":
+            from tests.pqc_device_resident.test_dr2d_mlkem512_kpke_keygen import ACVP_EXPECTED
+            dr2d_mismatches = 0
+            for b_idx, buf_entry in enumerate(test_buffers):
+                if not isinstance(buf_entry, dict):
+                    failures.append(f"test_buffers[{b_idx}] must be an object")
+                    continue
+                tc_id = buf_entry.get("tc_id")
+                d_hex = buf_entry.get("d_hex")
+                ek_pke_hex = buf_entry.get("ek_pke_hex")
+                dk_pke_hex = buf_entry.get("dk_pke_hex")
+                case_label = buf_entry.get("case_label", f"case_{b_idx}")
+                if not isinstance(tc_id, int) or not isinstance(d_hex, str) or not isinstance(ek_pke_hex, str) or not isinstance(dk_pke_hex, str):
+                    failures.append(f"test_buffers[{b_idx}] malformed fields (expected tc_id, d_hex, ek_pke_hex, dk_pke_hex)")
+                    continue
+                if tc_id not in ACVP_EXPECTED:
+                    failures.append(f"test_buffers[{b_idx}] unknown tc_id {tc_id}")
+                    continue
+                try:
+                    expected_ek, expected_dk = ACVP_EXPECTED[tc_id]
+                    actual_ek = bytes.fromhex(ek_pke_hex)
+                    actual_dk = bytes.fromhex(dk_pke_hex)
+                    if (actual_ek, actual_dk) != (expected_ek, expected_dk):
+                        dr2d_mismatches += 1
+                        failures.append(
+                            f"test_buffers[{b_idx}] ({case_label}) oracle mismatch against official NIST ACVP vector"
+                        )
+                except Exception as exc:
+                    failures.append(f"test_buffers[{b_idx}] oracle evaluation error: {exc}")
+            if dr2d_mismatches == 0 and not failures:
+                corroboration_notes.append(
+                    f"Parent independent oracle verified all {len(test_buffers)} official NIST ACVP key pairs."
+                )
+        elif gate.gate_id == "DR3":
+            from tests.pqc_device_resident.test_dr3_mlkem512_kpke_encrypt import ACVP_EXPECTED
+            dr3_mismatches = 0
+            for b_idx, buf_entry in enumerate(test_buffers):
+                if not isinstance(buf_entry, dict):
+                    failures.append(f"test_buffers[{b_idx}] must be an object")
+                    continue
+                tc_id = buf_entry.get("tc_id")
+                c_hex = buf_entry.get("c_hex")
+                case_label = buf_entry.get("case_label", f"case_{b_idx}")
+                if not isinstance(tc_id, int) or not isinstance(c_hex, str):
+                    failures.append(f"test_buffers[{b_idx}] malformed fields (expected tc_id, c_hex)")
+                    continue
+                if tc_id not in ACVP_EXPECTED:
+                    failures.append(f"test_buffers[{b_idx}] unknown tc_id {tc_id}")
+                    continue
+                try:
+                    expected_c = ACVP_EXPECTED[tc_id]
+                    actual_c = bytes.fromhex(c_hex)
+                    if actual_c != expected_c:
+                        dr3_mismatches += 1
+                        failures.append(
+                            f"test_buffers[{b_idx}] ({case_label}) oracle mismatch against official NIST ACVP ciphertext"
+                        )
+                except Exception as exc:
+                    failures.append(f"test_buffers[{b_idx}] oracle evaluation error: {exc}")
+            if dr3_mismatches == 0 and not failures:
+                corroboration_notes.append(
+                    f"Parent independent oracle verified all {len(test_buffers)} official NIST ACVP ciphertexts."
+                )
+        elif gate.gate_id == "DR4":
+            from tests.pqc_device_resident.test_dr4_mlkem512_kpke_decrypt import ACVP_EXPECTED
+            dr4_mismatches = 0
+            for b_idx, buf_entry in enumerate(test_buffers):
+                if not isinstance(buf_entry, dict):
+                    failures.append(f"test_buffers[{b_idx}] must be an object")
+                    continue
+                tc_id = buf_entry.get("tc_id")
+                m_hex = buf_entry.get("m_hex")
+                case_label = buf_entry.get("case_label", f"case_{b_idx}")
+                if not isinstance(tc_id, int) or not isinstance(m_hex, str):
+                    failures.append(f"test_buffers[{b_idx}] malformed fields (expected tc_id, m_hex)")
+                    continue
+                if tc_id not in ACVP_EXPECTED:
+                    failures.append(f"test_buffers[{b_idx}] unknown tc_id {tc_id}")
+                    continue
+                try:
+                    expected_m = ACVP_EXPECTED[tc_id]
+                    actual_m = bytes.fromhex(m_hex)
+                    if actual_m != expected_m:
+                        dr4_mismatches += 1
+                        failures.append(
+                            f"test_buffers[{b_idx}] ({case_label}) oracle mismatch against official NIST ACVP decrypted message"
+                        )
+                except Exception as exc:
+                    failures.append(f"test_buffers[{b_idx}] oracle evaluation error: {exc}")
+            if dr4_mismatches == 0 and not failures:
+                corroboration_notes.append(
+                    f"Parent independent oracle verified all {len(test_buffers)} official NIST ACVP decrypted messages."
+                )
+        elif gate.gate_id == "DR5":
+            from tests.pqc_device_resident.test_dr5_mlkem512_keygen import ACVP_EXPECTED
+            dr5_mismatches = 0
+            for b_idx, buf_entry in enumerate(test_buffers):
+                if not isinstance(buf_entry, dict):
+                    failures.append(f"test_buffers[{b_idx}] must be an object")
+                    continue
+                tc_id = buf_entry.get("tc_id")
+                ek_hex = buf_entry.get("ek_hex")
+                dk_hex = buf_entry.get("dk_hex")
+                case_label = buf_entry.get("case_label", f"case_{b_idx}")
+                if not isinstance(tc_id, int) or not isinstance(ek_hex, str) or not isinstance(dk_hex, str):
+                    failures.append(f"test_buffers[{b_idx}] malformed fields (expected tc_id, ek_hex, dk_hex)")
+                    continue
+                if tc_id not in ACVP_EXPECTED:
+                    failures.append(f"test_buffers[{b_idx}] unknown tc_id {tc_id}")
+                    continue
+                try:
+                    expected_ek, expected_dk = ACVP_EXPECTED[tc_id]
+                    actual_ek = bytes.fromhex(ek_hex)
+                    actual_dk = bytes.fromhex(dk_hex)
+                    if (actual_ek, actual_dk) != (expected_ek, expected_dk):
+                        dr5_mismatches += 1
+                        failures.append(
+                            f"test_buffers[{b_idx}] ({case_label}) oracle mismatch against official NIST ACVP key pair"
+                        )
+                except Exception as exc:
+                    failures.append(f"test_buffers[{b_idx}] oracle evaluation error: {exc}")
+            if dr5_mismatches == 0 and not failures:
+                corroboration_notes.append(
+                    f"Parent independent oracle verified all {len(test_buffers)} official NIST ACVP key pairs."
+                )
+        elif gate.gate_id == "DR6":
+            from tests.pqc_device_resident.test_dr6_mlkem512_encaps import ACVP_EXPECTED
+            dr6_mismatches = 0
+            for b_idx, buf_entry in enumerate(test_buffers):
+                if not isinstance(buf_entry, dict):
+                    failures.append(f"test_buffers[{b_idx}] must be an object")
+                    continue
+                tc_id = buf_entry.get("tc_id")
+                c_hex = buf_entry.get("c_hex")
+                k_hex = buf_entry.get("k_hex")
+                case_label = buf_entry.get("case_label", f"case_{b_idx}")
+                if not isinstance(tc_id, int) or not isinstance(c_hex, str) or not isinstance(k_hex, str):
+                    failures.append(f"test_buffers[{b_idx}] malformed fields (expected tc_id, c_hex, k_hex)")
+                    continue
+                if tc_id not in ACVP_EXPECTED:
+                    failures.append(f"test_buffers[{b_idx}] unknown tc_id {tc_id}")
+                    continue
+                try:
+                    expected_c, expected_k = ACVP_EXPECTED[tc_id]
+                    actual_c = bytes.fromhex(c_hex)
+                    actual_k = bytes.fromhex(k_hex)
+                    if (actual_c, actual_k) != (expected_c, expected_k):
+                        dr6_mismatches += 1
+                        failures.append(
+                            f"test_buffers[{b_idx}] ({case_label}) oracle mismatch against official NIST ACVP encapsulated ciphertext/shared key"
+                        )
+                except Exception as exc:
+                    failures.append(f"test_buffers[{b_idx}] oracle evaluation error: {exc}")
+            if dr6_mismatches == 0 and not failures:
+                corroboration_notes.append(
+                    f"Parent independent oracle verified all {len(test_buffers)} official NIST ACVP encapsulated ciphertexts and shared keys."
+                )
+        elif gate.gate_id == "DR7":
+            from tests.pqc_device_resident.test_dr7_mlkem512_decaps import ACVP_EXPECTED
+            dr7_mismatches = 0
+            for b_idx, buf_entry in enumerate(test_buffers):
+                if not isinstance(buf_entry, dict):
+                    failures.append(f"test_buffers[{b_idx}] must be an object")
+                    continue
+                tc_id = buf_entry.get("tc_id")
+                k_hex = buf_entry.get("k_hex")
+                case_label = buf_entry.get("case_label", f"case_{b_idx}")
+                if not isinstance(tc_id, str) or not isinstance(k_hex, str):
+                    failures.append(f"test_buffers[{b_idx}] malformed fields (expected tc_id, k_hex)")
+                    continue
+                if tc_id not in ACVP_EXPECTED:
+                    failures.append(f"test_buffers[{b_idx}] unknown tc_id {tc_id}")
+                    continue
+                try:
+                    expected_k = ACVP_EXPECTED[tc_id]
+                    actual_k = bytes.fromhex(k_hex)
+                    if actual_k != expected_k:
+                        dr7_mismatches += 1
+                        failures.append(
+                            f"test_buffers[{b_idx}] ({case_label}) oracle mismatch against official NIST ACVP decapsulated shared key"
+                        )
+                except Exception as exc:
+                    failures.append(f"test_buffers[{b_idx}] oracle evaluation error: {exc}")
+            if dr7_mismatches == 0 and not failures:
+                corroboration_notes.append(
+                    f"Parent independent oracle verified all {len(test_buffers)} official NIST ACVP decapsulated shared keys."
+                )
+        elif gate.gate_id == "DR8":
+            from tests.pqc_device_resident.test_dr8_mlkem_unified import ACVP_EXPECTED
+            dr8_mismatches = 0
+            for b_idx, buf_entry in enumerate(test_buffers):
+                if not isinstance(buf_entry, dict):
+                    failures.append(f"test_buffers[{b_idx}] must be an object")
+                    continue
+                tc_id = buf_entry.get("tc_id")
+                k_hex = buf_entry.get("k_hex")
+                case_label = buf_entry.get("case_label", f"case_{b_idx}")
+                if not isinstance(tc_id, str) or not isinstance(k_hex, str):
+                    failures.append(f"test_buffers[{b_idx}] malformed fields (expected tc_id, k_hex)")
+                    continue
+                if tc_id not in ACVP_EXPECTED:
+                    failures.append(f"test_buffers[{b_idx}] unknown tc_id {tc_id}")
+                    continue
+                try:
+                    expected_k = ACVP_EXPECTED[tc_id]
+                    actual_k = bytes.fromhex(k_hex)
+                    if actual_k != expected_k:
+                        dr8_mismatches += 1
+                        failures.append(
+                            f"test_buffers[{b_idx}] ({case_label}) oracle mismatch against official NIST ACVP shared key"
+                        )
+                except Exception as exc:
+                    failures.append(f"test_buffers[{b_idx}] oracle evaluation error: {exc}")
+            if dr8_mismatches == 0 and not failures:
+                corroboration_notes.append(
+                    f"Parent independent oracle verified all {len(test_buffers)} official NIST ACVP ML-KEM (512, 768, 1024) shared keys."
+                )
+        elif gate.gate_id == "DR9":
+            from tests.pqc_device_resident.test_dr9_fips202 import ACVP_EXPECTED
+            dr9_mismatches = 0
+            for b_idx, buf_entry in enumerate(test_buffers):
+                if not isinstance(buf_entry, dict):
+                    failures.append(f"test_buffers[{b_idx}] must be an object")
+                    continue
+                tc_id = buf_entry.get("tc_id")
+                digest_hex = buf_entry.get("digest_hex")
+                case_label = buf_entry.get("case_label", f"case_{b_idx}")
+                if not isinstance(tc_id, str) or not isinstance(digest_hex, str):
+                    failures.append(f"test_buffers[{b_idx}] malformed fields (expected tc_id, digest_hex)")
+                    continue
+                if tc_id not in ACVP_EXPECTED:
+                    failures.append(f"test_buffers[{b_idx}] unknown tc_id {tc_id}")
+                    continue
+                try:
+                    expected_digest = ACVP_EXPECTED[tc_id]
+                    actual_digest = bytes.fromhex(digest_hex)
+                    if actual_digest != expected_digest:
+                        dr9_mismatches += 1
+                        failures.append(
+                            f"test_buffers[{b_idx}] ({case_label}) oracle mismatch against official NIST FIPS 202 digest"
+                        )
+                except Exception as exc:
+                    failures.append(f"test_buffers[{b_idx}] oracle evaluation error: {exc}")
+            if dr9_mismatches == 0 and not failures:
+                corroboration_notes.append(
+                    f"Parent independent oracle verified all {len(test_buffers)} official NIST FIPS 202 digests."
+                )
+        elif gate.gate_id == "DR10":
+            from tests.pqc_device_resident.test_dr10_sealed_lifecycle import EXPECTED_RESULTS
+            dr10_mismatches = 0
+            for b_idx, buf_entry in enumerate(test_buffers):
+                if not isinstance(buf_entry, dict):
+                    failures.append(f"test_buffers[{b_idx}] must be an object")
+                    continue
+                name = buf_entry.get("name")
+                status = buf_entry.get("status")
+                active_slot = buf_entry.get("active_slot")
+                case_label = buf_entry.get("case_label", f"case_{b_idx}")
+                if not isinstance(name, str) or not isinstance(status, int) or not isinstance(active_slot, int):
+                    failures.append(f"test_buffers[{b_idx}] malformed fields (expected name, status, active_slot)")
+                    continue
+                if name not in EXPECTED_RESULTS:
+                    failures.append(f"test_buffers[{b_idx}] unknown name {name}")
+                    continue
+                try:
+                    exp_status, exp_active = EXPECTED_RESULTS[name]
+                    if status != exp_status or (exp_active is not None and active_slot != exp_active):
+                        dr10_mismatches += 1
+                        failures.append(
+                            f"test_buffers[{b_idx}] ({case_label}) oracle mismatch against DR10 lifecycle specification (got status={status}, active={active_slot}; expected status={exp_status}, active={exp_active})"
+                        )
+                except Exception as exc:
+                    failures.append(f"test_buffers[{b_idx}] oracle evaluation error: {exc}")
+            if dr10_mismatches == 0 and not failures:
+                corroboration_notes.append(
+                    f"Parent independent oracle verified all {len(test_buffers)} DR10 lifecycle cases."
+                )
+        elif gate.gate_id == "DR11":
+            from tests.pqc_device_resident.test_dr11_mldsa44_keygen import ACVP_EXPECTED
+            dr11_mismatches = 0
+            for b_idx, buf_entry in enumerate(test_buffers):
+                if not isinstance(buf_entry, dict):
+                    failures.append(f"test_buffers[{b_idx}] must be an object")
+                    continue
+                tc_id = buf_entry.get("tc_id")
+                pk_hex = buf_entry.get("pk_hex")
+                sk_hex = buf_entry.get("sk_hex")
+                case_label = buf_entry.get("case_label", f"case_{b_idx}")
+                if not isinstance(tc_id, str) or not isinstance(pk_hex, str) or not isinstance(sk_hex, str):
+                    failures.append(f"test_buffers[{b_idx}] malformed fields (expected tc_id, pk_hex, sk_hex)")
+                    continue
+                if tc_id not in ACVP_EXPECTED:
+                    failures.append(f"test_buffers[{b_idx}] unknown tc_id {tc_id}")
+                    continue
+                try:
+                    exp_pk, exp_sk = ACVP_EXPECTED[tc_id]
+                    actual_pk = bytes.fromhex(pk_hex)
+                    actual_sk = bytes.fromhex(sk_hex)
+                    if actual_pk != exp_pk or actual_sk != exp_sk:
+                        dr11_mismatches += 1
+                        failures.append(
+                            f"test_buffers[{b_idx}] ({case_label}) oracle mismatch against official NIST ACVP ML-DSA-44 key pair"
+                        )
+                except Exception as exc:
+                    failures.append(f"test_buffers[{b_idx}] oracle evaluation error: {exc}")
+            if dr11_mismatches == 0 and not failures:
+                corroboration_notes.append(
+                    f"Parent independent oracle verified all {len(test_buffers)} official NIST ACVP ML-DSA-44 key pairs."
+                )
+        elif gate.gate_id == "DR12":
+            from tests.pqc_device_resident.test_dr12_mldsa44_sign import ACVP_EXPECTED
+            dr12_mismatches = 0
+            for b_idx, buf_entry in enumerate(test_buffers):
+                if not isinstance(buf_entry, dict):
+                    failures.append(f"test_buffers[{b_idx}] must be an object")
+                    continue
+                test_name = buf_entry.get("test_name")
+                sig_hex = buf_entry.get("sig_hex")
+                case_label = buf_entry.get("case_label", f"case_{b_idx}")
+                if not isinstance(test_name, str) or not isinstance(sig_hex, str):
+                    failures.append(f"test_buffers[{b_idx}] malformed fields (expected test_name, sig_hex)")
+                    continue
+                if test_name not in ACVP_EXPECTED:
+                    failures.append(f"test_buffers[{b_idx}] unknown test_name {test_name}")
+                    continue
+                try:
+                    exp_sig = ACVP_EXPECTED[test_name]
+                    actual_sig = bytes.fromhex(sig_hex)
+                    if actual_sig != exp_sig:
+                        dr12_mismatches += 1
+                        failures.append(
+                            f"test_buffers[{b_idx}] ({case_label}) oracle mismatch against official NIST ACVP ML-DSA-44 signature"
+                        )
+                except Exception as exc:
+                    failures.append(f"test_buffers[{b_idx}] oracle evaluation error: {exc}")
+            if dr12_mismatches == 0 and not failures:
+                corroboration_notes.append(
+                    f"Parent independent oracle verified all {len(test_buffers)} official NIST ACVP ML-DSA-44 signatures."
+                )
+        elif gate.gate_id == "DR13":
+            from tests.pqc_device_resident.test_dr13_mldsa44_verify import ACVP_EXPECTED
+            dr13_mismatches = 0
+            for b_idx, buf_entry in enumerate(test_buffers):
+                if not isinstance(buf_entry, dict):
+                    failures.append(f"test_buffers[{b_idx}] must be an object")
+                    continue
+                test_name = buf_entry.get("test_name")
+                actual_valid = buf_entry.get("actual_valid")
+                case_label = buf_entry.get("case_label", f"case_{b_idx}")
+                if not isinstance(test_name, str) or not isinstance(actual_valid, bool):
+                    failures.append(f"test_buffers[{b_idx}] malformed fields (expected test_name, actual_valid)")
+                    continue
+                if test_name not in ACVP_EXPECTED:
+                    failures.append(f"test_buffers[{b_idx}] unknown test_name {test_name}")
+                    continue
+                try:
+                    exp_valid = ACVP_EXPECTED[test_name]
+                    if actual_valid != exp_valid:
+                        dr13_mismatches += 1
+                        failures.append(
+                            f"test_buffers[{b_idx}] ({case_label}) oracle mismatch against official NIST ACVP ML-DSA-44 verify verdict (got {actual_valid}, expected {exp_valid})"
+                        )
+                except Exception as exc:
+                    failures.append(f"test_buffers[{b_idx}] oracle evaluation error: {exc}")
+            if dr13_mismatches == 0 and not failures:
+                corroboration_notes.append(
+                    f"Parent independent oracle verified all {len(test_buffers)} official NIST ACVP ML-DSA-44 verification verdicts."
+                )
+        elif gate.gate_id == "DR14":
+            from tests.pqc_device_resident.test_dr14_mldsa65 import (
+                KEYGEN_EXPECTED,
+                SIGN_EXPECTED,
+                VERIFY_EXPECTED,
+            )
+            dr14_mismatches = 0
+            for b_idx, buf_entry in enumerate(test_buffers):
+                if not isinstance(buf_entry, dict):
+                    failures.append(f"test_buffers[{b_idx}] must be an object")
+                    continue
+                gate_op = buf_entry.get("gate_op")
+                test_name = buf_entry.get("test_name")
+                case_label = buf_entry.get("case_label", f"case_{b_idx}")
+                if not isinstance(gate_op, str) or not isinstance(test_name, str):
+                    failures.append(f"test_buffers[{b_idx}] malformed fields (expected gate_op, test_name)")
+                    continue
+                try:
+                    if gate_op == "keygen":
+                        pk_hex = buf_entry.get("pk_hex")
+                        sk_hex = buf_entry.get("sk_hex")
+                        if not isinstance(pk_hex, str) or not isinstance(sk_hex, str):
+                            failures.append(f"test_buffers[{b_idx}] malformed keygen fields")
+                            continue
+                        if test_name not in KEYGEN_EXPECTED:
+                            failures.append(f"test_buffers[{b_idx}] unknown keygen test_name {test_name}")
+                            continue
+                        exp_pk, exp_sk = KEYGEN_EXPECTED[test_name]
+                        actual_pk = bytes.fromhex(pk_hex)
+                        actual_sk = bytes.fromhex(sk_hex)
+                        if actual_pk != exp_pk or actual_sk != exp_sk:
+                            dr14_mismatches += 1
+                            failures.append(
+                                f"test_buffers[{b_idx}] ({case_label}) oracle mismatch against official NIST ACVP ML-DSA-65 key pair"
+                            )
+                    elif gate_op == "sign":
+                        sig_hex = buf_entry.get("sig_hex")
+                        if not isinstance(sig_hex, str):
+                            failures.append(f"test_buffers[{b_idx}] malformed sign fields")
+                            continue
+                        if test_name not in SIGN_EXPECTED:
+                            failures.append(f"test_buffers[{b_idx}] unknown sign test_name {test_name}")
+                            continue
+                        exp_sig = SIGN_EXPECTED[test_name]
+                        actual_sig = bytes.fromhex(sig_hex)
+                        if actual_sig != exp_sig:
+                            dr14_mismatches += 1
+                            failures.append(
+                                f"test_buffers[{b_idx}] ({case_label}) oracle mismatch against official NIST ACVP ML-DSA-65 signature"
+                            )
+                    elif gate_op == "verify":
+                        actual_valid = buf_entry.get("actual_valid")
+                        if not isinstance(actual_valid, bool):
+                            failures.append(f"test_buffers[{b_idx}] malformed verify fields")
+                            continue
+                        if test_name not in VERIFY_EXPECTED:
+                            failures.append(f"test_buffers[{b_idx}] unknown verify test_name {test_name}")
+                            continue
+                        exp_valid = VERIFY_EXPECTED[test_name]
+                        if actual_valid != exp_valid:
+                            dr14_mismatches += 1
+                            failures.append(
+                                f"test_buffers[{b_idx}] ({case_label}) oracle mismatch against official NIST ACVP ML-DSA-65 verify verdict (got {actual_valid}, expected {exp_valid})"
+                            )
+                    else:
+                        failures.append(f"test_buffers[{b_idx}] unknown gate_op {gate_op}")
+                except Exception as exc:
+                    failures.append(f"test_buffers[{b_idx}] oracle evaluation error: {exc}")
+            if dr14_mismatches == 0 and not failures:
+                corroboration_notes.append(
+                    f"Parent independent oracle verified all {len(test_buffers)} official NIST ACVP ML-DSA-65 cases (KeyGen, Sign, Verify)."
+                )
+        elif gate.gate_id == "DR15":
+            from tests.pqc_device_resident.test_dr15_mldsa87 import (
+                KEYGEN_EXPECTED,
+                SIGN_EXPECTED,
+                VERIFY_EXPECTED,
+            )
+            dr15_mismatches = 0
+            for b_idx, buf_entry in enumerate(test_buffers):
+                if not isinstance(buf_entry, dict):
+                    failures.append(f"test_buffers[{b_idx}] must be an object")
+                    continue
+                gate_op = buf_entry.get("gate_op")
+                test_name = buf_entry.get("test_name")
+                case_label = buf_entry.get("case_label", f"case_{b_idx}")
+                if not isinstance(gate_op, str) or not isinstance(test_name, str):
+                    failures.append(f"test_buffers[{b_idx}] malformed fields (expected gate_op, test_name)")
+                    continue
+                try:
+                    if gate_op == "keygen":
+                        pk_hex = buf_entry.get("pk_hex")
+                        sk_hex = buf_entry.get("sk_hex")
+                        if not isinstance(pk_hex, str) or not isinstance(sk_hex, str):
+                            failures.append(f"test_buffers[{b_idx}] malformed keygen fields")
+                            continue
+                        if test_name not in KEYGEN_EXPECTED:
+                            failures.append(f"test_buffers[{b_idx}] unknown keygen test_name {test_name}")
+                            continue
+                        exp_pk, exp_sk = KEYGEN_EXPECTED[test_name]
+                        actual_pk = bytes.fromhex(pk_hex)
+                        actual_sk = bytes.fromhex(sk_hex)
+                        if actual_pk != exp_pk or actual_sk != exp_sk:
+                            dr15_mismatches += 1
+                            failures.append(
+                                f"test_buffers[{b_idx}] ({case_label}) oracle mismatch against official NIST ACVP ML-DSA-87 key pair"
+                            )
+                    elif gate_op == "sign":
+                        sig_hex = buf_entry.get("sig_hex")
+                        if not isinstance(sig_hex, str):
+                            failures.append(f"test_buffers[{b_idx}] malformed sign fields")
+                            continue
+                        if test_name not in SIGN_EXPECTED:
+                            failures.append(f"test_buffers[{b_idx}] unknown sign test_name {test_name}")
+                            continue
+                        exp_sig = SIGN_EXPECTED[test_name]
+                        actual_sig = bytes.fromhex(sig_hex)
+                        if actual_sig != exp_sig:
+                            dr15_mismatches += 1
+                            failures.append(
+                                f"test_buffers[{b_idx}] ({case_label}) oracle mismatch against official NIST ACVP ML-DSA-87 signature"
+                            )
+                    elif gate_op == "verify":
+                        actual_valid = buf_entry.get("actual_valid")
+                        if not isinstance(actual_valid, bool):
+                            failures.append(f"test_buffers[{b_idx}] malformed verify fields")
+                            continue
+                        if test_name not in VERIFY_EXPECTED:
+                            failures.append(f"test_buffers[{b_idx}] unknown verify test_name {test_name}")
+                            continue
+                        exp_valid = VERIFY_EXPECTED[test_name]
+                        if actual_valid != exp_valid:
+                            dr15_mismatches += 1
+                            failures.append(
+                                f"test_buffers[{b_idx}] ({case_label}) oracle mismatch against official NIST ACVP ML-DSA-87 verify verdict (got {actual_valid}, expected {exp_valid})"
+                            )
+                    else:
+                        failures.append(f"test_buffers[{b_idx}] unknown gate_op {gate_op}")
+                except Exception as exc:
+                    failures.append(f"test_buffers[{b_idx}] oracle evaluation error: {exc}")
+            if dr15_mismatches == 0 and not failures:
+                corroboration_notes.append(
+                    f"Parent independent oracle verified all {len(test_buffers)} official NIST ACVP ML-DSA-87 cases (KeyGen, Sign, Verify)."
                 )
 
     # 12. Emulation and Redirection Mode Check

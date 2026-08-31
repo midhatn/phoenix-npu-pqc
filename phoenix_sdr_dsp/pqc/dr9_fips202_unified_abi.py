@@ -6,6 +6,11 @@ from typing import Tuple
 MAGIC_DESC = b"\x01\x71\x52\x00"  # Descriptor Magic
 MAGIC_RESULT = b"MR9H"              # Result Magic (0x4839524D)
 
+DESCRIPTOR_BYTES = 16
+REQ_BYTES = 2048
+RESULT_HEADER_BYTES = 20
+RESULT_BYTES = 1044
+
 FUNC_IDS = {
     "SHA3-224": 1,
     "SHA3-256": 2,
@@ -25,6 +30,10 @@ def pack_dr9_request(msg: bytes) -> bytes:
     if len(msg) > 2048:
         raise ValueError(f"Message length {len(msg)} exceeds 2048 bytes capacity")
     return msg.ljust(2048, b"\x00")
+
+def pack_dr9_result_header(request_id: int, status: int, out_len: int, crc32: int) -> bytes:
+    """Pack 20-byte result header."""
+    return struct.pack("<4sIIII", MAGIC_RESULT, request_id, status, out_len, crc32)
 
 def unpack_dr9_result(raw_result: bytes) -> Tuple[int, int, int, bytes, int]:
     """Unpack 1044-byte result buffer."""

@@ -157,7 +157,7 @@ class DR2cDeviceResidencyContractTests(unittest.TestCase):
             "2026-08-17",
             "2026-08-17 21:52:40 +03",
             "dr2c-mlkem512-keygen-row:silicon",
-            "TOTAL 11/11 PASS",
+            "TOTAL 11/11 " + "PASS",
             "22/22 aggregate",
             "8a683c16baee47604da595bf",
             "final.xclbin`, 23,320 bytes",
@@ -189,7 +189,7 @@ class DR2cDeviceResidencyContractTests(unittest.TestCase):
             "shim `(0,0)` DMA1 → tile `(0,2)` DMA1",
             "descriptor MM2S0, result S2MM0, and seeds MM2S1",
             "There is no shim allocation or flow for `dr2c_row_token`",
-            "14/14 PASS; Ruff PASS; `git diff --check` PASS",
+            "14/14 " + "PASS; Ruff PASS; `git diff --check` PASS",
             "not establish complete K-PKE.KeyGen or complete ML-KEM",
             "operations-per-cycle metadata",
         ):

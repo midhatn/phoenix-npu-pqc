@@ -6,6 +6,8 @@ result transfer.  There is deliberately no host SHAKE, sampler, or fallback
 implementation in this production module.
 """
 
+import hashlib
+import os
 from pathlib import Path
 from typing import Any
 
@@ -14,6 +16,8 @@ import numpy as np
 from . import dr1_abi as abi
 
 BACKEND_LABEL = "dr1-mldsa44-expanda-rejntt:silicon"
+KERNEL_REL_PATH = "phoenix_sdr_dsp/pqc/kernels/dr1_mldsa44_rejntt.cc"
+SERVICE_REL_PATH = "phoenix_sdr_dsp/pqc/kernels/dr1_shake128_service.cc"
 _PROGRAM: Any | None = None
 
 
@@ -21,8 +25,39 @@ class NativeBackendUnavailable(RuntimeError):
     """The native IRON/XRT DR1 backend is unavailable or failed closed."""
 
 
+def check_emulation_and_redirection_excluded() -> None:
+    """Fail closed if XCL_EMULATION_MODE or XRT_INI_PATH runtime redirection variables are set."""
+    emulation_mode = os.environ.get("XCL_EMULATION_MODE")
+    if emulation_mode and emulation_mode.strip():
+        raise NativeBackendUnavailable(
+            f"Physical silicon execution rejected: XCL_EMULATION_MODE={emulation_mode!r} is set. "
+            "Hardware ground truth forbids simulation or emulation backends."
+        )
+    xrt_ini = os.environ.get("XRT_INI_PATH")
+    if xrt_ini and xrt_ini.strip():
+        raise NativeBackendUnavailable(
+            f"Physical silicon execution rejected: XRT_INI_PATH={xrt_ini!r} is set. "
+            "Hardware ground truth forbids custom runtime configuration redirection."
+        )
+
+
+def get_kernel_artifact_info(repo_root: Path | None = None) -> dict[str, Any]:
+    """Return verified path and SHA-256 digest of the DR1 AIE2 kernel source."""
+    root = repo_root or Path(__file__).resolve().parents[2]
+    kernel_path = root / KERNEL_REL_PATH
+    if not kernel_path.is_file():
+        raise FileNotFoundError(f"Kernel source file not found: {kernel_path}")
+    data = kernel_path.read_bytes()
+    return {
+        "path": KERNEL_REL_PATH,
+        "size_bytes": len(data),
+        "sha256": hashlib.sha256(data).hexdigest().lower(),
+    }
+
+
 def _load_iron() -> tuple[Any, ...]:
     """Load native dependencies lazily, after all public inputs are checked."""
+    check_emulation_and_redirection_excluded()
     try:
         from aie import iron
         from aie.iron import (
@@ -202,6 +237,13 @@ def run_mldsa44_expanda_rejntt(
 run = run_mldsa44_expanda_rejntt
 
 __all__ = [
-    "BACKEND_LABEL", "NativeBackendUnavailable", "require_hardware_runtime", "run",
+    "BACKEND_LABEL",
+    "KERNEL_REL_PATH",
+    "SERVICE_REL_PATH",
+    "NativeBackendUnavailable",
+    "check_emulation_and_redirection_excluded",
+    "get_kernel_artifact_info",
+    "require_hardware_runtime",
+    "run",
     "run_mldsa44_expanda_rejntt",
 ]

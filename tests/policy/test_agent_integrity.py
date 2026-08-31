@@ -17,8 +17,7 @@ TOOLS = REPO_ROOT / "tools"
 if str(TOOLS) not in sys.path:
     sys.path.insert(0, str(TOOLS))
 
-from agent_integrity import REPO_ROOT as LIB_ROOT
-from agent_integrity import scan_python_file, validate_evidence
+from agent_integrity import EXCLUDED_POLICY_PATHS, scan_python_file, validate_evidence
 
 
 class PythonPolicyTests(unittest.TestCase):
@@ -53,6 +52,26 @@ class PythonPolicyTests(unittest.TestCase):
             "    run_host_reference()\n",
         )
         self.assertIn("HW002", {finding.rule for finding in findings})
+
+    def test_m32d_kernel_transliteration_check_is_scanned_and_clean(self):
+        rel_path = Path("tools/m32d_kernel_transliteration_check.py")
+        self.assertNotIn(rel_path, EXCLUDED_POLICY_PATHS)
+        findings = scan_python_file(rel_path)
+        self.assertEqual(findings, [])
+
+    def test_hardcoded_pass_banner_in_scanned_fixture_is_detected(self):
+        findings = self.scan_source(
+            "test_fixture.py",
+            'print("[cross] (2) compress/decompress d=4 primary vs indep: 5/5 PASS each")\n',
+        )
+        self.assertTrue(any(f.rule == "TEST002" and f.severity == "critical" for f in findings))
+
+    def test_excluded_policy_paths_only_contains_self_exclusion(self):
+        self.assertEqual(
+            EXCLUDED_POLICY_PATHS,
+            {Path("tools/agent_integrity.py")},
+            "No executable repository tools may be added to EXCLUDED_POLICY_PATHS without explicit policy review.",
+        )
 
 
 class EvidenceTests(unittest.TestCase):

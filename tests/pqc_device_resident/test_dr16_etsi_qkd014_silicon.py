@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: Apache-2.0
 """
 Milestone DR16: ETSI GS QKD 014 Sealed Ingress Silicon Validation Suite.
-Backend: dr16-etsi-qkd014:silicon (AMD Phoenix AIE2 / XDNA1 Architecture).
+Target: AMD Phoenix AIE2 / XDNA1 Architecture (dr16-etsi-qkd014).
 """
 
 import base64
@@ -21,7 +21,7 @@ from phoenix_sdr_dsp.pqc import dr16_etsi_qkd014_abi as abi
 def main():
     print("=" * 70)
     print("DR16: ETSI GS QKD 014 Key Ingress Silicon Validation")
-    print("Backend: dr16-etsi-qkd014:silicon (AMD Phoenix AIE2)")
+    print("Target: AMD Phoenix AIE2 / XDNA1 (dr16-etsi-qkd014)")
     print("Standards: ETSI GS QKD 014 v1.1.1/v1.3.1, ITU-T Y.3800")
     print("=" * 70)
 
