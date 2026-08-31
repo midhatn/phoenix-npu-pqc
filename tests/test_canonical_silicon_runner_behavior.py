@@ -435,6 +435,32 @@ def _make_dr9_test_buffers(
     return buffers
 
 
+def _make_dr10_test_buffers(
+    corrupt_index: int | None = None,
+) -> list[dict[str, object]]:
+    """Generate 40 authentic DR10 test buffers for parent oracle verification tests."""
+    from tests.pqc_device_resident.test_dr10_sealed_lifecycle import (
+        EXPECTED_RESULTS,
+        PRE_SILICON_CORPUS,
+    )
+    buffers: list[dict[str, object]] = []
+    for idx, case in enumerate(PRE_SILICON_CORPUS):
+        case_id = f"dr10_case_{idx:03d}_{case.name}"
+        status, active_slot = EXPECTED_RESULTS[case.name]
+        if corrupt_index is not None and idx == corrupt_index:
+            status ^= 0xFF
+        buffers.append({
+            "case_id": case_id,
+            "case_label": case.name,
+            "name": case.name,
+            "request_id": case.request_id,
+            "status": status,
+            "active_slot": active_slot,
+            "crc": 0x12345678,
+        })
+    return buffers
+
+
 def _wrap_record_in_stdout(record: dict[str, object], preamble: str = "") -> str:
     serialized = json.dumps(record, indent=2)
     return f"{preamble}\n{RESULT_START_MARKER}\n{serialized}\n{RESULT_END_MARKER}\n"
@@ -1648,6 +1674,61 @@ class CanonicalSiliconRunnerBehaviorTests(unittest.TestCase):
 
     def test_dr9_module_rejects_emulation_and_xrt_ini_path(self) -> None:
         from phoenix_sdr_dsp.pqc import dr9_fips202_graph as graph
+        with mock.patch.dict(os.environ, {"XCL_EMULATION_MODE": "sw_emu"}):
+            with self.assertRaises(graph.NativeBackendUnavailable) as ctx:
+                graph.check_emulation_and_redirection_excluded()
+            self.assertIn("XCL_EMULATION_MODE='sw_emu'", str(ctx.exception))
+
+        with mock.patch.dict(os.environ, {"XRT_INI_PATH": "C:/fake/xrt.ini"}):
+            with self.assertRaises(graph.NativeBackendUnavailable) as ctx:
+                graph.check_emulation_and_redirection_excluded()
+            self.assertIn("XRT_INI_PATH='C:/fake/xrt.ini'", str(ctx.exception))
+
+    def test_dr10_valid_test_buffers_verified_by_parent_oracle(self) -> None:
+        gate = GATES[13]  # DR10
+        now = datetime.now(timezone.utc)
+        rec = _make_valid_record(
+            gate_id="DR10",
+            expected_count=40,
+            artifact_rel="phoenix_sdr_dsp/pqc/kernels/dr10_sealed_lifecycle_service.cc",
+            dispatches=40,
+        )
+        rec["test_buffers"] = _make_dr10_test_buffers()
+        stdout = _wrap_record_in_stdout(rec)
+        res = parse_gate_output(
+            gate, stdout, "", 0, 0.5,
+            parent_start_time=now - timedelta(seconds=2),
+            parent_end_time=now + timedelta(seconds=2),
+            execution_nonce="test_nonce_0123456789abcdef",
+        )
+        self.assertFalse(res.success)
+        self.assertEqual(res.status, STATUS_SELF_REPORTED_UNVERIFIED)
+        self.assertTrue(any("Parent independent oracle verified all 40 DR10 lifecycle cases" in note for note in res.corroboration_notes))
+
+    def test_dr10_corrupted_key_fails_validation(self) -> None:
+        gate = GATES[13]
+        now = datetime.now(timezone.utc)
+        rec = _make_valid_record(
+            gate_id="DR10",
+            expected_count=40,
+            artifact_rel="phoenix_sdr_dsp/pqc/kernels/dr10_sealed_lifecycle_service.cc",
+            dispatches=40,
+        )
+        # Corrupt 1 status in case index 0
+        rec["test_buffers"] = _make_dr10_test_buffers(corrupt_index=0)
+        stdout = _wrap_record_in_stdout(rec)
+        res = parse_gate_output(
+            gate, stdout, "", 0, 0.5,
+            parent_start_time=now - timedelta(seconds=2),
+            parent_end_time=now + timedelta(seconds=2),
+            execution_nonce="test_nonce_0123456789abcdef",
+        )
+        self.assertFalse(res.success)
+        self.assertEqual(res.status, STATUS_FAIL)
+        self.assertIn("oracle mismatch against DR10 lifecycle specification", res.error_message or "")
+
+    def test_dr10_module_rejects_emulation_and_xrt_ini_path(self) -> None:
+        from phoenix_sdr_dsp.pqc import dr10_sealed_lifecycle_graph as graph
         with mock.patch.dict(os.environ, {"XCL_EMULATION_MODE": "sw_emu"}):
             with self.assertRaises(graph.NativeBackendUnavailable) as ctx:
                 graph.check_emulation_and_redirection_excluded()

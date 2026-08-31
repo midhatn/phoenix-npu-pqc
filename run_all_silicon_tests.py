@@ -1095,6 +1095,36 @@ def parse_gate_output(
                 corroboration_notes.append(
                     f"Parent independent oracle verified all {len(test_buffers)} official NIST FIPS 202 digests."
                 )
+        elif gate.gate_id == "DR10":
+            from tests.pqc_device_resident.test_dr10_sealed_lifecycle import EXPECTED_RESULTS
+            dr10_mismatches = 0
+            for b_idx, buf_entry in enumerate(test_buffers):
+                if not isinstance(buf_entry, dict):
+                    failures.append(f"test_buffers[{b_idx}] must be an object")
+                    continue
+                name = buf_entry.get("name")
+                status = buf_entry.get("status")
+                active_slot = buf_entry.get("active_slot")
+                case_label = buf_entry.get("case_label", f"case_{b_idx}")
+                if not isinstance(name, str) or not isinstance(status, int) or not isinstance(active_slot, int):
+                    failures.append(f"test_buffers[{b_idx}] malformed fields (expected name, status, active_slot)")
+                    continue
+                if name not in EXPECTED_RESULTS:
+                    failures.append(f"test_buffers[{b_idx}] unknown name {name}")
+                    continue
+                try:
+                    exp_status, exp_active = EXPECTED_RESULTS[name]
+                    if status != exp_status or (exp_active is not None and active_slot != exp_active):
+                        dr10_mismatches += 1
+                        failures.append(
+                            f"test_buffers[{b_idx}] ({case_label}) oracle mismatch against DR10 lifecycle specification (got status={status}, active={active_slot}; expected status={exp_status}, active={exp_active})"
+                        )
+                except Exception as exc:
+                    failures.append(f"test_buffers[{b_idx}] oracle evaluation error: {exc}")
+            if dr10_mismatches == 0 and not failures:
+                corroboration_notes.append(
+                    f"Parent independent oracle verified all {len(test_buffers)} DR10 lifecycle cases."
+                )
 
     # 12. Emulation and Redirection Mode Check
     emulation_mode = os.environ.get("XCL_EMULATION_MODE")
