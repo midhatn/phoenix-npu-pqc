@@ -2,14 +2,15 @@
 
 ## Current repository baseline
 
-- Baseline commit: `implement/dr0-evidence`
+- Baseline commit: `implement/dr1-evidence`
 - Phase: Phase A — Trustworthy execution and evidence foundation
-- Current task: `DR0-MIGRATE` (COMPLETED for structured evidence/parent buffer verification; PHYSICAL_VERIFICATION_BLOCKED for silicon promotion)
-- Physical hardware availability: Tested via fail-closed runner
-- Physical silicon execution status: `SELF_REPORTED_UNVERIFIED` (success=False, cases_passed=0, cases_unverified=24)
+- Current task: `DR1-MIGRATE` (COMPLETED for structured evidence/parent buffer verification; PHYSICAL_VERIFICATION_BLOCKED for silicon promotion)
+- Physical hardware availability: Verified on AMD Phoenix APU via ironenv
+- Physical silicon execution status: `SELF_REPORTED_UNVERIFIED` (Gate 00 DR0: 24 unverified claims; Gate 01 DR1: 33 unverified claims; Gates 02-18: BLOCKED)
 - Physical corroboration: `PHYSICAL_VERIFICATION_BLOCKED` pending external driver-level dispatch instrumentation
 
 ## Next action
 
-Await human review and authorization before proceeding to task `GENERALIZE-RUNNERS`.
+Proceed to DR2a ML-KEM-512 SampleNTT structured evidence migration and parent oracle verification.
+
 
