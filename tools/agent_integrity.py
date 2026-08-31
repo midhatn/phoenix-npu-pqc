@@ -14,8 +14,21 @@ from datetime import datetime
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
-if str(REPO_ROOT) not in sys.path:
-    sys.path.insert(0, str(REPO_ROOT))
+
+
+def get_canonical_gate_metadata():
+    if str(REPO_ROOT) not in sys.path:
+        sys.path.insert(0, str(REPO_ROOT))
+    try:
+        from run_all_silicon_tests import EXTENSION_GATES, GATES
+
+        canonical_map = {g.gate_id.upper(): g for g in GATES}
+        canonical_order = [g.gate_id.upper() for g in GATES]
+        extension_map = {g.gate_id.upper(): g for g in EXTENSION_GATES}
+        return canonical_map, canonical_order, extension_map
+    except ImportError:
+        return {}, [], {}
+
 
 PHYSICAL_SUFFIX = "_silicon.py"
 HOST_CRYPTO_MODULES = {
@@ -61,12 +74,6 @@ SELF_DECLARED_BACKEND_RE = re.compile(
 )
 SHA256_RE = re.compile(r"^[0-9a-f]{64}$")
 COMMIT_RE = re.compile(r"^[0-9a-f]{40}$")
-
-from run_all_silicon_tests import EXTENSION_GATES, GATES  # noqa: E402
-
-CANONICAL_GATE_MAP = {g.gate_id.upper(): g for g in GATES}
-CANONICAL_GATE_ORDER = [g.gate_id.upper() for g in GATES]
-EXTENSION_GATE_MAP = {g.gate_id.upper(): g for g in EXTENSION_GATES}
 
 # C/C++ patterns
 CPP_TRIVIAL_ASSERT_RE = re.compile(
@@ -1312,10 +1319,7 @@ def is_claim_line(lines: list[str], idx: int) -> bool:
         "historical document",
         "pre-refactor self-reported",
     )
-    if any(d in line_lower for d in disclaimers):
-        return False
-
-    return True
+    return not any(d in line_lower for d in disclaimers)
 
 
 def validate_markdown_accounting_tables(
@@ -1403,6 +1407,11 @@ def validate_markdown_accounting_tables(
                             numeric_col_indices[k] = c_idx
 
                 if numeric_col_indices:
+                    (
+                        canonical_gate_map,
+                        canonical_gate_order,
+                        extension_gate_map,
+                    ) = get_canonical_gate_metadata()
                     detail_rows: list[tuple[int, list[str]]] = []
                     total_rows: list[tuple[int, list[str]]] = []
                     gate_ids_seen: set[str] = set()
@@ -1415,11 +1424,14 @@ def validate_markdown_accounting_tables(
                         term in context_before
                         for term in (
                             "canonical",
-                            "master physical silicon regression",
+                            "master physical silicon",
                             "master silicon",
                             "complete suite",
+                            "entire suite",
                             "repo-wide",
                             "suite accounting",
+                            "all canonical",
+                            "19 canonical",
                         )
                     )
 
@@ -1427,8 +1439,9 @@ def validate_markdown_accounting_tables(
                         clean_cells = [re.sub(r"[*`]", "", c).strip() for c in cells]
                         first_cell = clean_cells[0].lower() if clean_cells else ""
                         is_total_row = any(
-                            t in first_cell for t in ("total", "cumulative", "summary")
-                        )
+                            t in first_cell
+                            for t in ("total", "cumulative", "summary", "aggregate")
+                        ) or any("total" in c.lower() for c in clean_cells)
 
                         if is_total_row:
                             total_rows.append((l_num, clean_cells))
@@ -1460,8 +1473,8 @@ def validate_markdown_accounting_tables(
 
                                     if claims_canonical_coverage:
                                         if (
-                                            norm_gid not in CANONICAL_GATE_MAP
-                                            and norm_gid not in EXTENSION_GATE_MAP
+                                            norm_gid not in canonical_gate_map
+                                            and norm_gid not in extension_gate_map
                                         ):
                                             findings.append(
                                                 Finding(
@@ -1498,7 +1511,7 @@ def validate_markdown_accounting_tables(
                                     "Missing required Total row in canonical accounting table.",
                                 )
                             )
-                        for expected_gid in CANONICAL_GATE_ORDER:
+                        for expected_gid in canonical_gate_order:
                             if expected_gid not in gate_ids_seen:
                                 findings.append(
                                     Finding(
@@ -1510,9 +1523,9 @@ def validate_markdown_accounting_tables(
                                     )
                                 )
                         filtered_canonical_seq = [
-                            g for g in gate_sequence if g in CANONICAL_GATE_MAP
+                            g for g in gate_sequence if g in canonical_gate_map
                         ]
-                        expected_prefix = CANONICAL_GATE_ORDER[
+                        expected_prefix = canonical_gate_order[
                             : len(filtered_canonical_seq)
                         ]
                         if filtered_canonical_seq != expected_prefix:
@@ -1578,34 +1591,34 @@ def validate_markdown_accounting_tables(
                             exec_cnt is not None
                             and match_cnt is not None
                             and fail_cnt is not None
+                            and match_cnt + fail_cnt + blk_cnt != exec_cnt
                         ):
-                            if match_cnt + fail_cnt + blk_cnt != exec_cnt:
-                                findings.append(
-                                    Finding(
-                                        norm_path,
-                                        l_num,
-                                        "DOC004",
-                                        "critical",
-                                        f"Row partition mismatch: matching ({match_cnt}) + failing ({fail_cnt}) != executed ({exec_cnt}).",
-                                    )
+                            findings.append(
+                                Finding(
+                                    norm_path,
+                                    l_num,
+                                    "DOC004",
+                                    "critical",
+                                    f"Row partition mismatch: matching ({match_cnt}) + failing ({fail_cnt}) != executed ({exec_cnt}).",
                                 )
+                            )
 
                         if (
                             exec_cnt is not None
                             and pass_cnt is not None
                             and fail_cnt is not None
                             and match_cnt is None
+                            and pass_cnt + fail_cnt + blk_cnt != exec_cnt
                         ):
-                            if pass_cnt + fail_cnt + blk_cnt != exec_cnt:
-                                findings.append(
-                                    Finding(
-                                        norm_path,
-                                        l_num,
-                                        "DOC004",
-                                        "critical",
-                                        f"Row partition mismatch: passed ({pass_cnt}) + failed ({fail_cnt}) != executed ({exec_cnt}).",
-                                    )
+                            findings.append(
+                                Finding(
+                                    norm_path,
+                                    l_num,
+                                    "DOC004",
+                                    "critical",
+                                    f"Row partition mismatch: passed ({pass_cnt}) + failed ({fail_cnt}) != executed ({exec_cnt}).",
                                 )
+                            )
 
                     if len(total_rows) > 1:
                         first_tot_cells = total_rows[0][1]
