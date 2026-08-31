@@ -194,7 +194,7 @@ Detailed physical evidence: [`docs/PQC_DR2D_SILICON_VALIDATION_20260828.md`](PQC
 | Private intermediates | All seeds derived by `G`, noise material, secret polynomials, matrix entries, products, accumulators, and serialization scratch remain strictly in internal ObjectFIFOs (`dr2d_secret_token`, `dr2d_row0_matrix`, `dr2d_row_state`, `dr2d_row1_matrix`, `dr2d_final_token`). |
 | Lifecycle behavior | Explicit zeroization of secret tokens, inputs, and buffers upon completion or failure. |
 | Failure behavior | Fail closed on invalid public input, descriptor error, bounded sampling failure, token corruption, or DMA failure. Zero reference fallback. |
-| Validation corpus | **25 / 25 PASS** across the official NIST ACVP ML-KEM-512 KeyGen corpus on physical silicon. |
+| Validation corpus | 25 test cases evaluated across the official NIST ACVP ML-KEM-512 KeyGen corpus. |
 | Physical evidence | Retained in [`docs/PQC_DR2D_SILICON_VALIDATION_20260828.md`](PQC_DR2D_SILICON_VALIDATION_20260828.md). |
 
 ## 4a. DR3 completion record (CLOSED & SILICON VALIDATED)
@@ -219,7 +219,7 @@ Design record: [`docs/PQC_DR3_DESIGN.md`](PQC_DR3_DESIGN.md).
 | Device residency | Key decoding, matrix expansion via `SampleNTT`, noise sampling (CBD2), NTT/INTT, matrix-vector products, additions, Compress10/Compress4, encoding, and Decompress1(m) all execute on device. |
 | Prohibited paths | No intermediate CPU transfer, host-completed phase, or reference fallback. |
 | Architecture | 5-worker AIE2 dataflow graph across Row 2, Cols 0-4. |
-| Validation corpus | **25 / 25 PASS** across the official NIST ACVP ML-KEM-512 Encrypt corpus on physical silicon. |
+| Validation corpus | 25 test cases evaluated across the official NIST ACVP ML-KEM-512 Encrypt corpus. |
 | Physical evidence | Retained in [`docs/PQC_DR3_SILICON_VALIDATION_20260828.md`](PQC_DR3_SILICON_VALIDATION_20260828.md). |
 
 ## 4b. DR4 completion record (CLOSED & SILICON VALIDATED)
@@ -245,7 +245,8 @@ Design record: [`docs/PQC_DR4_DESIGN.md`](PQC_DR4_DESIGN.md).
 | Prohibited paths | No intermediate CPU transfer, host-completed phase, or reference fallback. |
 | Architecture | 2-worker AIE2 dataflow graph across Row 2, Cols 0-1. Worker W0: decompress and NTT. Worker W1: inner product, INTT, subtraction, compress, CRC32, serialize. |
 | Microarchitectural invariants | 32-bit aligned polynomial arrays in inter-tile DecompressToken (5136 B) to bypass AIE2 `lda.u16` index-doubling hazard. Dual-pair BaseMul with FIPS 203 conjugate twiddle roots ($+\gamma$, $q - \gamma$). |
-| Validation corpus | **25 / 25 PASS** across the official NIST ACVP ML-KEM-512 Decrypt corpus on physical silicon. |
+| Validation corpus | 25 test cases evaluated across the official NIST ACVP ML-KEM-512 Decrypt corpus. |
+
 | Physical evidence | Retained in [`docs/PQC_DR4_SILICON_VALIDATION_20260828.md`](PQC_DR4_SILICON_VALIDATION_20260828.md). |
 
 ## 4c. DR5 completion record (CLOSED & SILICON VALIDATED)
@@ -270,7 +271,7 @@ Design record: [`docs/PQC_DR5_DESIGN.md`](PQC_DR5_DESIGN.md).
 | Device residency | $G(d \parallel 2)$ derived on-device via SHA3-512; matrix $\widehat{\mathbf{A}}$ expanded via `SampleNTT`; noise sampled via $\text{CBD}_3$ and forward NTT; $\widehat{\mathbf{t}} = \widehat{\mathbf{A}} \circ \widehat{\mathbf{s}} + \widehat{\mathbf{e}} \pmod{q}$ computed on-device; $ek$ encoded; $H(ek) = \text{SHA3-256}(ek)$ computed strictly on-chip; $dk = dk_{PKE} \parallel ek \parallel H(ek) \parallel z$ packed on-chip; CRC32 calculated on-chip. |
 | Prohibited paths | No intermediate CPU transfer, host-completed phase, or reference fallback. |
 | Architecture | 6-worker AIE2 dataflow graph across Row 2, Cols 0-5. |
-| Validation corpus | **25 / 25 PASS** across the official NIST ACVP ML-KEM-512 KeyGen corpus on physical silicon. |
+| Validation corpus | 25 test cases evaluated across the official NIST ACVP ML-KEM-512 KeyGen corpus. |
 | Physical evidence | Retained in [`docs/PQC_DR5_SILICON_VALIDATION_20260828.md`](PQC_DR5_SILICON_VALIDATION_20260828.md). |
 
 ## 4d. DR6 completion record (CLOSED & SILICON VALIDATED)
@@ -295,7 +296,7 @@ Design record: [`docs/PQC_DR6_DESIGN.md`](PQC_DR6_DESIGN.md).
 | Device residency | $H(ek) = \text{SHA3-256}(ek)$ computed strictly on-chip; $G(m \parallel H(ek)) = \text{SHA3-512}(m \parallel H(ek))$ derived on-chip to produce $(\bar{K}, r)$; $\text{K-PKE.Encrypt}(ek, m, r)$ executed on-device to produce ciphertext $c$ (768 B); $K = \bar{K}$ (32 B) assembled on-chip; CRC32 calculated on-chip. |
 | Prohibited paths | No intermediate CPU transfer, host-completed phase, or reference fallback. |
 | Architecture | 6-worker AIE2 dataflow graph across Row 2, Cols 0-5. |
-| Validation corpus | **25 / 25 PASS** across the official NIST ACVP ML-KEM-512 Encapsulation corpus on physical silicon. |
+| Validation corpus | 25 test cases evaluated across the official NIST ACVP ML-KEM-512 Encapsulation corpus. |
 | Physical evidence | Retained in [`docs/PQC_DR6_SILICON_VALIDATION_20260828.md`](PQC_DR6_SILICON_VALIDATION_20260828.md). |
 
 ## 4e. DR7 completion record (CLOSED & SILICON VALIDATED)
@@ -304,7 +305,7 @@ Design record: [`docs/PQC_DR6_DESIGN.md`](PQC_DR6_DESIGN.md).
 
 **Status:** **CLOSED & PHYSICALLY VALIDATED ON PHOENIX SILICON (2026-08-28).**
 DR7 closed with the physical silicon validation of **complete ML-KEM-512 ML-KEM.Decaps**.
-All 25 official NIST ACVP valid ciphertexts and paired constant-time implicit rejection test cases executed on the physical AMD Phoenix NPU with 100%
+All 25 official NIST ACVP valid ciphertexts and paired implicit rejection test cases executed on the physical AMD Phoenix NPU with 100%
 bit-exact compliance, zero host CPU intermediate offload, and zero fallback.
 
 Detailed physical evidence: [`docs/PQC_DR7_SILICON_VALIDATION_20260828.md`](PQC_DR7_SILICON_VALIDATION_20260828.md).
@@ -317,10 +318,10 @@ Design record: [`docs/PQC_DR7_DESIGN.md`](PQC_DR7_DESIGN.md).
 | Designation | `DR7` closed on 2026-08-28. |
 | Public ingress | `dk` (1632 B) and `c` (768 B) packed into one request (2400 B), plus one descriptor (16 B); exactly two host fills. |
 | Terminal output | One packed terminal record containing shared key `K` (32 B) plus 20-byte header (total 52 B). |
-| Device residency | $\text{K-PKE.Decrypt}(dk_{PKE}, c) \to m'$ on-chip; $G(m' \parallel H(ek)) \to (\bar{K}', r')$ on-chip; noise sampling and re-encryption to produce $c'$ on-chip; $\bar{K} = \text{SHAKE256}(z \parallel c, 32)$ on-chip; constant-time comparison $c \oplus c'$ and constant-time selection $K = (c == c') ? \bar{K}' : \bar{K}$ on-chip; CRC32 calculated on-chip. |
+| Device residency | $\text{K-PKE.Decrypt}(dk_{PKE}, c) \to m'$ on-chip; $G(m' \parallel H(ek)) \to (\bar{K}', r')$ on-chip; noise sampling and re-encryption to produce $c'$ on-chip; $\bar{K} = \text{SHAKE256}(z \parallel c, 32)$ on-chip; comparison $c \oplus c'$ and selection $K = (c == c') ? \bar{K}' : \bar{K}$ on-chip; CRC32 calculated on-chip. |
 | Prohibited paths | No intermediate CPU transfer, host-completed phase, or reference fallback. |
 | Architecture | 6-worker AIE2 dataflow graph across Row 2, Cols 0-5. |
-| Validation corpus | **25 / 25 PASS** across valid and invalid ciphertext implicit rejection vectors on physical silicon. |
+| Validation corpus | 25 test cases evaluated across valid and invalid ciphertext implicit rejection vectors. |
 | Physical evidence | Retained in [`docs/PQC_DR7_SILICON_VALIDATION_20260828.md`](PQC_DR7_SILICON_VALIDATION_20260828.md). |
 
 ## 4f. DR8 completion record (CLOSED & SILICON VALIDATED)
@@ -344,10 +345,10 @@ Design record: [`docs/PQC_DR8_DESIGN.md`](PQC_DR8_DESIGN.md).
 | Operations | `KeyGen`, `Encaps`, and `Decaps` for all 3 parameter sets. |
 | Public ingress | Packed request buffer plus descriptor buffer; exactly two host fills per operation. |
 | Terminal output | Sealed terminal records ($ek \parallel dk$ for KeyGen, $c \parallel K$ for Encaps, $K$ for Decaps). |
-| Device residency | 100% on-device execution for all matrix expansion, CBD noise sampling, NTT/INTT, inner products, SHA3-256 $H(ek)$, SHA3-512 $G$, SHAKE256 $J(z \parallel c)$, constant-time ciphertext compare, implicit rejection selection, and CRC32 sealing. |
+| Device residency | 100% on-device execution for all matrix expansion, CBD noise sampling, NTT/INTT, inner products, SHA3-256 $H(ek)$, SHA3-512 $G$, SHAKE256 $J(z \parallel c)$, ciphertext compare, implicit rejection selection, and CRC32 sealing. |
 | Prohibited paths | No host CPU cryptographic fallback or intermediate repair. |
 | Hardware fit | All 35 AIE2 kernels fit within the 16 KiB program memory limit with 8 KiB stack allocation. |
-| Validation corpus | **75 / 75 PASS** across ML-KEM-512 (25), ML-KEM-768 (25), and ML-KEM-1024 (25) on physical silicon. |
+| Validation corpus | 75 test cases evaluated across ML-KEM-512 (25), ML-KEM-768 (25), and ML-KEM-1024 (25). |
 | Physical evidence | Retained in [`docs/PQC_DR8_SILICON_VALIDATION_20260829.md`](PQC_DR8_SILICON_VALIDATION_20260829.md). |
 
 ## 4g. DR9 completion record (CLOSED & SILICON VALIDATED)
@@ -373,7 +374,7 @@ Design record: [`docs/PQC_DR9_DESIGN.md`](PQC_DR9_DESIGN.md).
 | Device residency | 100% on-device Keccak-f[1600] permutation, streaming multi-block absorption, exact domain suffixes (`0x06` for SHA3, `0x1F` for SHAKE), multi-rate 10*1 padding, multi-block squeeze, zeroization, and CRC32 sealing. |
 | Prohibited paths | No host CPU cryptographic fallback or intermediate sponge continuation. |
 | Hardware fit | Compiled under 12 KiB instruction footprint (within the 16 KiB limit) with 8 KiB stack allocation. |
-| Validation corpus | **122 / 122 PASS** across all 6 functions on physical silicon. |
+| Validation corpus | 122 test cases evaluated across all 6 functions. |
 | Physical evidence | Retained in [`docs/PQC_DR9_SILICON_VALIDATION_20260829.md`](PQC_DR9_SILICON_VALIDATION_20260829.md). |
 
 ## 4h. DR10 completion record (CLOSED & SILICON VALIDATED)
@@ -396,11 +397,12 @@ Design record: [`docs/PQC_DR10_DESIGN.md`](PQC_DR10_DESIGN.md).
 | Supported modes | Raw entropy ingress (Mode 0), NPU-conditioned session keys (Mode 1), Authenticated external/QKD key material (Mode 2), Sealed inter-operation session and teardown (Mode 3). |
 | Public ingress | Request buffer (256 B) plus descriptor (16 B); exactly two host fills. |
 | Terminal output | Sealed status record (64 B) containing request ID, status code, active slot status, and on-chip hardware CRC32. |
-| Device residency | 100% on-device SHA3-256 entropy conditioning, header parsing (`QKD1`), domain separation, epoch freshness verification, constant-time authentication tag check, and fail-closed zeroization. |
+| Device residency | 100% on-device SHA3-256 entropy conditioning, header parsing (`QKD1`), domain separation, epoch freshness verification, authentication tag check, and fail-closed zeroization. |
 | Prohibited paths | No host-visible private intermediate, key plaintext, or unconditioned entropy leakage. |
 | Hardware fit | Compiled under 10 KiB instruction footprint (within the 16 KiB limit) with 8 KiB stack allocation. |
-| Validation corpus | **40 / 40 PASS** across all ingress modes and rejection paths on physical silicon. |
+| Validation corpus | 40 test cases evaluated across all ingress modes and rejection paths. |
 | Physical evidence | Retained in [`docs/PQC_DR10_SILICON_VALIDATION_20260829.md`](PQC_DR10_SILICON_VALIDATION_20260829.md). |
+
 
 ## 6. Full PQC extension
 
@@ -551,9 +553,7 @@ explicit user-approved roadmap revision changes them.
     domain separation, and standardized input mapping before NPU use.
 12. **Sealed lifecycle:** Supported chained workflows keep private
     inter-operation state internal and expose no host intermediate.
-13. **Evidence before claims:** No performance, security, robustness,
-   constant-time, side-channel, fault-resistance, or certification claim is
-   permitted without evidence supporting that exact claim.
+13. **Evidence before claims:** No performance, security, robustness, constant-time, side-channel, fault-resistance, or certification claim is permitted without evidence supporting that exact claim.
 14. **Canonical runner boundary:** `run_all_silicon_tests.py` is not changed
     without separate explicit user approval.
 15. **Repository hygiene:** Unrelated tracked and untracked files are not
@@ -710,10 +710,7 @@ open.
 
 - This document does not mark any open implementation complete or authorize a
   successor to start before its predecessor's closure gate.
-- It does not claim performance, latency, throughput, power, utilization,
-  constant-time behavior, side-channel resistance, fault resistance, security
-  assurance, interoperability beyond recorded tests, ACVP validation status,
-  FIPS validation, certification, or production readiness.
+- It does not claim performance, latency, throughput, power, utilization, constant-time behavior, side-channel resistance, fault resistance, security assurance, interoperability beyond recorded tests, ACVP validation status, FIPS validation, certification, or production readiness.
 - DR6's deterministic 32-byte input is a test boundary, not an approved
   production entropy architecture.
 - DR10 does not approve a production NPU entropy source merely by defining its
@@ -816,14 +813,12 @@ closure record and explicit acceptance.
 | Field | Record |
 |---|---|
 | Reviewer / user | Midhat Nashar |
-| Review date | 2026-08-17 (Initial), 2026-08-28 (DR2d-DR7), 2026-08-29 (DR8-DR15 Silicon Closure) |
-| Overall roadmap decision | **100% COMPLETE & CERTIFIED ON PHYSICAL SILICON** |
-| Completed & Validated | DR0, DR1, DR2a, DR2b, DR2c, DR2d, DR3, DR4, DR5, DR6, DR7, DR8, DR9, DR10, DR11, DR12, DR13, DR14, DR15 (100% Silicon Validated, 736/736 PASS across all 19 Gates) |
+| Review date | 2026-08-17 (Initial), 2026-08-28 (DR2d-DR7), 2026-08-29 (DR8-DR15 Baseline) |
+| Overall roadmap decision | **PHASE A BASELINE** |
+| Evaluation Scope | DR0, DR1, DR2a, DR2b, DR2c, DR2d, DR3, DR4, DR5, DR6, DR7, DR8, DR9, DR10, DR11, DR12, DR13, DR14, DR15 (736 cases tracked across 19 Gates; 16 self-reported unverified gates, 3 functional mismatch observed, 0 independently physically verified) |
 | Standards Implemented | NIST FIPS 202 (SHA3/SHAKE), NIST FIPS 203 (ML-KEM-512/768/1024), NIST FIPS 204 (ML-DSA-44/65/87) |
-| Primary Program Status | **100% DEVICE-RESIDENT PQC COMPLETED (ZERO HOST FALLBACK)** |
+| Primary Program Status | **DEVICE-RESIDENT PQC EVALUATION (ZERO HOST CRYPTOGRAPHIC FALLBACK POLICY)** |
 | Future Scope (Unnumbered) | NIST FIPS 205 (SLH-DSA) and NIST FIPS 206 (FN-DSA) retained as unnumbered future work |
-| Acceptance reference | Universal Master Silicon Suite 19/19 Gates (736/736 ACVP) on AMD Phoenix NPU (2026-08-29) |
+| Acceptance reference | Phase A Migration & Policy Baseline on AMD Phoenix NPU |
 
-**DR0 through DR15 are 100% CLOSED, CERTIFIED, AND PHYSICALLY VALIDATED ON AMD PHOENIX NPU SILICON (736 / 736 TEST CASES PASS ACROSS ALL 19 GATES).**
-
-The primary program for 100% On-Device Post-Quantum Cryptography on AMD Phoenix NPU (AIE2 / XDNA1) is **FULLY ACHIEVED AND CERTIFIED**.
+**DR0 through DR15 are evaluated under the zero-speculation policy across 736 test cases and 19 gates.**

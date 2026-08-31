@@ -1,33 +1,37 @@
 # SPDX-License-Identifier: Apache-2.0
 from __future__ import annotations
 
-from datetime import datetime, timedelta, timezone
+import dataclasses
 import hashlib
 import json
 import os
-from pathlib import Path
 import subprocess
 import unittest
+from datetime import datetime, timedelta, timezone
+from pathlib import Path
 from unittest import mock
 
 import run_all_silicon_tests as runner
 from run_all_silicon_tests import (
     EXTENSION_GATES,
     GATES,
-    NativeGate,
-    RESULT_START_MARKER,
     RESULT_END_MARKER,
+    RESULT_START_MARKER,
     STATUS_BLOCKED,
     STATUS_FAIL,
     STATUS_MISSING,
+    STATUS_PASS,
     STATUS_SELF_REPORTED_UNVERIFIED,
     STATUS_TIMEOUT,
     CaseResult,
+    GateExecutionResult,
+    NativeGate,
+    SuiteAccountingSummary,
     execute_suite,
-    extract_canonical_framed_record,
     parse_gate_output,
     run_single_gate,
     scan_diagnostic_markers,
+    summarize_suite_execution,
     verify_execution_environment,
 )
 
@@ -44,13 +48,17 @@ def _make_valid_record(
     execution_nonce: str | None = "test_nonce_0123456789abcdef",
 ) -> dict[str, object]:
     """Construct a schema-compliant self-reported claim fixture with synthetic device/test values."""
-    cases = [{"case_id": f"case_{i:03d}", "status": "PASS"} for i in range(expected_count)]
+    cases = [
+        {"case_id": f"case_{i:03d}", "status": "PASS"} for i in range(expected_count)
+    ]
     if artifact_sha is None:
         art_path = runner.REPO_ROOT / artifact_rel
         if art_path.is_file():
             artifact_sha = hashlib.sha256(art_path.read_bytes()).hexdigest()
         else:
-            artifact_sha = "678f1116813f38b1356518fd601060934d8c2d5682c935ffdad5364e0ad6ca48"
+            artifact_sha = (
+                "678f1116813f38b1356518fd601060934d8c2d5682c935ffdad5364e0ad6ca48"
+            )
 
     now = datetime.now(timezone.utc)
     st = started_at or now.isoformat()
@@ -90,8 +98,12 @@ def _make_valid_record(
 
 def _make_dr0_test_buffers(corrupt_index: int | None = None) -> list[dict[str, object]]:
     """Generate 24 authentic DR0 test buffers for parent oracle verification tests."""
-    from tests.pqc_device_resident.test_m33_product_dr0 import DIRECTED_VECTORS, randomized_vectors
     from phoenix_sdr_dsp.pqc import abi
+    from tests.pqc_device_resident.test_m33_product_dr0 import (
+        DIRECTED_VECTORS,
+        randomized_vectors,
+    )
+
     buffers: list[dict[str, object]] = []
     all_vecs = (*DIRECTED_VECTORS, *randomized_vectors())
     for idx, (name, a, b) in enumerate(all_vecs):
@@ -99,12 +111,14 @@ def _make_dr0_test_buffers(corrupt_index: int | None = None) -> list[dict[str, o
         output_c = list(expected)
         if corrupt_index is not None and idx == corrupt_index:
             output_c[0] = (output_c[0] + 1) % abi.Q
-        buffers.append({
-            "case_name": name,
-            "input_a": a,
-            "input_b": b,
-            "output_c": output_c,
-        })
+        buffers.append(
+            {
+                "case_name": name,
+                "input_a": a,
+                "input_b": b,
+                "output_c": output_c,
+            }
+        )
     return buffers
 
 
@@ -114,7 +128,11 @@ def _make_dr1_test_buffers(
 ) -> list[dict[str, object]]:
     """Generate 33 authentic DR1 test buffers for parent oracle verification tests."""
     from tests.pqc_device_resident.dr1_reference import expanda_rejntt_reference
-    from tests.pqc_device_resident.test_dr1_mldsa44_rejntt import PRE_SILICON_CORPUS, _coefficient_digest
+    from tests.pqc_device_resident.test_dr1_mldsa44_rejntt import (
+        PRE_SILICON_CORPUS,
+        _coefficient_digest,
+    )
+
     buffers: list[dict[str, object]] = []
     for idx, case in enumerate(PRE_SILICON_CORPUS):
         case_id = f"dr1_case_{idx:03d}_{case.label}"
@@ -125,16 +143,18 @@ def _make_dr1_test_buffers(
         fp = _coefficient_digest(out_coeffs)
         if corrupt_fingerprint_index is not None and idx == corrupt_fingerprint_index:
             fp = "0" * 64
-        buffers.append({
-            "case_id": case_id,
-            "case_label": case.label,
-            "rho_hex": case.rho.hex(),
-            "j": case.j,
-            "i": case.i,
-            "request_id": case.request_id,
-            "output_coefficients": out_coeffs,
-            "fingerprint_sha256": fp,
-        })
+        buffers.append(
+            {
+                "case_id": case_id,
+                "case_label": case.label,
+                "rho_hex": case.rho.hex(),
+                "j": case.j,
+                "i": case.i,
+                "request_id": case.request_id,
+                "output_coefficients": out_coeffs,
+                "fingerprint_sha256": fp,
+            }
+        )
     return buffers
 
 
@@ -144,6 +164,7 @@ def _make_dr2a_test_buffers(
     """Generate 13 authentic DR2a test buffers for parent oracle verification tests."""
     from tests.pqc_device_resident.dr2a_reference import samplentt_reference
     from tests.pqc_device_resident.test_dr2_mlkem512_samplentt import PRE_SILICON_CORPUS
+
     buffers: list[dict[str, object]] = []
     for idx, case in enumerate(PRE_SILICON_CORPUS):
         case_id = f"dr2a_case_{idx:03d}_{case.label}"
@@ -151,15 +172,17 @@ def _make_dr2a_test_buffers(
         out_coeffs = list(expected.coefficients)
         if corrupt_index is not None and idx == corrupt_index:
             out_coeffs[0] = (out_coeffs[0] + 1) % 3329
-        buffers.append({
-            "case_id": case_id,
-            "case_label": case.label,
-            "rho_hex": case.rho.hex(),
-            "j": case.j,
-            "i": case.i,
-            "request_id": case.request_id,
-            "output_coefficients": out_coeffs,
-        })
+        buffers.append(
+            {
+                "case_id": case_id,
+                "case_label": case.label,
+                "rho_hex": case.rho.hex(),
+                "j": case.j,
+                "i": case.i,
+                "request_id": case.request_id,
+                "output_coefficients": out_coeffs,
+            }
+        )
     return buffers
 
 
@@ -168,7 +191,10 @@ def _make_dr2b_test_buffers(
 ) -> list[dict[str, object]]:
     """Generate 13 authentic DR2b test buffers for parent oracle verification tests."""
     from tests.pqc_device_resident.dr2b_reference import noise_ntt_reference
-    from tests.pqc_device_resident.test_dr2b_mlkem512_noise_ntt import PRE_SILICON_CORPUS
+    from tests.pqc_device_resident.test_dr2b_mlkem512_noise_ntt import (
+        PRE_SILICON_CORPUS,
+    )
+
     buffers: list[dict[str, object]] = []
     for idx, case in enumerate(PRE_SILICON_CORPUS):
         case_id = f"dr2b_case_{idx:03d}_{case.label}"
@@ -176,14 +202,16 @@ def _make_dr2b_test_buffers(
         out_coeffs = list(expected)
         if corrupt_index is not None and idx == corrupt_index:
             out_coeffs[0] = (out_coeffs[0] + 1) % 3329
-        buffers.append({
-            "case_id": case_id,
-            "case_label": case.label,
-            "sigma_hex": case.sigma.hex(),
-            "counter": case.counter,
-            "request_id": case.request_id,
-            "output_coefficients": out_coeffs,
-        })
+        buffers.append(
+            {
+                "case_id": case_id,
+                "case_label": case.label,
+                "sigma_hex": case.sigma.hex(),
+                "counter": case.counter,
+                "request_id": case.request_id,
+                "output_coefficients": out_coeffs,
+            }
+        )
     return buffers
 
 
@@ -192,7 +220,10 @@ def _make_dr2c_test_buffers(
 ) -> list[dict[str, object]]:
     """Generate 11 authentic DR2c test buffers for parent oracle verification tests."""
     from tests.pqc_device_resident.dr2c_reference import keygen_row_reference
-    from tests.pqc_device_resident.test_dr2c_mlkem512_keygen_row import PRE_SILICON_CORPUS
+    from tests.pqc_device_resident.test_dr2c_mlkem512_keygen_row import (
+        PRE_SILICON_CORPUS,
+    )
+
     buffers: list[dict[str, object]] = []
     for idx, case in enumerate(PRE_SILICON_CORPUS):
         case_id = f"dr2c_case_{idx:03d}_{case.label}"
@@ -200,15 +231,17 @@ def _make_dr2c_test_buffers(
         out_coeffs = list(expected)
         if corrupt_index is not None and idx == corrupt_index:
             out_coeffs[0] = (out_coeffs[0] + 1) % 3329
-        buffers.append({
-            "case_id": case_id,
-            "case_label": case.label,
-            "rho_hex": case.rho.hex(),
-            "sigma_hex": case.sigma.hex(),
-            "row_index": case.row_index,
-            "request_id": case.request_id,
-            "output_coefficients": out_coeffs,
-        })
+        buffers.append(
+            {
+                "case_id": case_id,
+                "case_label": case.label,
+                "rho_hex": case.rho.hex(),
+                "sigma_hex": case.sigma.hex(),
+                "row_index": case.row_index,
+                "request_id": case.request_id,
+                "output_coefficients": out_coeffs,
+            }
+        )
     return buffers
 
 
@@ -220,6 +253,7 @@ def _make_dr2d_test_buffers(
         ACVP_EXPECTED,
         PRE_SILICON_CORPUS,
     )
+
     buffers: list[dict[str, object]] = []
     for idx, case in enumerate(PRE_SILICON_CORPUS):
         case_id = f"dr2d_case_{idx:03d}_{case.label}"
@@ -229,15 +263,17 @@ def _make_dr2d_test_buffers(
         dk_bytes = bytearray(expected_dk)
         if corrupt_index is not None and idx == corrupt_index:
             ek_bytes[0] ^= 0xFF
-        buffers.append({
-            "case_id": case_id,
-            "case_label": case.label,
-            "tc_id": tc_id,
-            "d_hex": case.d.hex(),
-            "request_id": case.request_id,
-            "ek_pke_hex": bytes(ek_bytes).hex(),
-            "dk_pke_hex": bytes(dk_bytes).hex(),
-        })
+        buffers.append(
+            {
+                "case_id": case_id,
+                "case_label": case.label,
+                "tc_id": tc_id,
+                "d_hex": case.d.hex(),
+                "request_id": case.request_id,
+                "ek_pke_hex": bytes(ek_bytes).hex(),
+                "dk_pke_hex": bytes(dk_bytes).hex(),
+            }
+        )
     return buffers
 
 
@@ -249,6 +285,7 @@ def _make_dr3_test_buffers(
         ACVP_EXPECTED,
         PRE_SILICON_CORPUS,
     )
+
     buffers: list[dict[str, object]] = []
     for idx, case in enumerate(PRE_SILICON_CORPUS):
         case_id = f"dr3_case_{idx:03d}_{case.label}"
@@ -256,16 +293,18 @@ def _make_dr3_test_buffers(
         c_bytes = bytearray(expected_c)
         if corrupt_index is not None and idx == corrupt_index:
             c_bytes[0] ^= 0xFF
-        buffers.append({
-            "case_id": case_id,
-            "case_label": case.label,
-            "tc_id": case.tc_id,
-            "ek_hex": case.ek.hex(),
-            "m_hex": case.m.hex(),
-            "r_hex": case.r.hex(),
-            "request_id": case.request_id,
-            "c_hex": bytes(c_bytes).hex(),
-        })
+        buffers.append(
+            {
+                "case_id": case_id,
+                "case_label": case.label,
+                "tc_id": case.tc_id,
+                "ek_hex": case.ek.hex(),
+                "m_hex": case.m.hex(),
+                "r_hex": case.r.hex(),
+                "request_id": case.request_id,
+                "c_hex": bytes(c_bytes).hex(),
+            }
+        )
     return buffers
 
 
@@ -277,6 +316,7 @@ def _make_dr4_test_buffers(
         ACVP_EXPECTED,
         PRE_SILICON_CORPUS,
     )
+
     buffers: list[dict[str, object]] = []
     for idx, case in enumerate(PRE_SILICON_CORPUS):
         case_id = f"dr4_case_{idx:03d}_{case.label}"
@@ -284,15 +324,17 @@ def _make_dr4_test_buffers(
         m_bytes = bytearray(expected_m)
         if corrupt_index is not None and idx == corrupt_index:
             m_bytes[0] ^= 0xFF
-        buffers.append({
-            "case_id": case_id,
-            "case_label": case.label,
-            "tc_id": case.tc_id,
-            "dk_pke_hex": case.dk_pke.hex(),
-            "c_hex": case.c.hex(),
-            "request_id": case.request_id,
-            "m_hex": bytes(m_bytes).hex(),
-        })
+        buffers.append(
+            {
+                "case_id": case_id,
+                "case_label": case.label,
+                "tc_id": case.tc_id,
+                "dk_pke_hex": case.dk_pke.hex(),
+                "c_hex": case.c.hex(),
+                "request_id": case.request_id,
+                "m_hex": bytes(m_bytes).hex(),
+            }
+        )
     return buffers
 
 
@@ -304,6 +346,7 @@ def _make_dr5_test_buffers(
         ACVP_EXPECTED,
         PRE_SILICON_CORPUS,
     )
+
     buffers: list[dict[str, object]] = []
     for idx, case in enumerate(PRE_SILICON_CORPUS):
         case_id = f"dr5_case_{idx:03d}_{case.label}"
@@ -312,16 +355,18 @@ def _make_dr5_test_buffers(
         dk_bytes = bytearray(expected_dk)
         if corrupt_index is not None and idx == corrupt_index:
             ek_bytes[0] ^= 0xFF
-        buffers.append({
-            "case_id": case_id,
-            "case_label": case.label,
-            "tc_id": case.tc_id,
-            "d_hex": case.d.hex(),
-            "z_hex": case.z.hex(),
-            "request_id": case.request_id,
-            "ek_hex": bytes(ek_bytes).hex(),
-            "dk_hex": bytes(dk_bytes).hex(),
-        })
+        buffers.append(
+            {
+                "case_id": case_id,
+                "case_label": case.label,
+                "tc_id": case.tc_id,
+                "d_hex": case.d.hex(),
+                "z_hex": case.z.hex(),
+                "request_id": case.request_id,
+                "ek_hex": bytes(ek_bytes).hex(),
+                "dk_hex": bytes(dk_bytes).hex(),
+            }
+        )
     return buffers
 
 
@@ -333,6 +378,7 @@ def _make_dr6_test_buffers(
         ACVP_EXPECTED,
         PRE_SILICON_CORPUS,
     )
+
     buffers: list[dict[str, object]] = []
     for idx, case in enumerate(PRE_SILICON_CORPUS):
         case_id = f"dr6_case_{idx:03d}_{case.label}"
@@ -341,16 +387,18 @@ def _make_dr6_test_buffers(
         k_bytes = bytearray(expected_k)
         if corrupt_index is not None and idx == corrupt_index:
             c_bytes[0] ^= 0xFF
-        buffers.append({
-            "case_id": case_id,
-            "case_label": case.label,
-            "tc_id": case.tc_id,
-            "ek_hex": case.ek.hex(),
-            "m_hex": case.m.hex(),
-            "request_id": case.request_id,
-            "c_hex": bytes(c_bytes).hex(),
-            "k_hex": bytes(k_bytes).hex(),
-        })
+        buffers.append(
+            {
+                "case_id": case_id,
+                "case_label": case.label,
+                "tc_id": case.tc_id,
+                "ek_hex": case.ek.hex(),
+                "m_hex": case.m.hex(),
+                "request_id": case.request_id,
+                "c_hex": bytes(c_bytes).hex(),
+                "k_hex": bytes(k_bytes).hex(),
+            }
+        )
     return buffers
 
 
@@ -362,6 +410,7 @@ def _make_dr7_test_buffers(
         ACVP_EXPECTED,
         PRE_SILICON_CORPUS,
     )
+
     buffers: list[dict[str, object]] = []
     for idx, case in enumerate(PRE_SILICON_CORPUS):
         case_id = f"dr7_case_{idx:03d}_{case.label}"
@@ -369,15 +418,17 @@ def _make_dr7_test_buffers(
         k_bytes = bytearray(expected_k)
         if corrupt_index is not None and idx == corrupt_index:
             k_bytes[0] ^= 0xFF
-        buffers.append({
-            "case_id": case_id,
-            "case_label": case.label,
-            "tc_id": case.tc_id,
-            "dk_hex": case.dk.hex(),
-            "c_hex": case.c.hex(),
-            "request_id": case.request_id,
-            "k_hex": bytes(k_bytes).hex(),
-        })
+        buffers.append(
+            {
+                "case_id": case_id,
+                "case_label": case.label,
+                "tc_id": case.tc_id,
+                "dk_hex": case.dk.hex(),
+                "c_hex": case.c.hex(),
+                "request_id": case.request_id,
+                "k_hex": bytes(k_bytes).hex(),
+            }
+        )
     return buffers
 
 
@@ -389,6 +440,7 @@ def _make_dr8_test_buffers(
         ACVP_EXPECTED,
         PRE_SILICON_CORPUS,
     )
+
     buffers: list[dict[str, object]] = []
     for idx, case in enumerate(PRE_SILICON_CORPUS):
         case_id = f"dr8_case_{idx:03d}_{case.param_set}_{case.tc_id}"
@@ -396,14 +448,16 @@ def _make_dr8_test_buffers(
         k_bytes = bytearray(expected_k)
         if corrupt_index is not None and idx == corrupt_index:
             k_bytes[0] ^= 0xFF
-        buffers.append({
-            "case_id": case_id,
-            "case_label": f"{case.param_set}_{case.tc_id}",
-            "tc_id": case.tc_id,
-            "param_set": case.param_set,
-            "request_id": case.request_id,
-            "k_hex": bytes(k_bytes).hex(),
-        })
+        buffers.append(
+            {
+                "case_id": case_id,
+                "case_label": f"{case.param_set}_{case.tc_id}",
+                "tc_id": case.tc_id,
+                "param_set": case.param_set,
+                "request_id": case.request_id,
+                "k_hex": bytes(k_bytes).hex(),
+            }
+        )
     return buffers
 
 
@@ -415,6 +469,7 @@ def _make_dr9_test_buffers(
         ACVP_EXPECTED,
         PRE_SILICON_CORPUS,
     )
+
     buffers: list[dict[str, object]] = []
     for idx, case in enumerate(PRE_SILICON_CORPUS):
         case_id = f"dr9_case_{idx:03d}_{case.tc_id}"
@@ -422,16 +477,18 @@ def _make_dr9_test_buffers(
         digest_bytes = bytearray(expected_digest)
         if corrupt_index is not None and idx == corrupt_index:
             digest_bytes[0] ^= 0xFF
-        buffers.append({
-            "case_id": case_id,
-            "case_label": case.tc_id,
-            "tc_id": case.tc_id,
-            "func_name": case.func_name,
-            "msg_hex": case.msg.hex(),
-            "out_len": case.out_len,
-            "request_id": case.request_id,
-            "digest_hex": bytes(digest_bytes).hex(),
-        })
+        buffers.append(
+            {
+                "case_id": case_id,
+                "case_label": case.tc_id,
+                "tc_id": case.tc_id,
+                "func_name": case.func_name,
+                "msg_hex": case.msg.hex(),
+                "out_len": case.out_len,
+                "request_id": case.request_id,
+                "digest_hex": bytes(digest_bytes).hex(),
+            }
+        )
     return buffers
 
 
@@ -443,21 +500,24 @@ def _make_dr10_test_buffers(
         EXPECTED_RESULTS,
         PRE_SILICON_CORPUS,
     )
+
     buffers: list[dict[str, object]] = []
     for idx, case in enumerate(PRE_SILICON_CORPUS):
         case_id = f"dr10_case_{idx:03d}_{case.name}"
         status, active_slot = EXPECTED_RESULTS[case.name]
         if corrupt_index is not None and idx == corrupt_index:
             status ^= 0xFF
-        buffers.append({
-            "case_id": case_id,
-            "case_label": case.name,
-            "name": case.name,
-            "request_id": case.request_id,
-            "status": status,
-            "active_slot": active_slot,
-            "crc": 0x12345678,
-        })
+        buffers.append(
+            {
+                "case_id": case_id,
+                "case_label": case.name,
+                "name": case.name,
+                "request_id": case.request_id,
+                "status": status,
+                "active_slot": active_slot,
+                "crc": 0x12345678,
+            }
+        )
     return buffers
 
 
@@ -469,6 +529,7 @@ def _make_dr11_test_buffers(
         ACVP_EXPECTED,
         PRE_SILICON_CORPUS,
     )
+
     buffers: list[dict[str, object]] = []
     for idx, case in enumerate(PRE_SILICON_CORPUS):
         case_id = f"dr11_case_{idx:03d}_{case.tc_id}"
@@ -477,15 +538,17 @@ def _make_dr11_test_buffers(
         sk_bytes = bytearray(exp_sk)
         if corrupt_index is not None and idx == corrupt_index:
             pk_bytes[0] ^= 0xFF
-        buffers.append({
-            "case_id": case_id,
-            "case_label": case.tc_id,
-            "tc_id": case.tc_id,
-            "seed_hex": case.seed.hex(),
-            "request_id": case.request_id,
-            "pk_hex": bytes(pk_bytes).hex(),
-            "sk_hex": bytes(sk_bytes).hex(),
-        })
+        buffers.append(
+            {
+                "case_id": case_id,
+                "case_label": case.tc_id,
+                "tc_id": case.tc_id,
+                "seed_hex": case.seed.hex(),
+                "request_id": case.request_id,
+                "pk_hex": bytes(pk_bytes).hex(),
+                "sk_hex": bytes(sk_bytes).hex(),
+            }
+        )
     return buffers
 
 
@@ -497,6 +560,7 @@ def _make_dr12_test_buffers(
         ACVP_EXPECTED,
         PRE_SILICON_CORPUS,
     )
+
     buffers: list[dict[str, object]] = []
     for idx, case in enumerate(PRE_SILICON_CORPUS):
         case_id = f"dr12_case_{idx:03d}_{case.test_name}"
@@ -504,15 +568,17 @@ def _make_dr12_test_buffers(
         sig_bytes = bytearray(exp_sig)
         if corrupt_index is not None and idx == corrupt_index:
             sig_bytes[0] ^= 0xFF
-        buffers.append({
-            "case_id": case_id,
-            "case_label": case.test_name,
-            "test_name": case.test_name,
-            "tc_id": case.tc_id,
-            "tg_id": case.tg_id,
-            "request_id": case.request_id,
-            "sig_hex": bytes(sig_bytes).hex(),
-        })
+        buffers.append(
+            {
+                "case_id": case_id,
+                "case_label": case.test_name,
+                "test_name": case.test_name,
+                "tc_id": case.tc_id,
+                "tg_id": case.tg_id,
+                "request_id": case.request_id,
+                "sig_hex": bytes(sig_bytes).hex(),
+            }
+        )
     return buffers
 
 
@@ -524,6 +590,7 @@ def _make_dr13_test_buffers(
         ACVP_EXPECTED,
         PRE_SILICON_CORPUS,
     )
+
     buffers: list[dict[str, object]] = []
     for idx, case in enumerate(PRE_SILICON_CORPUS):
         case_id = f"dr13_case_{idx:03d}_{case.test_name}"
@@ -531,16 +598,18 @@ def _make_dr13_test_buffers(
         actual_valid = exp_valid
         if corrupt_index is not None and idx == corrupt_index:
             actual_valid = not exp_valid
-        buffers.append({
-            "case_id": case_id,
-            "case_label": case.test_name,
-            "test_name": case.test_name,
-            "tc_id": case.tc_id,
-            "tg_id": case.tg_id,
-            "request_id": case.request_id,
-            "actual_valid": actual_valid,
-            "expected_valid": exp_valid,
-        })
+        buffers.append(
+            {
+                "case_id": case_id,
+                "case_label": case.test_name,
+                "test_name": case.test_name,
+                "tc_id": case.tc_id,
+                "tg_id": case.tg_id,
+                "request_id": case.request_id,
+                "actual_valid": actual_valid,
+                "expected_valid": exp_valid,
+            }
+        )
     return buffers
 
 
@@ -556,6 +625,7 @@ def _make_dr14_test_buffers(
         VERIFY_CORPUS,
         VERIFY_EXPECTED,
     )
+
     buffers: list[dict[str, object]] = []
     global_idx = 0
 
@@ -567,16 +637,18 @@ def _make_dr14_test_buffers(
         sk_bytes = bytearray(exp_sk)
         if corrupt_index is not None and global_idx == corrupt_index:
             pk_bytes[0] ^= 0xFF
-        buffers.append({
-            "gate_op": "keygen",
-            "case_id": case_id,
-            "case_label": case.test_name,
-            "test_name": case.test_name,
-            "tc_id": case.tc_id,
-            "request_id": case.request_id,
-            "pk_hex": bytes(pk_bytes).hex(),
-            "sk_hex": bytes(sk_bytes).hex(),
-        })
+        buffers.append(
+            {
+                "gate_op": "keygen",
+                "case_id": case_id,
+                "case_label": case.test_name,
+                "test_name": case.test_name,
+                "tc_id": case.tc_id,
+                "request_id": case.request_id,
+                "pk_hex": bytes(pk_bytes).hex(),
+                "sk_hex": bytes(sk_bytes).hex(),
+            }
+        )
         global_idx += 1
 
     # Sign (30)
@@ -586,15 +658,17 @@ def _make_dr14_test_buffers(
         sig_bytes = bytearray(exp_sig)
         if corrupt_index is not None and global_idx == corrupt_index:
             sig_bytes[0] ^= 0xFF
-        buffers.append({
-            "gate_op": "sign",
-            "case_id": case_id,
-            "case_label": case.test_name,
-            "test_name": case.test_name,
-            "tc_id": case.tc_id,
-            "request_id": case.request_id,
-            "sig_hex": bytes(sig_bytes).hex(),
-        })
+        buffers.append(
+            {
+                "gate_op": "sign",
+                "case_id": case_id,
+                "case_label": case.test_name,
+                "test_name": case.test_name,
+                "tc_id": case.tc_id,
+                "request_id": case.request_id,
+                "sig_hex": bytes(sig_bytes).hex(),
+            }
+        )
         global_idx += 1
 
     # Verify (30)
@@ -604,16 +678,18 @@ def _make_dr14_test_buffers(
         actual_valid = exp_valid
         if corrupt_index is not None and global_idx == corrupt_index:
             actual_valid = not exp_valid
-        buffers.append({
-            "gate_op": "verify",
-            "case_id": case_id,
-            "case_label": case.test_name,
-            "test_name": case.test_name,
-            "tc_id": case.tc_id,
-            "request_id": case.request_id,
-            "actual_valid": actual_valid,
-            "expected_valid": exp_valid,
-        })
+        buffers.append(
+            {
+                "gate_op": "verify",
+                "case_id": case_id,
+                "case_label": case.test_name,
+                "test_name": case.test_name,
+                "tc_id": case.tc_id,
+                "request_id": case.request_id,
+                "actual_valid": actual_valid,
+                "expected_valid": exp_valid,
+            }
+        )
         global_idx += 1
 
     return buffers
@@ -631,6 +707,7 @@ def _make_dr15_test_buffers(
         VERIFY_CORPUS,
         VERIFY_EXPECTED,
     )
+
     buffers: list[dict[str, object]] = []
     global_idx = 0
 
@@ -642,16 +719,18 @@ def _make_dr15_test_buffers(
         sk_bytes = bytearray(exp_sk)
         if corrupt_index is not None and global_idx == corrupt_index:
             pk_bytes[0] ^= 0xFF
-        buffers.append({
-            "gate_op": "keygen",
-            "case_id": case_id,
-            "case_label": case.test_name,
-            "test_name": case.test_name,
-            "tc_id": case.tc_id,
-            "request_id": case.request_id,
-            "pk_hex": bytes(pk_bytes).hex(),
-            "sk_hex": bytes(sk_bytes).hex(),
-        })
+        buffers.append(
+            {
+                "gate_op": "keygen",
+                "case_id": case_id,
+                "case_label": case.test_name,
+                "test_name": case.test_name,
+                "tc_id": case.tc_id,
+                "request_id": case.request_id,
+                "pk_hex": bytes(pk_bytes).hex(),
+                "sk_hex": bytes(sk_bytes).hex(),
+            }
+        )
         global_idx += 1
 
     # Sign (30)
@@ -661,15 +740,17 @@ def _make_dr15_test_buffers(
         sig_bytes = bytearray(exp_sig)
         if corrupt_index is not None and global_idx == corrupt_index:
             sig_bytes[0] ^= 0xFF
-        buffers.append({
-            "gate_op": "sign",
-            "case_id": case_id,
-            "case_label": case.test_name,
-            "test_name": case.test_name,
-            "tc_id": case.tc_id,
-            "request_id": case.request_id,
-            "sig_hex": bytes(sig_bytes).hex(),
-        })
+        buffers.append(
+            {
+                "gate_op": "sign",
+                "case_id": case_id,
+                "case_label": case.test_name,
+                "test_name": case.test_name,
+                "tc_id": case.tc_id,
+                "request_id": case.request_id,
+                "sig_hex": bytes(sig_bytes).hex(),
+            }
+        )
         global_idx += 1
 
     # Verify (30)
@@ -679,16 +760,18 @@ def _make_dr15_test_buffers(
         actual_valid = exp_valid
         if corrupt_index is not None and global_idx == corrupt_index:
             actual_valid = not exp_valid
-        buffers.append({
-            "gate_op": "verify",
-            "case_id": case_id,
-            "case_label": case.test_name,
-            "test_name": case.test_name,
-            "tc_id": case.tc_id,
-            "request_id": case.request_id,
-            "actual_valid": actual_valid,
-            "expected_valid": exp_valid,
-        })
+        buffers.append(
+            {
+                "gate_op": "verify",
+                "case_id": case_id,
+                "case_label": case.test_name,
+                "test_name": case.test_name,
+                "tc_id": case.tc_id,
+                "request_id": case.request_id,
+                "actual_valid": actual_valid,
+                "expected_valid": exp_valid,
+            }
+        )
         global_idx += 1
 
     return buffers
@@ -719,7 +802,9 @@ class CanonicalSiliconRunnerBehaviorTests(unittest.TestCase):
 
     def test_scan_diagnostic_markers(self) -> None:
         self.assertEqual(scan_diagnostic_markers("Clean silicon run"), [])
-        findings = scan_diagnostic_markers("Backend: m33-dr0:unavailable\nusing fallback")
+        findings = scan_diagnostic_markers(
+            "Backend: m33-dr0:unavailable\nusing fallback"
+        )
         markers = [m.lower() for _, m, _ in findings]
         self.assertIn("unavailable", markers)
         self.assertIn("fallback", markers)
@@ -728,7 +813,9 @@ class CanonicalSiliconRunnerBehaviorTests(unittest.TestCase):
         """A well-formed child JSON record must produce SELF_REPORTED_UNVERIFIED and success=False."""
         gate = GATES[0]
         now = datetime.now(timezone.utc)
-        rec = _make_valid_record(gate_id=gate.gate_id, expected_count=gate.expected_total)
+        rec = _make_valid_record(
+            gate_id=gate.gate_id, expected_count=gate.expected_total
+        )
         stdout = _wrap_record_in_stdout(rec, "Diagnostic stdout")
         res = parse_gate_output(
             gate=gate,
@@ -767,7 +854,11 @@ class CanonicalSiliconRunnerBehaviorTests(unittest.TestCase):
         )
         stdout = _wrap_record_in_stdout(rec)
         res = parse_gate_output(
-            gate, stdout, "", 0, 0.5,
+            gate,
+            stdout,
+            "",
+            0,
+            0.5,
             parent_start_time=now - timedelta(seconds=2),
             parent_end_time=now + timedelta(seconds=2),
             execution_nonce="test_nonce_0123456789abcdef",
@@ -786,7 +877,11 @@ class CanonicalSiliconRunnerBehaviorTests(unittest.TestCase):
         )
         stdout = _wrap_record_in_stdout(rec)
         res = parse_gate_output(
-            gate, stdout, "", 0, 0.5,
+            gate,
+            stdout,
+            "",
+            0,
+            0.5,
             parent_start_time=now - timedelta(seconds=2),
             parent_end_time=now + timedelta(seconds=2),
             execution_nonce="test_nonce_0123456789abcdef",
@@ -806,7 +901,11 @@ class CanonicalSiliconRunnerBehaviorTests(unittest.TestCase):
         )
         stdout = _wrap_record_in_stdout(rec)
         res = parse_gate_output(
-            gate, stdout, "", 0, 0.5,
+            gate,
+            stdout,
+            "",
+            0,
+            0.5,
             parent_start_time=now - timedelta(seconds=2),
             parent_end_time=now + timedelta(seconds=2),
             execution_nonce="test_nonce_0123456789abcdef",
@@ -821,14 +920,20 @@ class CanonicalSiliconRunnerBehaviorTests(unittest.TestCase):
         rec = _make_valid_record(gate_id="DR0", expected_count=24, dispatches=0)
         stdout = _wrap_record_in_stdout(rec)
         res = parse_gate_output(
-            gate, stdout, "", 0, 0.5,
+            gate,
+            stdout,
+            "",
+            0,
+            0.5,
             parent_start_time=now - timedelta(seconds=2),
             parent_end_time=now + timedelta(seconds=2),
             execution_nonce="test_nonce_0123456789abcdef",
         )
         self.assertFalse(res.success)
         self.assertEqual(res.status, STATUS_FAIL)
-        self.assertIn("physical_dispatches must be an integer >= 1", res.error_message or "")
+        self.assertIn(
+            "physical_dispatches must be an integer >= 1", res.error_message or ""
+        )
 
     def test_reject_malformed_timestamp(self) -> None:
         gate = GATES[0]
@@ -840,7 +945,11 @@ class CanonicalSiliconRunnerBehaviorTests(unittest.TestCase):
         )
         stdout = _wrap_record_in_stdout(rec)
         res = parse_gate_output(
-            gate, stdout, "", 0, 0.5,
+            gate,
+            stdout,
+            "",
+            0,
+            0.5,
             parent_start_time=now - timedelta(seconds=2),
             parent_end_time=now + timedelta(seconds=2),
             execution_nonce="test_nonce_0123456789abcdef",
@@ -859,7 +968,11 @@ class CanonicalSiliconRunnerBehaviorTests(unittest.TestCase):
         )
         stdout = _wrap_record_in_stdout(rec)
         res = parse_gate_output(
-            gate, stdout, "", 0, 0.5,
+            gate,
+            stdout,
+            "",
+            0,
+            0.5,
             parent_start_time=now - timedelta(seconds=2),
             parent_end_time=now + timedelta(seconds=2),
             execution_nonce="test_nonce_0123456789abcdef",
@@ -878,7 +991,11 @@ class CanonicalSiliconRunnerBehaviorTests(unittest.TestCase):
         )
         stdout = _wrap_record_in_stdout(rec)
         res = parse_gate_output(
-            gate, stdout, "", 0, 0.5,
+            gate,
+            stdout,
+            "",
+            0,
+            0.5,
             parent_start_time=now - timedelta(seconds=2),
             parent_end_time=now + timedelta(seconds=2),
             execution_nonce="test_nonce_0123456789abcdef",
@@ -898,7 +1015,11 @@ class CanonicalSiliconRunnerBehaviorTests(unittest.TestCase):
         )
         stdout = _wrap_record_in_stdout(rec)
         res = parse_gate_output(
-            gate, stdout, "", 0, 0.5,
+            gate,
+            stdout,
+            "",
+            0,
+            0.5,
             parent_start_time=now - timedelta(seconds=2),
             parent_end_time=now + timedelta(seconds=10),
             execution_nonce="test_nonce_0123456789abcdef",
@@ -918,7 +1039,11 @@ class CanonicalSiliconRunnerBehaviorTests(unittest.TestCase):
         )
         stdout = _wrap_record_in_stdout(rec)
         res = parse_gate_output(
-            gate, stdout, "", 0, 0.5,
+            gate,
+            stdout,
+            "",
+            0,
+            0.5,
             parent_start_time=now - timedelta(seconds=2),
             parent_end_time=now + timedelta(seconds=2),
             execution_nonce="test_nonce_0123456789abcdef",
@@ -934,7 +1059,11 @@ class CanonicalSiliconRunnerBehaviorTests(unittest.TestCase):
         del rec["cases_selected"]
         stdout = _wrap_record_in_stdout(rec)
         res = parse_gate_output(
-            gate, stdout, "", 0, 0.5,
+            gate,
+            stdout,
+            "",
+            0,
+            0.5,
             parent_start_time=now - timedelta(seconds=2),
             parent_end_time=now + timedelta(seconds=2),
             execution_nonce="test_nonce_0123456789abcdef",
@@ -950,7 +1079,11 @@ class CanonicalSiliconRunnerBehaviorTests(unittest.TestCase):
         del rec["cases_executed"]
         stdout = _wrap_record_in_stdout(rec)
         res = parse_gate_output(
-            gate, stdout, "", 0, 0.5,
+            gate,
+            stdout,
+            "",
+            0,
+            0.5,
             parent_start_time=now - timedelta(seconds=2),
             parent_end_time=now + timedelta(seconds=2),
             execution_nonce="test_nonce_0123456789abcdef",
@@ -966,14 +1099,20 @@ class CanonicalSiliconRunnerBehaviorTests(unittest.TestCase):
         rec["cases_selected"] = True
         stdout = _wrap_record_in_stdout(rec)
         res = parse_gate_output(
-            gate, stdout, "", 0, 0.5,
+            gate,
+            stdout,
+            "",
+            0,
+            0.5,
             parent_start_time=now - timedelta(seconds=2),
             parent_end_time=now + timedelta(seconds=2),
             execution_nonce="test_nonce_0123456789abcdef",
         )
         self.assertFalse(res.success)
         self.assertEqual(res.status, STATUS_FAIL)
-        self.assertIn("cases_selected must be an integer, got bool", res.error_message or "")
+        self.assertIn(
+            "cases_selected must be an integer, got bool", res.error_message or ""
+        )
 
     def test_reject_mismatched_declared_counts(self) -> None:
         gate = GATES[0]
@@ -983,17 +1122,27 @@ class CanonicalSiliconRunnerBehaviorTests(unittest.TestCase):
         rec["cases_executed"] = 12
         stdout = _wrap_record_in_stdout(rec)
         res = parse_gate_output(
-            gate, stdout, "", 0, 0.5,
+            gate,
+            stdout,
+            "",
+            0,
+            0.5,
             parent_start_time=now - timedelta(seconds=2),
             parent_end_time=now + timedelta(seconds=2),
             execution_nonce="test_nonce_0123456789abcdef",
         )
         self.assertFalse(res.success)
         self.assertEqual(res.status, STATUS_FAIL)
-        self.assertIn("cases_selected (99) != expected total (24)", res.error_message or "")
-        self.assertIn("cases_executed (12) != cases length (24)", res.error_message or "")
+        self.assertIn(
+            "cases_selected (99) != expected total (24)", res.error_message or ""
+        )
+        self.assertIn(
+            "cases_executed (12) != cases length (24)", res.error_message or ""
+        )
 
-    def test_evidence_validation_failure_does_not_become_cryptographic_failure(self) -> None:
+    def test_evidence_validation_failure_does_not_become_cryptographic_failure(
+        self,
+    ) -> None:
         """When evidence metadata fails validation (e.g. wrong nonce), cases remain unverified claims."""
         gate = GATES[0]
         now = datetime.now(timezone.utc)
@@ -1004,7 +1153,11 @@ class CanonicalSiliconRunnerBehaviorTests(unittest.TestCase):
         )
         stdout = _wrap_record_in_stdout(rec)
         res = parse_gate_output(
-            gate, stdout, "", 0, 0.5,
+            gate,
+            stdout,
+            "",
+            0,
+            0.5,
             parent_start_time=now - timedelta(seconds=2),
             parent_end_time=now + timedelta(seconds=2),
             execution_nonce="expected_nonce",
@@ -1027,7 +1180,10 @@ class CanonicalSiliconRunnerBehaviorTests(unittest.TestCase):
         res = parse_gate_output(gate, stdout, "", 0, 0.5)
         self.assertFalse(res.success)
         self.assertEqual(res.status, STATUS_BLOCKED)
-        self.assertIn("Framing delimiter anomaly: 2 start marker(s), 2 end marker(s)", res.error_message or "")
+        self.assertIn(
+            "Framing delimiter anomaly: 2 start marker(s), 2 end marker(s)",
+            res.error_message or "",
+        )
 
     def test_reject_unmatched_delimiters(self) -> None:
         gate = GATES[0]
@@ -1048,7 +1204,11 @@ class CanonicalSiliconRunnerBehaviorTests(unittest.TestCase):
         )
         stdout = _wrap_record_in_stdout(rec)
         res = parse_gate_output(
-            gate, stdout, "", 0, 0.5,
+            gate,
+            stdout,
+            "",
+            0,
+            0.5,
             parent_start_time=now - timedelta(seconds=2),
             parent_end_time=now + timedelta(seconds=2),
             execution_nonce="fresh_parent_nonce_9999",
@@ -1077,14 +1237,29 @@ class CanonicalSiliconRunnerBehaviorTests(unittest.TestCase):
 
     def test_gate_timeout_fails_closed(self) -> None:
         gate = GATES[0]
-        with mock.patch("subprocess.run", side_effect=subprocess.TimeoutExpired(cmd=["python"], timeout=1.0)):
+        with mock.patch(
+            "subprocess.run",
+            side_effect=subprocess.TimeoutExpired(cmd=["python"], timeout=1.0),
+        ):
             res = run_single_gate(gate, "python", runner.REPO_ROOT)
             self.assertFalse(res.success)
             self.assertEqual(res.status, STATUS_TIMEOUT)
 
     def test_execute_suite_accounting(self) -> None:
-        fake_gate_1 = NativeGate("G1", "Gate 1", Path("tests/pqc_device_resident/test_m33_product_dr0.py"), "g1:silicon", 10)
-        fake_gate_2 = NativeGate("G2", "Gate 2", Path("tests/pqc_device_resident/test_dr1_mldsa44_rejntt_silicon.py"), "g2:silicon", 20)
+        fake_gate_1 = NativeGate(
+            "G1",
+            "Gate 1",
+            Path("tests/pqc_device_resident/test_m33_product_dr0.py"),
+            "g1:silicon",
+            10,
+        )
+        fake_gate_2 = NativeGate(
+            "G2",
+            "Gate 2",
+            Path("tests/pqc_device_resident/test_dr1_mldsa44_rejntt_silicon.py"),
+            "g2:silicon",
+            20,
+        )
         suite = (fake_gate_1, fake_gate_2)
 
         def mock_run(gate: NativeGate, python_exe: str, repo_root: Path):
@@ -1100,12 +1275,14 @@ class CanonicalSiliconRunnerBehaviorTests(unittest.TestCase):
                 cases_unverified=gate.expected_total,
                 cases_skipped=0,
                 cases_xfailed=0,
-                case_results=tuple(CaseResult(f"c_{i}", "PASS") for i in range(gate.expected_total)),
+                case_results=tuple(
+                    CaseResult(f"c_{i}", "PASS") for i in range(gate.expected_total)
+                ),
                 duration_seconds=0.1,
             )
 
         with mock.patch("run_all_silicon_tests.run_single_gate", side_effect=mock_run):
-            results, elapsed = execute_suite(suite, "python", runner.REPO_ROOT, verbose=False)
+            results, _ = execute_suite(suite, "python", runner.REPO_ROOT, verbose=False)
             self.assertEqual(len(results), 2)
             self.assertFalse(any(r.success for r in results))
             self.assertEqual(sum(r.cases_passed for r in results), 0)
@@ -1118,14 +1295,23 @@ class CanonicalSiliconRunnerBehaviorTests(unittest.TestCase):
         rec["test_buffers"] = _make_dr0_test_buffers()
         stdout = _wrap_record_in_stdout(rec)
         res = parse_gate_output(
-            gate, stdout, "", 0, 0.5,
+            gate,
+            stdout,
+            "",
+            0,
+            0.5,
             parent_start_time=now - timedelta(seconds=2),
             parent_end_time=now + timedelta(seconds=2),
             execution_nonce="test_nonce_0123456789abcdef",
         )
         self.assertFalse(res.success)
         self.assertEqual(res.status, STATUS_SELF_REPORTED_UNVERIFIED)
-        self.assertTrue(any("Parent independent oracle verified all 24 x 256" in note for note in res.corroboration_notes))
+        self.assertTrue(
+            any(
+                "Parent independent oracle verified all 24 x 256" in note
+                for note in res.corroboration_notes
+            )
+        )
 
     def test_dr0_corrupted_buffer_coefficient_fails_validation(self) -> None:
         gate = GATES[0]
@@ -1135,7 +1321,11 @@ class CanonicalSiliconRunnerBehaviorTests(unittest.TestCase):
         rec["test_buffers"] = _make_dr0_test_buffers(corrupt_index=3)
         stdout = _wrap_record_in_stdout(rec)
         res = parse_gate_output(
-            gate, stdout, "", 0, 0.5,
+            gate,
+            stdout,
+            "",
+            0,
+            0.5,
             parent_start_time=now - timedelta(seconds=2),
             parent_end_time=now + timedelta(seconds=2),
             execution_nonce="test_nonce_0123456789abcdef",
@@ -1152,14 +1342,21 @@ class CanonicalSiliconRunnerBehaviorTests(unittest.TestCase):
         rec["test_buffers"] = _make_dr0_test_buffers()[:23]
         stdout = _wrap_record_in_stdout(rec)
         res = parse_gate_output(
-            gate, stdout, "", 0, 0.5,
+            gate,
+            stdout,
+            "",
+            0,
+            0.5,
             parent_start_time=now - timedelta(seconds=2),
             parent_end_time=now + timedelta(seconds=2),
             execution_nonce="test_nonce_0123456789abcdef",
         )
         self.assertFalse(res.success)
         self.assertEqual(res.status, STATUS_FAIL)
-        self.assertIn("test_buffers length (23) != expected gate total (24)", res.error_message or "")
+        self.assertIn(
+            "test_buffers length (23) != expected gate total (24)",
+            res.error_message or "",
+        )
 
     def test_xcl_emulation_mode_fails_closed(self) -> None:
         gate = GATES[0]
@@ -1174,14 +1371,20 @@ class CanonicalSiliconRunnerBehaviorTests(unittest.TestCase):
 
             # parse_gate_output rejects emulation
             res = parse_gate_output(
-                gate, stdout, "", 0, 0.5,
+                gate,
+                stdout,
+                "",
+                0,
+                0.5,
                 parent_start_time=now - timedelta(seconds=2),
                 parent_end_time=now + timedelta(seconds=2),
                 execution_nonce="test_nonce_0123456789abcdef",
             )
             self.assertFalse(res.success)
             self.assertEqual(res.status, STATUS_FAIL)
-            self.assertIn("XCL_EMULATION_MODE='sw_emu' is active", res.error_message or "")
+            self.assertIn(
+                "XCL_EMULATION_MODE='sw_emu' is active", res.error_message or ""
+            )
 
     def test_invalid_child_pid_fails_validation(self) -> None:
         gate = GATES[0]
@@ -1190,7 +1393,11 @@ class CanonicalSiliconRunnerBehaviorTests(unittest.TestCase):
         rec["child_pid"] = -1
         stdout = _wrap_record_in_stdout(rec)
         res = parse_gate_output(
-            gate, stdout, "", 0, 0.5,
+            gate,
+            stdout,
+            "",
+            0,
+            0.5,
             parent_start_time=now - timedelta(seconds=2),
             parent_end_time=now + timedelta(seconds=2),
             execution_nonce="test_nonce_0123456789abcdef",
@@ -1201,6 +1408,7 @@ class CanonicalSiliconRunnerBehaviorTests(unittest.TestCase):
 
     def test_dr0_module_rejects_emulation_mode(self) -> None:
         from phoenix_sdr_dsp.pqc import m33_product_graph as graph
+
         with mock.patch.dict(os.environ, {"XCL_EMULATION_MODE": "hw_emu"}):
             with self.assertRaises(graph.NativeBackendUnavailable) as ctx:
                 graph.check_emulation_and_redirection_excluded()
@@ -1219,17 +1427,24 @@ class CanonicalSiliconRunnerBehaviorTests(unittest.TestCase):
 
             # parse_gate_output rejects redirection
             res = parse_gate_output(
-                gate, stdout, "", 0, 0.5,
+                gate,
+                stdout,
+                "",
+                0,
+                0.5,
                 parent_start_time=now - timedelta(seconds=2),
                 parent_end_time=now + timedelta(seconds=2),
                 execution_nonce="test_nonce_0123456789abcdef",
             )
             self.assertFalse(res.success)
             self.assertEqual(res.status, STATUS_FAIL)
-            self.assertIn("XRT_INI_PATH='C:/fake/xrt.ini' is active", res.error_message or "")
+            self.assertIn(
+                "XRT_INI_PATH='C:/fake/xrt.ini' is active", res.error_message or ""
+            )
 
     def test_dr0_module_rejects_xrt_ini_path(self) -> None:
         from phoenix_sdr_dsp.pqc import m33_product_graph as graph
+
         with mock.patch.dict(os.environ, {"XRT_INI_PATH": "C:/custom/xrt.ini"}):
             with self.assertRaises(graph.NativeBackendUnavailable) as ctx:
                 graph.check_emulation_and_redirection_excluded()
@@ -1247,14 +1462,23 @@ class CanonicalSiliconRunnerBehaviorTests(unittest.TestCase):
         rec["test_buffers"] = _make_dr1_test_buffers()
         stdout = _wrap_record_in_stdout(rec)
         res = parse_gate_output(
-            gate, stdout, "", 0, 0.5,
+            gate,
+            stdout,
+            "",
+            0,
+            0.5,
             parent_start_time=now - timedelta(seconds=2),
             parent_end_time=now + timedelta(seconds=2),
             execution_nonce="test_nonce_0123456789abcdef",
         )
         self.assertFalse(res.success)
         self.assertEqual(res.status, STATUS_SELF_REPORTED_UNVERIFIED)
-        self.assertTrue(any("Parent independent oracle verified all 33 x 256" in note for note in res.corroboration_notes))
+        self.assertTrue(
+            any(
+                "Parent independent oracle verified all 33 x 256" in note
+                for note in res.corroboration_notes
+            )
+        )
 
     def test_dr1_corrupted_coefficient_fails_validation(self) -> None:
         gate = GATES[1]
@@ -1269,7 +1493,11 @@ class CanonicalSiliconRunnerBehaviorTests(unittest.TestCase):
         rec["test_buffers"] = _make_dr1_test_buffers(corrupt_index=5)
         stdout = _wrap_record_in_stdout(rec)
         res = parse_gate_output(
-            gate, stdout, "", 0, 0.5,
+            gate,
+            stdout,
+            "",
+            0,
+            0.5,
             parent_start_time=now - timedelta(seconds=2),
             parent_end_time=now + timedelta(seconds=2),
             execution_nonce="test_nonce_0123456789abcdef",
@@ -1291,7 +1519,11 @@ class CanonicalSiliconRunnerBehaviorTests(unittest.TestCase):
         rec["test_buffers"] = _make_dr1_test_buffers(corrupt_fingerprint_index=2)
         stdout = _wrap_record_in_stdout(rec)
         res = parse_gate_output(
-            gate, stdout, "", 0, 0.5,
+            gate,
+            stdout,
+            "",
+            0,
+            0.5,
             parent_start_time=now - timedelta(seconds=2),
             parent_end_time=now + timedelta(seconds=2),
             execution_nonce="test_nonce_0123456789abcdef",
@@ -1302,6 +1534,7 @@ class CanonicalSiliconRunnerBehaviorTests(unittest.TestCase):
 
     def test_dr1_module_rejects_emulation_and_xrt_ini_path(self) -> None:
         from phoenix_sdr_dsp.pqc import dr1_mldsa44_rejntt_graph as graph
+
         with mock.patch.dict(os.environ, {"XCL_EMULATION_MODE": "sw_emu"}):
             with self.assertRaises(graph.NativeBackendUnavailable) as ctx:
                 graph.check_emulation_and_redirection_excluded()
@@ -1324,14 +1557,23 @@ class CanonicalSiliconRunnerBehaviorTests(unittest.TestCase):
         rec["test_buffers"] = _make_dr2a_test_buffers()
         stdout = _wrap_record_in_stdout(rec)
         res = parse_gate_output(
-            gate, stdout, "", 0, 0.5,
+            gate,
+            stdout,
+            "",
+            0,
+            0.5,
             parent_start_time=now - timedelta(seconds=2),
             parent_end_time=now + timedelta(seconds=2),
             execution_nonce="test_nonce_0123456789abcdef",
         )
         self.assertFalse(res.success)
         self.assertEqual(res.status, STATUS_SELF_REPORTED_UNVERIFIED)
-        self.assertTrue(any("Parent independent oracle verified all 13 x 256" in note for note in res.corroboration_notes))
+        self.assertTrue(
+            any(
+                "Parent independent oracle verified all 13 x 256" in note
+                for note in res.corroboration_notes
+            )
+        )
 
     def test_dr2a_corrupted_coefficient_fails_validation(self) -> None:
         gate = GATES[2]
@@ -1346,7 +1588,11 @@ class CanonicalSiliconRunnerBehaviorTests(unittest.TestCase):
         rec["test_buffers"] = _make_dr2a_test_buffers(corrupt_index=3)
         stdout = _wrap_record_in_stdout(rec)
         res = parse_gate_output(
-            gate, stdout, "", 0, 0.5,
+            gate,
+            stdout,
+            "",
+            0,
+            0.5,
             parent_start_time=now - timedelta(seconds=2),
             parent_end_time=now + timedelta(seconds=2),
             execution_nonce="test_nonce_0123456789abcdef",
@@ -1357,6 +1603,7 @@ class CanonicalSiliconRunnerBehaviorTests(unittest.TestCase):
 
     def test_dr2a_module_rejects_emulation_and_xrt_ini_path(self) -> None:
         from phoenix_sdr_dsp.pqc import dr2_mlkem512_samplentt_graph as graph
+
         with mock.patch.dict(os.environ, {"XCL_EMULATION_MODE": "sw_emu"}):
             with self.assertRaises(graph.NativeBackendUnavailable) as ctx:
                 graph.check_emulation_and_redirection_excluded()
@@ -1379,14 +1626,23 @@ class CanonicalSiliconRunnerBehaviorTests(unittest.TestCase):
         rec["test_buffers"] = _make_dr2b_test_buffers()
         stdout = _wrap_record_in_stdout(rec)
         res = parse_gate_output(
-            gate, stdout, "", 0, 0.5,
+            gate,
+            stdout,
+            "",
+            0,
+            0.5,
             parent_start_time=now - timedelta(seconds=2),
             parent_end_time=now + timedelta(seconds=2),
             execution_nonce="test_nonce_0123456789abcdef",
         )
         self.assertFalse(res.success)
         self.assertEqual(res.status, STATUS_SELF_REPORTED_UNVERIFIED)
-        self.assertTrue(any("Parent independent oracle verified all 13 x 256" in note for note in res.corroboration_notes))
+        self.assertTrue(
+            any(
+                "Parent independent oracle verified all 13 x 256" in note
+                for note in res.corroboration_notes
+            )
+        )
 
     def test_dr2b_corrupted_coefficient_fails_validation(self) -> None:
         gate = GATES[3]
@@ -1401,7 +1657,11 @@ class CanonicalSiliconRunnerBehaviorTests(unittest.TestCase):
         rec["test_buffers"] = _make_dr2b_test_buffers(corrupt_index=2)
         stdout = _wrap_record_in_stdout(rec)
         res = parse_gate_output(
-            gate, stdout, "", 0, 0.5,
+            gate,
+            stdout,
+            "",
+            0,
+            0.5,
             parent_start_time=now - timedelta(seconds=2),
             parent_end_time=now + timedelta(seconds=2),
             execution_nonce="test_nonce_0123456789abcdef",
@@ -1412,6 +1672,7 @@ class CanonicalSiliconRunnerBehaviorTests(unittest.TestCase):
 
     def test_dr2b_module_rejects_emulation_and_xrt_ini_path(self) -> None:
         from phoenix_sdr_dsp.pqc import dr2b_mlkem512_noise_ntt_graph as graph
+
         with mock.patch.dict(os.environ, {"XCL_EMULATION_MODE": "sw_emu"}):
             with self.assertRaises(graph.NativeBackendUnavailable) as ctx:
                 graph.check_emulation_and_redirection_excluded()
@@ -1434,14 +1695,23 @@ class CanonicalSiliconRunnerBehaviorTests(unittest.TestCase):
         rec["test_buffers"] = _make_dr2c_test_buffers()
         stdout = _wrap_record_in_stdout(rec)
         res = parse_gate_output(
-            gate, stdout, "", 0, 0.5,
+            gate,
+            stdout,
+            "",
+            0,
+            0.5,
             parent_start_time=now - timedelta(seconds=2),
             parent_end_time=now + timedelta(seconds=2),
             execution_nonce="test_nonce_0123456789abcdef",
         )
         self.assertFalse(res.success)
         self.assertEqual(res.status, STATUS_SELF_REPORTED_UNVERIFIED)
-        self.assertTrue(any("Parent independent oracle verified all 11 x 256" in note for note in res.corroboration_notes))
+        self.assertTrue(
+            any(
+                "Parent independent oracle verified all 11 x 256" in note
+                for note in res.corroboration_notes
+            )
+        )
 
     def test_dr2c_corrupted_coefficient_fails_validation(self) -> None:
         gate = GATES[4]
@@ -1456,7 +1726,11 @@ class CanonicalSiliconRunnerBehaviorTests(unittest.TestCase):
         rec["test_buffers"] = _make_dr2c_test_buffers(corrupt_index=1)
         stdout = _wrap_record_in_stdout(rec)
         res = parse_gate_output(
-            gate, stdout, "", 0, 0.5,
+            gate,
+            stdout,
+            "",
+            0,
+            0.5,
             parent_start_time=now - timedelta(seconds=2),
             parent_end_time=now + timedelta(seconds=2),
             execution_nonce="test_nonce_0123456789abcdef",
@@ -1467,6 +1741,7 @@ class CanonicalSiliconRunnerBehaviorTests(unittest.TestCase):
 
     def test_dr2c_module_rejects_emulation_and_xrt_ini_path(self) -> None:
         from phoenix_sdr_dsp.pqc import dr2c_mlkem512_keygen_row_graph as graph
+
         with mock.patch.dict(os.environ, {"XCL_EMULATION_MODE": "sw_emu"}):
             with self.assertRaises(graph.NativeBackendUnavailable) as ctx:
                 graph.check_emulation_and_redirection_excluded()
@@ -1489,14 +1764,24 @@ class CanonicalSiliconRunnerBehaviorTests(unittest.TestCase):
         rec["test_buffers"] = _make_dr2d_test_buffers()
         stdout = _wrap_record_in_stdout(rec)
         res = parse_gate_output(
-            gate, stdout, "", 0, 0.5,
+            gate,
+            stdout,
+            "",
+            0,
+            0.5,
             parent_start_time=now - timedelta(seconds=2),
             parent_end_time=now + timedelta(seconds=2),
             execution_nonce="test_nonce_0123456789abcdef",
         )
         self.assertFalse(res.success)
         self.assertEqual(res.status, STATUS_SELF_REPORTED_UNVERIFIED)
-        self.assertTrue(any("Parent independent oracle verified all 25 official NIST ACVP key pairs" in note for note in res.corroboration_notes))
+        self.assertTrue(
+            any(
+                "Parent independent oracle verified all 25 official NIST ACVP key pairs"
+                in note
+                for note in res.corroboration_notes
+            )
+        )
 
     def test_dr2d_corrupted_key_fails_validation(self) -> None:
         gate = GATES[5]
@@ -1511,17 +1796,24 @@ class CanonicalSiliconRunnerBehaviorTests(unittest.TestCase):
         rec["test_buffers"] = _make_dr2d_test_buffers(corrupt_index=0)
         stdout = _wrap_record_in_stdout(rec)
         res = parse_gate_output(
-            gate, stdout, "", 0, 0.5,
+            gate,
+            stdout,
+            "",
+            0,
+            0.5,
             parent_start_time=now - timedelta(seconds=2),
             parent_end_time=now + timedelta(seconds=2),
             execution_nonce="test_nonce_0123456789abcdef",
         )
         self.assertFalse(res.success)
         self.assertEqual(res.status, STATUS_FAIL)
-        self.assertIn("oracle mismatch against official NIST ACVP vector", res.error_message or "")
+        self.assertIn(
+            "oracle mismatch against official NIST ACVP vector", res.error_message or ""
+        )
 
     def test_dr2d_module_rejects_emulation_and_xrt_ini_path(self) -> None:
         from phoenix_sdr_dsp.pqc import dr2d_mlkem512_kpke_keygen_graph as graph
+
         with mock.patch.dict(os.environ, {"XCL_EMULATION_MODE": "sw_emu"}):
             with self.assertRaises(graph.NativeBackendUnavailable) as ctx:
                 graph.check_emulation_and_redirection_excluded()
@@ -1544,14 +1836,24 @@ class CanonicalSiliconRunnerBehaviorTests(unittest.TestCase):
         rec["test_buffers"] = _make_dr3_test_buffers()
         stdout = _wrap_record_in_stdout(rec)
         res = parse_gate_output(
-            gate, stdout, "", 0, 0.5,
+            gate,
+            stdout,
+            "",
+            0,
+            0.5,
             parent_start_time=now - timedelta(seconds=2),
             parent_end_time=now + timedelta(seconds=2),
             execution_nonce="test_nonce_0123456789abcdef",
         )
         self.assertFalse(res.success)
         self.assertEqual(res.status, STATUS_SELF_REPORTED_UNVERIFIED)
-        self.assertTrue(any("Parent independent oracle verified all 25 official NIST ACVP ciphertexts" in note for note in res.corroboration_notes))
+        self.assertTrue(
+            any(
+                "Parent independent oracle verified all 25 official NIST ACVP ciphertexts"
+                in note
+                for note in res.corroboration_notes
+            )
+        )
 
     def test_dr3_corrupted_ciphertext_fails_validation(self) -> None:
         gate = GATES[6]
@@ -1566,17 +1868,25 @@ class CanonicalSiliconRunnerBehaviorTests(unittest.TestCase):
         rec["test_buffers"] = _make_dr3_test_buffers(corrupt_index=0)
         stdout = _wrap_record_in_stdout(rec)
         res = parse_gate_output(
-            gate, stdout, "", 0, 0.5,
+            gate,
+            stdout,
+            "",
+            0,
+            0.5,
             parent_start_time=now - timedelta(seconds=2),
             parent_end_time=now + timedelta(seconds=2),
             execution_nonce="test_nonce_0123456789abcdef",
         )
         self.assertFalse(res.success)
         self.assertEqual(res.status, STATUS_FAIL)
-        self.assertIn("oracle mismatch against official NIST ACVP ciphertext", res.error_message or "")
+        self.assertIn(
+            "oracle mismatch against official NIST ACVP ciphertext",
+            res.error_message or "",
+        )
 
     def test_dr3_module_rejects_emulation_and_xrt_ini_path(self) -> None:
         from phoenix_sdr_dsp.pqc import dr3_mlkem512_kpke_encrypt_graph as graph
+
         with mock.patch.dict(os.environ, {"XCL_EMULATION_MODE": "sw_emu"}):
             with self.assertRaises(graph.NativeBackendUnavailable) as ctx:
                 graph.check_emulation_and_redirection_excluded()
@@ -1599,14 +1909,24 @@ class CanonicalSiliconRunnerBehaviorTests(unittest.TestCase):
         rec["test_buffers"] = _make_dr4_test_buffers()
         stdout = _wrap_record_in_stdout(rec)
         res = parse_gate_output(
-            gate, stdout, "", 0, 0.5,
+            gate,
+            stdout,
+            "",
+            0,
+            0.5,
             parent_start_time=now - timedelta(seconds=2),
             parent_end_time=now + timedelta(seconds=2),
             execution_nonce="test_nonce_0123456789abcdef",
         )
         self.assertFalse(res.success)
         self.assertEqual(res.status, STATUS_SELF_REPORTED_UNVERIFIED)
-        self.assertTrue(any("Parent independent oracle verified all 25 official NIST ACVP decrypted messages" in note for note in res.corroboration_notes))
+        self.assertTrue(
+            any(
+                "Parent independent oracle verified all 25 official NIST ACVP decrypted messages"
+                in note
+                for note in res.corroboration_notes
+            )
+        )
 
     def test_dr4_corrupted_message_fails_validation(self) -> None:
         gate = GATES[7]
@@ -1621,17 +1941,25 @@ class CanonicalSiliconRunnerBehaviorTests(unittest.TestCase):
         rec["test_buffers"] = _make_dr4_test_buffers(corrupt_index=0)
         stdout = _wrap_record_in_stdout(rec)
         res = parse_gate_output(
-            gate, stdout, "", 0, 0.5,
+            gate,
+            stdout,
+            "",
+            0,
+            0.5,
             parent_start_time=now - timedelta(seconds=2),
             parent_end_time=now + timedelta(seconds=2),
             execution_nonce="test_nonce_0123456789abcdef",
         )
         self.assertFalse(res.success)
         self.assertEqual(res.status, STATUS_FAIL)
-        self.assertIn("oracle mismatch against official NIST ACVP decrypted message", res.error_message or "")
+        self.assertIn(
+            "oracle mismatch against official NIST ACVP decrypted message",
+            res.error_message or "",
+        )
 
     def test_dr4_module_rejects_emulation_and_xrt_ini_path(self) -> None:
         from phoenix_sdr_dsp.pqc import dr4_mlkem512_kpke_decrypt_graph as graph
+
         with mock.patch.dict(os.environ, {"XCL_EMULATION_MODE": "sw_emu"}):
             with self.assertRaises(graph.NativeBackendUnavailable) as ctx:
                 graph.check_emulation_and_redirection_excluded()
@@ -1654,14 +1982,24 @@ class CanonicalSiliconRunnerBehaviorTests(unittest.TestCase):
         rec["test_buffers"] = _make_dr5_test_buffers()
         stdout = _wrap_record_in_stdout(rec)
         res = parse_gate_output(
-            gate, stdout, "", 0, 0.5,
+            gate,
+            stdout,
+            "",
+            0,
+            0.5,
             parent_start_time=now - timedelta(seconds=2),
             parent_end_time=now + timedelta(seconds=2),
             execution_nonce="test_nonce_0123456789abcdef",
         )
         self.assertFalse(res.success)
         self.assertEqual(res.status, STATUS_SELF_REPORTED_UNVERIFIED)
-        self.assertTrue(any("Parent independent oracle verified all 25 official NIST ACVP key pairs" in note for note in res.corroboration_notes))
+        self.assertTrue(
+            any(
+                "Parent independent oracle verified all 25 official NIST ACVP key pairs"
+                in note
+                for note in res.corroboration_notes
+            )
+        )
 
     def test_dr5_corrupted_key_fails_validation(self) -> None:
         gate = GATES[8]
@@ -1676,17 +2014,25 @@ class CanonicalSiliconRunnerBehaviorTests(unittest.TestCase):
         rec["test_buffers"] = _make_dr5_test_buffers(corrupt_index=0)
         stdout = _wrap_record_in_stdout(rec)
         res = parse_gate_output(
-            gate, stdout, "", 0, 0.5,
+            gate,
+            stdout,
+            "",
+            0,
+            0.5,
             parent_start_time=now - timedelta(seconds=2),
             parent_end_time=now + timedelta(seconds=2),
             execution_nonce="test_nonce_0123456789abcdef",
         )
         self.assertFalse(res.success)
         self.assertEqual(res.status, STATUS_FAIL)
-        self.assertIn("oracle mismatch against official NIST ACVP key pair", res.error_message or "")
+        self.assertIn(
+            "oracle mismatch against official NIST ACVP key pair",
+            res.error_message or "",
+        )
 
     def test_dr5_module_rejects_emulation_and_xrt_ini_path(self) -> None:
         from phoenix_sdr_dsp.pqc import dr5_mlkem512_keygen_graph as graph
+
         with mock.patch.dict(os.environ, {"XCL_EMULATION_MODE": "sw_emu"}):
             with self.assertRaises(graph.NativeBackendUnavailable) as ctx:
                 graph.check_emulation_and_redirection_excluded()
@@ -1709,14 +2055,24 @@ class CanonicalSiliconRunnerBehaviorTests(unittest.TestCase):
         rec["test_buffers"] = _make_dr6_test_buffers()
         stdout = _wrap_record_in_stdout(rec)
         res = parse_gate_output(
-            gate, stdout, "", 0, 0.5,
+            gate,
+            stdout,
+            "",
+            0,
+            0.5,
             parent_start_time=now - timedelta(seconds=2),
             parent_end_time=now + timedelta(seconds=2),
             execution_nonce="test_nonce_0123456789abcdef",
         )
         self.assertFalse(res.success)
         self.assertEqual(res.status, STATUS_SELF_REPORTED_UNVERIFIED)
-        self.assertTrue(any("Parent independent oracle verified all 25 official NIST ACVP encapsulated ciphertexts and shared keys" in note for note in res.corroboration_notes))
+        self.assertTrue(
+            any(
+                "Parent independent oracle verified all 25 official NIST ACVP encapsulated ciphertexts and shared keys"
+                in note
+                for note in res.corroboration_notes
+            )
+        )
 
     def test_dr6_corrupted_key_fails_validation(self) -> None:
         gate = GATES[9]
@@ -1731,17 +2087,25 @@ class CanonicalSiliconRunnerBehaviorTests(unittest.TestCase):
         rec["test_buffers"] = _make_dr6_test_buffers(corrupt_index=0)
         stdout = _wrap_record_in_stdout(rec)
         res = parse_gate_output(
-            gate, stdout, "", 0, 0.5,
+            gate,
+            stdout,
+            "",
+            0,
+            0.5,
             parent_start_time=now - timedelta(seconds=2),
             parent_end_time=now + timedelta(seconds=2),
             execution_nonce="test_nonce_0123456789abcdef",
         )
         self.assertFalse(res.success)
         self.assertEqual(res.status, STATUS_FAIL)
-        self.assertIn("oracle mismatch against official NIST ACVP encapsulated ciphertext/shared key", res.error_message or "")
+        self.assertIn(
+            "oracle mismatch against official NIST ACVP encapsulated ciphertext/shared key",
+            res.error_message or "",
+        )
 
     def test_dr6_module_rejects_emulation_and_xrt_ini_path(self) -> None:
         from phoenix_sdr_dsp.pqc import dr6_mlkem512_encaps_graph as graph
+
         with mock.patch.dict(os.environ, {"XCL_EMULATION_MODE": "sw_emu"}):
             with self.assertRaises(graph.NativeBackendUnavailable) as ctx:
                 graph.check_emulation_and_redirection_excluded()
@@ -1764,14 +2128,24 @@ class CanonicalSiliconRunnerBehaviorTests(unittest.TestCase):
         rec["test_buffers"] = _make_dr7_test_buffers()
         stdout = _wrap_record_in_stdout(rec)
         res = parse_gate_output(
-            gate, stdout, "", 0, 0.5,
+            gate,
+            stdout,
+            "",
+            0,
+            0.5,
             parent_start_time=now - timedelta(seconds=2),
             parent_end_time=now + timedelta(seconds=2),
             execution_nonce="test_nonce_0123456789abcdef",
         )
         self.assertFalse(res.success)
         self.assertEqual(res.status, STATUS_SELF_REPORTED_UNVERIFIED)
-        self.assertTrue(any("Parent independent oracle verified all 25 official NIST ACVP decapsulated shared keys" in note for note in res.corroboration_notes))
+        self.assertTrue(
+            any(
+                "Parent independent oracle verified all 25 official NIST ACVP decapsulated shared keys"
+                in note
+                for note in res.corroboration_notes
+            )
+        )
 
     def test_dr7_corrupted_key_fails_validation(self) -> None:
         gate = GATES[10]
@@ -1786,17 +2160,25 @@ class CanonicalSiliconRunnerBehaviorTests(unittest.TestCase):
         rec["test_buffers"] = _make_dr7_test_buffers(corrupt_index=0)
         stdout = _wrap_record_in_stdout(rec)
         res = parse_gate_output(
-            gate, stdout, "", 0, 0.5,
+            gate,
+            stdout,
+            "",
+            0,
+            0.5,
             parent_start_time=now - timedelta(seconds=2),
             parent_end_time=now + timedelta(seconds=2),
             execution_nonce="test_nonce_0123456789abcdef",
         )
         self.assertFalse(res.success)
         self.assertEqual(res.status, STATUS_FAIL)
-        self.assertIn("oracle mismatch against official NIST ACVP decapsulated shared key", res.error_message or "")
+        self.assertIn(
+            "oracle mismatch against official NIST ACVP decapsulated shared key",
+            res.error_message or "",
+        )
 
     def test_dr7_module_rejects_emulation_and_xrt_ini_path(self) -> None:
         from phoenix_sdr_dsp.pqc import dr7_mlkem512_decaps_graph as graph
+
         with mock.patch.dict(os.environ, {"XCL_EMULATION_MODE": "sw_emu"}):
             with self.assertRaises(graph.NativeBackendUnavailable) as ctx:
                 graph.check_emulation_and_redirection_excluded()
@@ -1819,14 +2201,24 @@ class CanonicalSiliconRunnerBehaviorTests(unittest.TestCase):
         rec["test_buffers"] = _make_dr8_test_buffers()
         stdout = _wrap_record_in_stdout(rec)
         res = parse_gate_output(
-            gate, stdout, "", 0, 0.5,
+            gate,
+            stdout,
+            "",
+            0,
+            0.5,
             parent_start_time=now - timedelta(seconds=2),
             parent_end_time=now + timedelta(seconds=2),
             execution_nonce="test_nonce_0123456789abcdef",
         )
         self.assertFalse(res.success)
         self.assertEqual(res.status, STATUS_SELF_REPORTED_UNVERIFIED)
-        self.assertTrue(any("Parent independent oracle verified all 75 official NIST ACVP ML-KEM (512, 768, 1024) shared keys" in note for note in res.corroboration_notes))
+        self.assertTrue(
+            any(
+                "Parent independent oracle verified all 75 official NIST ACVP ML-KEM (512, 768, 1024) shared keys"
+                in note
+                for note in res.corroboration_notes
+            )
+        )
 
     def test_dr8_corrupted_key_fails_validation(self) -> None:
         gate = GATES[11]
@@ -1841,17 +2233,25 @@ class CanonicalSiliconRunnerBehaviorTests(unittest.TestCase):
         rec["test_buffers"] = _make_dr8_test_buffers(corrupt_index=0)
         stdout = _wrap_record_in_stdout(rec)
         res = parse_gate_output(
-            gate, stdout, "", 0, 0.5,
+            gate,
+            stdout,
+            "",
+            0,
+            0.5,
             parent_start_time=now - timedelta(seconds=2),
             parent_end_time=now + timedelta(seconds=2),
             execution_nonce="test_nonce_0123456789abcdef",
         )
         self.assertFalse(res.success)
         self.assertEqual(res.status, STATUS_FAIL)
-        self.assertIn("oracle mismatch against official NIST ACVP shared key", res.error_message or "")
+        self.assertIn(
+            "oracle mismatch against official NIST ACVP shared key",
+            res.error_message or "",
+        )
 
     def test_dr8_module_rejects_emulation_and_xrt_ini_path(self) -> None:
         from phoenix_sdr_dsp.pqc import dr8_mlkem_service as service
+
         with mock.patch.dict(os.environ, {"XCL_EMULATION_MODE": "sw_emu"}):
             with self.assertRaises(service.NativeBackendUnavailable) as ctx:
                 service.check_emulation_and_redirection_excluded()
@@ -1874,14 +2274,24 @@ class CanonicalSiliconRunnerBehaviorTests(unittest.TestCase):
         rec["test_buffers"] = _make_dr9_test_buffers()
         stdout = _wrap_record_in_stdout(rec)
         res = parse_gate_output(
-            gate, stdout, "", 0, 0.5,
+            gate,
+            stdout,
+            "",
+            0,
+            0.5,
             parent_start_time=now - timedelta(seconds=2),
             parent_end_time=now + timedelta(seconds=2),
             execution_nonce="test_nonce_0123456789abcdef",
         )
         self.assertFalse(res.success)
         self.assertEqual(res.status, STATUS_SELF_REPORTED_UNVERIFIED)
-        self.assertTrue(any("Parent independent oracle verified all 122 official NIST FIPS 202 digests" in note for note in res.corroboration_notes))
+        self.assertTrue(
+            any(
+                "Parent independent oracle verified all 122 official NIST FIPS 202 digests"
+                in note
+                for note in res.corroboration_notes
+            )
+        )
 
     def test_dr9_corrupted_key_fails_validation(self) -> None:
         gate = GATES[12]
@@ -1896,17 +2306,25 @@ class CanonicalSiliconRunnerBehaviorTests(unittest.TestCase):
         rec["test_buffers"] = _make_dr9_test_buffers(corrupt_index=0)
         stdout = _wrap_record_in_stdout(rec)
         res = parse_gate_output(
-            gate, stdout, "", 0, 0.5,
+            gate,
+            stdout,
+            "",
+            0,
+            0.5,
             parent_start_time=now - timedelta(seconds=2),
             parent_end_time=now + timedelta(seconds=2),
             execution_nonce="test_nonce_0123456789abcdef",
         )
         self.assertFalse(res.success)
         self.assertEqual(res.status, STATUS_FAIL)
-        self.assertIn("oracle mismatch against official NIST FIPS 202 digest", res.error_message or "")
+        self.assertIn(
+            "oracle mismatch against official NIST FIPS 202 digest",
+            res.error_message or "",
+        )
 
     def test_dr9_module_rejects_emulation_and_xrt_ini_path(self) -> None:
         from phoenix_sdr_dsp.pqc import dr9_fips202_graph as graph
+
         with mock.patch.dict(os.environ, {"XCL_EMULATION_MODE": "sw_emu"}):
             with self.assertRaises(graph.NativeBackendUnavailable) as ctx:
                 graph.check_emulation_and_redirection_excluded()
@@ -1929,14 +2347,23 @@ class CanonicalSiliconRunnerBehaviorTests(unittest.TestCase):
         rec["test_buffers"] = _make_dr10_test_buffers()
         stdout = _wrap_record_in_stdout(rec)
         res = parse_gate_output(
-            gate, stdout, "", 0, 0.5,
+            gate,
+            stdout,
+            "",
+            0,
+            0.5,
             parent_start_time=now - timedelta(seconds=2),
             parent_end_time=now + timedelta(seconds=2),
             execution_nonce="test_nonce_0123456789abcdef",
         )
         self.assertFalse(res.success)
         self.assertEqual(res.status, STATUS_SELF_REPORTED_UNVERIFIED)
-        self.assertTrue(any("Parent independent oracle verified all 40 DR10 lifecycle cases" in note for note in res.corroboration_notes))
+        self.assertTrue(
+            any(
+                "Parent independent oracle verified all 40 DR10 lifecycle cases" in note
+                for note in res.corroboration_notes
+            )
+        )
 
     def test_dr10_corrupted_key_fails_validation(self) -> None:
         gate = GATES[13]
@@ -1951,17 +2378,25 @@ class CanonicalSiliconRunnerBehaviorTests(unittest.TestCase):
         rec["test_buffers"] = _make_dr10_test_buffers(corrupt_index=0)
         stdout = _wrap_record_in_stdout(rec)
         res = parse_gate_output(
-            gate, stdout, "", 0, 0.5,
+            gate,
+            stdout,
+            "",
+            0,
+            0.5,
             parent_start_time=now - timedelta(seconds=2),
             parent_end_time=now + timedelta(seconds=2),
             execution_nonce="test_nonce_0123456789abcdef",
         )
         self.assertFalse(res.success)
         self.assertEqual(res.status, STATUS_FAIL)
-        self.assertIn("oracle mismatch against DR10 lifecycle specification", res.error_message or "")
+        self.assertIn(
+            "oracle mismatch against DR10 lifecycle specification",
+            res.error_message or "",
+        )
 
     def test_dr10_module_rejects_emulation_and_xrt_ini_path(self) -> None:
         from phoenix_sdr_dsp.pqc import dr10_sealed_lifecycle_graph as graph
+
         with mock.patch.dict(os.environ, {"XCL_EMULATION_MODE": "sw_emu"}):
             with self.assertRaises(graph.NativeBackendUnavailable) as ctx:
                 graph.check_emulation_and_redirection_excluded()
@@ -1984,14 +2419,24 @@ class CanonicalSiliconRunnerBehaviorTests(unittest.TestCase):
         rec["test_buffers"] = _make_dr11_test_buffers()
         stdout = _wrap_record_in_stdout(rec)
         res = parse_gate_output(
-            gate, stdout, "", 0, 0.5,
+            gate,
+            stdout,
+            "",
+            0,
+            0.5,
             parent_start_time=now - timedelta(seconds=2),
             parent_end_time=now + timedelta(seconds=2),
             execution_nonce="test_nonce_0123456789abcdef",
         )
         self.assertFalse(res.success)
         self.assertEqual(res.status, STATUS_SELF_REPORTED_UNVERIFIED)
-        self.assertTrue(any("Parent independent oracle verified all 25 official NIST ACVP ML-DSA-44 key pairs" in note for note in res.corroboration_notes))
+        self.assertTrue(
+            any(
+                "Parent independent oracle verified all 25 official NIST ACVP ML-DSA-44 key pairs"
+                in note
+                for note in res.corroboration_notes
+            )
+        )
 
     def test_dr11_corrupted_key_fails_validation(self) -> None:
         gate = GATES[14]
@@ -2006,17 +2451,25 @@ class CanonicalSiliconRunnerBehaviorTests(unittest.TestCase):
         rec["test_buffers"] = _make_dr11_test_buffers(corrupt_index=0)
         stdout = _wrap_record_in_stdout(rec)
         res = parse_gate_output(
-            gate, stdout, "", 0, 0.5,
+            gate,
+            stdout,
+            "",
+            0,
+            0.5,
             parent_start_time=now - timedelta(seconds=2),
             parent_end_time=now + timedelta(seconds=2),
             execution_nonce="test_nonce_0123456789abcdef",
         )
         self.assertFalse(res.success)
         self.assertEqual(res.status, STATUS_FAIL)
-        self.assertIn("oracle mismatch against official NIST ACVP ML-DSA-44 key pair", res.error_message or "")
+        self.assertIn(
+            "oracle mismatch against official NIST ACVP ML-DSA-44 key pair",
+            res.error_message or "",
+        )
 
     def test_dr11_module_rejects_emulation_and_xrt_ini_path(self) -> None:
         from phoenix_sdr_dsp.pqc import dr11_mldsa44_keygen_graph as graph
+
         with mock.patch.dict(os.environ, {"XCL_EMULATION_MODE": "sw_emu"}):
             with self.assertRaises(graph.NativeBackendUnavailable) as ctx:
                 graph.check_emulation_and_redirection_excluded()
@@ -2039,14 +2492,24 @@ class CanonicalSiliconRunnerBehaviorTests(unittest.TestCase):
         rec["test_buffers"] = _make_dr12_test_buffers()
         stdout = _wrap_record_in_stdout(rec)
         res = parse_gate_output(
-            gate, stdout, "", 0, 0.5,
+            gate,
+            stdout,
+            "",
+            0,
+            0.5,
             parent_start_time=now - timedelta(seconds=2),
             parent_end_time=now + timedelta(seconds=2),
             execution_nonce="test_nonce_0123456789abcdef",
         )
         self.assertFalse(res.success)
         self.assertEqual(res.status, STATUS_SELF_REPORTED_UNVERIFIED)
-        self.assertTrue(any("Parent independent oracle verified all 30 official NIST ACVP ML-DSA-44 signatures" in note for note in res.corroboration_notes))
+        self.assertTrue(
+            any(
+                "Parent independent oracle verified all 30 official NIST ACVP ML-DSA-44 signatures"
+                in note
+                for note in res.corroboration_notes
+            )
+        )
 
     def test_dr12_corrupted_key_fails_validation(self) -> None:
         gate = GATES[15]
@@ -2061,17 +2524,25 @@ class CanonicalSiliconRunnerBehaviorTests(unittest.TestCase):
         rec["test_buffers"] = _make_dr12_test_buffers(corrupt_index=0)
         stdout = _wrap_record_in_stdout(rec)
         res = parse_gate_output(
-            gate, stdout, "", 0, 0.5,
+            gate,
+            stdout,
+            "",
+            0,
+            0.5,
             parent_start_time=now - timedelta(seconds=2),
             parent_end_time=now + timedelta(seconds=2),
             execution_nonce="test_nonce_0123456789abcdef",
         )
         self.assertFalse(res.success)
         self.assertEqual(res.status, STATUS_FAIL)
-        self.assertIn("oracle mismatch against official NIST ACVP ML-DSA-44 signature", res.error_message or "")
+        self.assertIn(
+            "oracle mismatch against official NIST ACVP ML-DSA-44 signature",
+            res.error_message or "",
+        )
 
     def test_dr12_module_rejects_emulation_and_xrt_ini_path(self) -> None:
         from phoenix_sdr_dsp.pqc import dr12_mldsa44_sign_graph as graph
+
         with mock.patch.dict(os.environ, {"XCL_EMULATION_MODE": "sw_emu"}):
             with self.assertRaises(graph.NativeBackendUnavailable) as ctx:
                 graph.check_emulation_and_redirection_excluded()
@@ -2094,14 +2565,24 @@ class CanonicalSiliconRunnerBehaviorTests(unittest.TestCase):
         rec["test_buffers"] = _make_dr13_test_buffers()
         stdout = _wrap_record_in_stdout(rec)
         res = parse_gate_output(
-            gate, stdout, "", 0, 0.5,
+            gate,
+            stdout,
+            "",
+            0,
+            0.5,
             parent_start_time=now - timedelta(seconds=2),
             parent_end_time=now + timedelta(seconds=2),
             execution_nonce="test_nonce_0123456789abcdef",
         )
         self.assertFalse(res.success)
         self.assertEqual(res.status, STATUS_SELF_REPORTED_UNVERIFIED)
-        self.assertTrue(any("Parent independent oracle verified all 30 official NIST ACVP ML-DSA-44 verification verdicts" in note for note in res.corroboration_notes))
+        self.assertTrue(
+            any(
+                "Parent independent oracle verified all 30 official NIST ACVP ML-DSA-44 verification verdicts"
+                in note
+                for note in res.corroboration_notes
+            )
+        )
 
     def test_dr13_corrupted_key_fails_validation(self) -> None:
         gate = GATES[16]
@@ -2116,17 +2597,25 @@ class CanonicalSiliconRunnerBehaviorTests(unittest.TestCase):
         rec["test_buffers"] = _make_dr13_test_buffers(corrupt_index=0)
         stdout = _wrap_record_in_stdout(rec)
         res = parse_gate_output(
-            gate, stdout, "", 0, 0.5,
+            gate,
+            stdout,
+            "",
+            0,
+            0.5,
             parent_start_time=now - timedelta(seconds=2),
             parent_end_time=now + timedelta(seconds=2),
             execution_nonce="test_nonce_0123456789abcdef",
         )
         self.assertFalse(res.success)
         self.assertEqual(res.status, STATUS_FAIL)
-        self.assertIn("oracle mismatch against official NIST ACVP ML-DSA-44 verify verdict", res.error_message or "")
+        self.assertIn(
+            "oracle mismatch against official NIST ACVP ML-DSA-44 verify verdict",
+            res.error_message or "",
+        )
 
     def test_dr13_module_rejects_emulation_and_xrt_ini_path(self) -> None:
         from phoenix_sdr_dsp.pqc import dr13_mldsa44_verify_graph as graph
+
         with mock.patch.dict(os.environ, {"XCL_EMULATION_MODE": "sw_emu"}):
             with self.assertRaises(graph.NativeBackendUnavailable) as ctx:
                 graph.check_emulation_and_redirection_excluded()
@@ -2149,14 +2638,24 @@ class CanonicalSiliconRunnerBehaviorTests(unittest.TestCase):
         rec["test_buffers"] = _make_dr14_test_buffers()
         stdout = _wrap_record_in_stdout(rec)
         res = parse_gate_output(
-            gate, stdout, "", 0, 0.5,
+            gate,
+            stdout,
+            "",
+            0,
+            0.5,
             parent_start_time=now - timedelta(seconds=2),
             parent_end_time=now + timedelta(seconds=2),
             execution_nonce="test_nonce_0123456789abcdef",
         )
         self.assertFalse(res.success)
         self.assertEqual(res.status, STATUS_SELF_REPORTED_UNVERIFIED)
-        self.assertTrue(any("Parent independent oracle verified all 85 official NIST ACVP ML-DSA-65 cases" in note for note in res.corroboration_notes))
+        self.assertTrue(
+            any(
+                "Parent independent oracle verified all 85 official NIST ACVP ML-DSA-65 cases"
+                in note
+                for note in res.corroboration_notes
+            )
+        )
 
     def test_dr14_corrupted_key_fails_validation(self) -> None:
         gate = GATES[17]
@@ -2171,17 +2670,25 @@ class CanonicalSiliconRunnerBehaviorTests(unittest.TestCase):
         rec["test_buffers"] = _make_dr14_test_buffers(corrupt_index=0)
         stdout = _wrap_record_in_stdout(rec)
         res = parse_gate_output(
-            gate, stdout, "", 0, 0.5,
+            gate,
+            stdout,
+            "",
+            0,
+            0.5,
             parent_start_time=now - timedelta(seconds=2),
             parent_end_time=now + timedelta(seconds=2),
             execution_nonce="test_nonce_0123456789abcdef",
         )
         self.assertFalse(res.success)
         self.assertEqual(res.status, STATUS_FAIL)
-        self.assertIn("oracle mismatch against official NIST ACVP ML-DSA-65 key pair", res.error_message or "")
+        self.assertIn(
+            "oracle mismatch against official NIST ACVP ML-DSA-65 key pair",
+            res.error_message or "",
+        )
 
     def test_dr14_module_rejects_emulation_and_xrt_ini_path(self) -> None:
         from phoenix_sdr_dsp.pqc import dr14_mldsa65_keygen_graph as graph
+
         with mock.patch.dict(os.environ, {"XCL_EMULATION_MODE": "sw_emu"}):
             with self.assertRaises(graph.NativeBackendUnavailable) as ctx:
                 graph.check_emulation_and_redirection_excluded()
@@ -2204,14 +2711,24 @@ class CanonicalSiliconRunnerBehaviorTests(unittest.TestCase):
         rec["test_buffers"] = _make_dr15_test_buffers()
         stdout = _wrap_record_in_stdout(rec)
         res = parse_gate_output(
-            gate, stdout, "", 0, 0.5,
+            gate,
+            stdout,
+            "",
+            0,
+            0.5,
             parent_start_time=now - timedelta(seconds=2),
             parent_end_time=now + timedelta(seconds=2),
             execution_nonce="test_nonce_0123456789abcdef",
         )
         self.assertFalse(res.success)
         self.assertEqual(res.status, STATUS_SELF_REPORTED_UNVERIFIED)
-        self.assertTrue(any("Parent independent oracle verified all 85 official NIST ACVP ML-DSA-87 cases" in note for note in res.corroboration_notes))
+        self.assertTrue(
+            any(
+                "Parent independent oracle verified all 85 official NIST ACVP ML-DSA-87 cases"
+                in note
+                for note in res.corroboration_notes
+            )
+        )
 
     def test_dr15_corrupted_key_fails_validation(self) -> None:
         gate = GATES[18]
@@ -2226,17 +2743,25 @@ class CanonicalSiliconRunnerBehaviorTests(unittest.TestCase):
         rec["test_buffers"] = _make_dr15_test_buffers(corrupt_index=0)
         stdout = _wrap_record_in_stdout(rec)
         res = parse_gate_output(
-            gate, stdout, "", 0, 0.5,
+            gate,
+            stdout,
+            "",
+            0,
+            0.5,
             parent_start_time=now - timedelta(seconds=2),
             parent_end_time=now + timedelta(seconds=2),
             execution_nonce="test_nonce_0123456789abcdef",
         )
         self.assertFalse(res.success)
         self.assertEqual(res.status, STATUS_FAIL)
-        self.assertIn("oracle mismatch against official NIST ACVP ML-DSA-87 key pair", res.error_message or "")
+        self.assertIn(
+            "oracle mismatch against official NIST ACVP ML-DSA-87 key pair",
+            res.error_message or "",
+        )
 
     def test_dr15_module_rejects_emulation_and_xrt_ini_path(self) -> None:
         from phoenix_sdr_dsp.pqc import dr15_mldsa87_keygen_graph as graph
+
         with mock.patch.dict(os.environ, {"XCL_EMULATION_MODE": "sw_emu"}):
             with self.assertRaises(graph.NativeBackendUnavailable) as ctx:
                 graph.check_emulation_and_redirection_excluded()
@@ -2246,6 +2771,690 @@ class CanonicalSiliconRunnerBehaviorTests(unittest.TestCase):
             with self.assertRaises(graph.NativeBackendUnavailable) as ctx:
                 graph.check_emulation_and_redirection_excluded()
             self.assertIn("XRT_INI_PATH='C:/fake/xrt.ini'", str(ctx.exception))
+
+
+# Explicitly named, commit-bound historical baseline execution record (commit 0fc20727475b3aa855b220e24e9e71f668f58f97)
+HISTORICAL_COMMIT_0FC2072_BASELINE_FIXTURE: tuple[dict[str, object], ...] = (
+    {
+        "gate_id": "DR0",
+        "status": STATUS_SELF_REPORTED_UNVERIFIED,
+        "success": False,
+        "selected": 24,
+        "executed": 24,
+        "passed": 0,
+        "unverified": 24,
+        "failed": 0,
+    },
+    {
+        "gate_id": "DR1",
+        "status": STATUS_SELF_REPORTED_UNVERIFIED,
+        "success": False,
+        "selected": 33,
+        "executed": 33,
+        "passed": 0,
+        "unverified": 33,
+        "failed": 0,
+    },
+    {
+        "gate_id": "DR2a",
+        "status": STATUS_SELF_REPORTED_UNVERIFIED,
+        "success": False,
+        "selected": 13,
+        "executed": 13,
+        "passed": 0,
+        "unverified": 13,
+        "failed": 0,
+    },
+    {
+        "gate_id": "DR2b",
+        "status": STATUS_SELF_REPORTED_UNVERIFIED,
+        "success": False,
+        "selected": 13,
+        "executed": 13,
+        "passed": 0,
+        "unverified": 13,
+        "failed": 0,
+    },
+    {
+        "gate_id": "DR2c",
+        "status": STATUS_SELF_REPORTED_UNVERIFIED,
+        "success": False,
+        "selected": 11,
+        "executed": 11,
+        "passed": 0,
+        "unverified": 11,
+        "failed": 0,
+    },
+    {
+        "gate_id": "DR2d",
+        "status": STATUS_FAIL,
+        "success": False,
+        "selected": 25,
+        "executed": 25,
+        "passed": 0,
+        "unverified": 0,
+        "failed": 25,
+    },
+    {
+        "gate_id": "DR3",
+        "status": STATUS_SELF_REPORTED_UNVERIFIED,
+        "success": False,
+        "selected": 25,
+        "executed": 25,
+        "passed": 0,
+        "unverified": 25,
+        "failed": 0,
+    },
+    {
+        "gate_id": "DR4",
+        "status": STATUS_SELF_REPORTED_UNVERIFIED,
+        "success": False,
+        "selected": 25,
+        "executed": 25,
+        "passed": 0,
+        "unverified": 25,
+        "failed": 0,
+    },
+    {
+        "gate_id": "DR5",
+        "status": STATUS_SELF_REPORTED_UNVERIFIED,
+        "success": False,
+        "selected": 25,
+        "executed": 25,
+        "passed": 0,
+        "unverified": 25,
+        "failed": 0,
+    },
+    {
+        "gate_id": "DR6",
+        "status": STATUS_SELF_REPORTED_UNVERIFIED,
+        "success": False,
+        "selected": 25,
+        "executed": 25,
+        "passed": 0,
+        "unverified": 25,
+        "failed": 0,
+    },
+    {
+        "gate_id": "DR7",
+        "status": STATUS_SELF_REPORTED_UNVERIFIED,
+        "success": False,
+        "selected": 25,
+        "executed": 25,
+        "passed": 0,
+        "unverified": 25,
+        "failed": 0,
+    },
+    {
+        "gate_id": "DR8",
+        "status": STATUS_SELF_REPORTED_UNVERIFIED,
+        "success": False,
+        "selected": 75,
+        "executed": 75,
+        "passed": 0,
+        "unverified": 75,
+        "failed": 0,
+    },
+    {
+        "gate_id": "DR9",
+        "status": STATUS_SELF_REPORTED_UNVERIFIED,
+        "success": False,
+        "selected": 122,
+        "executed": 122,
+        "passed": 0,
+        "unverified": 122,
+        "failed": 0,
+    },
+    {
+        "gate_id": "DR10",
+        "status": STATUS_SELF_REPORTED_UNVERIFIED,
+        "success": False,
+        "selected": 40,
+        "executed": 40,
+        "passed": 0,
+        "unverified": 40,
+        "failed": 0,
+    },
+    {
+        "gate_id": "DR11",
+        "status": STATUS_SELF_REPORTED_UNVERIFIED,
+        "success": False,
+        "selected": 25,
+        "executed": 25,
+        "passed": 0,
+        "unverified": 25,
+        "failed": 0,
+    },
+    {
+        "gate_id": "DR12",
+        "status": STATUS_SELF_REPORTED_UNVERIFIED,
+        "success": False,
+        "selected": 30,
+        "executed": 30,
+        "passed": 0,
+        "unverified": 30,
+        "failed": 0,
+    },
+    {
+        "gate_id": "DR13",
+        "status": STATUS_SELF_REPORTED_UNVERIFIED,
+        "success": False,
+        "selected": 30,
+        "executed": 30,
+        "passed": 0,
+        "unverified": 30,
+        "failed": 0,
+    },
+    {
+        "gate_id": "DR14",
+        "status": STATUS_FAIL,
+        "success": False,
+        "selected": 85,
+        "executed": 85,
+        "passed": 0,
+        "unverified": 72,
+        "failed": 13,
+    },
+    {
+        "gate_id": "DR15",
+        "status": STATUS_FAIL,
+        "success": False,
+        "selected": 85,
+        "executed": 85,
+        "passed": 0,
+        "unverified": 49,
+        "failed": 36,
+    },
+)
+
+
+class SuiteAccountingInvariantTests(unittest.TestCase):
+    """Dynamic suite accounting invariant tests ensuring zero hardcoded arithmetic errors."""
+
+    def test_gate_definitions_positive_and_sum_to_total(self) -> None:
+        self.assertEqual(len(GATES), 19)
+        selected_cases = sum(g.expected_total for g in GATES)
+        self.assertEqual(selected_cases, 736)
+        for g in GATES:
+            self.assertGreater(
+                g.expected_total,
+                0,
+                msg=f"Gate {g.gate_id} must have positive expected_total",
+            )
+            self.assertIn(
+                g.oracle_provenance,
+                {
+                    "repository generated",
+                    "derived from official vector",
+                    "official NIST ACVP",
+                    "official NIST CAVP",
+                    "repository protocol vector",
+                },
+            )
+
+    def test_synthetic_aggregation_and_partition_invariants(self) -> None:
+        """Construct synthetic GateExecutionResult fixtures and verify dynamic aggregation and partition invariants."""
+        synth_gates = (
+            NativeGate(
+                gate_id="SYNTH_1",
+                title="Synthetic Gate 1",
+                script=Path("tests/test_s1.py"),
+                backend_label="s1",
+                expected_total=15,
+            ),
+            NativeGate(
+                gate_id="SYNTH_2",
+                title="Synthetic Gate 2",
+                script=Path("tests/test_s2.py"),
+                backend_label="s2",
+                expected_total=20,
+            ),
+            NativeGate(
+                gate_id="SYNTH_3",
+                title="Synthetic Gate 3",
+                script=Path("tests/test_s3.py"),
+                backend_label="s3",
+                expected_total=10,
+            ),
+        )
+
+        results = [
+            GateExecutionResult(
+                gate=synth_gates[0],
+                success=False,
+                status=STATUS_FAIL,
+                exit_code=1,
+                cases_selected=15,
+                cases_executed=15,
+                cases_passed=0,
+                cases_failed=5,
+                cases_unverified=10,
+                cases_skipped=0,
+                cases_xfailed=0,
+                case_results=(),
+                duration_seconds=0.1,
+            ),
+            GateExecutionResult(
+                gate=synth_gates[1],
+                success=True,
+                status=STATUS_PASS,
+                exit_code=0,
+                cases_selected=20,
+                cases_executed=20,
+                cases_passed=20,
+                cases_failed=0,
+                cases_unverified=0,
+                cases_skipped=0,
+                cases_xfailed=0,
+                case_results=(),
+                duration_seconds=0.2,
+            ),
+            GateExecutionResult(
+                gate=synth_gates[2],
+                success=False,
+                status=STATUS_BLOCKED,
+                exit_code=None,
+                cases_selected=10,
+                cases_executed=0,
+                cases_passed=0,
+                cases_failed=0,
+                cases_unverified=0,
+                cases_skipped=0,
+                cases_xfailed=0,
+                case_results=(),
+                duration_seconds=0.0,
+            ),
+        ]
+
+        # Calculate all expected totals dynamically from synthetic fixture definitions
+        expected_selected = sum(g.expected_total for g in synth_gates)
+        expected_executed = sum(r.cases_executed for r in results)
+        expected_matching = sum(r.cases_passed + r.cases_unverified for r in results)
+        expected_failed = sum(r.cases_failed for r in results)
+        expected_blocked = sum(
+            r.cases_selected for r in results if r.status == STATUS_BLOCKED
+        )
+        expected_physically_verified = sum(r.cases_passed for r in results if r.success)
+        expected_unverified_provenance = (
+            expected_executed - expected_physically_verified
+        )
+
+        summary = summarize_suite_execution(results, synth_gates)
+        summary.validate_invariants()
+
+        self.assertEqual(summary.total_cases_selected, expected_selected)
+        self.assertEqual(summary.total_cases_executed, expected_executed)
+        self.assertEqual(summary.total_cases_matching, expected_matching)
+        self.assertEqual(summary.total_cases_failed, expected_failed)
+        self.assertEqual(summary.total_cases_blocked, expected_blocked)
+        self.assertEqual(
+            summary.total_cases_physically_verified, expected_physically_verified
+        )
+        self.assertEqual(
+            summary.total_cases_unverified_provenance, expected_unverified_provenance
+        )
+        self.assertEqual(
+            summary.total_cases_matching
+            + summary.total_cases_failed
+            + summary.total_cases_blocked,
+            summary.total_cases_selected,
+        )
+
+    def test_historical_commit_0fc2072_baseline_aggregation(self) -> None:
+        """Verify dynamic aggregation on the explicitly named historical commit 0fc2072 baseline fixture."""
+        gate_map = {g.gate_id: g for g in GATES}
+        results: list[GateExecutionResult] = []
+
+        for record in HISTORICAL_COMMIT_0FC2072_BASELINE_FIXTURE:
+            gate = gate_map[str(record["gate_id"])]
+            res = GateExecutionResult(
+                gate=gate,
+                success=bool(record["success"]),
+                status=str(record["status"]),
+                exit_code=0
+                if record["status"] == STATUS_SELF_REPORTED_UNVERIFIED
+                else 1,
+                cases_selected=int(record["selected"]),
+                cases_executed=int(record["executed"]),
+                cases_passed=int(record["passed"]),
+                cases_failed=int(record["failed"]),
+                cases_unverified=int(record["unverified"]),
+                cases_skipped=0,
+                cases_xfailed=0,
+                case_results=(),
+                duration_seconds=1.0,
+            )
+            results.append(res)
+
+        summary = summarize_suite_execution(results, GATES)
+        summary.validate_invariants()
+
+        # Dynamic values derived from production aggregation
+        self.assertEqual(summary.total_cases_selected, 736)
+        self.assertEqual(summary.total_cases_executed, 736)
+        self.assertEqual(summary.total_cases_matching, 662)
+        self.assertEqual(summary.total_cases_failed, 74)
+        self.assertEqual(summary.total_cases_blocked, 0)
+        self.assertEqual(summary.total_cases_physically_verified, 0)
+        self.assertEqual(summary.total_cases_unverified_provenance, 736)
+        self.assertEqual(
+            summary.total_cases_matching
+            + summary.total_cases_failed
+            + summary.total_cases_blocked,
+            summary.total_cases_selected,
+        )
+
+    def test_zero_and_partial_cases_aggregation(self) -> None:
+        """Verify aggregation behavior on empty and single-gate collections."""
+        # Zero gates
+        empty_summary = summarize_suite_execution([], ())
+        empty_summary.validate_invariants()
+        self.assertEqual(empty_summary.total_gates, 0)
+        self.assertEqual(empty_summary.total_cases_selected, 0)
+        self.assertEqual(empty_summary.total_cases_matching, 0)
+
+        # Single gate partial execution
+        single_gate = GATES[0]
+        partial_res = GateExecutionResult(
+            gate=single_gate,
+            success=False,
+            status=STATUS_SELF_REPORTED_UNVERIFIED,
+            exit_code=0,
+            cases_selected=single_gate.expected_total,
+            cases_executed=10,
+            cases_passed=0,
+            cases_failed=0,
+            cases_unverified=10,
+            cases_skipped=0,
+            cases_xfailed=0,
+            case_results=(),
+            duration_seconds=0.5,
+        )
+        # Missing 14 cases -> summarize_suite_execution should reject before aggregation
+        with self.assertRaises(ValueError) as ctx:
+            summarize_suite_execution([partial_res], (single_gate,))
+        self.assertIn("cases_executed (10) != cases_selected (24)", str(ctx.exception))
+
+    def test_summarize_suite_execution_adversarial_rejections(self) -> None:
+        """Verify that summarize_suite_execution fail-closes on all invalid inputs."""
+        gate0 = GATES[0]
+        gate1 = GATES[1]
+
+        valid_res0 = GateExecutionResult(
+            gate=gate0,
+            success=False,
+            status=STATUS_SELF_REPORTED_UNVERIFIED,
+            exit_code=0,
+            cases_selected=gate0.expected_total,
+            cases_executed=gate0.expected_total,
+            cases_passed=0,
+            cases_failed=0,
+            cases_unverified=gate0.expected_total,
+            cases_skipped=0,
+            cases_xfailed=0,
+            case_results=(),
+            duration_seconds=0.5,
+        )
+        valid_res1 = GateExecutionResult(
+            gate=gate1,
+            success=False,
+            status=STATUS_SELF_REPORTED_UNVERIFIED,
+            exit_code=0,
+            cases_selected=gate1.expected_total,
+            cases_executed=gate1.expected_total,
+            cases_passed=0,
+            cases_failed=0,
+            cases_unverified=gate1.expected_total,
+            cases_skipped=0,
+            cases_xfailed=0,
+            case_results=(),
+            duration_seconds=0.5,
+        )
+
+        # Valid execution of multi-gate suite passes cleanly
+        multi_summary = summarize_suite_execution(
+            [valid_res0, valid_res1], (gate0, gate1)
+        )
+        self.assertEqual(multi_summary.total_gates, 2)
+        self.assertEqual(
+            multi_summary.total_cases_selected,
+            gate0.expected_total + gate1.expected_total,
+        )
+
+        # 1. Duplicate gate in selected gates
+        with self.assertRaises(ValueError) as ctx:
+            summarize_suite_execution([valid_res0, valid_res0], (gate0, gate0))
+        self.assertIn("Duplicate gate ID in selected gates", str(ctx.exception))
+
+        # 2. Result count mismatch
+        with self.assertRaises(ValueError) as ctx:
+            summarize_suite_execution([valid_res0], (gate0, gate1))
+        self.assertIn("Result count mismatch", str(ctx.exception))
+
+        # 3. Unknown gate ID in results
+        unknown_gate = NativeGate(
+            gate_id="DR99",
+            title="Unknown Gate",
+            script=gate0.script,
+            backend_label="unknown",
+            expected_total=10,
+            oracle_provenance="none",
+        )
+        unknown_res = dataclasses.replace(
+            valid_res0,
+            gate=unknown_gate,
+            cases_selected=10,
+            cases_executed=10,
+            cases_unverified=10,
+        )
+        with self.assertRaises(ValueError) as ctx:
+            summarize_suite_execution([unknown_res], (gate0,))
+        self.assertIn("Unknown gate ID in results: DR99", str(ctx.exception))
+
+        # 4. Duplicate result for same gate ID
+        with self.assertRaises(ValueError) as ctx:
+            summarize_suite_execution([valid_res0, valid_res0], (gate0, gate1))
+        self.assertIn("Duplicate result for gate ID: DR0", str(ctx.exception))
+
+        # 5. Gate definition mismatch
+        modified_gate0 = dataclasses.replace(gate0, title="Modified DR0 Title")
+        mismatched_def_res = dataclasses.replace(valid_res0, gate=modified_gate0)
+        with self.assertRaises(ValueError) as ctx:
+            summarize_suite_execution([mismatched_def_res], (gate0,))
+        self.assertIn("Gate definition mismatch for DR0", str(ctx.exception))
+
+        # 6. cases_selected mismatch
+        wrong_selected_res = dataclasses.replace(valid_res0, cases_selected=99)
+        with self.assertRaises(ValueError) as ctx:
+            summarize_suite_execution([wrong_selected_res], (gate0,))
+        self.assertIn("cases_selected mismatch", str(ctx.exception))
+
+        # 7. Non-integer or negative count
+        neg_count_res = dataclasses.replace(valid_res0, cases_failed=-1)
+        with self.assertRaises(ValueError) as ctx:
+            summarize_suite_execution([neg_count_res], (gate0,))
+        self.assertIn("must be a non-negative integer", str(ctx.exception))
+
+        bool_count_res = dataclasses.replace(valid_res0, cases_passed=True)
+        with self.assertRaises(ValueError) as ctx:
+            summarize_suite_execution([bool_count_res], (gate0,))
+        self.assertIn("must be a non-negative integer", str(ctx.exception))
+
+        # 8. cases_executed != cases_selected (e.g. selected=10/executed=1/unverified=10)
+        synth_gate_10 = NativeGate(
+            gate_id="DR_SYNTH10",
+            title="Synthetic 10-case Gate",
+            script=gate0.script,
+            backend_label="synth",
+            expected_total=10,
+            oracle_provenance="none",
+        )
+        selected_10_exec_1_res = GateExecutionResult(
+            gate=synth_gate_10,
+            success=False,
+            status=STATUS_SELF_REPORTED_UNVERIFIED,
+            exit_code=0,
+            cases_selected=10,
+            cases_executed=1,
+            cases_passed=0,
+            cases_failed=0,
+            cases_unverified=10,
+            cases_skipped=0,
+            cases_xfailed=0,
+            case_results=(),
+            duration_seconds=0.1,
+        )
+        with self.assertRaises(ValueError) as ctx:
+            summarize_suite_execution([selected_10_exec_1_res], (synth_gate_10,))
+        self.assertIn("cases_executed (1) != cases_selected (10)", str(ctx.exception))
+
+        # 9. Case accounting partition mismatch & skipped/xfailed omissions
+        broken_partition_res = dataclasses.replace(
+            valid_res0, cases_unverified=gate0.expected_total - 5, cases_failed=0
+        )
+        with self.assertRaises(ValueError) as ctx:
+            summarize_suite_execution([broken_partition_res], (gate0,))
+        self.assertIn("case accounting partition invariant failed", str(ctx.exception))
+
+        # Valid with skipped/xfailed properly accounted
+        valid_with_skipped = dataclasses.replace(
+            valid_res0,
+            cases_unverified=gate0.expected_total - 3,
+            cases_skipped=2,
+            cases_xfailed=1,
+        )
+        skipped_summary = summarize_suite_execution([valid_with_skipped], (gate0,))
+        self.assertEqual(skipped_summary.total_gates, 1)
+
+        # 10. Success and status contradictions
+        # success=True with status!=STATUS_PASS
+        success_unverified_res = dataclasses.replace(
+            valid_res0,
+            success=True,
+            status=STATUS_SELF_REPORTED_UNVERIFIED,
+        )
+        with self.assertRaises(ValueError) as ctx:
+            summarize_suite_execution([success_unverified_res], (gate0,))
+        self.assertIn(
+            "has success=True but status is 'SELF_REPORTED_UNVERIFIED'",
+            str(ctx.exception),
+        )
+
+        # success=False with status=STATUS_PASS
+        pass_status_failed_res = dataclasses.replace(
+            valid_res0,
+            success=False,
+            status=STATUS_PASS,
+            cases_passed=gate0.expected_total,
+            cases_unverified=0,
+        )
+        with self.assertRaises(ValueError) as ctx:
+            summarize_suite_execution([pass_status_failed_res], (gate0,))
+        self.assertIn("has status='PASS' but success=False", str(ctx.exception))
+
+        # success=False with non-zero cases_passed
+        failed_with_passed_cases_res = dataclasses.replace(
+            valid_res0,
+            success=False,
+            status=STATUS_FAIL,
+            cases_passed=gate0.expected_total,
+            cases_unverified=0,
+        )
+        with self.assertRaises(ValueError) as ctx:
+            summarize_suite_execution([failed_with_passed_cases_res], (gate0,))
+        self.assertIn("has success=False but non-zero cases_passed", str(ctx.exception))
+
+        # STATUS_PASS with unverified cases
+        pass_with_unverified_res = dataclasses.replace(
+            valid_res0,
+            success=True,
+            status=STATUS_PASS,
+            cases_passed=gate0.expected_total - 1,
+            cases_unverified=1,
+        )
+        with self.assertRaises(ValueError) as ctx:
+            summarize_suite_execution([pass_with_unverified_res], (gate0,))
+        self.assertIn("has non-pass cases", str(ctx.exception))
+
+        # 11. BLOCKED gate with non-zero executed or category counts
+        blocked_with_exec_res = dataclasses.replace(
+            valid_res0,
+            status=STATUS_BLOCKED,
+            cases_executed=5,
+            cases_unverified=5,
+            cases_failed=0,
+        )
+        with self.assertRaises(ValueError) as ctx:
+            summarize_suite_execution([blocked_with_exec_res], (gate0,))
+        self.assertIn(
+            "is BLOCKED but has non-zero execution/category counts", str(ctx.exception)
+        )
+
+        for cat_field in (
+            "cases_passed",
+            "cases_unverified",
+            "cases_failed",
+            "cases_skipped",
+            "cases_xfailed",
+        ):
+            overrides = {
+                "status": STATUS_BLOCKED,
+                "cases_executed": 0,
+                "cases_passed": 0,
+                "cases_unverified": 0,
+                "cases_failed": 0,
+                "cases_skipped": 0,
+                "cases_xfailed": 0,
+            }
+            overrides[cat_field] = 1
+            blocked_cat_res = dataclasses.replace(valid_res0, **overrides)
+            with self.assertRaises(ValueError) as ctx:
+                summarize_suite_execution([blocked_cat_res], (gate0,))
+            self.assertIn(
+                "is BLOCKED but has non-zero execution/category counts",
+                str(ctx.exception),
+            )
+
+    def test_negative_and_contradictory_counts_rejected(self) -> None:
+        """Verify that negative or contradictory summary counts are rejected."""
+
+        # Negative count
+        invalid_summary = SuiteAccountingSummary(
+            total_gates=1,
+            passed_gates=0,
+            unverified_gates=1,
+            blocked_gates=0,
+            failed_gates=0,
+            total_cases_selected=25,
+            total_cases_executed=25,
+            total_cases_matching=-5,
+            total_cases_failed=30,
+            total_cases_blocked=0,
+            total_cases_physically_verified=0,
+            total_cases_unverified_provenance=25,
+        )
+        with self.assertRaises(ValueError) as ctx:
+            invalid_summary.validate_invariants()
+        self.assertIn("Negative count detected", str(ctx.exception))
+
+        # Gate count mismatch
+        gate_mismatch_summary = SuiteAccountingSummary(
+            total_gates=5,
+            passed_gates=1,
+            unverified_gates=1,
+            blocked_gates=1,
+            failed_gates=1,  # sum is 4 != 5
+            total_cases_selected=100,
+            total_cases_executed=100,
+            total_cases_matching=75,
+            total_cases_failed=25,
+            total_cases_blocked=0,
+            total_cases_physically_verified=25,
+            total_cases_unverified_provenance=75,
+        )
+        with self.assertRaises(ValueError) as ctx:
+            gate_mismatch_summary.validate_invariants()
+        self.assertIn("Gate partition invariant failed", str(ctx.exception))
 
 
 if __name__ == "__main__":

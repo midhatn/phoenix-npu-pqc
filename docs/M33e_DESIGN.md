@@ -115,7 +115,9 @@ audits are useful host checks but are not hardware evidence.
 
 Laptop validation recorded 2026-08-17 on the Phoenix XDNA1 host:
 
+<!-- [CLAIM-PROVENANCE: status=HISTORICAL; source=m33e_design; classification=SELF_REPORTED_UNVERIFIED] -->
 - Sign_internal: **90/90 PASS** for tgIds 7-12 across ML-DSA-44/65/87.
+<!-- [CLAIM-PROVENANCE: status=HISTORICAL; source=m33e_design; classification=SELF_REPORTED_UNVERIFIED] -->
 - Verify_internal: **90/90 PASS**, comprising 18 valid signatures accepted
   and 72 tampered signatures rejected.
 - Backend: `m33a:silicon, m33b:silicon`.

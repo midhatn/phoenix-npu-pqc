@@ -11,7 +11,7 @@
 Post-Quantum Cryptography (PQC) standardized in NIST FIPS 202, FIPS 203 (ML-KEM), and FIPS 204 (ML-DSA) introduces significant computational demands compared to classical public-key cryptography (RSA/ECC). These demands stem primarily from:
 1. **High-dimensional polynomial arithmetic over finite rings** ($\mathbb{Z}_q[X]/(X^n + 1)$), requiring frequent Number Theoretic Transforms (NTT/INTT) and high-density pointwise modular vector multiply-accumulate operations.
 2. **Heavy symmetric cryptography**, specifically $\\text{Keccak-}f[1600]$ sponge permutations for pseudorandom matrix expansion, Centered Binomial Distribution (CBD) noise sampling, hashing, and rejection sampling.
-3. **Strict side-channel and constant-time invariants**, requiring constant-shape control flow, arithmetic masking, and branchless implicit rejection key selection.
+3. **Side-channel and control flow analysis**, evaluating arithmetic masking and branchless implicit rejection key selection.
 
 This document synthesizes contemporary academic literature and industry benchmarks regarding the AMD XDNA / AI Engine (AIE2) architecture, demonstrating why AMD XDNA represents an optimal, ultra-low-power hardware platform for 100% on-device PQC residency.
 
@@ -51,7 +51,7 @@ In their study on accelerating high-density modular arithmetic on AMD Versal AI 
 **Application to phoenix-npu-pqc**:
 In our NTT and polynomial multiplication kernels (
 tt_multiply_accumulate_3, 
-tt_multiply_accumulate_4, and ML-DSA matrix expansion), we employ branchless constant-time arithmetic (mod_mul, conjugate twiddle butterflies, and dual-pair BaseMul), ensuring constant execution latency regardless of secret key data.
+tt_multiply_accumulate_4, and ML-DSA matrix expansion), we employ branchless arithmetic (mod_mul, conjugate twiddle butterflies, and dual-pair BaseMul) regardless of secret key data.
 
 ---
 

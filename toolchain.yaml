@@ -1,7 +1,7 @@
 # Phoenix NPU PQC toolchain and provenance record.
 # Current CI is host-only; these native pins preserve the environment associated
 # with retained research evidence and do not authorize a hardware dispatch.
-schema_version: "1.0"
+schema_version: 1
 
 project:
   name: phoenix-npu-pqc
@@ -61,6 +61,7 @@ toolchain:
     target_triple: "aie2-none-unknown-elf"
   xrt:
     package_role: "Native Windows XRT runtime and pyxrt bindings"
+    verified_version: "2.21.0 (archive release 2.21.75)"
     archive_release: "2.21.75"
     runtime_version: "2.21.0"
     release_url: "https://github.com/Xilinx/XRT/releases/tag/2.21.75"

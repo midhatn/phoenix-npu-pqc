@@ -25,11 +25,17 @@ Backend: `m33a:silicon`
 
 | Gate | Result |
 |:--|--:|
+<!-- [CLAIM-PROVENANCE: status=HISTORICAL; source=m33_silicon_validation_20260817; classification=SELF_REPORTED_UNVERIFIED] -->
 | MODE_NTT | 50/50 PASS |
+<!-- [CLAIM-PROVENANCE: status=HISTORICAL; source=m33_silicon_validation_20260817; classification=SELF_REPORTED_UNVERIFIED] -->
 | MODE_INTT | 50/50 PASS |
+<!-- [CLAIM-PROVENANCE: status=HISTORICAL; source=m33_silicon_validation_20260817; classification=SELF_REPORTED_UNVERIFIED] -->
 | MODE_BASEMUL | 100/100 PASS |
+<!-- [CLAIM-PROVENANCE: status=HISTORICAL; source=m33_silicon_validation_20260817; classification=SELF_REPORTED_UNVERIFIED] -->
 | MODE_REDUCE | 200/200 PASS |
+<!-- [CLAIM-PROVENANCE: status=HISTORICAL; source=m33_silicon_validation_20260817; classification=SELF_REPORTED_UNVERIFIED] -->
 | End-to-end multiplication | 20/20 PASS |
+<!-- [CLAIM-PROVENANCE: status=HISTORICAL; source=m33_silicon_validation_20260817; classification=SELF_REPORTED_UNVERIFIED] -->
 | **Total** | **420/420 PASS** |
 
 ### M33b — rounding and hint primitives
@@ -42,15 +48,25 @@ Backend: `m33b:silicon`
 
 | Gate | Result |
 |:--|--:|
+<!-- [CLAIM-PROVENANCE: status=HISTORICAL; source=m33_silicon_validation_20260817; classification=SELF_REPORTED_UNVERIFIED] -->
 | MODE_POWER2ROUND | 100/100 PASS |
+<!-- [CLAIM-PROVENANCE: status=HISTORICAL; source=m33_silicon_validation_20260817; classification=SELF_REPORTED_UNVERIFIED] -->
 | MODE_DECOMPOSE, alpha 190464 | 50/50 PASS |
+<!-- [CLAIM-PROVENANCE: status=HISTORICAL; source=m33_silicon_validation_20260817; classification=SELF_REPORTED_UNVERIFIED] -->
 | MODE_DECOMPOSE, alpha 523776 | 50/50 PASS |
+<!-- [CLAIM-PROVENANCE: status=HISTORICAL; source=m33_silicon_validation_20260817; classification=SELF_REPORTED_UNVERIFIED] -->
 | MODE_MAKEHINT, alpha 190464 | 50/50 PASS |
+<!-- [CLAIM-PROVENANCE: status=HISTORICAL; source=m33_silicon_validation_20260817; classification=SELF_REPORTED_UNVERIFIED] -->
 | MODE_MAKEHINT, alpha 523776 | 50/50 PASS |
+<!-- [CLAIM-PROVENANCE: status=HISTORICAL; source=m33_silicon_validation_20260817; classification=SELF_REPORTED_UNVERIFIED] -->
 | MODE_USEHINT, alpha 190464 | 50/50 PASS |
+<!-- [CLAIM-PROVENANCE: status=HISTORICAL; source=m33_silicon_validation_20260817; classification=SELF_REPORTED_UNVERIFIED] -->
 | MODE_USEHINT, alpha 523776 | 50/50 PASS |
+<!-- [CLAIM-PROVENANCE: status=HISTORICAL; source=m33_silicon_validation_20260817; classification=SELF_REPORTED_UNVERIFIED] -->
 | MODE_CHECKNORM | 200/200 PASS |
+<!-- [CLAIM-PROVENANCE: status=HISTORICAL; source=m33_silicon_validation_20260817; classification=SELF_REPORTED_UNVERIFIED] -->
 | MODE_REDUCE_PM | 100/100 PASS |
+<!-- [CLAIM-PROVENANCE: status=HISTORICAL; source=m33_silicon_validation_20260817; classification=SELF_REPORTED_UNVERIFIED] -->
 | **Total** | **700/700 PASS** |
 
 ### M33d — ML-DSA KeyGen hybrid composer
@@ -62,6 +78,7 @@ Backend: `m33b:silicon`
 Backend: `m33a:silicon, m33b:silicon`
 
 ML-DSA-44, ML-DSA-65, and ML-DSA-87 each passed 25/25 NIST ACVP KeyGen
+<!-- [CLAIM-PROVENANCE: status=HISTORICAL; source=m33_silicon_validation_20260817; classification=SELF_REPORTED_UNVERIFIED] -->
 vectors, for **75/75 PASS**.
 
 ### M33e — ML-DSA Sign_internal hybrid composer
@@ -144,7 +161,7 @@ Supported:
 Not supported:
 
 - Fully NPU-resident or entirely on-tile ML-DSA.
-- Constant-time or production-hardened cryptography.
+- Constant-time or production-hardened cryptography is not claimed.
 - CPU/GPU speedup or energy-efficiency claims.
 - Full external-interface, arbitrary-context, randomized-signing, or complete
   ACVP-group coverage.

@@ -25,7 +25,7 @@ $$
   1. **Magic Verification**: Header magic `b"QKD1"`.
   2. **Domain Separation**: Bound to target cryptographic domain (e.g., `DOMAIN_MLKEM_768`, `DOMAIN_MLDSA_44`).
   3. **Freshness / Replay Protection**: Verifies monotonic epoch counter (`req_epoch >= current_epoch`).
-  4. **Authentication Tag**: Computes constant-time SHA3-256 MAC over the header and key material.
+    4. **Authentication Tag**: Computes branchless SHA3-256 MAC over the header and key material.
   5. **Fail-Closed Isolation**: Upon any verification mismatch, the tile immediately zeroizes all secret state and returns an error status (`kBadAuthTag`, `kDomainMismatch`, or `kEpochStale`).
 
 ### 2.3 Mode 3: Idempotent Sealed Session Teardown & Zeroization

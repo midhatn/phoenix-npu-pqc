@@ -15,7 +15,7 @@ authorized native experiment or independent provenance review.
 It does not report a new physical result. In particular, the integrated DR2d
 ML-KEM-512 K-PKE.KeyGen physical record remains `TOTAL 0/25 FAIL`, exit 1.
 Nothing in this document establishes complete ML-KEM, complete ML-DSA, FIPS or
-CMVP conformance, constant-time behavior, side-channel resistance, secure
+No claim is made regarding CMVP conformance, constant-time behavior, side-channel resistance, secure
 zeroization, or production readiness.
 
 The protected [`pqc_dr2_evidence_20260818/`](pqc_dr2_evidence_20260818/README.md)

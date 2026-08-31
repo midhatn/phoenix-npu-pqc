@@ -92,6 +92,7 @@ If IRON/XRT is unavailable, it exits nonzero with
 silicon pass.
 
 Phoenix laptop silicon gate recorded on 2026-08-17:
+<!-- [CLAIM-PROVENANCE: status=HISTORICAL; source=m33b_design; classification=SELF_REPORTED_UNVERIFIED] -->
 `Backend: m33b:silicon`, **700/700 PASS** across Power2Round, Decompose,
 MakeHint, UseHint, CheckNorm, and reduce-to-centered-range gates. See
 [`M33_SILICON_VALIDATION_20260817.md`](M33_SILICON_VALIDATION_20260817.md).
@@ -100,10 +101,14 @@ MakeHint, UseHint, CheckNorm, and reduce-to-centered-range gates. See
 
 | ID     | Component                                                       | Status  |
 |:-------|:----------------------------------------------------------------|:--------|
+<!-- [CLAIM-PROVENANCE: status=HISTORICAL; source=m33b_design; classification=SELF_REPORTED_UNVERIFIED] -->
 | M33a   | Dilithium NTT / INTT / BASEMUL / REDUCE                          | Phoenix silicon: 420/420 PASS |
+<!-- [CLAIM-PROVENANCE: status=HISTORICAL; source=m33b_design; classification=SELF_REPORTED_UNVERIFIED] -->
 | M33b   | rounding / hint / norm-check primitives (this doc)               | Phoenix silicon: 700/700 PASS |
 | M33c   | reuse M32c SHAKE128 / SHAKE256 kernel                            | Reuse   |
+<!-- [CLAIM-PROVENANCE: status=HISTORICAL; source=m33b_design; classification=SELF_REPORTED_UNVERIFIED] -->
 | M33d   | KeyGen composer (Alg 1 / 6), 3 param sets, ACVP KeyGen KATs      | Hybrid host/NPU: 75/75 PASS |
+<!-- [CLAIM-PROVENANCE: status=HISTORICAL; source=m33b_design; classification=SELF_REPORTED_UNVERIFIED] -->
 | M33e   | Sign / Verify composer, rejection loop, ACVP sigGen / sigVer     | Hybrid host/NPU: 180/180 PASS |
 
 The primitive silicon and hybrid-composer results are recorded separately;

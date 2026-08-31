@@ -16,6 +16,7 @@ milestone.
 
 On 2026-08-17, the corrected two-host-input DR2c graph executed on Phoenix with
 backend `dr2c-mlkem512-keygen-row:silicon`. The first gate completed all 11
+<!-- [CLAIM-PROVENANCE: status=HISTORICAL; source=pqc_dr2c_physical_validation_handoff_20260817; classification=SELF_REPORTED_UNVERIFIED] -->
 named frozen-corpus cases with `TOTAL 11/11 PASS`, exit 0. Calling
 `_run_native_gate()` twice in the same Python process produced two `TOTAL 11/11
 PASS` results, 22/22 aggregate, exit 0.
@@ -30,12 +31,7 @@ metadata only, not a measured performance result.
 
 ## Claim boundary
 
-The physical result is only for one terminal ML-KEM-512 `t_hat` row under the
-11-case native corpus. It does not claim complete K-PKE.KeyGen or ML-KEM:
-`G(d || k)`, both-row scheduling, key serialization, and lifecycle zeroization
-remain outside DR2c. It also excludes performance, constant-time,
-secure-zeroization, side-channel, security-hardening, CMVP, and certification
-claims.
+The physical result is only for one terminal ML-KEM-512 `t_hat` row under the 11-case native corpus. It does not claim complete K-PKE.KeyGen or ML-KEM: `G(d || k)`, both-row scheduling, key serialization, and lifecycle zeroization remain outside DR2c. It also excludes performance, constant-time, secure-zeroization, side-channel, security-hardening, CMVP, and certification claims.
 
 ## Local follow-up validation
 
@@ -71,6 +67,7 @@ py .\tests\pqc_device_resident\test_dr2c_mlkem512_keygen_row_silicon.py
 ```
 
 A physical rerun is a pass only when it reports the silicon backend and the
+<!-- [CLAIM-PROVENANCE: status=HISTORICAL; source=pqc_dr2c_physical_validation_handoff_20260817; classification=SELF_REPORTED_UNVERIFIED] -->
 anchored `TOTAL 11/11 PASS`; exit 2 is unavailable, not a pass.
 
 ## Deliverables

@@ -66,6 +66,63 @@
       "acceptance_command": "python tools/verify_agent_change.py --all"
     },
     {
+      "id": "POLICY-MULTILANG-COVERAGE",
+      "dr": null,
+      "title": "Extend repository-wide policy scanning across all 15 source, script, config, and document languages",
+      "status": "COMPLETED",
+      "depends_on": ["GENERALIZE-RUNNERS"],
+      "acceptance_command": "python tools/verify_agent_change.py --all"
+    },
+    {
+      "id": "POLICY-DOC-CLAIM-AUDIT",
+      "dr": null,
+      "title": "Audit documentation claims and enforce provenance references for strong claims",
+      "status": "COMPLETED",
+      "depends_on": ["POLICY-MULTILANG-COVERAGE"],
+      "acceptance_command": "python tools/verify_agent_change.py --all"
+    },
+    {
+      "id": "CI-REQUIRED-CHECK-TRIGGERS",
+      "dr": null,
+      "title": "Restore CI workflow and ensure required branch-protection checks trigger on all PRs",
+      "status": "COMPLETED",
+      "depends_on": ["POLICY-MULTILANG-COVERAGE"],
+      "acceptance_command": "python -m unittest discover -s tests/policy -v"
+    },
+    {
+      "id": "POLICY-SCANNER-SELF-PROTECTION",
+      "dr": null,
+      "title": "Enforce path safety, immutability, and single-self-exclusion scanner guarantees",
+      "status": "COMPLETED",
+      "depends_on": ["POLICY-MULTILANG-COVERAGE"],
+      "acceptance_command": "python -m unittest discover -s tests/policy -v"
+    },
+
+    {
+      "id": "ARTIFACT-CACHE-PROVENANCE",
+      "dr": null,
+      "title": "Audit and lock AIE2 compilation artifacts and cache hash provenance",
+      "status": "READY",
+      "depends_on": ["POLICY-MULTILANG-COVERAGE"],
+      "acceptance_command": "python tools/verify_agent_change.py --all"
+    },
+    {
+      "id": "SUPPLY-CHAIN-AND-LICENSE-AUDIT",
+      "dr": null,
+      "title": "Audit third-party dependencies, licenses, and provenance integrity",
+      "status": "READY",
+      "depends_on": ["POLICY-MULTILANG-COVERAGE"],
+      "acceptance_command": "python tools/verify_agent_change.py --all"
+    },
+    {
+      "id": "PHYSICAL-DISPATCH-CORROBORATION",
+      "dr": null,
+      "title": "Design and enforce non-bypassable driver-level hardware trace corroborator for physical silicon execution",
+      "status": "BLOCKED",
+      "depends_on": ["POLICY-MULTILANG-COVERAGE"],
+      "acceptance_command": "python tools/verify_evidence_manifest.py"
+    },
+    {
       "id": "FIX-DR2D-FUNCTIONAL-MISMATCH",
       "dr": "DR2d",
       "title": "Debug and fix observed functional mismatch in DR2d ML-KEM-512 K-PKE KeyGen",

@@ -10,6 +10,7 @@ corrected two-host-input terminal ML-KEM-512 K-PKE.KeyGen row graph compiled,
 linked, placed, routed, and executed on a physical Phoenix NPU through IRON.
 The native gate reported `dr2c-mlkem512-keygen-row:silicon`; all 11 named
 frozen-corpus cases passed against the independent direct FIPS 203 oracle,
+<!-- [CLAIM-PROVENANCE: status=HISTORICAL; source=pqc_dr2c_silicon_validation_pending; classification=SELF_REPORTED_UNVERIFIED] -->
 printing `TOTAL 11/11 PASS` and returning exit code 0.
 
 ## Validated scope
@@ -31,7 +32,9 @@ alternating rows, and one alternating-byte boundary request for row 1.
 | Item | Recorded value |
 |---|---|
 | First native backend | `dr2c-mlkem512-keygen-row:silicon` |
+<!-- [CLAIM-PROVENANCE: status=HISTORICAL; source=pqc_dr2c_silicon_validation_pending; classification=SELF_REPORTED_UNVERIFIED] -->
 | First native corpus | all 11 named cases PASS; `TOTAL 11/11 PASS`; exit 0 |
+<!-- [CLAIM-PROVENANCE: status=HISTORICAL; source=pqc_dr2c_silicon_validation_pending; classification=SELF_REPORTED_UNVERIFIED] -->
 | Repeated-operation result | `_run_native_gate()` invoked twice in the same Python process; two `TOTAL 11/11 PASS` results; 22/22 aggregate; exit 0 |
 | JIT cache | key/path basename `8a683c16baee47604da595bf` under `$HOME/.npu/cache` |
 | Packaged-artifact timestamp | 2026-08-17 21:52:40 +03 |
@@ -40,6 +43,7 @@ alternating rows, and one alternating-byte boundary request for row 1.
 | Partition metadata | `partition_main.json`, 717 bytes; PDI UUID `1f1acd91-079d-4190-9367-6ecec2c18fe5`; pdi_id `0x01`; DPU kernel `0x901`; PRIMARY; column width 4 from column 0 |
 | Memory topology | `memTopology_main.json`, 399 bytes; HOST and SRAM entries present |
 | Operations-per-cycle metadata | 2048; metadata only, not a measured performance claim |
+<!-- [CLAIM-PROVENANCE: status=HISTORICAL; source=pqc_dr2c_silicon_validation_pending; classification=SELF_REPORTED_UNVERIFIED] -->
 | Focused host evidence before physical execution | 14/14 PASS; Ruff PASS; `git diff --check` PASS |
 
 The repeated native invocation reused the successful graph in one Python
@@ -123,7 +127,4 @@ not establish complete K-PKE.KeyGen or complete ML-KEM: `G(d || k)`, both-row
 scheduling, public-key or secret-key serialization, and lifecycle zeroization
 are not resident in DR2c.
 
-Do not infer a performance result from operations-per-cycle metadata. Do not
-claim complete FIPS 203 conformance, constant-time behavior, secure
-zeroization, side-channel resistance, security hardening, CMVP validation, or
-certification.
+Do not infer a performance result from operations-per-cycle metadata. Do not claim complete FIPS 203 conformance, constant-time behavior, secure zeroization, side-channel resistance, security hardening, CMVP validation, or certification.

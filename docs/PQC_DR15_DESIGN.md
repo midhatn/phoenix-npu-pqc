@@ -74,7 +74,7 @@ ML-DSA-87 represents the highest security category of the NIST Module-Lattice-Ba
    - Computes $\mathbf{w}' = \text{INTT}(\mathbf{A} \circ \widehat{\mathbf{z}} - \widehat{c} \circ \widehat{\mathbf{t}}_1)$.
    - Reconstructs $\mathbf{w}_1' = \text{UseHint65}(\mathbf{h}, \mathbf{w}')$ ($8 \times 128 = 1024$ B).
    - Squeezes $\widetilde{c}' = \text{SHAKE256}(\mu \parallel \mathbf{w}_1', 32)$.
-   - Performs constant-time comparison $\widetilde{c}' == \widetilde{c}$.
+      - Performs branchless comparison $\widetilde{c}' == \widetilde{c}$.
    - Emits `Token 1` (72 bytes).
 
 3. **Worker 2 (`verify_w2_fin`)**:
@@ -87,8 +87,11 @@ ML-DSA-87 represents the highest security category of the NIST Module-Lattice-Ba
 
 | Operation | Pipeline Workers | Peak Tile RAM | Max Kernel `.text` Size | Physical Silicon Status |
 |---|---|---|---|---|
+<!-- [CLAIM-PROVENANCE: status=HISTORICAL; source=pqc_dr15_design; classification=SELF_REPORTED_UNVERIFIED] -->
 | **KeyGen** | 4 Workers | 48.6 KiB | 11.2 KiB (`rows0123.o`) | **25 / 25 PASS (100% Bit-Exact)** |
+<!-- [CLAIM-PROVENANCE: status=HISTORICAL; source=pqc_dr15_design; classification=SELF_REPORTED_UNVERIFIED] -->
 | **Sign** | 3 Workers | 38.4 KiB | 14.1 KiB (`sign_w1.o`) | **30 / 30 PASS (100% Hardware Sync)** |
+<!-- [CLAIM-PROVENANCE: status=HISTORICAL; source=pqc_dr15_design; classification=SELF_REPORTED_UNVERIFIED] -->
 | **Verify** | 3 Workers | 42.8 KiB | 15.7 KiB (`ver_w0.o`) | **30 / 30 PASS (100% Hardware Sync)** |
 
 All kernels operate strictly under the 16 KiB `.text` instruction limit and 64 KiB local tile memory capacity.

@@ -7,8 +7,6 @@ needed to carry complete KeyGen state between Phoenix AIE tiles.
 
 import hashlib
 import os
-import struct
-import zlib
 from pathlib import Path
 from typing import Any
 

@@ -7,7 +7,7 @@ Milestone **DR8** expands the 100% on-device post-quantum cryptography implement
 - **ML-KEM-768** ($k=3$, NIST Security Category 3)
 - **ML-KEM-1024** ($k=4$, NIST Security Category 5)
 
-Like preceding milestones, DR8 enforces **100% device residency** with zero host cryptographic fallback: key generation, encapsulation, decryption, re-encryption, constant-time ciphertext comparison, and implicit rejection key selection are executed entirely within AIE2 tiles in local tile data memory (L1).
+Like preceding milestones, DR8 enforces **100% device residency** with zero host cryptographic fallback: key generation, encapsulation, decryption, re-encryption, branchless ciphertext comparison, and implicit rejection key selection are executed entirely within AIE2 tiles in local tile data memory (L1).
 
 ---
 
@@ -51,7 +51,8 @@ Like preceding milestones, DR8 enforces **100% device residency** with zero host
    - Worker 2: $\mathbf{A}^T[0, 0..2] \cdot \mathbf{y}' + e'_{1,0} \to \text{Compress}_{10}(u'_0)$, compute $ar{K} = \text{SHAKE256}(z \parallel c, 32)$.
    - Worker 3: $\mathbf{A}^T[1, 0..2] \cdot \mathbf{y}' + e'_{1,1} \to \text{Compress}_{10}(u'_1)$.
    - Worker 4: $\mathbf{A}^T[2, 0..2] \cdot \mathbf{y}' + e'_{1,2} \to \text{Compress}_{10}(u'_2)$.
-   - Worker 5: Re-encrypt $v'$, constant-time compare $c \oplus c'$, constant-time select $K = (c == c') ? ar{K}' : ar{K}$, CRC32 sealing.
+   <!-- [CLAIM-PROVENANCE: status=HISTORICAL; source=pqc_dr8_design; classification=SELF_REPORTED_UNVERIFIED] -->
+   - Worker 5: Re-encrypt $v'$, branchless compare $c \oplus c'$, branchless select $K = (c == c') ? ar{K}' : ar{K}$, CRC32 sealing.
 
 ---
 
@@ -72,7 +73,8 @@ Like preceding milestones, DR8 enforces **100% device residency** with zero host
    - Worker 1: $G(m' \parallel H(ek)) \to (ar{K}', r')$, sample $y'_0..y'_3, e'_{1,0}..e'_{1,3}, e'_2+\mu(m')$.
    - Worker 2: $\mathbf{A}^T[0, 0..3] \cdot \mathbf{y}' + e'_{1,0} \to \text{Compress}_{11}(u'_0)$, compute $ar{K} = \text{SHAKE256}(z \parallel c, 32)$.
    - Workers 3–5: Rows 1..3 $\mathbf{A}^T[i, 0..3] \cdot \mathbf{y}' + e'_{1,i} \to \text{Compress}_{11}(u'_i)$.
-   - Worker 6: Re-encrypt $v'$, constant-time compare $c \oplus c'$, constant-time select $K = (c == c') ? ar{K}' : ar{K}$, CRC32 sealing.
+   <!-- [CLAIM-PROVENANCE: status=HISTORICAL; source=pqc_dr8_design; classification=SELF_REPORTED_UNVERIFIED] -->
+   - Worker 6: Re-encrypt $v'$, branchless compare $c \oplus c'$, branchless select $K = (c == c') ? ar{K}' : ar{K}$, CRC32 sealing.
 
 ---
 

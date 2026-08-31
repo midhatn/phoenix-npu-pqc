@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "repository_commit": "f51c602834a40c175184b43635504b7b474111ab",
+  "repository_commit": "b7e298a0994d5ff1a052ff6d8b9ba54ea2c5d1ae",
   "current_dr": "DR0",
   "current_phase": "forensic_revalidation",
   "last_verified_commit": null,

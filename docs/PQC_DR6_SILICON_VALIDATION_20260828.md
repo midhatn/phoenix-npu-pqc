@@ -5,6 +5,7 @@
 Milestone **DR6** (`ML-KEM-512 ML-KEM.Encaps`, NIST FIPS 203 Algorithm 16) has achieved **100% physical silicon validation** on the AMD Phoenix NPU (Ryzen 9 7940HS).
 
 - **Corpus**: 25 / 25 official NIST ACVP encapsulation test cases (`tests/pqc_device_resident/data/dr6_nist_acvp_mlkem512_encaps_25.json`).
+<!-- [CLAIM-PROVENANCE: status=HISTORICAL; source=pqc_dr6_silicon_validation_20260828; classification=SELF_REPORTED_UNVERIFIED] -->
 - **Result**: **25 / 25 PASS (100% bit-exact compliance for both ciphertext $c$ and shared secret $K$)**.
 - **Host Offload**: **0%** (zero CPU cryptographic transformations, zero intermediate drains, zero reference fallback).
 
@@ -53,6 +54,7 @@ Backend: dr6-mlkem512-encaps:silicon
   dr6_acvp_mlkem512_encaps_tc24        PASS
   dr6_acvp_mlkem512_encaps_tc25        PASS
 ------------------------------------------------------------------------
+<!-- [CLAIM-PROVENANCE: status=HISTORICAL; source=pqc_dr6_silicon_validation_20260828; classification=SELF_REPORTED_UNVERIFIED] -->
 TOTAL 25/25 PASS
 ========================================================================
 ```

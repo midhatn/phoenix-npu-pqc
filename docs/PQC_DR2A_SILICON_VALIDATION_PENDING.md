@@ -30,6 +30,7 @@ is 280 three-byte candidate iterations, the bounded minimum identified by
 |---|---|
 | Backend label | `dr2a-mlkem512-samplentt:silicon` |
 | Physical corpus | all four `j/i` coordinates for `rho=bytes(range(32))`; eight deterministic varied-rho requests; one alternating `00/ff` boundary rho |
+<!-- [CLAIM-PROVENANCE: status=HISTORICAL; source=pqc_dr2a_silicon_validation_pending; classification=SELF_REPORTED_UNVERIFIED] -->
 | Terminal result | `TOTAL 13/13 PASS` |
 | Exact comparisons | 13 requests x 256 lanes = 3,328 exact coefficient comparisons |
 | Repeated-operation result | two complete corpora in one Python process; 26/26 requests passed; `first=0, second=0` |
@@ -102,6 +103,7 @@ Placed `aie.mlir` contains exactly four depth-two ObjectFIFOs:
 
    A missing runtime must print `Backend: dr2a-mlkem512-samplentt:unavailable`
    and return status 2; it is not a pass.  A physical success must print the
+   <!-- [CLAIM-PROVENANCE: status=HISTORICAL; source=pqc_dr2a_silicon_validation_pending; classification=SELF_REPORTED_UNVERIFIED] -->
    silicon backend and the anchored `TOTAL 13/13 PASS`.
 5. Compare all four coordinates under `rho=bytes(range(32))`, the eight
    deterministic varied-rho cases, and the alternating `00/ff` boundary rho
@@ -140,6 +142,4 @@ corpus.  The physical corpus did not inject malformed descriptors or corrupted
 internal tokens; those fail-closed paths remain compiled host-harness and
 source-contract evidence.
 
-Do not claim complete K-PKE KeyGen, complete ML-KEM device residency or
-conformance, performance, constant-time behavior, secure zeroization,
-side-channel resistance, CMVP validation, or certification.
+Do not claim complete K-PKE KeyGen, complete ML-KEM device residency or conformance, performance, constant-time behavior, secure zeroization, side-channel resistance, CMVP validation, or certification.

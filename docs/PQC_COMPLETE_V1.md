@@ -25,9 +25,13 @@ The M32e composer runs orchestration on the host and dispatches arithmetic and s
 
 M33 now has checked-in, fail-closed native runners for two primitive families:
 
+<!-- [CLAIM-PROVENANCE: status=HISTORICAL; source=pqc_complete_v1; classification=SELF_REPORTED_UNVERIFIED] -->
 - **M33a:** NTT, inverse NTT, base multiplication, reduction, and an end-to-end polynomial multiplication gate, **420/420 PASS** with `Backend: m33a:silicon`.
+<!-- [CLAIM-PROVENANCE: status=HISTORICAL; source=pqc_complete_v1; classification=SELF_REPORTED_UNVERIFIED] -->
 - **M33b:** Power2Round, Decompose, MakeHint, UseHint, CheckNorm, and centered reduction, **700/700 PASS** with `Backend: m33b:silicon`.
+<!-- [CLAIM-PROVENANCE: status=HISTORICAL; source=pqc_complete_v1; classification=SELF_REPORTED_UNVERIFIED] -->
 - **M33d:** ML-DSA KeyGen for ML-DSA-44/65/87, **75/75 PASS** in a host/NPU composition using both native primitive backends.
+<!-- [CLAIM-PROVENANCE: status=HISTORICAL; source=pqc_complete_v1; classification=SELF_REPORTED_UNVERIFIED] -->
 - **M33e:** deterministic Sign_internal **90/90 PASS** and mixed valid/invalid Verify_internal **90/90 PASS**, again using both native primitive backends.
 
 M33d/e are not fully device-resident ML-DSA. Python still performs SHAKE, sampling, packing, polynomial accumulation, matrix/vector orchestration, rejection-loop control, and comparison logic. The current composer does not route its SHAKE operations through M32c.
@@ -42,6 +46,7 @@ M33d/e are not fully device-resident ML-DSA. Python still performs SHAKE, sampli
 
 The runner now assigns explicit validation policies. A generic word such as `passed` or a reference-only sentinel cannot satisfy a hardware policy. M32e must report all three hardware test groups with no skips. M33 hardware policies require explicit hardware backend declarations and reject reference/fallback declarations.
 
+<!-- [CLAIM-PROVENANCE: status=HISTORICAL; source=pqc_complete_v1; classification=SELF_REPORTED_UNVERIFIED] -->
 The corrected matrix completed **34/34 PASS** in **126.29 seconds** on 2026-08-17. This is a mixed-backend regression result and must not be shortened to “34 silicon workloads.”
 
 ## Reproduction

@@ -122,8 +122,5 @@ generated artifact identity, and repeated native execution.
 
 ## Non-claims
 
-DR2a does not claim complete ML-KEM-512 K-PKE KeyGen, ML-KEM KeyGen/Encaps/
-Decaps, complete FIPS 203 conformance, constant-time behavior, secure
-zeroization, side-channel resistance, performance improvement, CMVP
-validation, or CMVP certification.  The narrow physical result is recorded
+DR2a does not claim complete ML-KEM-512 K-PKE KeyGen, ML-KEM KeyGen/Encaps/Decaps, complete FIPS 203 conformance, constant-time behavior, secure zeroization, side-channel resistance, performance improvement, CMVP validation, or CMVP certification.  The narrow physical result is recorded
 separately and does not by itself add DR2a to the canonical silicon runner.

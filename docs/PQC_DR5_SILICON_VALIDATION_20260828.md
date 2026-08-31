@@ -4,6 +4,7 @@
 **Target Device:** AMD Ryzen 9 7940HS w/ Radeon 780M Graphics (Ryzen AI NPU1 / XDNA1 / AIE2 4-Column Array)  
 **Milestone:** DR5 (Complete Device-Resident ML-KEM-512 `ML-KEM.KeyGen`)  
 **Standard:** NIST FIPS 203 Algorithm 15  
+<!-- [CLAIM-PROVENANCE: status=HISTORICAL; source=pqc_dr5_silicon_validation_20260828; classification=SELF_REPORTED_UNVERIFIED] -->
 **Result:** **TOTAL 25/25 PASS (100% Bit-Exact on Physical Silicon)**
 
 ---
@@ -44,6 +45,7 @@ Backend: dr5-mlkem512-keygen:silicon
   dr5_acvp_mlkem512_keygen_tc24        PASS
   dr5_acvp_mlkem512_keygen_tc25        PASS
 ------------------------------------------------------------------------
+<!-- [CLAIM-PROVENANCE: status=HISTORICAL; source=pqc_dr5_silicon_validation_20260828; classification=SELF_REPORTED_UNVERIFIED] -->
 TOTAL 25/25 PASS
 ========================================================================
 ```
@@ -77,9 +79,13 @@ TOTAL 25/25 PASS
 ## 4. Master Regression Suite Status
 
 The master regression suite (`tests/pqc_device_resident/run_all_silicon_tests.py`) passed **100% across all 8 milestones (170/170 tests)** on physical hardware:
+<!-- [CLAIM-PROVENANCE: status=HISTORICAL; source=pqc_dr5_silicon_validation_20260828; classification=SELF_REPORTED_UNVERIFIED] -->
 - DR1 (ML-DSA-44 RejNTT): 33/33 PASS
+<!-- [CLAIM-PROVENANCE: status=HISTORICAL; source=pqc_dr5_silicon_validation_20260828; classification=SELF_REPORTED_UNVERIFIED] -->
 - DR2a (ML-KEM-512 SampleNTT): 13/13 PASS
+<!-- [CLAIM-PROVENANCE: status=HISTORICAL; source=pqc_dr5_silicon_validation_20260828; classification=SELF_REPORTED_UNVERIFIED] -->
 - DR2b (ML-KEM-512 Noise+NTT): 13/13 PASS
+<!-- [CLAIM-PROVENANCE: status=HISTORICAL; source=pqc_dr5_silicon_validation_20260828; classification=SELF_REPORTED_UNVERIFIED] -->
 - DR2c (ML-KEM-512 KeyGen Row): 11/11 PASS
 - DR2d (ML-KEM-512 K-PKE.KeyGen): 25/25 ACVP PASS
 - DR3 (ML-KEM-512 K-PKE.Encrypt): 25/25 ACVP PASS

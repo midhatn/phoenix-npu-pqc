@@ -5,6 +5,7 @@
 > `85B373B1E3B8A1BD883DA6BBDE73F874EE5C331B4AE419E5D161758A64EB4A7E`
 > for an **external, operator-retained** historical DR1 log. That raw log is not
 > present in this repository, so this checkout cannot independently reproduce
+> <!-- [CLAIM-PROVENANCE: status=HISTORICAL; source=pqc_dr1_silicon_validation_pending; classification=SELF_REPORTED_UNVERIFIED] -->
 > its bytes, hash, backend line, or `TOTAL 33/33 PASS` line. It is an external
 > historical assertion, not current physical DR1 success. DR1 is the second
 > gate of the native-only canonical runner and must be rerun on the target
@@ -31,6 +32,7 @@ FIPS 204](https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.204.pdf).
 |---|---|
 | Reported backend label | `dr1-mldsa44-expanda-rejntt:silicon` |
 | Reported physical corpus | all 16 `j/i` coordinates for `rho=bytes(range(32))`; 16 deterministic varied `rho/j/i` requests; one alternating `00/ff` boundary `rho` |
+<!-- [CLAIM-PROVENANCE: status=HISTORICAL; source=pqc_dr1_silicon_validation_pending; classification=SELF_REPORTED_UNVERIFIED] -->
 | Reported terminal result | `TOTAL 33/33 PASS` |
 | Reported comparisons | 33 requests x 256 lanes = 8,448 claimed exact coefficient comparisons |
 | External log name | `PQC_DR1_MLDSA44_v3_physical_corpus_20260817.log` (not stored in this repository) |
@@ -142,7 +144,4 @@ tokens; those fail-closed paths remain host-compiled/source-contract evidence.
 Stack usage, FIFO bank/depth reports, toolchain component versions beyond IRON
 1.4.1, and generated xclbin identity were not captured in this record.
 
-There is no claim of complete FIPS 204 device residency or conformance, full
-ML-DSA key generation/signing/verification, performance or throughput
-improvement, constant-time behavior, secure zeroization, side-channel
-resistance, CMVP validation, or CMVP certification.
+There is no claim of complete FIPS 204 device residency or conformance, full ML-DSA key generation/signing/verification, performance or throughput improvement, constant-time behavior, secure zeroization, side-channel resistance, CMVP validation, or CMVP certification.

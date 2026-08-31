@@ -243,9 +243,10 @@ try {
         tests.pqc_device_resident.test_dr2d_mlkem512_kpke_sigma_prf_tap_contract -v
       if ($LASTEXITCODE -ne 0) { throw "REFUSED: host/MLIR contracts failed" }
     } finally {
-      Remove-Item Env:PQC_DR2D_REQUIRE_IRON_MLIR_CONTRACT -ErrorAction SilentlyContinue
+      Remove-Item Env:PQC_DR2D_REQUIRE_IRON_MLIR_CONTRACT -ErrorAction Ignore
     }
     "HOST_AND_NO_DISPATCH_MLIR_CONTRACTS=PASS"
+
 
     $compileScript = Join-Path $env:TEMP "compile_dr2d_sigma_prf_tap_no_dispatch_20260818.py"
     $pythonSource = @'
@@ -496,14 +497,14 @@ print("NPU_DISPATCH_ATTEMPTED=False")
     "UTC_END=$([DateTime]::UtcNow.ToString('o'))"
   } 2>&1 | Tee-Object -FilePath $evidence
 } finally {
-  Remove-Item Env:PQC_DR2D_REQUIRE_IRON_MLIR_CONTRACT -ErrorAction SilentlyContinue
-  Remove-Item Env:PQC_DR2D_W0_RETAINED_OBJECT -ErrorAction SilentlyContinue
+  Remove-Item Env:PQC_DR2D_REQUIRE_IRON_MLIR_CONTRACT -ErrorAction Ignore
+  Remove-Item Env:PQC_DR2D_W0_RETAINED_OBJECT -ErrorAction Ignore
   foreach ($name in $nativeAuthorizationVariables) {
     if (Test-Path "Env:$name") { throw "REFUSED: native authorization variable appeared: $name" }
   }
   if ($hadPythonPath) {
     $env:PYTHONPATH = $oldPythonPath
   } else {
-    Remove-Item Env:PYTHONPATH -ErrorAction SilentlyContinue
+    Remove-Item Env:PYTHONPATH -ErrorAction Ignore
   }
 }

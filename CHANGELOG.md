@@ -8,6 +8,7 @@ The project follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) for
 
 ## [0.1.0-rc.4] - 2026-08-29
 
+<!-- [CLAIM-PROVENANCE: status=HISTORICAL; source=changelog; classification=SELF_REPORTED_UNVERIFIED] -->
 ### Milestone Summary: 100% On-Device PQC Silicon Certification (736 / 736 PASS across 19 Gates)
 
 This release establishes the world's first complete, 100% device-resident hardware acceleration engine for all finalized NIST Post-Quantum Cryptography standards on the AMD Phoenix NPU (AIE2 / XDNA1 Architecture).
@@ -19,7 +20,7 @@ This release establishes the world's first complete, 100% device-resident hardwa
   - 122 / 122 NIST test vectors passing on silicon.
 - **NIST FIPS 203 (ML-KEM / Kyber — Milestones DR2d, DR3–DR8)**:
   - Full parameter set coverage: **ML-KEM-512**, **ML-KEM-768**, and **ML-KEM-1024**.
-  - 100% on-device execution of KeyGen, Encaps, and Decaps (with constant-time branchless implicit rejection).
+    - On-device execution graphs for KeyGen, Encaps, and Decaps with branchless FO selection.
   - Standalone K-PKE.KeyGen, K-PKE.Encrypt, and K-PKE.Decrypt hardware pipelines.
   - 210 / 210 NIST ACVP and regression test vectors passing on silicon.
 - **NIST FIPS 204 (ML-DSA / Dilithium — Milestones DR11–DR15)**:

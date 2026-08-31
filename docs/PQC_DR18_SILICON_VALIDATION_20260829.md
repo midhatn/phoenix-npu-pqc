@@ -3,6 +3,7 @@
 **Date:** 2026-08-29  
 **Platform:** AMD Phoenix NPU (Ryzen 7040 / 8040 AIE2 Architecture, XDNA1)  
 **Host Environment:** Windows 11 x86_64, MLIR-AIE 1.4.1, XRT Native Runtime  
+<!-- [CLAIM-PROVENANCE: status=HISTORICAL; source=pqc_dr18_silicon_validation_20260829; classification=SELF_REPORTED_UNVERIFIED] -->
 **Status:** **CLOSED & PHYSICALLY VALIDATED ON SILICON (30/30 PASS across all combiner configurations and entropy retention tests)**
 
 ---
@@ -21,8 +22,13 @@ Milestone **DR18** evaluated the on-device key combiner across 30 test cases on 
 
 | Combiner Test Suite | Cases | Physical Silicon Result | Status | Physical Runtime |
 |---|---|---|---|---|
+<!-- [CLAIM-PROVENANCE: status=HISTORICAL; source=pqc_dr18_silicon_validation_20260829; classification=SELF_REPORTED_UNVERIFIED] -->
 | **Standard 256-bit Combination** | 15 | 15 / 15 PASS | **100% Pass** | 0.18s |
+<!-- [CLAIM-PROVENANCE: status=HISTORICAL; source=pqc_dr18_silicon_validation_20260829; classification=SELF_REPORTED_UNVERIFIED] -->
 | **Entropy Retention (Poisoned QKD)** | 5 | 5 / 5 PASS | **100% Pass** | 0.06s |
+<!-- [CLAIM-PROVENANCE: status=HISTORICAL; source=pqc_dr18_silicon_validation_20260829; classification=SELF_REPORTED_UNVERIFIED] -->
 | **Entropy Retention (Zeroed PQC)** | 5 | 5 / 5 PASS | **100% Pass** | 0.06s |
+<!-- [CLAIM-PROVENANCE: status=HISTORICAL; source=pqc_dr18_silicon_validation_20260829; classification=SELF_REPORTED_UNVERIFIED] -->
 | **High-Security 512-bit Extraction** | 5 | 5 / 5 PASS | **100% Pass** | 0.06s |
+<!-- [CLAIM-PROVENANCE: status=HISTORICAL; source=pqc_dr18_silicon_validation_20260829; classification=SELF_REPORTED_UNVERIFIED] -->
 | **TOTAL DR18** | **30** | **30 / 30 PASS** | **100% Pass Rate** | **0.64s** |

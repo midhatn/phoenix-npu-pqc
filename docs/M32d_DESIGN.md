@@ -137,6 +137,7 @@ Six checks:
    - `frombytes_d12(tobytes_d12(a)) == canonical(a) mod 2^12` — 5 trials
    - `tomsg(frommsg(m)) == m` — 5 trials
 
+<!-- [CLAIM-PROVENANCE: status=HISTORICAL; source=m32d_design; classification=SELF_REPORTED_UNVERIFIED] -->
 **Sandbox result: 6/6 PASS.**
 
 ## 6. Track 4 progress after M32d

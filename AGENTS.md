@@ -21,9 +21,7 @@ gate counts or passing banners.
 - Host references must be separate from physical-silicon execution paths.
 - Physical tests must validate complete buffers against independent official
   vectors or independently maintained oracles.
-- Compilation, dispatch, bit-exact correctness, constant-time review,
-  physical leakage evaluation, and external certification are separate
-  evidence levels.
+- Compilation, dispatch, bit-exact correctness, constant-time review, physical leakage evaluation, and external certification are separate evidence levels.
 - NPU residency alone does not prove resistance to timing, power, EM, DMA,
   firmware, fault-injection, or physical attacks.
 - External QKD keys or QRNG bytes are inputs to the NPU. Never claim that the
@@ -145,3 +143,169 @@ Stop and mark the affected DR failed, blocked, or retracted if:
 
 Record the blocker and continue with independent tasks. Never bypass a stop
 condition to make the roadmap appear complete.
+
+# External Research Escalation and Citation Provenance
+
+When a technical problem cannot be resolved from the repository, existing
+tests, installed dependency source, or official local documentation, the agent
+must research the problem before declaring it blocked.
+
+## Required escalation sequence
+
+1. Reproduce and minimize the problem locally.
+2. Search the repository history, issues, tests, and dependency source.
+3. Consult the governing standard or protocol specification.
+4. Consult official vendor documentation.
+5. Search upstream source repositories, issues, discussions, pull requests,
+   release notes, and reference implementations.
+6. Search peer-reviewed papers, conference papers, technical reports, and
+   preprints.
+7. Search Stack Overflow and other technical forums.
+8. Search Reddit or informal community discussions for additional leads.
+9. Cross-check proposed solutions against primary sources and local tests.
+
+Do not stop after the first plausible answer.
+
+## Source authority
+
+Use this priority order:
+
+1. Normative standards and official specifications
+2. Official AMD, NIST, IETF, ETSI, 3GPP, TCG, OpenSSL, or project
+   documentation
+3. Upstream source code and version-pinned reference implementations
+4. Peer-reviewed research
+5. Maintainer-authored GitHub issues, discussions, and pull requests
+6. Stack Overflow answers with reproducible technical evidence
+7. Reddit and other community discussions
+
+Reddit, forum posts, AI-generated answers, and unverified comments are leads,
+not ground truth. Their claims must be verified against source code, official
+documentation, standards, or reproducible experiments.
+
+## Required citation record
+
+For every external source that influences code, architecture, tests, or a
+technical decision, record:
+
+- source title
+- author or organization
+- source type
+- full URL
+- publication or update date, if available
+- access date in timezone-aware ISO-8601 format
+- applicable version, release, tag, or Git commit
+- relevant section, page, issue, answer, or line range
+- exact technical claim taken from the source
+- how the claim was independently verified
+- which repository files or decisions it affected
+- confidence level: PRIMARY, CORROBORATED, LEAD_ONLY, or REJECTED
+
+Do not cite only a search-results page or search snippet. Open and inspect the
+actual source.
+
+## Documentation location
+
+Create one research ledger per affected task:
+
+docs/research/<TASK-ID>-sources.md
+
+For example:
+
+docs/research/FIX-DR2D-FUNCTIONAL-MISMATCH-sources.md
+
+Also summarize the resulting engineering decision in:
+
+.agent/decisions.md
+
+If research produces a blocker rather than a solution, reference the research
+ledger from:
+
+.agent/blockers.json
+
+## GitHub source requirements
+
+For GitHub evidence, record:
+
+- repository owner and name
+- file, issue, discussion, pull request, or commit URL
+- exact tag or commit SHA
+- relevant lines or comment permalink
+- license
+- whether code was copied, adapted, or only consulted
+
+Do not cite a moving branch such as main without also recording the inspected
+commit SHA.
+
+## Research-paper requirements
+
+For papers, record:
+
+- full title
+- authors
+- venue
+- year
+- DOI, publisher URL, or arXiv identifier
+- exact page, section, equation, algorithm, or table used
+
+Never invent a DOI, title, author, or publication status.
+
+## Standards requirements
+
+For standards, record:
+
+- issuing organization
+- complete standard identifier
+- revision or publication date
+- exact section, algorithm, equation, or table
+- official URL
+
+Distinguish normative requirements from informative guidance.
+
+## Code provenance and licensing
+
+If external code is copied or adapted:
+
+- verify that its license permits the intended use
+- retain required copyright and license notices
+- update THIRD_PARTY_PROVENANCE.md
+- identify copied versus independently rewritten portions
+- pin the upstream commit
+- add conformance tests against the authoritative source
+
+Do not copy code from Stack Overflow, Reddit, a paper, or GitHub without
+checking its license and documenting provenance.
+
+## Privacy boundary
+
+Never upload private repository code, secrets, keys, unpublished vectors,
+device identifiers, logs containing personal paths, or confidential data to
+an external service.
+
+Search using a minimized and sanitized description of the problem.
+
+## Research failure behavior
+
+If no reliable solution is found:
+
+1. Document all queries and sources inspected.
+2. Record why each candidate solution was accepted, rejected, or insufficient.
+3. Create a precise blocker.
+4. State what evidence, hardware access, documentation, or upstream response
+   is required.
+5. Continue with the next independent READY task.
+
+Do not fabricate a solution to avoid reporting a blocker.
+
+## Implementation gate
+
+External research does not itself prove correctness.
+
+Before accepting a researched solution:
+
+- implement it in a bounded change
+- add regression tests
+- compare against authoritative vectors where applicable
+- run host-safe validation
+- run physical validation when required and available
+- preserve the correct execution-boundary and evidence classification
