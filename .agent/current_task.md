@@ -2,16 +2,17 @@
 
 ## Task
 
-`DR2C-MIGRATE`: Bounded DR2c ML-KEM-512 KeyGen Row structured evidence migration and parent oracle verification.
+`DR2D-MIGRATE`: Bounded DR2d ML-KEM-512 K-PKE KeyGen structured evidence migration and parent oracle verification.
 
 ## Status
 
-`COMPLETED` (Bounded DR2c implementation & parent-side public-buffer verification completed).
+`COMPLETED` (Bounded DR2d implementation & parent-side NIST ACVP oracle verification completed).
 - Structured framed evidence emission: Implemented (`<<<PQC_SILICON_GATE_RESULT_V1>>>`).
-- Parent-side buffer oracle verification: Implemented (2,816/2,816 coefficients verified bit-exact).
+- Parent-side buffer oracle verification: Implemented (25 official NIST ACVP key pairs checked).
 - Redirection exclusion: `XCL_EMULATION_MODE` and `XRT_INI_PATH` explicitly rejected fail-closed.
-- Physical evidence state: `SELF_REPORTED_UNVERIFIED` (success=False, cases_passed=0, cases_unverified=11).
-- Hardware ground truth: `PHYSICAL_VERIFICATION_BLOCKED` pending independent driver dispatch corroboration.
+- Physical evidence state: `FAIL` (success=False, exit_code=1, cases_failed=25 against official ACVP vectors).
+- Hardware ground truth: 6-worker AIE2 dataflow pipeline dispatches, but intermediate token handoff/calculation diverges on physical silicon; truthfully recorded as `FAIL` without host fallback.
+
 
 
 
