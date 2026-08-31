@@ -7,12 +7,29 @@ import hashlib
 import json
 import re
 import subprocess
+import sys
 from collections.abc import Iterable
 from dataclasses import asdict, dataclass
 from datetime import datetime
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
+
+
+def get_canonical_gate_metadata():
+    if str(REPO_ROOT) not in sys.path:
+        sys.path.insert(0, str(REPO_ROOT))
+    try:
+        from run_all_silicon_tests import EXTENSION_GATES, GATES
+
+        canonical_map = {g.gate_id.upper(): g for g in GATES}
+        canonical_order = [g.gate_id.upper() for g in GATES]
+        extension_map = {g.gate_id.upper(): g for g in EXTENSION_GATES}
+        return canonical_map, canonical_order, extension_map
+    except ImportError:
+        return {}, [], {}
+
+
 PHYSICAL_SUFFIX = "_silicon.py"
 HOST_CRYPTO_MODULES = {
     "Crypto",
@@ -36,6 +53,8 @@ SUPPORTED_EXTENSIONS = {
     ".mlir",
     ".ps1",
     ".sh",
+    ".bat",
+    ".cmd",
     ".cmake",
     ".yml",
     ".yaml",
@@ -70,6 +89,29 @@ CPP_PREPROCESSOR_FALLBACK_RE = re.compile(
     r"#(?:if|ifdef)\s+.*(?:CPU_FALLBACK|HOST_FALLBACK|USE_HOST|USE_SIMULATOR)\b"
 )
 CPP_UNSAFE_MEMCPY_RE = re.compile(r"\bmemcpy\s*\(\s*[^,]+,\s*[^,]+,\s*0\s*\)")
+CPP_KNOWN_VECTOR_RE = re.compile(
+    r"\b(?:request_id\s*==\s*0x[0-9a-fA-F]+|0x[0-9a-fA-F]+\s*==\s*request_id|"
+    r"tc_id\s*==\s*\d+|\d+\s*==\s*tc_id|"
+    r"case_id\s*==\s*\d+|\d+\s*==\s*case_id|"
+    r"test_id\s*==\s*\d+|\d+\s*==\s*test_id|"
+    r"known_vector|known_hash|known_seed|kKnownAcvpSeed)\b|"
+    r"\bswitch\s*\([^)]*(?:request_id|tc_id|case_id|test_id)[^)]*\)\s*\{[^}]*\bcase\s+(?:0x[0-9a-fA-F]+|\d+)\s*:",
+    re.IGNORECASE | re.DOTALL,
+)
+CPP_FINGERPRINT_MATCH_RE = re.compile(
+    r"\bif\s*\([^)]*(?:(?:sha256|sha3_256|hash)\s*\([^)]*\)\s*==\s*(?:known_hash|0x[0-9a-fA-F]+|\"[0-9a-fA-F]{16,64}\")|"
+    r"(?:known_hash|0x[0-9a-fA-F]+|\"[0-9a-fA-F]{16,64}\")\s*==\s*(?:sha256|sha3_256|hash)\s*\([^)]*\))[^)]*\)",
+    re.IGNORECASE | re.DOTALL,
+)
+CPP_EXPECTED_OUTPUT_COPY_RE = re.compile(
+    r"\b(?:memcpy|copy_bytes)\s*\(\s*[^,]+,\s*(?:expected_output|kExpectedOutput|expected_buf|oracle_output|expected)\b|"
+    r"\bstd::copy\s*\(\s*(?:expected_output|kExpectedOutput|expected_buf|oracle_output|expected)\b",
+    re.IGNORECASE | re.DOTALL,
+)
+CPP_HOST_FALLBACK_CALL_RE = re.compile(
+    r"\b(?:run_host_fallback|host_reference_fallback|cpu_fallback)\s*\(",
+    re.IGNORECASE | re.DOTALL,
+)
 
 # Script patterns
 SCRIPT_IGNORED_EXIT_RE = re.compile(
@@ -85,6 +127,94 @@ SCRIPT_GENERIC_PYTHON_FALLBACK_RE = re.compile(
 SCRIPT_DESTRUCTIVE_CMD_RE = re.compile(
     r"(?:rm\s+-rf\s+/(?:\s|$|\*)|Remove-Item\s+-(?:Force\s+)?-Recurse\s+['\"]?[A-Za-z]:\\[*]?['\"])"
 )
+
+# Host, driver, and system integrity mutation patterns (bounded CLI rules)
+HOST_CLI_MUTATION_RULES = [
+    (
+        "HOST001",
+        "critical",
+        re.compile(
+            r"\bpnputil(?:\.exe)?[\s,\"']+(?:[^\r\n;|]+?[\s,\"']+)?(?:[/-](?:add-driver|delete-driver|install-driver|import-driver|i\s+-[aA]|[aA]\s+-[iI]|[iI][aA]|[aA][iI]|[dD]))\b|"
+            r"\bdevcon(?:\.exe)?[\s,\"']+(?:[^\r\n;|]+?[\s,\"']+)?(?:install|remove|restart|disable|enable|update|updateni|reboot|rescan)\b|"
+            r"\bdism(?:\.exe)?[\s,\"']+[^\r\n;|]*?/(?:add-driver|remove-driver|import-driver)\b",
+            re.IGNORECASE,
+        ),
+        "Host or driver mutation command is forbidden (pnputil, devcon, or driver-changing DISM).",
+    ),
+    (
+        "HOST002",
+        "critical",
+        re.compile(
+            r"\bStart-Process\s+[^\r\n;|]*?-Verb\s+['\"]?RunAs['\"]?|"
+            r"\brunas(?:\.exe)?[\s,\"']+[^\r\n;|]*?[/-]user\s*:\s*|"
+            r"\bsudo\s+",
+            re.IGNORECASE,
+        ),
+        "Administrator elevation or privilege escalation command is forbidden.",
+    ),
+    (
+        "HOST003",
+        "critical",
+        re.compile(
+            r"\bsc(?:\.exe)?[\s,\"']+(?:[^\r\n;|]+?[\s,\"']+)?(?:create|delete|config)\b|"
+            r"\b(?:New-Service|Set-Service|Remove-Service)\b|"
+            r"\breg(?:\.exe)?[\s,\"']+(?:[^\r\n;|]+?[\s,\"']+)?(?:add|delete|import|restore)[\s,\"']+(?:HKLM|HKEY_LOCAL_MACHINE)\b|"
+            r"\b(?:Set-ItemProperty|New-Item|Remove-Item|New-ItemProperty|Remove-ItemProperty|Set-Item|Clear-ItemProperty)\s+[^\r\n;|]*?(?:HKLM:|Registry::HKEY_LOCAL_MACHINE|HKLM\\|HKEY_LOCAL_MACHINE\\)",
+            re.IGNORECASE,
+        ),
+        "Machine-wide registry or driver/system service mutation is forbidden.",
+    ),
+    (
+        "HOST004",
+        "critical",
+        re.compile(
+            r"\bbcdedit(?:\.exe)?[\s,\"']+(?:[^\r\n;|]+?[\s,\"']+)?(?:[/-](?:set|deletevalue|create|delete|default|bootdebug|debug|timeout))\b",
+            re.IGNORECASE,
+        ),
+        "Boot configuration (bcdedit) mutation is forbidden.",
+    ),
+    (
+        "HOST007",
+        "critical",
+        re.compile(
+            r"\bpowershell(?:\.exe)?\s+[^\r\n;|]*?(?:-[eE](?:nc(?:odedcommand)?)?)\s+[A-Za-z0-9+/=]{10,}|"
+            r"\b(?:Invoke-Expression|iex)\b[^\r\n;|]*?\b(?:DownloadString|DownloadData|DownloadFile|Invoke-WebRequest|iwr|Invoke-RestMethod|irm)\b|"
+            r"\b(?:curl|wget)\b[^\r\n;|]*?\|\s*(?:sh|bash|powershell|pwsh|cmd)\b",
+            re.IGNORECASE,
+        ),
+        "Obfuscated execution, encoded PowerShell, or download-and-execute pattern is forbidden.",
+    ),
+]
+
+
+# Direct native dangerous API patterns (C/C++ and Python)
+HOST_NATIVE_API_RULES = [
+    (
+        "HOST005",
+        "critical",
+        re.compile(
+            r"\b(?:SetupCopyOEMInf[AW]?|DiInstallDriver[AW]?|UpdateDriverForPlugAndPlayDevices[AW]?|NtLoadDriver|ZwLoadDriver|NtUnloadDriver|ZwUnloadDriver)\s*\(",
+            re.IGNORECASE,
+        ),
+        "Native driver installation or driver-loading API is forbidden.",
+    ),
+    (
+        "HOST006",
+        "critical",
+        re.compile(
+            r"\b(?:WriteProcessMemory|NtWriteVirtualMemory|ZwWriteVirtualMemory|CreateRemoteThread|NtCreateThreadEx|ZwCreateThreadEx|SetWindowsHookEx[AW]?|DetourAttach|DetourTransactionBegin|DetourUpdateThread|DetourDetach)\s*\(",
+            re.IGNORECASE,
+        ),
+        "Process injection, cross-process memory tampering, or API/syscall hooking is forbidden.",
+    ),
+]
+
+# C/C++ process-launching sink pattern
+CPP_PROCESS_SINK_RE = re.compile(
+    r"\b(?:system|_wsystem|_popen|popen|ShellExecute[AW]?|ShellExecuteEx[AW]?|CreateProcess[AW]?)\s*\(((?:[^;)\n]|[\r\n]){1,4096}?)\)",
+    re.IGNORECASE,
+)
+
 
 # Secret and privacy patterns
 SECRET_PRIVATE_KEY_RE = re.compile(r"-----BEGIN (?:[A-Z0-9_-]+ )?PRIVATE KEY-----")
@@ -102,12 +232,26 @@ DOC_STRONG_CLAIM_RE = re.compile(
     r"(?i)\[VERIFIED PHYSICAL SILICON\]|"
     r"\bphysically verified\b|"
     r"\bexecuted on silicon\b|"
+    r"\bverified on (?:phoenix\s+)?(?:aie2\s+)?hardware\b|"
+    r"\bconfirmed on silicon\b|"
+    r"\bpassed on (?:the\s+)?(?:physical\s+)?npu\b|"
     r"\bhardware accelerated\b|"
     r"\bstandards compliant\b|"
     r"\bconstant[- ]time\b|"
     r"\bside[- ]channel resistant\b|"
     r"\bproduction ready\b|"
     r"\b\d+\s*/\s*\d+\s+(?:TESTS?\s+)?PASS(?:ED|ING)?\b"
+)
+DOC_PROHIBITED_TERMINOLOGY_RE = re.compile(
+    r"\b(?:public|committed|deterministic)\s+.*(?:hidden vectors?|hidden inputs?)\b|"
+    r"\bhidden\s+(?:deterministic|public)\b|"
+    r"\b(?:zero|0)\s+scanner\s+findings?\s+proves?\s+(?:cryptographic\s+correctness|semantic\s+correctness|correctness)\b|"
+    r"\bscanner\s+(?:passed|success)\s+(?:proves|guarantees)\s+(?:cryptographic|semantic)\s+correctness\b|"
+    r"\b(?:warm\s+cache\s+fresh\s+(?:compile|build)|cache\s+hit\s+described\s+as\s+fresh|cache\s+hit\s+fresh\s+(?:compile|build))\b",
+    re.IGNORECASE,
+)
+DOC_REPO_ROOT_CITATION_RE = re.compile(
+    r"(?i)evidence source\s*:\s*https://github\.com/[a-zA-Z0-9_.-]+/[a-zA-Z0-9_.-]+/?\s*$"
 )
 CLAIM_PROVENANCE_RE = re.compile(r"\[CLAIM-PROVENANCE:\s*([^\]]+)\]", re.IGNORECASE)
 
@@ -300,6 +444,38 @@ class PythonPolicyVisitor(ast.NodeVisitor):
                     "critical",
                     f"Fallback-like call `{name}` is reachable from an exception handler.",
                 )
+
+        # Check process-launching sinks for CLI mutation commands
+        c_name = call_name(node.func)
+        c_name_lower = c_name.lower()
+        is_sink = any(
+            c_name_lower == sink or c_name_lower.endswith(f".{sink}")
+            for sink in (
+                "subprocess.run",
+                "subprocess.popen",
+                "subprocess.call",
+                "subprocess.check_call",
+                "subprocess.check_output",
+                "os.system",
+                "os.popen",
+            )
+        )
+        if is_sink and node.args:
+            arg0 = node.args[0]
+            cmd_str = ""
+            if isinstance(arg0, ast.Constant) and isinstance(arg0.value, str):
+                cmd_str = arg0.value
+            elif isinstance(arg0, (ast.List, ast.Tuple)):
+                tokens = []
+                for elt in arg0.elts:
+                    if isinstance(elt, ast.Constant) and isinstance(elt.value, str):
+                        tokens.append(elt.value)
+                cmd_str = " ".join(tokens)
+            if cmd_str:
+                for rule, severity, pattern, message in HOST_CLI_MUTATION_RULES:
+                    if pattern.search(cmd_str):
+                        self.add(node, rule, severity, message)
+
         self.generic_visit(node)
 
     def visit_Compare(self, node: ast.Compare) -> None:
@@ -382,6 +558,19 @@ def scan_python_file(relative_path: Path) -> list[Finding]:
             )
         ]
     findings: list[Finding] = scan_secrets(relative_path, source)
+    for rule, severity, pattern, message in HOST_NATIVE_API_RULES:
+        for m in pattern.finditer(source):
+            line_no = source[: m.start()].count("\n") + 1
+            findings.append(
+                Finding(
+                    relative_path.as_posix(),
+                    line_no,
+                    rule,
+                    severity,
+                    message,
+                )
+            )
+
     try:
         tree = ast.parse(source, filename=str(relative_path))
     except SyntaxError as exc:
@@ -426,6 +615,493 @@ def scan_python_file(relative_path: Path) -> list[Finding]:
     return findings
 
 
+def strip_cpp_comments(source: str) -> str:
+    """Replace C/C++ comments (// and /* */) with spaces, preserving string literals, line breaks, and offsets."""
+    chars = list(source)
+    n = len(chars)
+    i = 0
+    in_string = False
+    quote_char = ""
+    while i < n:
+        if in_string:
+            if chars[i] == "\\":
+                i += 2
+                continue
+            if chars[i] == quote_char:
+                in_string = False
+            i += 1
+            continue
+
+        if chars[i] in ('"', "'"):
+            in_string = True
+            quote_char = chars[i]
+            i += 1
+            continue
+
+        if i + 1 < n and chars[i] == "/" and chars[i + 1] == "/":
+            chars[i] = " "
+            chars[i + 1] = " "
+            i += 2
+            while i < n and chars[i] != "\n":
+                chars[i] = " "
+                i += 1
+        elif i + 1 < n and chars[i] == "/" and chars[i + 1] == "*":
+            chars[i] = " "
+            chars[i + 1] = " "
+            i += 2
+            while i < n and not (chars[i] == "*" and chars[i + 1] == "/"):
+                if chars[i] != "\n":
+                    chars[i] = " "
+                i += 1
+            if i + 1 < n and chars[i] == "*" and chars[i + 1] == "/":
+                chars[i] = " "
+                chars[i + 1] = " "
+                i += 2
+        else:
+            i += 1
+    return "".join(chars)
+
+
+def strip_hash_comments(source: str) -> str:
+    """Replace '#' and '<# #>' comments with spaces, preserving string literals, line breaks, and offsets."""
+    chars = list(source)
+    n = len(chars)
+    i = 0
+    in_single_quote = False
+    in_double_quote = False
+    while i < n:
+        c = chars[i]
+        if c == "\\":
+            i += 2
+            continue
+        if c == "'" and not in_double_quote:
+            in_single_quote = not in_single_quote
+            i += 1
+            continue
+        if c == '"' and not in_single_quote:
+            in_double_quote = not in_double_quote
+            i += 1
+            continue
+        if c == "#" and not in_single_quote and not in_double_quote:
+            while i < n and chars[i] != "\n":
+                chars[i] = " "
+                i += 1
+            continue
+        if (
+            not in_single_quote
+            and not in_double_quote
+            and i + 1 < n
+            and chars[i] == "<"
+            and chars[i + 1] == "#"
+        ):
+            chars[i] = " "
+            chars[i + 1] = " "
+            i += 2
+            while i < n and not (chars[i] == "#" and chars[i + 1] == ">"):
+                if chars[i] != "\n":
+                    chars[i] = " "
+                i += 1
+            if i + 1 < n and chars[i] == "#" and chars[i + 1] == ">":
+                chars[i] = " "
+                chars[i + 1] = " "
+                i += 2
+            continue
+        i += 1
+    return "".join(chars)
+
+
+def assemble_logical_commands(
+    relative_path: Path,
+    source: str,
+    language: str,
+    max_lines: int = 32,
+    max_chars: int = 4096,
+) -> tuple[list[tuple[int, str]], list[Finding]]:
+    """Assemble discrete logical commands from script or workflow source.
+
+    Returns (commands, overflow_findings).
+    Fails closed with a critical finding if a logical command exceeds max_lines or max_chars.
+    """
+    commands: list[tuple[int, str]] = []
+    findings: list[Finding] = []
+    norm_path = relative_path.as_posix()
+
+    if language in {"shell", "script", "sh"}:
+        sanitized = strip_hash_comments(source)
+        lines = sanitized.splitlines()
+        i = 0
+        n = len(lines)
+        while i < n:
+            line_str = lines[i]
+            line_num = i + 1
+            if not line_str.strip():
+                i += 1
+                continue
+
+            if len(line_str) > max_chars:
+                findings.append(
+                    Finding(
+                        norm_path,
+                        line_num,
+                        "HOST001",
+                        "critical",
+                        f"Command continuation exceeds analyzable limit ({max_lines} lines / {max_chars} chars); fail-closed.",
+                    )
+                )
+                i += 1
+                continue
+
+            accum = [line_str.rstrip("\r\n")]
+            has_continuation = accum[0].rstrip().endswith("\\")
+            if has_continuation:
+                accum[0] = accum[0].rstrip()[:-1]
+
+            start_line = line_num
+            line_count = 1
+            while has_continuation and i + 1 < n:
+                i += 1
+                line_count += 1
+                curr_line = lines[i].rstrip("\r\n")
+                if curr_line.rstrip().endswith("\\"):
+                    accum.append(curr_line.rstrip()[:-1])
+                    has_continuation = True
+                else:
+                    accum.append(curr_line)
+                    has_continuation = False
+
+                total_chars = sum(len(s) for s in accum)
+                if line_count > max_lines or total_chars > max_chars:
+                    findings.append(
+                        Finding(
+                            norm_path,
+                            start_line,
+                            "HOST001",
+                            "critical",
+                            f"Command continuation exceeds analyzable limit ({max_lines} lines / {max_chars} chars); fail-closed.",
+                        )
+                    )
+                    break
+
+            joined = " ".join(part.strip() for part in accum if part.strip())
+            if joined:
+                for sub_cmd in joined.split(";"):
+                    sub_cmd_clean = sub_cmd.strip()
+                    if sub_cmd_clean:
+                        commands.append((start_line, sub_cmd_clean))
+            i += 1
+
+    elif language in {"powershell", "ps1"}:
+        sanitized = strip_hash_comments(source)
+        lines = sanitized.splitlines()
+        i = 0
+        n = len(lines)
+        while i < n:
+            line_str = lines[i]
+            line_num = i + 1
+            if not line_str.strip():
+                i += 1
+                continue
+
+            if len(line_str) > max_chars:
+                findings.append(
+                    Finding(
+                        norm_path,
+                        line_num,
+                        "HOST001",
+                        "critical",
+                        f"Command continuation exceeds analyzable limit ({max_lines} lines / {max_chars} chars); fail-closed.",
+                    )
+                )
+                i += 1
+                continue
+
+            accum = [line_str.rstrip("\r\n")]
+            has_continuation = accum[0].rstrip().endswith("`")
+            if has_continuation:
+                accum[0] = accum[0].rstrip()[:-1]
+
+            start_line = line_num
+            line_count = 1
+            while has_continuation and i + 1 < n:
+                i += 1
+                line_count += 1
+                curr_line = lines[i].rstrip("\r\n")
+                if curr_line.rstrip().endswith("`"):
+                    accum.append(curr_line.rstrip()[:-1])
+                    has_continuation = True
+                else:
+                    accum.append(curr_line)
+                    has_continuation = False
+
+                total_chars = sum(len(s) for s in accum)
+                if line_count > max_lines or total_chars > max_chars:
+                    findings.append(
+                        Finding(
+                            norm_path,
+                            start_line,
+                            "HOST001",
+                            "critical",
+                            f"Command continuation exceeds analyzable limit ({max_lines} lines / {max_chars} chars); fail-closed.",
+                        )
+                    )
+                    break
+
+            joined = " ".join(part.strip() for part in accum if part.strip())
+            if joined:
+                for sub_cmd in joined.split(";"):
+                    sub_cmd_clean = sub_cmd.strip()
+                    if sub_cmd_clean:
+                        commands.append((start_line, sub_cmd_clean))
+            i += 1
+
+    elif language in {"yaml", "yml", "structured"}:
+        sanitized = strip_hash_comments(source)
+        lines = sanitized.splitlines()
+        i = 0
+        n = len(lines)
+        while i < n:
+            line_str = lines[i]
+            line_num = i + 1
+            run_match = re.search(r"^\s*(?:-\s*)?run\s*:\s*(.*)$", line_str)
+            if run_match:
+                start_line = line_num
+                val = run_match.group(1).strip()
+                is_literal = bool(re.match(r"^\|[+-]?\d*$", val))
+                is_folded = bool(re.match(r"^>[+-]?\d*$", val))
+                if is_literal or is_folded:
+                    indent = len(line_str) - len(line_str.lstrip())
+                    block_lines: list[tuple[int, str]] = []
+                    j = i + 1
+                    while j < n:
+                        curr = lines[j]
+                        curr_indent = len(curr) - len(curr.lstrip())
+                        if curr.strip() and curr_indent <= indent:
+                            break
+                        block_lines.append((j + 1, curr))
+                        j += 1
+                    i = j - 1
+
+                    if is_literal:
+                        k = 0
+                        num_block_lines = len(block_lines)
+                        while k < num_block_lines:
+                            orig_ln, b_line = block_lines[k]
+                            if not b_line.strip():
+                                k += 1
+                                continue
+
+                            accum = [b_line.rstrip("\r\n")]
+                            cmd_start_line = orig_ln
+                            has_continuation = accum[0].rstrip().endswith("\\")
+                            if has_continuation:
+                                accum[0] = accum[0].rstrip()[:-1]
+
+                            cmd_line_count = 1
+                            while has_continuation and k + 1 < num_block_lines:
+                                k += 1
+                                cmd_line_count += 1
+                                _next_orig_ln, next_b_line = block_lines[k]
+                                curr_l = next_b_line.rstrip("\r\n")
+                                if curr_l.rstrip().endswith("\\"):
+                                    accum.append(curr_l.rstrip()[:-1])
+                                    has_continuation = True
+                                else:
+                                    accum.append(curr_l)
+                                    has_continuation = False
+
+                                total_chars = sum(len(s) for s in accum)
+                                if (
+                                    cmd_line_count > max_lines
+                                    or total_chars > max_chars
+                                ):
+                                    findings.append(
+                                        Finding(
+                                            norm_path,
+                                            cmd_start_line,
+                                            "HOST001",
+                                            "critical",
+                                            f"Command continuation exceeds analyzable limit ({max_lines} lines / {max_chars} chars); fail-closed.",
+                                        )
+                                    )
+                                    break
+
+                            joined = " ".join(
+                                part.strip() for part in accum if part.strip()
+                            )
+                            if joined:
+                                for sub_cmd in joined.split(";"):
+                                    sub_cmd_clean = sub_cmd.strip()
+                                    if sub_cmd_clean:
+                                        commands.append((cmd_start_line, sub_cmd_clean))
+                            k += 1
+
+                    elif is_folded:
+                        non_empty_block = [
+                            (ln, line) for ln, line in block_lines if line.strip()
+                        ]
+                        folded_line_count = len(non_empty_block)
+                        total_chars = sum(
+                            len(line.strip()) for _, line in non_empty_block
+                        )
+                        if folded_line_count > max_lines or total_chars > max_chars:
+                            findings.append(
+                                Finding(
+                                    norm_path,
+                                    start_line,
+                                    "HOST001",
+                                    "critical",
+                                    f"YAML folded run block exceeds analyzable limit ({max_lines} lines / {max_chars} chars); fail-closed.",
+                                )
+                            )
+                        else:
+                            joined = " ".join(
+                                line.strip()
+                                for _, line in non_empty_block
+                                if line.strip()
+                            )
+                            if joined:
+                                for sub_cmd in joined.split(";"):
+                                    sub_cmd_clean = sub_cmd.strip()
+                                    if sub_cmd_clean:
+                                        commands.append((start_line, sub_cmd_clean))
+                else:
+                    if val:
+                        if len(val) > max_chars:
+                            findings.append(
+                                Finding(
+                                    norm_path,
+                                    start_line,
+                                    "HOST001",
+                                    "critical",
+                                    f"Command continuation exceeds analyzable limit ({max_lines} lines / {max_chars} chars); fail-closed.",
+                                )
+                            )
+                        else:
+                            for sub_cmd in val.split(";"):
+                                sub_cmd_clean = sub_cmd.strip()
+                                if sub_cmd_clean:
+                                    commands.append((start_line, sub_cmd_clean))
+            i += 1
+
+    elif language in {"cmake"}:
+        sanitized = strip_hash_comments(source)
+        lines = sanitized.splitlines()
+        cmake_exec_re = re.compile(
+            r"\b(execute_process|add_custom_command|add_custom_target)\s*\(",
+            re.IGNORECASE,
+        )
+        for line_num, line_str in enumerate(lines, start=1):
+            if cmake_exec_re.search(line_str):
+                accum = [line_str]
+                idx = line_num - 1
+                curr_idx = idx
+                while ")" not in "".join(accum) and curr_idx + 1 < len(lines):
+                    curr_idx += 1
+                    accum.append(lines[curr_idx])
+                    if len(accum) > max_lines or sum(len(s) for s in accum) > max_chars:
+                        findings.append(
+                            Finding(
+                                norm_path,
+                                line_num,
+                                "HOST001",
+                                "critical",
+                                f"CMake execution command exceeds analyzable limit ({max_lines} lines / {max_chars} chars); fail-closed.",
+                            )
+                        )
+                        break
+                joined = " ".join(s.strip() for s in accum)
+                commands.append((line_num, joined))
+
+    return commands, findings
+
+
+def strip_cpp_comments_and_strings(source: str) -> str:
+    """Replace comments and string literals with spaces, preserving line breaks and character offsets."""
+    chars = list(source)
+    n = len(chars)
+    i = 0
+    while i < n:
+        if i + 1 < n and chars[i] == "/" and chars[i + 1] == "/":
+            chars[i] = " "
+            chars[i + 1] = " "
+            i += 2
+            while i < n and chars[i] != "\n":
+                chars[i] = " "
+                i += 1
+        elif i + 1 < n and chars[i] == "/" and chars[i + 1] == "*":
+            chars[i] = " "
+            chars[i + 1] = " "
+            i += 2
+            while i < n and not (chars[i] == "*" and chars[i + 1] == "/"):
+                if chars[i] != "\n":
+                    chars[i] = " "
+                i += 1
+            if i + 1 < n and chars[i] == "*" and chars[i + 1] == "/":
+                chars[i] = " "
+                chars[i + 1] = " "
+                i += 2
+        elif chars[i] == '"':
+            chars[i] = " "
+            i += 1
+            while i < n and chars[i] != '"':
+                if chars[i] == "\\":
+                    chars[i] = " "
+                    if i + 1 < n:
+                        chars[i + 1] = " "
+                        i += 2
+                    else:
+                        i += 1
+                elif chars[i] == "\n":
+                    i += 1
+                else:
+                    chars[i] = " "
+                    i += 1
+            if i < n and chars[i] == '"':
+                chars[i] = " "
+                i += 1
+            elif chars[i] == "'":
+                chars[i] = " "
+                i += 1
+                while i < n and chars[i] != "'":
+                    if chars[i] == "\\":
+                        chars[i] = " "
+                        if i + 1 < n:
+                            chars[i + 1] = " "
+                            i += 2
+                        else:
+                            i += 1
+                    elif chars[i] == "\n":
+                        i += 1
+                    else:
+                        chars[i] = " "
+                        i += 1
+                if i < n and chars[i] == "'":
+                    chars[i] = " "
+                    i += 1
+        elif chars[i] == "'":
+            chars[i] = " "
+            i += 1
+            while i < n and chars[i] != "'":
+                if chars[i] == "\\":
+                    chars[i] = " "
+                    if i + 1 < n:
+                        chars[i + 1] = " "
+                        i += 2
+                    else:
+                        i += 1
+                elif chars[i] == "\n":
+                    i += 1
+                else:
+                    chars[i] = " "
+                    i += 1
+            if i < n and chars[i] == "'":
+                chars[i] = " "
+                i += 1
+        else:
+            i += 1
+    return "".join(chars)
+
+
 def scan_cpp_file(relative_path: Path) -> list[Finding]:
     if is_policy_exempt(relative_path):
         return []
@@ -443,6 +1119,38 @@ def scan_cpp_file(relative_path: Path) -> list[Finding]:
             )
         ]
     findings: list[Finding] = scan_secrets(relative_path, source)
+
+    # 1. Native dangerous APIs
+    sanitized_cpp = strip_cpp_comments(source)
+    for rule, severity, pattern, message in HOST_NATIVE_API_RULES:
+        for m in pattern.finditer(sanitized_cpp):
+            line_no = source[: m.start()].count("\n") + 1
+            findings.append(
+                Finding(
+                    relative_path.as_posix(),
+                    line_no,
+                    rule,
+                    severity,
+                    message,
+                )
+            )
+
+    # 2. Process-launching sinks in C/C++ (system, _wsystem, ShellExecute, CreateProcess, popen, etc.)
+    for m in CPP_PROCESS_SINK_RE.finditer(sanitized_cpp):
+        line_no = source[: m.start()].count("\n") + 1
+        sink_args = m.group(1)
+        for rule, severity, pattern, message in HOST_CLI_MUTATION_RULES:
+            if pattern.search(sink_args):
+                findings.append(
+                    Finding(
+                        relative_path.as_posix(),
+                        line_no,
+                        rule,
+                        severity,
+                        message,
+                    )
+                )
+
     lines = source.splitlines()
 
     for line_number, line in enumerate(lines, start=1):
@@ -487,7 +1195,58 @@ def scan_cpp_file(relative_path: Path) -> list[Finding]:
                 )
             )
 
-    if CPP_CATCH_FALLBACK_RE.search(source):
+    # Multiline scanning on sanitized code (with comments & strings masked)
+    sanitized = strip_cpp_comments_and_strings(source)
+
+    for m in CPP_KNOWN_VECTOR_RE.finditer(sanitized):
+        line_no = source[: m.start()].count("\n") + 1
+        findings.append(
+            Finding(
+                relative_path.as_posix(),
+                line_no,
+                "CPP006",
+                "critical",
+                "Known-vector specialization or test ID branching is forbidden in kernel/C++ code.",
+            )
+        )
+
+    for m in CPP_FINGERPRINT_MATCH_RE.finditer(sanitized):
+        line_no = source[: m.start()].count("\n") + 1
+        findings.append(
+            Finding(
+                relative_path.as_posix(),
+                line_no,
+                "CPP006",
+                "critical",
+                "Input fingerprint specialization is forbidden in kernel/C++ code.",
+            )
+        )
+
+    for m in CPP_EXPECTED_OUTPUT_COPY_RE.finditer(sanitized):
+        line_no = source[: m.start()].count("\n") + 1
+        findings.append(
+            Finding(
+                relative_path.as_posix(),
+                line_no,
+                "CPP007",
+                "critical",
+                "Embedding or copying expected test outputs is forbidden.",
+            )
+        )
+
+    for m in CPP_HOST_FALLBACK_CALL_RE.finditer(sanitized):
+        line_no = source[: m.start()].count("\n") + 1
+        findings.append(
+            Finding(
+                relative_path.as_posix(),
+                line_no,
+                "CPP008",
+                "critical",
+                "Direct host/CPU fallback calls in kernel code are forbidden.",
+            )
+        )
+
+    if CPP_CATCH_FALLBACK_RE.search(sanitized):
         findings.append(
             Finding(
                 relative_path.as_posix(),
@@ -537,6 +1296,22 @@ def scan_script_file(relative_path: Path) -> list[Finding]:
             )
         ]
     findings: list[Finding] = scan_secrets(relative_path, source)
+
+    lang = "powershell" if relative_path.suffix.lower() == ".ps1" else "shell"
+    cmds, overflow_findings = assemble_logical_commands(relative_path, source, lang)
+    findings.extend(overflow_findings)
+    for line_num, cmd in cmds:
+        for rule, severity, pattern, message in HOST_CLI_MUTATION_RULES:
+            if pattern.search(cmd):
+                findings.append(
+                    Finding(
+                        relative_path.as_posix(),
+                        line_num,
+                        rule,
+                        severity,
+                        message,
+                    )
+                )
 
     norm = relative_path.as_posix()
     if norm in EVIDENCE_MANIFEST_HASHES:
@@ -637,6 +1412,22 @@ def scan_cmake_file(relative_path: Path) -> list[Finding]:
     target = REPO_ROOT / relative_path
     source = target.read_text(encoding="utf-8", errors="replace")
     findings = scan_secrets(relative_path, source)
+
+    cmds, overflow_findings = assemble_logical_commands(relative_path, source, "cmake")
+    findings.extend(overflow_findings)
+    for line_num, cmd in cmds:
+        for rule, severity, pattern, message in HOST_CLI_MUTATION_RULES:
+            if pattern.search(cmd):
+                findings.append(
+                    Finding(
+                        relative_path.as_posix(),
+                        line_num,
+                        rule,
+                        severity,
+                        message,
+                    )
+                )
+
     for line_number, line in enumerate(source.splitlines(), start=1):
         if HARDCODED_PASS_RE.search(line):
             findings.append(
@@ -657,6 +1448,24 @@ def scan_structured_file(relative_path: Path) -> list[Finding]:
     target = REPO_ROOT / relative_path
     source = target.read_text(encoding="utf-8", errors="replace")
     findings = scan_secrets(relative_path, source)
+
+    if relative_path.suffix.lower() in {".yaml", ".yml"}:
+        cmds, overflow_findings = assemble_logical_commands(
+            relative_path, source, "yaml"
+        )
+        findings.extend(overflow_findings)
+        for line_num, cmd in cmds:
+            for rule, severity, pattern, message in HOST_CLI_MUTATION_RULES:
+                if pattern.search(cmd):
+                    findings.append(
+                        Finding(
+                            relative_path.as_posix(),
+                            line_num,
+                            rule,
+                            severity,
+                            message,
+                        )
+                    )
 
     if relative_path.suffix.lower() == ".json":
         try:
@@ -1027,11 +1836,79 @@ def validate_claim_provenance(
     return findings
 
 
+PHYSICAL_CLAIM_RE = re.compile(
+    r"(?i)\[VERIFIED PHYSICAL SILICON\]|"
+    r"\bphysically verified\b|"
+    r"\bexecuted on silicon\b|"
+    r"\bverified on (?:phoenix\s+)?(?:aie2\s+)?hardware\b|"
+    r"\bconfirmed on silicon\b|"
+    r"\bpassed on (?:the\s+)?(?:physical\s+)?npu\b"
+)
+
+
 def is_claim_line(lines: list[str], idx: int) -> bool:
     line = lines[idx]
     if not DOC_STRONG_CLAIM_RE.search(line):
         return False
+
     line_lower = line.lower()
+
+    if re.search(
+        r"(?:physically verified|verified)\s*(?:gates|cases|suites)?\s*:\s*0\b",
+        line_lower,
+    ) or re.search(
+        r"\b0\s+(?:[a-zA-Z_-]+\s+)*(?:physically\s+verified|verified|passed)\b",
+        line_lower,
+    ):
+        return False
+    if re.search(
+        r"\bprohibited\s+(?:unqualified\s+)?phrases\b", line_lower
+    ) or re.search(r"\bforbidden\s+phrases\b", line_lower):
+        return False
+
+    stripped = line.strip()
+    if any(
+        stripped.startswith(prefix)
+        for prefix in ("- Use ", "- Inspect ", "- Enforce ", "- Prohibit ", "- [ ] ")
+    ):
+        return False
+    if re.match(
+        r"^\d+\.\s+Implementation\s+is\s+constant-time\b", stripped
+    ) or re.match(r"^\d+\.\s+The\s+implementation\s+is\s+constant-time\b", stripped):
+        return False
+
+    phys_matches = list(PHYSICAL_CLAIM_RE.finditer(line))
+    if phys_matches:
+        for m in phys_matches:
+            start = m.start()
+            prev_bound = max(
+                line_lower.rfind(";", 0, start),
+                line_lower.rfind(".", 0, start),
+                line_lower.rfind("|", 0, start),
+            )
+            clause_start = prev_bound + 1 if prev_bound != -1 else 0
+            candidate_ends = [
+                pos
+                for pos in [
+                    line_lower.find(";", m.end()),
+                    line_lower.find(".", m.end()),
+                    line_lower.find("|", m.end()),
+                    len(line_lower),
+                ]
+                if pos != -1
+            ]
+            clause_end = min(candidate_ends) if candidate_ends else len(line_lower)
+            clause = line_lower[clause_start:clause_end]
+            has_neg = bool(
+                re.search(
+                    r"\b(?:not|never|no|without|un|non-|(?:is|are|was|were|being)\s+not|does\s+not\s+(?:claim|prove|demonstrate)|not\s+claimed|pending\s+physical\s+dispatch\s+corroboration|operator-retained|operator-supplied|historical\s+report|historical\s+document|legacy\s+pre-refactor|pre-refactor\s+self-reported)\b",
+                    clause,
+                )
+            )
+            if not has_neg:
+                return True
+        return False
+
     disclaimers = (
         "does not claim",
         "never claim",
@@ -1045,15 +1922,9 @@ def is_claim_line(lines: list[str], idx: int) -> bool:
         "are forbidden",
         "no claim",
         "cannot be claimed",
-        "prohibit",
-        "forbidden",
         "treat skipped",
         "where the claim depends",
         "statements are not equivalent",
-        "model",
-        "0 independently physically verified",
-        "0 physically verified",
-        "0 verified",
         "pending physical dispatch corroboration",
         "pending physical dispatch",
         "makes no constant-time",
@@ -1070,34 +1941,368 @@ def is_claim_line(lines: list[str], idx: int) -> bool:
         "do not claim",
         "do not use",
         "do not allow",
+        "do not infer",
         "not claimed",
         "are not claimed",
         "is not claimed",
         "does not inherit",
         "operator-retained assertion",
         "operator-supplied",
+        "unqualified phrases",
+        "prohibited unqualified",
+        "legacy pre-refactor",
+        "historical report",
+        "historical document",
+        "pre-refactor self-reported",
     )
-    if any(d in line_lower for d in disclaimers):
-        return False
-    if re.search(
-        r"(?:physically verified|verified)\s*(?:gates|cases|suites)?\s*:\s*0\b",
-        line_lower,
-    ):
-        return False
+    return not any(d in line_lower for d in disclaimers)
 
-    stripped = line.strip()
-    return not any(
-        stripped.startswith(prefix)
-        for prefix in (
-            "- Use ",
-            "- Inspect ",
-            "- Enforce ",
-            "- Verify ",
-            "- Validate ",
-            "- Prohibit ",
-            "- [ ] ",
-        )
-    )
+
+def validate_markdown_accounting_tables(
+    relative_path: Path, lines: list[str]
+) -> list[Finding]:
+    findings: list[Finding] = []
+    norm_path = relative_path.as_posix()
+
+    i = 0
+    while i < len(lines):
+        line = lines[i].strip()
+        if (
+            line.startswith("|")
+            and i + 1 < len(lines)
+            and re.match(r"^\|(?:\s*:?-+:?\s*\|)+$", lines[i + 1].strip())
+        ):
+            header_line_idx = i
+            raw_header_cells = [
+                c.strip() for c in lines[i].strip().strip("|").split("|")
+            ]
+            header_cells = [c.lower() for c in raw_header_cells]
+            num_cols = len(header_cells)
+
+            row_idx = i + 2
+            table_rows: list[tuple[int, list[str]]] = []
+            while row_idx < len(lines) and lines[row_idx].strip().startswith("|"):
+                row_cells = [
+                    c.strip() for c in lines[row_idx].strip().strip("|").split("|")
+                ]
+                table_rows.append((row_idx + 1, row_cells))
+                row_idx += 1
+
+            has_gate_col = any(
+                any(k in h for k in ("gate", "milestone", "deliverable"))
+                for h in header_cells
+            )
+            has_execution_outcome_col = any(
+                any(
+                    k in h
+                    for k in (
+                        "selected",
+                        "executed",
+                        "matching",
+                        "failing",
+                        "passed",
+                        "failed",
+                        "blocked",
+                    )
+                )
+                for h in header_cells
+            )
+
+            if (has_gate_col or has_execution_outcome_col) and table_rows:
+                # Row width validation
+                for l_num, cells in table_rows:
+                    if len(cells) != num_cols:
+                        findings.append(
+                            Finding(
+                                norm_path,
+                                l_num,
+                                "DOC004",
+                                "critical",
+                                f"Inconsistent table row width: expected {num_cols} columns, got {len(cells)}.",
+                            )
+                        )
+
+                gate_col_idx: int | None = None
+                numeric_col_indices: dict[str, int] = {}
+                for c_idx, h in enumerate(header_cells):
+                    if (
+                        any(k in h for k in ("gate", "milestone", "deliverable"))
+                        and gate_col_idx is None
+                    ):
+                        gate_col_idx = c_idx
+                    for k in (
+                        "selected",
+                        "executed",
+                        "matching",
+                        "failing",
+                        "passed",
+                        "failed",
+                        "blocked",
+                    ):
+                        if k in h and k not in numeric_col_indices:
+                            numeric_col_indices[k] = c_idx
+
+                if numeric_col_indices:
+                    (
+                        canonical_gate_map,
+                        canonical_gate_order,
+                        extension_gate_map,
+                    ) = get_canonical_gate_metadata()
+                    detail_rows: list[tuple[int, list[str]]] = []
+                    total_rows: list[tuple[int, list[str]]] = []
+                    gate_ids_seen: set[str] = set()
+                    gate_sequence: list[str] = []
+
+                    context_before = " ".join(
+                        lines[max(0, header_line_idx - 5) : header_line_idx]
+                    ).lower()
+                    claims_canonical_coverage = any(
+                        term in context_before
+                        for term in (
+                            "canonical",
+                            "master physical silicon",
+                            "master silicon",
+                            "complete suite",
+                            "entire suite",
+                            "repo-wide",
+                            "suite accounting",
+                            "all canonical",
+                            "19 canonical",
+                        )
+                    )
+
+                    for l_num, cells in table_rows:
+                        clean_cells = [re.sub(r"[*`]", "", c).strip() for c in cells]
+                        first_cell = clean_cells[0].lower() if clean_cells else ""
+                        is_total_row = any(
+                            t in first_cell
+                            for t in ("total", "cumulative", "summary", "aggregate")
+                        ) or any("total" in c.lower() for c in clean_cells)
+
+                        if is_total_row:
+                            total_rows.append((l_num, clean_cells))
+                        else:
+                            detail_rows.append((l_num, clean_cells))
+                            if gate_col_idx is not None and gate_col_idx < len(
+                                clean_cells
+                            ):
+                                g_raw = clean_cells[gate_col_idx]
+                                g_match = re.search(
+                                    r"\b(DR[0-9]+[a-zA-Z]?|GATE\s*\d+)\b",
+                                    g_raw,
+                                    re.IGNORECASE,
+                                )
+                                if g_match:
+                                    norm_gid = g_match.group(1).upper().replace(" ", "")
+                                    gate_sequence.append(norm_gid)
+                                    if norm_gid in gate_ids_seen:
+                                        findings.append(
+                                            Finding(
+                                                norm_path,
+                                                l_num,
+                                                "DOC005",
+                                                "critical",
+                                                f"Duplicate gate identifier '{norm_gid}' in accounting table.",
+                                            )
+                                        )
+                                    gate_ids_seen.add(norm_gid)
+
+                                    if claims_canonical_coverage:
+                                        if (
+                                            norm_gid not in canonical_gate_map
+                                            and norm_gid not in extension_gate_map
+                                        ):
+                                            findings.append(
+                                                Finding(
+                                                    norm_path,
+                                                    l_num,
+                                                    "DOC005",
+                                                    "critical",
+                                                    f"Unknown or fabricated gate identifier '{norm_gid}' in accounting table.",
+                                                )
+                                            )
+                                    else:
+                                        dr_num_match = re.match(r"^DR(\d+)", norm_gid)
+                                        if dr_num_match:
+                                            dr_num = int(dr_num_match.group(1))
+                                            if dr_num > 30:
+                                                findings.append(
+                                                    Finding(
+                                                        norm_path,
+                                                        l_num,
+                                                        "DOC005",
+                                                        "critical",
+                                                        f"Unknown or fabricated gate identifier '{norm_gid}' in accounting table.",
+                                                    )
+                                                )
+
+                    if claims_canonical_coverage:
+                        if not total_rows:
+                            findings.append(
+                                Finding(
+                                    norm_path,
+                                    header_line_idx + 1,
+                                    "DOC005",
+                                    "critical",
+                                    "Missing required Total row in canonical accounting table.",
+                                )
+                            )
+                        for expected_gid in canonical_gate_order:
+                            if expected_gid not in gate_ids_seen:
+                                findings.append(
+                                    Finding(
+                                        norm_path,
+                                        header_line_idx + 1,
+                                        "DOC005",
+                                        "critical",
+                                        f"Missing canonical gate '{expected_gid}' in canonical accounting table.",
+                                    )
+                                )
+                        filtered_canonical_seq = [
+                            g for g in gate_sequence if g in canonical_gate_map
+                        ]
+                        expected_prefix = canonical_gate_order[
+                            : len(filtered_canonical_seq)
+                        ]
+                        if filtered_canonical_seq != expected_prefix:
+                            findings.append(
+                                Finding(
+                                    norm_path,
+                                    header_line_idx + 1,
+                                    "DOC005",
+                                    "critical",
+                                    f"Canonical gate rows are out of order: expected {expected_prefix}, found {filtered_canonical_seq}.",
+                                )
+                            )
+
+                    # Validate numeric cells and row partition invariants
+                    for l_num, cells in detail_rows + total_rows:
+                        row_counts: dict[str, int] = {}
+                        for col_name, col_idx in numeric_col_indices.items():
+                            if col_idx < len(cells):
+                                val_str = cells[col_idx]
+                                if not re.match(r"^-?\d+$", val_str):
+                                    findings.append(
+                                        Finding(
+                                            norm_path,
+                                            l_num,
+                                            "DOC004",
+                                            "critical",
+                                            f"Malformed numeric cell '{val_str}' in column '{col_name}'.",
+                                        )
+                                    )
+                                else:
+                                    val = int(val_str)
+                                    if val < 0:
+                                        findings.append(
+                                            Finding(
+                                                norm_path,
+                                                l_num,
+                                                "DOC004",
+                                                "critical",
+                                                f"Negative count '{val}' in accounting table column '{col_name}'.",
+                                            )
+                                        )
+                                    row_counts[col_name] = val
+
+                        sel = row_counts.get("selected")
+                        exec_cnt = row_counts.get("executed")
+                        match_cnt = row_counts.get("matching")
+                        fail_cnt = row_counts.get("failing") or row_counts.get("failed")
+                        pass_cnt = row_counts.get("passed")
+                        blk_cnt = row_counts.get("blocked", 0)
+
+                        if sel is not None and exec_cnt is not None and sel < exec_cnt:
+                            findings.append(
+                                Finding(
+                                    norm_path,
+                                    l_num,
+                                    "DOC004",
+                                    "critical",
+                                    f"Row partition violation: cases_executed ({exec_cnt}) > cases_selected ({sel}).",
+                                )
+                            )
+
+                        if (
+                            exec_cnt is not None
+                            and match_cnt is not None
+                            and fail_cnt is not None
+                            and match_cnt + fail_cnt + blk_cnt != exec_cnt
+                        ):
+                            findings.append(
+                                Finding(
+                                    norm_path,
+                                    l_num,
+                                    "DOC004",
+                                    "critical",
+                                    f"Row partition mismatch: matching ({match_cnt}) + failing ({fail_cnt}) != executed ({exec_cnt}).",
+                                )
+                            )
+
+                        if (
+                            exec_cnt is not None
+                            and pass_cnt is not None
+                            and fail_cnt is not None
+                            and match_cnt is None
+                            and pass_cnt + fail_cnt + blk_cnt != exec_cnt
+                        ):
+                            findings.append(
+                                Finding(
+                                    norm_path,
+                                    l_num,
+                                    "DOC004",
+                                    "critical",
+                                    f"Row partition mismatch: passed ({pass_cnt}) + failed ({fail_cnt}) != executed ({exec_cnt}).",
+                                )
+                            )
+
+                    if len(total_rows) > 1:
+                        first_tot_cells = total_rows[0][1]
+                        for l_num, tot_cells in total_rows[1:]:
+                            if tot_cells != first_tot_cells:
+                                findings.append(
+                                    Finding(
+                                        norm_path,
+                                        l_num,
+                                        "DOC005",
+                                        "critical",
+                                        "Conflicting total rows detected in accounting table.",
+                                    )
+                                )
+
+                    for col_name, col_idx in numeric_col_indices.items():
+                        col_sum = 0
+                        valid_count = 0
+                        for l_num, cells in detail_rows:
+                            if col_idx < len(cells):
+                                val_str = cells[col_idx]
+                                if re.match(r"^-?\d+$", val_str):
+                                    val = int(val_str)
+                                    if val >= 0:
+                                        col_sum += val
+                                        valid_count += 1
+
+                        if total_rows and valid_count > 0:
+                            for l_num, cells in total_rows:
+                                if col_idx < len(cells):
+                                    tot_str = cells[col_idx]
+                                    if re.match(r"^-?\d+$", tot_str):
+                                        tot_val = int(tot_str)
+                                        if tot_val != col_sum:
+                                            findings.append(
+                                                Finding(
+                                                    norm_path,
+                                                    l_num,
+                                                    "DOC004",
+                                                    "critical",
+                                                    f"Accounting table sum mismatch for column '{col_name}': detail rows sum to {col_sum} but Total row claims {tot_val}.",
+                                                )
+                                            )
+            i = row_idx
+        else:
+            i += 1
+
+    return findings
 
 
 def scan_markdown_file(relative_path: Path) -> list[Finding]:
@@ -1130,6 +2335,27 @@ def scan_markdown_file(relative_path: Path) -> list[Finding]:
     used_annotations: set[int] = set()
 
     for line_number, line in enumerate(lines, start=1):
+        if DOC_PROHIBITED_TERMINOLOGY_RE.search(line):
+            findings.append(
+                Finding(
+                    relative_path.as_posix(),
+                    line_number,
+                    "DOC006",
+                    "critical",
+                    "Prohibited terminology or uncorroborated claim regarding hidden inputs, scanner semantic proof, or cache freshness.",
+                )
+            )
+        if DOC_REPO_ROOT_CITATION_RE.search(line):
+            findings.append(
+                Finding(
+                    relative_path.as_posix(),
+                    line_number,
+                    "DOC007",
+                    "critical",
+                    "Repository root citation is insufficient; cite specific issue, PR, or commit permalink.",
+                )
+            )
+
         if not is_claim_line(lines, line_number - 1):
             continue
 
@@ -1158,6 +2384,7 @@ def scan_markdown_file(relative_path: Path) -> list[Finding]:
                 )
             )
 
+    findings.extend(validate_markdown_accounting_tables(relative_path, lines))
     return findings
 
 
@@ -1183,7 +2410,7 @@ def scan_file(relative_path: Path) -> list[Finding]:
         return scan_python_file(relative_path)
     if suffix in {".c", ".cc", ".cpp", ".h", ".hpp"}:
         return scan_cpp_file(relative_path)
-    if suffix in {".ps1", ".sh"}:
+    if suffix in {".ps1", ".sh", ".bat", ".cmd"}:
         return scan_script_file(relative_path)
     if suffix == ".mlir":
         return scan_mlir_file(relative_path)
