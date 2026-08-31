@@ -241,6 +241,34 @@ def _make_dr2d_test_buffers(
     return buffers
 
 
+def _make_dr3_test_buffers(
+    corrupt_index: int | None = None,
+) -> list[dict[str, object]]:
+    """Generate 25 authentic DR3 test buffers for parent oracle verification tests."""
+    from tests.pqc_device_resident.test_dr3_mlkem512_kpke_encrypt import (
+        ACVP_EXPECTED,
+        PRE_SILICON_CORPUS,
+    )
+    buffers: list[dict[str, object]] = []
+    for idx, case in enumerate(PRE_SILICON_CORPUS):
+        case_id = f"dr3_case_{idx:03d}_{case.label}"
+        expected_c = ACVP_EXPECTED[case.tc_id]
+        c_bytes = bytearray(expected_c)
+        if corrupt_index is not None and idx == corrupt_index:
+            c_bytes[0] ^= 0xFF
+        buffers.append({
+            "case_id": case_id,
+            "case_label": case.label,
+            "tc_id": case.tc_id,
+            "ek_hex": case.ek.hex(),
+            "m_hex": case.m.hex(),
+            "r_hex": case.r.hex(),
+            "request_id": case.request_id,
+            "c_hex": bytes(c_bytes).hex(),
+        })
+    return buffers
+
+
 def _wrap_record_in_stdout(record: dict[str, object], preamble: str = "") -> str:
     serialized = json.dumps(record, indent=2)
     return f"{preamble}\n{RESULT_START_MARKER}\n{serialized}\n{RESULT_END_MARKER}\n"
@@ -1069,6 +1097,61 @@ class CanonicalSiliconRunnerBehaviorTests(unittest.TestCase):
 
     def test_dr2d_module_rejects_emulation_and_xrt_ini_path(self) -> None:
         from phoenix_sdr_dsp.pqc import dr2d_mlkem512_kpke_keygen_graph as graph
+        with mock.patch.dict(os.environ, {"XCL_EMULATION_MODE": "sw_emu"}):
+            with self.assertRaises(graph.NativeBackendUnavailable) as ctx:
+                graph.check_emulation_and_redirection_excluded()
+            self.assertIn("XCL_EMULATION_MODE='sw_emu'", str(ctx.exception))
+
+        with mock.patch.dict(os.environ, {"XRT_INI_PATH": "C:/fake/xrt.ini"}):
+            with self.assertRaises(graph.NativeBackendUnavailable) as ctx:
+                graph.check_emulation_and_redirection_excluded()
+            self.assertIn("XRT_INI_PATH='C:/fake/xrt.ini'", str(ctx.exception))
+
+    def test_dr3_valid_test_buffers_verified_by_parent_oracle(self) -> None:
+        gate = GATES[6]  # DR3
+        now = datetime.now(timezone.utc)
+        rec = _make_valid_record(
+            gate_id="DR3",
+            expected_count=25,
+            artifact_rel="phoenix_sdr_dsp/pqc/kernels/dr3_mlkem512_kpke_encrypt_noise.cc",
+            dispatches=25,
+        )
+        rec["test_buffers"] = _make_dr3_test_buffers()
+        stdout = _wrap_record_in_stdout(rec)
+        res = parse_gate_output(
+            gate, stdout, "", 0, 0.5,
+            parent_start_time=now - timedelta(seconds=2),
+            parent_end_time=now + timedelta(seconds=2),
+            execution_nonce="test_nonce_0123456789abcdef",
+        )
+        self.assertFalse(res.success)
+        self.assertEqual(res.status, STATUS_SELF_REPORTED_UNVERIFIED)
+        self.assertTrue(any("Parent independent oracle verified all 25 official NIST ACVP ciphertexts" in note for note in res.corroboration_notes))
+
+    def test_dr3_corrupted_ciphertext_fails_validation(self) -> None:
+        gate = GATES[6]
+        now = datetime.now(timezone.utc)
+        rec = _make_valid_record(
+            gate_id="DR3",
+            expected_count=25,
+            artifact_rel="phoenix_sdr_dsp/pqc/kernels/dr3_mlkem512_kpke_encrypt_noise.cc",
+            dispatches=25,
+        )
+        # Corrupt 1 ciphertext in case index 0
+        rec["test_buffers"] = _make_dr3_test_buffers(corrupt_index=0)
+        stdout = _wrap_record_in_stdout(rec)
+        res = parse_gate_output(
+            gate, stdout, "", 0, 0.5,
+            parent_start_time=now - timedelta(seconds=2),
+            parent_end_time=now + timedelta(seconds=2),
+            execution_nonce="test_nonce_0123456789abcdef",
+        )
+        self.assertFalse(res.success)
+        self.assertEqual(res.status, STATUS_FAIL)
+        self.assertIn("oracle mismatch against official NIST ACVP ciphertext", res.error_message or "")
+
+    def test_dr3_module_rejects_emulation_and_xrt_ini_path(self) -> None:
+        from phoenix_sdr_dsp.pqc import dr3_mlkem512_kpke_encrypt_graph as graph
         with mock.patch.dict(os.environ, {"XCL_EMULATION_MODE": "sw_emu"}):
             with self.assertRaises(graph.NativeBackendUnavailable) as ctx:
                 graph.check_emulation_and_redirection_excluded()
