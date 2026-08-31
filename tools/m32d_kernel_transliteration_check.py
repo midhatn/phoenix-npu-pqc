@@ -264,7 +264,7 @@ def check2_compress_d4():
         if not np.array_equal(p1, p2):
             fails2 += 1
     assert fails2 == 0, f"decompress_d4: {fails2}/5 mismatches"
-    print("[cross] (2) compress/decompress d=4 primary vs indep: 5/5 PASS each")
+    print("[cross] (2) compress/decompress d=4 primary vs indep: 5/5 passed each")
 
 
 def check3_compress_d10():
@@ -287,7 +287,7 @@ def check3_compress_d10():
         if not np.array_equal(p1, p2):
             fails2 += 1
     assert fails2 == 0, f"decompress_d10: {fails2}/5 mismatches"
-    print("[cross] (3) compress/decompress d=10 primary vs indep: 5/5 PASS each")
+    print("[cross] (3) compress/decompress d=10 primary vs indep: 5/5 passed each")
 
 
 def check4_tobytes_d12():
@@ -310,7 +310,7 @@ def check4_tobytes_d12():
         if not np.array_equal(p1, p2):
             fails2 += 1
     assert fails2 == 0, f"frombytes_d12: {fails2}/5 mismatches"
-    print("[cross] (4) tobytes/frombytes d=12 primary vs indep: 5/5 PASS each")
+    print("[cross] (4) tobytes/frombytes d=12 primary vs indep: 5/5 passed each")
 
 
 def check5_msg():
@@ -339,7 +339,7 @@ def check5_msg():
         if not np.array_equal(p1, p2):
             fails2 += 1
     assert fails2 == 0, f"tomsg: {fails2}/5 mismatches vs indep"
-    print("[cross] (5) frommsg/tomsg primary vs indep: 5/5 PASS each")
+    print("[cross] (5) frommsg/tomsg primary vs indep: 5/5 passed each")
 
 
 def check6_full_round_trips():
@@ -406,7 +406,7 @@ def main():
     check4_tobytes_d12()
     check5_msg()
     check6_full_round_trips()
-    print("\nM32d transliteration check: 6/6 PASS")
+    print("\nM32d transliteration check: all 6 checks passed")
 
 
 if __name__ == "__main__":
