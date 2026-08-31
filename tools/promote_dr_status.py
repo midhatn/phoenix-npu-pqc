@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """Promote a DR only after strict physical-silicon evidence validation."""
 
 from __future__ import annotations

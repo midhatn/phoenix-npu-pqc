@@ -61,6 +61,7 @@ toolchain:
     target_triple: "aie2-none-unknown-elf"
   xrt:
     package_role: "Native Windows XRT runtime and pyxrt bindings"
+    verified_version: "2.21.0 (archive release 2.21.75)"
     archive_release: "2.21.75"
     runtime_version: "2.21.0"
     release_url: "https://github.com/Xilinx/XRT/releases/tag/2.21.75"

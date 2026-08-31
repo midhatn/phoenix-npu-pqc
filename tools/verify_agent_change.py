@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """Reject integrity violations introduced by an agent-authored change across all languages."""
 
 from __future__ import annotations

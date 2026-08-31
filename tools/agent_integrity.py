@@ -931,9 +931,18 @@ def is_claim_line(lines: list[str], idx: int) -> bool:
         return False
 
     stripped = line.strip()
-    if any(stripped.startswith(prefix) for prefix in ("- Use ", "- Inspect ", "- Enforce ", "- Verify ", "- Validate ", "- Prohibit ", "- [ ] ")):
-        return False
-    return True
+    return not any(
+        stripped.startswith(prefix)
+        for prefix in (
+            "- Use ",
+            "- Inspect ",
+            "- Enforce ",
+            "- Verify ",
+            "- Validate ",
+            "- Prohibit ",
+            "- [ ] ",
+        )
+    )
 
 
 def scan_markdown_file(relative_path: Path) -> list[Finding]:

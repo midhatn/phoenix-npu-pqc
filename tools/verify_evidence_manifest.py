@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """Validate a physical-silicon evidence manifest and its artifact hashes."""
 
 from __future__ import annotations
