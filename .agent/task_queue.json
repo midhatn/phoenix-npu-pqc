@@ -45,7 +45,7 @@
       "id": "POLICY-HOST-CRYPTO",
       "dr": null,
       "title": "Separate host oracle imports from DR10, DR17, DR18, and DR27 physical paths",
-      "status": "READY",
+      "status": "COMPLETED",
       "depends_on": ["GENERALIZE-RUNNERS"],
       "acceptance_command": "python tools/verify_agent_change.py --all"
     },

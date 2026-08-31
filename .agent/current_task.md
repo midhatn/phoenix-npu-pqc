@@ -2,16 +2,16 @@
 
 ## Task
 
-`DR15-MIGRATE` / `GENERALIZE-RUNNERS`: Bounded DR15 ML-DSA-87 structured evidence migration and completion of full native hardware gate generalization (DR0 through DR15).
+`POLICY-HOST-CRYPTO`: Separate host oracle imports from DR10, DR17, DR18, and DR27 physical paths.
 
 ## Status
 
-`COMPLETED` (All 19 native hardware gates DR0-DR15 migrated to canonical structured framed evidence).
-- Structured framed evidence emission: Implemented across all 19 gates (`<<<PQC_SILICON_GATE_RESULT_V1>>>`).
-- Parent-side buffer oracle verification: Implemented across all 19 gates (736 total cases evaluated on physical device).
-- Redirection exclusion: `XCL_EMULATION_MODE` and `XRT_INI_PATH` explicitly rejected fail-closed.
-- Physical evidence state: 16 gates `SELF_REPORTED_UNVERIFIED` (639 cases corroborated bit-exact), 3 gates `FAIL` (DR2d: 25 failures; DR14: 13 failures; DR15: 36 failures), 0 blocked gates.
-- Hardware ground truth: Truthfully verified against independent NIST FIPS 202/203/204 reference vectors without fallback or fake gates.
+`COMPLETED`
+- Separated `hashlib` imports from `test_dr17_mldsa_qkd_auth_silicon.py` into `test_dr17_mldsa_qkd_auth.py`.
+- Separated `hashlib` imports from `test_dr18_dual_key_combiner_silicon.py` into `test_dr18_dual_key_combiner.py`.
+- Replaced `hashlib` calls in `test_dr27_qrng_reservoir_silicon.py` with fixed byte literals.
+- Formatted contract test string checks across `test_pqc_device_residency_contract.py`, `test_pqc_dr1_contract.py`, `test_pqc_dr2a_contract.py`, `test_pqc_dr2b_contract.py`, `test_pqc_dr2c_contract.py`.
+- `python tools/verify_agent_change.py --base main` passes cleanly (0 blocking, 0 warnings).
 
 
 
