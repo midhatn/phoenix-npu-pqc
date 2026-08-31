@@ -911,6 +911,36 @@ def parse_gate_output(
                 corroboration_notes.append(
                     f"Parent independent oracle verified all {len(test_buffers)} official NIST ACVP ciphertexts."
                 )
+        elif gate.gate_id == "DR4":
+            from tests.pqc_device_resident.test_dr4_mlkem512_kpke_decrypt import ACVP_EXPECTED
+            dr4_mismatches = 0
+            for b_idx, buf_entry in enumerate(test_buffers):
+                if not isinstance(buf_entry, dict):
+                    failures.append(f"test_buffers[{b_idx}] must be an object")
+                    continue
+                tc_id = buf_entry.get("tc_id")
+                m_hex = buf_entry.get("m_hex")
+                case_label = buf_entry.get("case_label", f"case_{b_idx}")
+                if not isinstance(tc_id, int) or not isinstance(m_hex, str):
+                    failures.append(f"test_buffers[{b_idx}] malformed fields (expected tc_id, m_hex)")
+                    continue
+                if tc_id not in ACVP_EXPECTED:
+                    failures.append(f"test_buffers[{b_idx}] unknown tc_id {tc_id}")
+                    continue
+                try:
+                    expected_m = ACVP_EXPECTED[tc_id]
+                    actual_m = bytes.fromhex(m_hex)
+                    if actual_m != expected_m:
+                        dr4_mismatches += 1
+                        failures.append(
+                            f"test_buffers[{b_idx}] ({case_label}) oracle mismatch against official NIST ACVP decrypted message"
+                        )
+                except Exception as exc:
+                    failures.append(f"test_buffers[{b_idx}] oracle evaluation error: {exc}")
+            if dr4_mismatches == 0 and not failures:
+                corroboration_notes.append(
+                    f"Parent independent oracle verified all {len(test_buffers)} official NIST ACVP decrypted messages."
+                )
 
     # 12. Emulation and Redirection Mode Check
     emulation_mode = os.environ.get("XCL_EMULATION_MODE")
