@@ -1187,6 +1187,35 @@ def parse_gate_output(
                 corroboration_notes.append(
                     f"Parent independent oracle verified all {len(test_buffers)} official NIST ACVP ML-DSA-44 signatures."
                 )
+        elif gate.gate_id == "DR13":
+            from tests.pqc_device_resident.test_dr13_mldsa44_verify import ACVP_EXPECTED
+            dr13_mismatches = 0
+            for b_idx, buf_entry in enumerate(test_buffers):
+                if not isinstance(buf_entry, dict):
+                    failures.append(f"test_buffers[{b_idx}] must be an object")
+                    continue
+                test_name = buf_entry.get("test_name")
+                actual_valid = buf_entry.get("actual_valid")
+                case_label = buf_entry.get("case_label", f"case_{b_idx}")
+                if not isinstance(test_name, str) or not isinstance(actual_valid, bool):
+                    failures.append(f"test_buffers[{b_idx}] malformed fields (expected test_name, actual_valid)")
+                    continue
+                if test_name not in ACVP_EXPECTED:
+                    failures.append(f"test_buffers[{b_idx}] unknown test_name {test_name}")
+                    continue
+                try:
+                    exp_valid = ACVP_EXPECTED[test_name]
+                    if actual_valid != exp_valid:
+                        dr13_mismatches += 1
+                        failures.append(
+                            f"test_buffers[{b_idx}] ({case_label}) oracle mismatch against official NIST ACVP ML-DSA-44 verify verdict (got {actual_valid}, expected {exp_valid})"
+                        )
+                except Exception as exc:
+                    failures.append(f"test_buffers[{b_idx}] oracle evaluation error: {exc}")
+            if dr13_mismatches == 0 and not failures:
+                corroboration_notes.append(
+                    f"Parent independent oracle verified all {len(test_buffers)} official NIST ACVP ML-DSA-44 verification verdicts."
+                )
 
     # 12. Emulation and Redirection Mode Check
     emulation_mode = os.environ.get("XCL_EMULATION_MODE")

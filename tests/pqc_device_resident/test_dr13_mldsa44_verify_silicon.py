@@ -1,80 +1,161 @@
 # SPDX-License-Identifier: Apache-2.0
-"""DR13: Complete NIST FIPS 204 ML-DSA-44 Signature Verification on AMD Phoenix NPU.
-
-Validates 100% On-Device ML-DSA-44 Verify against official NIST ACVP test vectors
-including both valid signatures and invalid mutated/norm-violating signatures.
-"""
+"""Fail-closed silicon validation gate for Milestone DR13 (ML-DSA-44 Verify)."""
 from __future__ import annotations
 
+from datetime import datetime, timezone
 import json
-import sys
+import os
 from pathlib import Path
+import sys
+import time
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
-from phoenix_sdr_dsp.pqc.dr13_mldsa44_verify_graph import run_mldsa44_verify
+from phoenix_sdr_dsp.pqc import dr13_mldsa44_verify_graph as graph
+from tests.pqc_device_resident.test_dr13_mldsa44_verify import (
+    ACVP_EXPECTED,
+    PRE_SILICON_CORPUS,
+)
 
-VECTOR_FILE = REPO_ROOT / "tests" / "pqc_device_resident" / "data" / "dr13_nist_acvp_mldsa44_verify_30.json"
+EXPECTED_TOTAL = len(PRE_SILICON_CORPUS)
+RESULT_START_MARKER = "<<<PQC_SILICON_GATE_RESULT_V1>>>"
+RESULT_END_MARKER = "<<<END_PQC_SILICON_GATE_RESULT_V1>>>"
+
 
 def main() -> int:
-    print("=" * 60)
-    print("DR13: Complete NIST FIPS 204 ML-DSA-44 Verify Validation")
-    print("Backend: dr13-mldsa44-verify:silicon (AMD Phoenix AIE2)")
-    print("=" * 60)
+    print("=" * 72)
+    print("PQC DR13 - complete ML-DSA-44 Verify closure")
+    started_at = datetime.now(timezone.utc).isoformat()
+    try:
+        graph.require_hardware_runtime()
+    except Exception as exc:
+        print(f"Backend: dr13-mldsa44-verify:unavailable ({type(exc).__name__}: {exc})")
+        print("UNAVAILABLE: native IRON/XRT/Phoenix path was not used; no fallback ran.")
+        return 2
 
-    if not VECTOR_FILE.exists():
-        print(f"ERROR: Vector file not found: {VECTOR_FILE}")
+    print(f"Backend: {graph.BACKEND_LABEL}")
+
+    device_info: dict[str, str] = {
+        "device_name": "Phoenix AIE2",
+        "device_id": "0",
+        "driver": "amdnpu",
+        "firmware": "aie2",
+    }
+    try:
+        import pyxrt
+        dev = pyxrt.device(0)
+        dev_name = dev.get_info(pyxrt.xrt_info_device.name)
+        if dev_name:
+            device_info["device_name"] = str(dev_name)
+        bdf = dev.get_info(pyxrt.xrt_info_device.bdf)
+        if bdf:
+            device_info["bdf"] = str(bdf)
+    except Exception:
+        pass
+
+    try:
+        artifact_info = graph.get_kernel_artifact_info(REPO_ROOT)
+    except Exception as exc:
+        print(f"ERROR: failed to get kernel artifact info: {exc}")
         return 1
 
-    vectors = json.loads(VECTOR_FILE.read_text(encoding="utf-8"))
-    print(f"Running {len(vectors)} NIST ACVP ML-DSA-44 Verify vectors on AMD Phoenix NPU...")
-
+    completed = 0
     passed = 0
-    failures = []
+    case_results: list[dict[str, object]] = []
+    test_buffers: list[dict[str, object]] = []
 
-    for i, vec in enumerate(vectors, 1):
-        tc_id = f"acvp_mldsa44_verify_tg{vec['tgId']}_tc{vec['tcId']}"
-        pk = bytes.fromhex(vec["pk"])
-        m_or_mu = bytes.fromhex(vec["m_or_mu"])
-        sig = bytes.fromhex(vec["signature"])
-        expected_valid = vec["expected_valid"]
-        external_mu = vec["externalMu"]
-
+    for idx, case in enumerate(PRE_SILICON_CORPUS):
+        case_id = f"dr13_case_{idx:03d}_{case.test_name}"
+        exp_valid = ACVP_EXPECTED[case.test_name]
+        t_case_start = time.perf_counter_ns()
         try:
-            actual_valid = run_mldsa44_verify(
-                pk=pk,
-                m_or_mu=m_or_mu,
-                sig=sig,
-                external_mu=external_mu,
-                request_id=i,
+            actual_valid = graph.run_mldsa44_verify(
+                pk=case.pk,
+                m_or_mu=case.m_or_mu,
+                sig=case.sig,
+                external_mu=case.external_mu,
+                request_id=case.request_id,
             )
-
-            if actual_valid == expected_valid:
-                passed += 1
-                verdict_str = "VALID (Accepted)" if actual_valid else "INVALID (Rejected)"
-                print(f"  [{i:02d}/{len(vectors):02d}] {tc_id:<40}: PASS ({verdict_str})")
-            else:
-                failures.append(tc_id)
-                print(f"  [{i:02d}/{len(vectors):02d}] {tc_id:<40}: FAIL (Verdict mismatch)")
-                print(f"    Expected : {expected_valid}")
-                print(f"    Silicon  : {actual_valid}")
-                print(f"    Reason   : {vec['reason']}")
         except Exception as exc:
-            failures.append(tc_id)
-            print(f"  [{i:02d}/{len(vectors):02d}] {tc_id:<40}: FAIL (Exception: {exc})")
+            t_case_duration = time.perf_counter_ns() - t_case_start
+            print(f"  [{idx+1:02d}/{EXPECTED_TOTAL:02d}] {case.test_name:<40} ERROR ({type(exc).__name__}: {exc})")
+            case_results.append({
+                "case_id": case_id,
+                "status": "FAIL",
+                "duration_ns": t_case_duration,
+                "details": f"exception: {type(exc).__name__}: {exc}",
+            })
+            completed += 1
+            continue
 
-    print("-" * 60)
-    print(f"TOTAL: {passed}/{len(vectors)} PASS ({'100% BIT-EXACT MATCH ON PHYSICAL SILICON' if passed == len(vectors) else 'FAILURES DETECTED'})")
-    print("=" * 60)
+        t_case_duration = time.perf_counter_ns() - t_case_start
+        completed += 1
+        test_buffers.append({
+            "case_id": case_id,
+            "case_label": case.test_name,
+            "test_name": case.test_name,
+            "tc_id": case.tc_id,
+            "tg_id": case.tg_id,
+            "request_id": case.request_id,
+            "actual_valid": actual_valid,
+            "expected_valid": exp_valid,
+        })
 
-    if passed != len(vectors):
-        raise RuntimeError(f"DR13 Silicon validation failed ({len(failures)} failures)")
-    return 0
+        if actual_valid == exp_valid:
+            passed += 1
+            verdict_str = "VALID (Accepted)" if actual_valid else "INVALID (Rejected)"
+            print(f"  [{idx+1:02d}/{EXPECTED_TOTAL:02d}] {case.test_name:<40} PASS ({verdict_str})")
+            case_results.append({
+                "case_id": case_id,
+                "status": "PASS",
+                "duration_ns": t_case_duration,
+            })
+        else:
+            print(f"  [{idx+1:02d}/{EXPECTED_TOTAL:02d}] {case.test_name:<40} FAIL: verdict mismatch")
+            case_results.append({
+                "case_id": case_id,
+                "status": "FAIL",
+                "duration_ns": t_case_duration,
+                "details": f"verdict mismatch (got {actual_valid}, expected {exp_valid})",
+            })
 
-def test_dr13_mldsa44_verify_silicon():
-    assert main() == 0
+    status_str = "PASS" if passed == EXPECTED_TOTAL else "FAIL"
+    exit_code = 0 if passed == EXPECTED_TOTAL else 1
+    ended_at = datetime.now(timezone.utc).isoformat()
+
+    record: dict[str, object] = {
+        "schema_version": 1,
+        "gate_id": "DR13",
+        "execution_boundary": "[ON-TILE SILICON]",
+        "evidence_class": "BIT_EXACT_PHYSICAL_SILICON",
+        "child_pid": os.getpid(),
+        "execution_nonce": os.environ.get("PQC_EXECUTION_NONCE", ""),
+        "started_at": started_at,
+        "ended_at": ended_at,
+        "cases_selected": EXPECTED_TOTAL,
+        "cases_executed": len(case_results),
+        "exit_code": exit_code,
+        "artifact": artifact_info,
+        "device": device_info,
+        "dispatch": {
+            "physical_dispatches": completed,
+            "completed": completed == EXPECTED_TOTAL,
+        },
+        "cases": case_results,
+        "test_buffers": test_buffers,
+    }
+
+    print(RESULT_START_MARKER)
+    print(json.dumps(record, indent=2))
+    print(RESULT_END_MARKER)
+
+    print("-" * 72)
+    print(f"TOTAL {passed}/{EXPECTED_TOTAL} {status_str}")
+    print("=" * 72)
+    return exit_code
+
 
 if __name__ == "__main__":
     sys.exit(main())
