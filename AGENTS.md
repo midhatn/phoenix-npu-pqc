@@ -29,6 +29,10 @@ gate counts or passing banners.
 - A failed, blocked, host-only, or retracted DR is an acceptable result. A fake
   silicon gate is not.
 
+## Mandatory kernel integrity policy
+
+All agents must strictly obey [.agents/rules/kernel-integrity-policy.md](.agents/rules/kernel-integrity-policy.md) and [.agents/rules/zero-speculation-policy.md](.agents/rules/zero-speculation-policy.md). Implementations must never specialize to test vectors, embed expected outputs, include fallback paths, or retain unproven modifications.
+
 ## Execution labels
 
 Use labels that describe actual execution:
@@ -65,6 +69,7 @@ Changes to these paths require a separate, explicitly reviewed commit:
 
 - `AGENTS.md`
 - `.agent/`
+- `.agents/rules/`
 - `schemas/evidence.schema.json`
 - `tools/agent_integrity.py`
 - `tools/verify_agent_change.py`
