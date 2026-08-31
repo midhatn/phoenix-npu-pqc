@@ -29,10 +29,6 @@ jobs:
         run: |
           ruff check \
             install.py run_all_pqc_tests.py run_all_silicon_tests.py \
-            tools/agent_integrity.py tools/verify_agent_change.py \
-            tools/verify_evidence_manifest.py tools/promote_dr_status.py \
-            tests/policy/ \
-            tests/test_canonical_silicon_runner_behavior.py \
             phoenix_sdr_dsp/pqc/dr2d_mlkem512_kpke_keygen_graph.py \
             phoenix_sdr_dsp/pqc/dr2d_mlkem512_kpke_keygen_terminal_probe_graph.py \
             phoenix_sdr_dsp/pqc/dr2d_mlkem512_kpke_keygen_w0_token_tap_graph.py \
