@@ -740,7 +740,7 @@ def parse_gate_output(
                         corroboration_notes.append(
                             f"Source/file integrity verified: {art_rel} matches disk SHA-256."
                         )
-            except Exception as exc:
+            except Exception as exc:  # noqa: BLE001
                 failures.append(f"Artifact verification error: {exc}")
 
     # 5. Device Identity Format Check (Independent probe deferred to DR0-TRACE-DISPATCH)
@@ -907,7 +907,7 @@ def parse_gate_output(
                             f"test_buffers[{b_idx}] ({buf_entry.get('case_name')}) oracle mismatch at lane {mismatch_lane}: "
                             f"got {out_c[mismatch_lane]}, expected {expected[mismatch_lane]}"
                         )
-                except Exception as exc:
+                except Exception as exc:  # noqa: BLE001
                     failures.append(
                         f"test_buffers[{b_idx}] oracle evaluation error: {exc}"
                     )
@@ -978,7 +978,7 @@ def parse_gate_output(
                         failures.append(
                             f"test_buffers[{b_idx}] ({case_label}) frozen fingerprint mismatch: {actual_digest} != {FINGERPRINT_BY_LABEL[case_label]}"
                         )
-                except Exception as exc:
+                except Exception as exc:  # noqa: BLE001
                     failures.append(
                         f"test_buffers[{b_idx}] oracle evaluation error: {exc}"
                     )
@@ -1035,7 +1035,7 @@ def parse_gate_output(
                             f"test_buffers[{b_idx}] ({case_label}) oracle mismatch at lane {mismatch_lane}: "
                             f"got {out_coeffs[mismatch_lane]}, expected {expected.coefficients[mismatch_lane]}"
                         )
-                except Exception as exc:
+                except Exception as exc:  # noqa: BLE001
                     failures.append(
                         f"test_buffers[{b_idx}] oracle evaluation error: {exc}"
                     )
@@ -1085,7 +1085,7 @@ def parse_gate_output(
                             f"test_buffers[{b_idx}] ({case_label}) oracle mismatch at lane {mismatch_lane}: "
                             f"got {out_coeffs[mismatch_lane]}, expected {expected[mismatch_lane]}"
                         )
-                except Exception as exc:
+                except Exception as exc:  # noqa: BLE001
                     failures.append(
                         f"test_buffers[{b_idx}] oracle evaluation error: {exc}"
                     )
@@ -1138,7 +1138,7 @@ def parse_gate_output(
                             f"test_buffers[{b_idx}] ({case_label}) oracle mismatch at lane {mismatch_lane}: "
                             f"got {out_coeffs[mismatch_lane]}, expected {expected[mismatch_lane]}"
                         )
-                except Exception as exc:
+                except Exception as exc:  # noqa: BLE001
                     failures.append(
                         f"test_buffers[{b_idx}] oracle evaluation error: {exc}"
                     )
@@ -1183,7 +1183,7 @@ def parse_gate_output(
                         failures.append(
                             f"test_buffers[{b_idx}] ({case_label}) oracle mismatch against official NIST ACVP vector"
                         )
-                except Exception as exc:
+                except Exception as exc:  # noqa: BLE001
                     failures.append(
                         f"test_buffers[{b_idx}] oracle evaluation error: {exc}"
                     )
@@ -1220,7 +1220,7 @@ def parse_gate_output(
                         failures.append(
                             f"test_buffers[{b_idx}] ({case_label}) oracle mismatch against official NIST ACVP ciphertext"
                         )
-                except Exception as exc:
+                except Exception as exc:  # noqa: BLE001
                     failures.append(
                         f"test_buffers[{b_idx}] oracle evaluation error: {exc}"
                     )
@@ -1257,7 +1257,7 @@ def parse_gate_output(
                         failures.append(
                             f"test_buffers[{b_idx}] ({case_label}) oracle mismatch against official NIST ACVP decrypted message"
                         )
-                except Exception as exc:
+                except Exception as exc:  # noqa: BLE001
                     failures.append(
                         f"test_buffers[{b_idx}] oracle evaluation error: {exc}"
                     )
@@ -1298,7 +1298,7 @@ def parse_gate_output(
                         failures.append(
                             f"test_buffers[{b_idx}] ({case_label}) oracle mismatch against official NIST ACVP key pair"
                         )
-                except Exception as exc:
+                except Exception as exc:  # noqa: BLE001
                     failures.append(
                         f"test_buffers[{b_idx}] oracle evaluation error: {exc}"
                     )
@@ -1339,7 +1339,7 @@ def parse_gate_output(
                         failures.append(
                             f"test_buffers[{b_idx}] ({case_label}) oracle mismatch against official NIST ACVP encapsulated ciphertext/shared key"
                         )
-                except Exception as exc:
+                except Exception as exc:  # noqa: BLE001
                     failures.append(
                         f"test_buffers[{b_idx}] oracle evaluation error: {exc}"
                     )
@@ -1374,7 +1374,7 @@ def parse_gate_output(
                         failures.append(
                             f"test_buffers[{b_idx}] ({case_label}) oracle mismatch against official NIST ACVP decapsulated shared key"
                         )
-                except Exception as exc:
+                except Exception as exc:  # noqa: BLE001
                     failures.append(
                         f"test_buffers[{b_idx}] oracle evaluation error: {exc}"
                     )
@@ -1409,7 +1409,7 @@ def parse_gate_output(
                         failures.append(
                             f"test_buffers[{b_idx}] ({case_label}) oracle mismatch against official NIST ACVP shared key"
                         )
-                except Exception as exc:
+                except Exception as exc:  # noqa: BLE001
                     failures.append(
                         f"test_buffers[{b_idx}] oracle evaluation error: {exc}"
                     )
@@ -1444,7 +1444,7 @@ def parse_gate_output(
                         failures.append(
                             f"test_buffers[{b_idx}] ({case_label}) oracle mismatch against official NIST FIPS 202 digest"
                         )
-                except Exception as exc:
+                except Exception as exc:  # noqa: BLE001
                     failures.append(
                         f"test_buffers[{b_idx}] oracle evaluation error: {exc}"
                     )
@@ -1487,7 +1487,7 @@ def parse_gate_output(
                         failures.append(
                             f"test_buffers[{b_idx}] ({case_label}) oracle mismatch against DR10 lifecycle specification (got status={status}, active={active_slot}; expected status={exp_status}, active={exp_active})"
                         )
-                except Exception as exc:
+                except Exception as exc:  # noqa: BLE001
                     failures.append(
                         f"test_buffers[{b_idx}] oracle evaluation error: {exc}"
                     )
@@ -1528,7 +1528,7 @@ def parse_gate_output(
                         failures.append(
                             f"test_buffers[{b_idx}] ({case_label}) oracle mismatch against official NIST ACVP ML-DSA-44 key pair"
                         )
-                except Exception as exc:
+                except Exception as exc:  # noqa: BLE001
                     failures.append(
                         f"test_buffers[{b_idx}] oracle evaluation error: {exc}"
                     )
@@ -1565,7 +1565,7 @@ def parse_gate_output(
                         failures.append(
                             f"test_buffers[{b_idx}] ({case_label}) oracle mismatch against official NIST ACVP ML-DSA-44 signature"
                         )
-                except Exception as exc:
+                except Exception as exc:  # noqa: BLE001
                     failures.append(
                         f"test_buffers[{b_idx}] oracle evaluation error: {exc}"
                     )
@@ -1601,7 +1601,7 @@ def parse_gate_output(
                         failures.append(
                             f"test_buffers[{b_idx}] ({case_label}) oracle mismatch against official NIST ACVP ML-DSA-44 verify verdict (got {actual_valid}, expected {exp_valid})"
                         )
-                except Exception as exc:
+                except Exception as exc:  # noqa: BLE001
                     failures.append(
                         f"test_buffers[{b_idx}] oracle evaluation error: {exc}"
                     )
@@ -1692,7 +1692,7 @@ def parse_gate_output(
                         failures.append(
                             f"test_buffers[{b_idx}] unknown gate_op {gate_op}"
                         )
-                except Exception as exc:
+                except Exception as exc:  # noqa: BLE001
                     failures.append(
                         f"test_buffers[{b_idx}] oracle evaluation error: {exc}"
                     )
@@ -1783,7 +1783,7 @@ def parse_gate_output(
                         failures.append(
                             f"test_buffers[{b_idx}] unknown gate_op {gate_op}"
                         )
-                except Exception as exc:
+                except Exception as exc:  # noqa: BLE001
                     failures.append(
                         f"test_buffers[{b_idx}] oracle evaluation error: {exc}"
                     )
@@ -1892,6 +1892,7 @@ def run_single_gate(
             text=True,
             timeout=gate.timeout_seconds,
             env=env,
+            check=False,
         )
         parent_end = datetime.now(timezone.utc)
         dt = time.time() - t0
@@ -1940,7 +1941,7 @@ def run_single_gate(
             machine_readable_record=None,
             corroboration_notes=(),
         )
-    except Exception as exc:
+    except Exception as exc:  # noqa: BLE001
         dt = time.time() - t0
         return GateExecutionResult(
             gate=gate,

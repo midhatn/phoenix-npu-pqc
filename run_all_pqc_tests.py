@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """HOST PREFLIGHT ONLY - not silicon validation, not NPU evidence.
 
 This runner executes the explicit host-safe allowlist below: contract,

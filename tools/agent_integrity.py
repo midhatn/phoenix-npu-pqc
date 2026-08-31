@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """Shared integrity and policy checks for repository changes across all languages."""
 
 from __future__ import annotations
