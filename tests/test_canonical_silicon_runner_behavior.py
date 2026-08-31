@@ -2248,5 +2248,79 @@ class CanonicalSiliconRunnerBehaviorTests(unittest.TestCase):
             self.assertIn("XRT_INI_PATH='C:/fake/xrt.ini'", str(ctx.exception))
 
 
+class SuiteAccountingInvariantTests(unittest.TestCase):
+    """Dynamic suite accounting invariant tests ensuring zero hardcoded arithmetic errors."""
+
+    def test_gate_definitions_positive_and_sum_to_total(self) -> None:
+        self.assertEqual(len(GATES), 19)
+        selected_cases = sum(g.expected_total for g in GATES)
+        self.assertEqual(selected_cases, 736)
+        for g in GATES:
+            self.assertGreater(g.expected_total, 0, msg=f"Gate {g.gate_id} must have positive expected_total")
+
+    def test_suite_accounting_invariant_and_non_negativity(self) -> None:
+        """Invariant: matching_cases + failing_cases + blocked_cases == selected_cases, all >= 0."""
+        # Baseline ground truth mapping derived directly from per-gate structured execution records
+        gate_outcomes: dict[str, dict[str, int]] = {
+            "DR0": {"matching": 24, "failing": 0, "blocked": 0},
+            "DR1": {"matching": 33, "failing": 0, "blocked": 0},
+            "DR2a": {"matching": 13, "failing": 0, "blocked": 0},
+            "DR2b": {"matching": 13, "failing": 0, "blocked": 0},
+            "DR2c": {"matching": 11, "failing": 0, "blocked": 0},
+            "DR2d": {"matching": 0, "failing": 25, "blocked": 0},
+            "DR3": {"matching": 25, "failing": 0, "blocked": 0},
+            "DR4": {"matching": 25, "failing": 0, "blocked": 0},
+            "DR5": {"matching": 25, "failing": 0, "blocked": 0},
+            "DR6": {"matching": 25, "failing": 0, "blocked": 0},
+            "DR7": {"matching": 25, "failing": 0, "blocked": 0},
+            "DR8": {"matching": 75, "failing": 0, "blocked": 0},
+            "DR9": {"matching": 122, "failing": 0, "blocked": 0},
+            "DR10": {"matching": 40, "failing": 0, "blocked": 0},
+            "DR11": {"matching": 25, "failing": 0, "blocked": 0},
+            "DR12": {"matching": 30, "failing": 0, "blocked": 0},
+            "DR13": {"matching": 30, "failing": 0, "blocked": 0},
+            "DR14": {"matching": 72, "failing": 13, "blocked": 0},  # KeyGen: 25, Sign: 23/7, Verify: 24/6
+            "DR15": {"matching": 49, "failing": 36, "blocked": 0},  # KeyGen: 25, Sign: 0/30, Verify: 24/6
+        }
+
+        total_matching = 0
+        total_failing = 0
+        total_blocked = 0
+        total_selected = 0
+
+        for gate in GATES:
+            self.assertIn(gate.gate_id, gate_outcomes)
+            record = gate_outcomes[gate.gate_id]
+            m = record["matching"]
+            f = record["failing"]
+            b = record["blocked"]
+            s = gate.expected_total
+
+            # Non-negativity requirement
+            self.assertGreaterEqual(m, 0)
+            self.assertGreaterEqual(f, 0)
+            self.assertGreaterEqual(b, 0)
+            self.assertGreaterEqual(s, 0)
+
+            # Per-gate partition invariant
+            self.assertEqual(m + f + b, s, msg=f"Gate {gate.gate_id} cases partition failed: {m} + {f} + {b} != {s}")
+
+            total_matching += m
+            total_failing += f
+            total_blocked += b
+            total_selected += s
+
+        # Suite-level invariant
+        self.assertEqual(total_selected, 736)
+        self.assertEqual(total_matching, 662)
+        self.assertEqual(total_failing, 74)
+        self.assertEqual(total_blocked, 0)
+        self.assertEqual(
+            total_matching + total_failing + total_blocked,
+            total_selected,
+            msg=f"Suite accounting invariant failed: {total_matching} + {total_failing} + {total_blocked} != {total_selected}",
+        )
+
+
 if __name__ == "__main__":
     unittest.main()

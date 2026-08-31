@@ -5,6 +5,7 @@
 DR0 is a physically validated production-package graph for one fused ML-DSA
 ring product on a Phoenix XDNA1 / AIE2 tile. On 2026-08-17, its native gate
 reported `Backend: m33-dr0:silicon`, passed four directed plus 20 deterministic
+<!-- [CLAIM-PROVENANCE: status=HISTORICAL; source=pqc_dr0_design; classification=SELF_REPORTED_UNVERIFIED] -->
 random vectors, and reported `TOTAL 24/24 PASS` with exit code 0. The immutable
 evidence details and exact claim boundary are recorded in
 [`PQC_DR0_SILICON_VALIDATION_20260817.md`](PQC_DR0_SILICON_VALIDATION_20260817.md).
@@ -134,6 +135,7 @@ used.
 The recorded Phoenix result validates only the fused M33 negacyclic
 polynomial-product graph and its 24 checked vectors. DR0 is **not** a complete
 ML-DSA or FIPS 204 implementation, and this result does not establish
+<!-- [CLAIM-PROVENANCE: status=HISTORICAL; source=pqc_dr0_design; classification=SELF_REPORTED_UNVERIFIED] -->
 performance, latency, throughput, constant-time behavior, side-channel
 resistance, fault resistance, zeroization, key-management, CMVP validation, or
 any other production certification claim. In particular:
@@ -157,6 +159,7 @@ python tests\pqc_device_resident\test_m33_product_dr0.py
 
 The first command executes host-only/static checks as well as the module tests.
 The second is the native gate. The recorded 2026-08-17 Phoenix run reported the
+<!-- [CLAIM-PROVENANCE: status=HISTORICAL; source=pqc_dr0_design; classification=SELF_REPORTED_UNVERIFIED] -->
 native backend label and anchored `TOTAL 24/24 PASS`; an `unavailable` report
 is not a pass. The historical instruction not to add DR0 to the runner is
 superseded: the current native-only canonical sequence dispatches it first. See

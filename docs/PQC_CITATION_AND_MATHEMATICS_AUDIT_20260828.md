@@ -1,7 +1,12 @@
 # Comprehensive PQC Citation and Mathematical Provenance Audit
 
-**Status**: 100% Validated on Physical Silicon (19 / 19 Gates PASS · 736 / 736 Test Cases)  
-**Date**: August 29, 2026  
+> [!NOTE]
+> <!-- [CLAIM-PROVENANCE: status=HISTORICAL; source=pqc_citation_audit_v1; classification=SELF_REPORTED_UNVERIFIED] -->
+> [HISTORICAL CLAIM - UNVERIFIED / PENDING PHYSICAL DISPATCH CORROBORATION]
+> Legacy metrics reflect pre-refactor self-reported baseline scope across 19 gates and 736 test cases.
+
+**Historical Scope**: 19 Gates Evaluated across 736 Test Cases
+**Date**: August 29, 2026
 **Target Hardware**: AMD Phoenix APU (Ryzen 7 7840HS / Ryzen 9 7940HS w/ XDNA1 NPU / AIE2 Architecture)
 
 ---
@@ -62,7 +67,8 @@ $$
 where $q^{-1} = 62209 \pmod{2^{32}}$ for ML-KEM and $q^{-1} = 58728449 \pmod{2^{32}}$ for ML-DSA.
 * *Citation*: Montgomery, P. L. (1985). *Modular multiplication without trial division*. *Mathematics of Computation*, 44(170), 519–521. [DOI: 10.1090/S0025-5718-1985-0777282-X](https://doi.org/10.1090/S0025-5718-1985-0777282-X).
 
-### 3.4 Barrett Compression & Constant-Time Reductions
+### 3.4 Barrett Compression & Polynomial Reductions
+
 * *Citation*: Barrett, P. (1986). *Implementing the Rivest Shamir and Adleman Public Key Encryption Algorithm on a Standard Digital Signal Processor*. *CRYPTO '86*, LNCS 263, pp. 311–323. [DOI: 10.1007/3-540-47721-7_24](https://doi.org/10.1007/3-540-47721-7_24).
 * **Exact Linear Closed-Form Compressions (AIE2 Invariant)**:
 
@@ -88,10 +94,14 @@ $$
 
 ---
 
-## 5. Physical Silicon Evidence Summary (736 / 736 Test Cases)
+## 5. Physical Silicon Evidence Summary (Historical Baseline Scope)
 
-1. **NIST FIPS 202 (DR9)**: 122 test cases (SHA3-224/256/384/512, SHAKE128/256) $\to$ **122 / 122 PASS**.
-2. **NIST FIPS 203 (DR2–DR8)**: 200 test cases (ML-KEM-512, 768, 1024 KeyGen/Encaps/Decaps) $\to$ **200 / 200 PASS**.
-3. **NIST FIPS 204 (DR11–DR15)**: 255 test cases (ML-DSA-44, 65, 87 KeyGen/Sign/Verify) $\to$ **255 / 255 PASS**.
-4. **Hardware Primitives & Lifecycle (DR0–DR1, DR10)**: 159 test cases $\to$ **159 / 159 PASS**.
-5. **Universal Silicon Total**: **736 / 736 PASS (100% Physical Parity in 23.82s)**.
+> [!NOTE]
+> [HISTORICAL CLAIM - UNVERIFIED / PENDING PHYSICAL DISPATCH CORROBORATION]
+> Legacy test totals below represent pre-refactor self-reported metrics. Under current Phase A zero-speculation policy, all 19 active gates are tracked with 0 independently physically verified gates pending driver-level dispatch trace corroboration.
+
+1. **NIST FIPS 202 (DR9)**: 122 test cases (SHA3-224/256/384/512, SHAKE128/256) tracked.
+2. **NIST FIPS 203 (DR2–DR8)**: 200 test cases (ML-KEM-512, 768, 1024 KeyGen/Encaps/Decaps) tracked.
+3. **NIST FIPS 204 (DR11–DR15)**: 255 test cases (ML-DSA-44, 65, 87 KeyGen/Sign/Verify) tracked.
+4. **Hardware Primitives & Lifecycle (DR0–DR1, DR10)**: 159 test cases tracked.
+5. **Universal Silicon Total**: 736 test cases tracked across legacy gate set.

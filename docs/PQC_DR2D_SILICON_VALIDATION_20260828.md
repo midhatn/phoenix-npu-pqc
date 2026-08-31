@@ -4,6 +4,7 @@
 **Target Hardware:** AMD Ryzen 9 7940HS w/ AMD Phoenix NPU1 (XDNA1 / AIE2, 4-Column Array)  
 **Host Environment:** Windows 11 Pro 25H2  
 **Toolchain:** MLIR-AIE v1.4.1 (commit `3ca0193`), Peano Clang++ 21.0.0 (`c9c5ecb7`), Xilinx XRT 2.21.75  
+<!-- [CLAIM-PROVENANCE: status=HISTORICAL; source=pqc_dr2d_silicon_validation_20260828; classification=SELF_REPORTED_UNVERIFIED] -->
 **Physical Validation Status:** **TOTAL 25/25 PASS (100% On-Device Silicon Validation)**
 
 ---
@@ -42,6 +43,7 @@ Backend: dr2d-mlkem512-kpke-keygen:silicon
   acvp-tcId-24                     PASS
   acvp-tcId-25                     PASS
 ------------------------------------------------------------------------
+<!-- [CLAIM-PROVENANCE: status=HISTORICAL; source=pqc_dr2d_silicon_validation_20260828; classification=SELF_REPORTED_UNVERIFIED] -->
 TOTAL 25/25 PASS
 ========================================================================
 ```

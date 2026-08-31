@@ -175,18 +175,23 @@ The following native headers and totals were recorded on 2026-08-17:
 
 ```text
 Backend: m33a:silicon
+<!-- [CLAIM-PROVENANCE: status=HISTORICAL; source=m33_silicon_handoff_20260817; classification=SELF_REPORTED_UNVERIFIED] -->
 TOTAL 420/420 PASS
 
 Backend: m33b:silicon
+<!-- [CLAIM-PROVENANCE: status=HISTORICAL; source=m33_silicon_handoff_20260817; classification=SELF_REPORTED_UNVERIFIED] -->
 TOTAL 700/700 PASS
 
 Backend: m33a:silicon, m33b:silicon
+<!-- [CLAIM-PROVENANCE: status=HISTORICAL; source=m33_silicon_handoff_20260817; classification=SELF_REPORTED_UNVERIFIED] -->
 TOTAL 75/75 PASS       # M33d KeyGen
 
 Backend: m33a:silicon, m33b:silicon
+<!-- [CLAIM-PROVENANCE: status=HISTORICAL; source=m33_silicon_handoff_20260817; classification=SELF_REPORTED_UNVERIFIED] -->
 TOTAL 90/90 PASS       # M33e Sign_internal
 
 Backend: m33a:silicon, m33b:silicon
+<!-- [CLAIM-PROVENANCE: status=HISTORICAL; source=m33_silicon_handoff_20260817; classification=SELF_REPORTED_UNVERIFIED] -->
 TOTAL 90/90 PASS       # M33e Verify_internal
 ```
 

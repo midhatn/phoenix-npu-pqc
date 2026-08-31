@@ -77,6 +77,7 @@ Running 30 NIST ACVP ML-DSA-44 Sign vectors on AMD Phoenix NPU...
   [29/30] acvp_mldsa44_sign_tg8_tc119         : PASS (100% bit-exact signature)
   [30/30] acvp_mldsa44_sign_tg8_tc120         : PASS (100% bit-exact signature)
 ------------------------------------------------------------
+<!-- [CLAIM-PROVENANCE: status=HISTORICAL; source=pqc_dr12_silicon_validation_20260829; classification=SELF_REPORTED_UNVERIFIED] -->
 TOTAL: 30/30 PASS (100% BIT-EXACT MATCH ON PHYSICAL SILICON)
 ============================================================
 ```

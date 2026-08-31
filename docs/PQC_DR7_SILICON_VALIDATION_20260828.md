@@ -3,12 +3,14 @@
 **Date:** August 28, 2026  
 **Hardware Target:** AMD Phoenix NPU (Ryzen 7040 / 8040 series, XDNA1 architecture, AIE2 tile array)  
 **Standard:** NIST FIPS 203 Section 6.3 (Algorithm 17, ML-KEM.Decaps)  
+<!-- [CLAIM-PROVENANCE: status=HISTORICAL; source=pqc_dr7_silicon_validation_20260828; classification=SELF_REPORTED_UNVERIFIED] -->
 **Status:** **CLOSED & VERIFIED ON PHYSICAL HARDWARE (25/25 PASS, 100% BIT-EXACT)**
 
 ---
 
 ## 1. Executive Summary
 
+<!-- [CLAIM-PROVENANCE: status=HISTORICAL; source=pqc_dr7_silicon_validation_20260828; classification=SELF_REPORTED_UNVERIFIED] -->
 Device-resident milestone DR7 implements full **ML-KEM-512 Decapsulation** with on-device Fujisaki-Okamoto (FO) re-encryption verification and constant-time implicit rejection on the physical AMD Phoenix NPU.
 
 Validation was conducted on physical Phoenix AIE2 silicon across:
@@ -51,6 +53,7 @@ Backend: dr7-mlkem512-decaps:silicon
   dr7_acvp_mlkem512_paired_tc14        PASS (Paired E2E Key Agreement)
   dr7_acvp_mlkem512_paired_tc15        PASS (Implicit Rejection)
 ------------------------------------------------------------------------
+<!-- [CLAIM-PROVENANCE: status=HISTORICAL; source=pqc_dr7_silicon_validation_20260828; classification=SELF_REPORTED_UNVERIFIED] -->
 TOTAL 25/25 PASS (100% BIT-EXACT MATCH ON PHYSICAL SILICON)
 ========================================================================
 ```

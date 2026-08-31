@@ -8,10 +8,14 @@ This handoff consolidates the recorded evidence for expert review. It makes only
 
 | Stage | Date / evidence | Supported result and boundary |
 |---|---|---|
+<!-- [CLAIM-PROVENANCE: status=HISTORICAL; source=pqc_dr2_expert_escalation_20260818; classification=SELF_REPORTED_UNVERIFIED] -->
 | DR0 | Merged in PR #8, commit `7b38973789fafb950a26551bc947f4fcaa91ec25`; [`PQC_DR0_SILICON_VALIDATION_20260817.md`](PQC_DR0_SILICON_VALIDATION_20260817.md) | Narrow M33 ring-product physical result: `TOTAL 24/24 PASS`. It is not complete ML-DSA residency. |
+<!-- [CLAIM-PROVENANCE: status=HISTORICAL; source=pqc_dr2_expert_escalation_20260818; classification=SELF_REPORTED_UNVERIFIED] -->
 | DR1 | Merged in PR #8, commit `7b38973789fafb950a26551bc947f4fcaa91ec25`; [`PQC_DR1_SILICON_VALIDATION_PENDING.md`](PQC_DR1_SILICON_VALIDATION_PENDING.md) | External operator-retained historical assertion: reported `TOTAL 33/33 PASS`, JIT key `c1b1aaa7ab02f303edff67b3`; raw log absent from this repository, so it is not independently reproducible or a current result. |
+<!-- [CLAIM-PROVENANCE: status=HISTORICAL; source=pqc_dr2_expert_escalation_20260818; classification=SELF_REPORTED_UNVERIFIED] -->
 | DR2a | [`PQC_DR2A_SILICON_VALIDATION_PENDING.md`](PQC_DR2A_SILICON_VALIDATION_PENDING.md) | Narrow ML-KEM-512 SampleNTT physical result: `TOTAL 13/13 PASS`; repeated `26/26`; cache `c65a53d2c8de882f9a5dc7d9`. |
 | DR2b | DR2d audit’s passed-artifact comparison | Narrow CBD3/NTT physical comparator: passed 13-vector artifact at cache `4311961d4f3a43976aa5a60d`; core `0_3` ELF SHA-256 `0f1e4f9563a6716c3076bdc8ad4c8d43dc6dfd566cf0de2fd67b14d937261125`. |
+<!-- [CLAIM-PROVENANCE: status=HISTORICAL; source=pqc_dr2_expert_escalation_20260818; classification=SELF_REPORTED_UNVERIFIED] -->
 | DR2c | [`PQC_DR2C_PHYSICAL_VALIDATION_HANDOFF_20260817.md`](PQC_DR2C_PHYSICAL_VALIDATION_HANDOFF_20260817.md) | Narrow terminal ML-KEM-512 `t_hat` row: `TOTAL 11/11 PASS`, repeated `22/22`. It excludes `G(d || k)`, both-row scheduling, serialization, and lifecycle zeroization. |
 | DR2d | [`PQC_DR2D_FULLWORD_PRODUCTION_ELF_AUDIT_20260818.md`](PQC_DR2D_FULLWORD_PRODUCTION_ELF_AUDIT_20260818.md) | Integrated candidate with five computation workers (W0–W4) plus serializer W5 (six worker cores total): compile-only review passed, but physical backend `dr2d-mlkem512-kpke-keygen:silicon` returned `TOTAL 0/25 FAIL`, exit 1. |
 

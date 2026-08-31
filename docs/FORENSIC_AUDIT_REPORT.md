@@ -112,6 +112,7 @@ These kernels are compiled into tile ELF binaries by `iron.jit` / Peano and disp
    * Reclassify `dr21_slhdsa_graph.py`, `dr23_openssl_provider.py`, and `dr32_pki_tls_abi.py` into a dedicated `host_reference/` package, removing misleading `"silicon"` labels.
 2. **Step 2: Correct Roadmap & Documentation**
    * Update `README.md` and `docs/PQC_AND_QKD_ROADMAP.md` to accurately reflect verified hardware gates:
+     <!-- [CLAIM-PROVENANCE: status=HISTORICAL; source=forensic_audit_report; classification=SELF_REPORTED_UNVERIFIED] -->
      * **Real Hardware Accelerated:** ML-KEM-512/768/1024 (FIPS 203) and ML-DSA-44/65/87 (FIPS 204).
      * **Host Reference / Experimental:** SLH-DSA (FIPS 205), OpenSSL Provider, X.509 PKI Studio.
    * Strip decorative DOIs and unsubstantiated certification claims.

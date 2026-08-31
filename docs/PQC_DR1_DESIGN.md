@@ -129,6 +129,7 @@ relies on the fixed eight-call worker schedule.
 The physical PASS is limited to one ML-DSA-44 `ExpandA` / `RejNTT` polynomial
 per request under this fixed ABI and successful-request corpus.  This
 implementation makes **no** claim of complete FIPS 204 device residency, full
+<!-- [CLAIM-PROVENANCE: status=HISTORICAL; source=pqc_dr1_design; classification=SELF_REPORTED_UNVERIFIED] -->
 FIPS 204 conformance, performance or throughput improvement, constant-time
 behavior, secure zeroization, side-channel resistance, CMVP validation, or
 CMVP certification.  Malformed-descriptor and internal-token corruption paths

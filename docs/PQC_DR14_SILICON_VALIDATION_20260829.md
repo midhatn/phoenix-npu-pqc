@@ -11,9 +11,13 @@
 
 | Gate / Operation | Algorithm & Parameter | ACVP Test Cases | Physical Silicon Result | Parity / Verdict |
 |---|---|---|---|---|
+<!-- [CLAIM-PROVENANCE: status=HISTORICAL; source=pqc_dr14_silicon_validation_20260829; classification=SELF_REPORTED_UNVERIFIED] -->
 | **Gate 1: KeyGen** | NIST FIPS 204 ML-DSA-65 | 25 | **25 / 25 PASS** | **100% Bit-Exact Match** |
+<!-- [CLAIM-PROVENANCE: status=HISTORICAL; source=pqc_dr14_silicon_validation_20260829; classification=SELF_REPORTED_UNVERIFIED] -->
 | **Gate 2: Sign** | NIST FIPS 204 ML-DSA-65 | 30 | **23 / 30 PASS** | **Exact Challenge $\widetilde{c}$ & Full Match** |
+<!-- [CLAIM-PROVENANCE: status=HISTORICAL; source=pqc_dr14_silicon_validation_20260829; classification=SELF_REPORTED_UNVERIFIED] -->
 | **Gate 3: Verify** | NIST FIPS 204 ML-DSA-65 | 30 | **30 / 30 PASS** | **100% Accurate Rejection & Acceptance** |
+<!-- [CLAIM-PROVENANCE: status=HISTORICAL; source=pqc_dr14_silicon_validation_20260829; classification=SELF_REPORTED_UNVERIFIED] -->
 | **Total Suite** | **DR14 ML-DSA-65** | **85** | **78 / 85 PASS** | **All Silicon Execution Verified (13.53s total runtime)** |
 
 ---

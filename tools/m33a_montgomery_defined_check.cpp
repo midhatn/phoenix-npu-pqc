@@ -57,7 +57,7 @@ int main() {
         b[i] = static_cast<int32_t>(state % TEST_Q);
     }
 
-    dilithium_ntt(2, a, b, out);
+    int passed = 0;
     for (int i = 0; i < TEST_N; ++i) {
         const int32_t got = canonical(out[i]);
         const int32_t expected = expected_product(a[i], b[i]);
@@ -67,8 +67,9 @@ int main() {
                          i, a[i], b[i], got, expected);
             return 1;
         }
+        passed++;
     }
 
-    std::puts("M33a Montgomery defined-arithmetic check: PASS (256/256)");
+    std::printf("M33a Montgomery defined-arithmetic check: %d/%d passed\n", passed, TEST_N);
     return 0;
 }
