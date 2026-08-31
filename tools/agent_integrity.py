@@ -53,6 +53,8 @@ SUPPORTED_EXTENSIONS = {
     ".mlir",
     ".ps1",
     ".sh",
+    ".bat",
+    ".cmd",
     ".cmake",
     ".yml",
     ".yaml",
@@ -125,6 +127,94 @@ SCRIPT_GENERIC_PYTHON_FALLBACK_RE = re.compile(
 SCRIPT_DESTRUCTIVE_CMD_RE = re.compile(
     r"(?:rm\s+-rf\s+/(?:\s|$|\*)|Remove-Item\s+-(?:Force\s+)?-Recurse\s+['\"]?[A-Za-z]:\\[*]?['\"])"
 )
+
+# Host, driver, and system integrity mutation patterns (bounded CLI rules)
+HOST_CLI_MUTATION_RULES = [
+    (
+        "HOST001",
+        "critical",
+        re.compile(
+            r"\bpnputil(?:\.exe)?[\s,\"']+(?:[^\r\n;|]+?[\s,\"']+)?(?:[/-](?:add-driver|delete-driver|install-driver|import-driver|i\s+-[aA]|[aA]\s+-[iI]|[iI][aA]|[aA][iI]|[dD]))\b|"
+            r"\bdevcon(?:\.exe)?[\s,\"']+(?:[^\r\n;|]+?[\s,\"']+)?(?:install|remove|restart|disable|enable|update|updateni|reboot|rescan)\b|"
+            r"\bdism(?:\.exe)?[\s,\"']+[^\r\n;|]*?/(?:add-driver|remove-driver|import-driver)\b",
+            re.IGNORECASE,
+        ),
+        "Host or driver mutation command is forbidden (pnputil, devcon, or driver-changing DISM).",
+    ),
+    (
+        "HOST002",
+        "critical",
+        re.compile(
+            r"\bStart-Process\s+[^\r\n;|]*?-Verb\s+['\"]?RunAs['\"]?|"
+            r"\brunas(?:\.exe)?[\s,\"']+[^\r\n;|]*?[/-]user\s*:\s*|"
+            r"\bsudo\s+",
+            re.IGNORECASE,
+        ),
+        "Administrator elevation or privilege escalation command is forbidden.",
+    ),
+    (
+        "HOST003",
+        "critical",
+        re.compile(
+            r"\bsc(?:\.exe)?[\s,\"']+(?:[^\r\n;|]+?[\s,\"']+)?(?:create|delete|config)\b|"
+            r"\b(?:New-Service|Set-Service|Remove-Service)\b|"
+            r"\breg(?:\.exe)?[\s,\"']+(?:[^\r\n;|]+?[\s,\"']+)?(?:add|delete|import|restore)[\s,\"']+(?:HKLM|HKEY_LOCAL_MACHINE)\b|"
+            r"\b(?:Set-ItemProperty|New-Item|Remove-Item|New-ItemProperty|Remove-ItemProperty|Set-Item|Clear-ItemProperty)\s+[^\r\n;|]*?(?:HKLM:|Registry::HKEY_LOCAL_MACHINE|HKLM\\|HKEY_LOCAL_MACHINE\\)",
+            re.IGNORECASE,
+        ),
+        "Machine-wide registry or driver/system service mutation is forbidden.",
+    ),
+    (
+        "HOST004",
+        "critical",
+        re.compile(
+            r"\bbcdedit(?:\.exe)?[\s,\"']+(?:[^\r\n;|]+?[\s,\"']+)?(?:[/-](?:set|deletevalue|create|delete|default|bootdebug|debug|timeout))\b",
+            re.IGNORECASE,
+        ),
+        "Boot configuration (bcdedit) mutation is forbidden.",
+    ),
+    (
+        "HOST007",
+        "critical",
+        re.compile(
+            r"\bpowershell(?:\.exe)?\s+[^\r\n;|]*?(?:-[eE](?:nc(?:odedcommand)?)?)\s+[A-Za-z0-9+/=]{10,}|"
+            r"\b(?:Invoke-Expression|iex)\b[^\r\n;|]*?\b(?:DownloadString|DownloadData|DownloadFile|Invoke-WebRequest|iwr|Invoke-RestMethod|irm)\b|"
+            r"\b(?:curl|wget)\b[^\r\n;|]*?\|\s*(?:sh|bash|powershell|pwsh|cmd)\b",
+            re.IGNORECASE,
+        ),
+        "Obfuscated execution, encoded PowerShell, or download-and-execute pattern is forbidden.",
+    ),
+]
+
+
+# Direct native dangerous API patterns (C/C++ and Python)
+HOST_NATIVE_API_RULES = [
+    (
+        "HOST005",
+        "critical",
+        re.compile(
+            r"\b(?:SetupCopyOEMInf[AW]?|DiInstallDriver[AW]?|UpdateDriverForPlugAndPlayDevices[AW]?|NtLoadDriver|ZwLoadDriver|NtUnloadDriver|ZwUnloadDriver)\s*\(",
+            re.IGNORECASE,
+        ),
+        "Native driver installation or driver-loading API is forbidden.",
+    ),
+    (
+        "HOST006",
+        "critical",
+        re.compile(
+            r"\b(?:WriteProcessMemory|NtWriteVirtualMemory|ZwWriteVirtualMemory|CreateRemoteThread|NtCreateThreadEx|ZwCreateThreadEx|SetWindowsHookEx[AW]?|DetourAttach|DetourTransactionBegin|DetourUpdateThread|DetourDetach)\s*\(",
+            re.IGNORECASE,
+        ),
+        "Process injection, cross-process memory tampering, or API/syscall hooking is forbidden.",
+    ),
+]
+
+# C/C++ process-launching sink pattern
+CPP_PROCESS_SINK_RE = re.compile(
+    r"\b(?:system|_wsystem|_popen|popen|ShellExecute[AW]?|ShellExecuteEx[AW]?|CreateProcess[AW]?)\s*\(((?:[^;)\n]|[\r\n]){1,4096}?)\)",
+    re.IGNORECASE,
+)
+
 
 # Secret and privacy patterns
 SECRET_PRIVATE_KEY_RE = re.compile(r"-----BEGIN (?:[A-Z0-9_-]+ )?PRIVATE KEY-----")
@@ -354,6 +444,38 @@ class PythonPolicyVisitor(ast.NodeVisitor):
                     "critical",
                     f"Fallback-like call `{name}` is reachable from an exception handler.",
                 )
+
+        # Check process-launching sinks for CLI mutation commands
+        c_name = call_name(node.func)
+        c_name_lower = c_name.lower()
+        is_sink = any(
+            c_name_lower == sink or c_name_lower.endswith(f".{sink}")
+            for sink in (
+                "subprocess.run",
+                "subprocess.popen",
+                "subprocess.call",
+                "subprocess.check_call",
+                "subprocess.check_output",
+                "os.system",
+                "os.popen",
+            )
+        )
+        if is_sink and node.args:
+            arg0 = node.args[0]
+            cmd_str = ""
+            if isinstance(arg0, ast.Constant) and isinstance(arg0.value, str):
+                cmd_str = arg0.value
+            elif isinstance(arg0, (ast.List, ast.Tuple)):
+                tokens = []
+                for elt in arg0.elts:
+                    if isinstance(elt, ast.Constant) and isinstance(elt.value, str):
+                        tokens.append(elt.value)
+                cmd_str = " ".join(tokens)
+            if cmd_str:
+                for rule, severity, pattern, message in HOST_CLI_MUTATION_RULES:
+                    if pattern.search(cmd_str):
+                        self.add(node, rule, severity, message)
+
         self.generic_visit(node)
 
     def visit_Compare(self, node: ast.Compare) -> None:
@@ -436,6 +558,19 @@ def scan_python_file(relative_path: Path) -> list[Finding]:
             )
         ]
     findings: list[Finding] = scan_secrets(relative_path, source)
+    for rule, severity, pattern, message in HOST_NATIVE_API_RULES:
+        for m in pattern.finditer(source):
+            line_no = source[: m.start()].count("\n") + 1
+            findings.append(
+                Finding(
+                    relative_path.as_posix(),
+                    line_no,
+                    rule,
+                    severity,
+                    message,
+                )
+            )
+
     try:
         tree = ast.parse(source, filename=str(relative_path))
     except SyntaxError as exc:
@@ -480,6 +615,406 @@ def scan_python_file(relative_path: Path) -> list[Finding]:
     return findings
 
 
+def strip_cpp_comments(source: str) -> str:
+    """Replace C/C++ comments (// and /* */) with spaces, preserving string literals, line breaks, and offsets."""
+    chars = list(source)
+    n = len(chars)
+    i = 0
+    in_string = False
+    quote_char = ""
+    while i < n:
+        if in_string:
+            if chars[i] == "\\":
+                i += 2
+                continue
+            if chars[i] == quote_char:
+                in_string = False
+            i += 1
+            continue
+
+        if chars[i] in ('"', "'"):
+            in_string = True
+            quote_char = chars[i]
+            i += 1
+            continue
+
+        if i + 1 < n and chars[i] == "/" and chars[i + 1] == "/":
+            chars[i] = " "
+            chars[i + 1] = " "
+            i += 2
+            while i < n and chars[i] != "\n":
+                chars[i] = " "
+                i += 1
+        elif i + 1 < n and chars[i] == "/" and chars[i + 1] == "*":
+            chars[i] = " "
+            chars[i + 1] = " "
+            i += 2
+            while i < n and not (chars[i] == "*" and chars[i + 1] == "/"):
+                if chars[i] != "\n":
+                    chars[i] = " "
+                i += 1
+            if i + 1 < n and chars[i] == "*" and chars[i + 1] == "/":
+                chars[i] = " "
+                chars[i + 1] = " "
+                i += 2
+        else:
+            i += 1
+    return "".join(chars)
+
+
+def strip_hash_comments(source: str) -> str:
+    """Replace '#' and '<# #>' comments with spaces, preserving string literals, line breaks, and offsets."""
+    chars = list(source)
+    n = len(chars)
+    i = 0
+    in_single_quote = False
+    in_double_quote = False
+    while i < n:
+        c = chars[i]
+        if c == "\\":
+            i += 2
+            continue
+        if c == "'" and not in_double_quote:
+            in_single_quote = not in_single_quote
+            i += 1
+            continue
+        if c == '"' and not in_single_quote:
+            in_double_quote = not in_double_quote
+            i += 1
+            continue
+        if c == "#" and not in_single_quote and not in_double_quote:
+            while i < n and chars[i] != "\n":
+                chars[i] = " "
+                i += 1
+            continue
+        if (
+            not in_single_quote
+            and not in_double_quote
+            and i + 1 < n
+            and chars[i] == "<"
+            and chars[i + 1] == "#"
+        ):
+            chars[i] = " "
+            chars[i + 1] = " "
+            i += 2
+            while i < n and not (chars[i] == "#" and chars[i + 1] == ">"):
+                if chars[i] != "\n":
+                    chars[i] = " "
+                i += 1
+            if i + 1 < n and chars[i] == "#" and chars[i + 1] == ">":
+                chars[i] = " "
+                chars[i + 1] = " "
+                i += 2
+            continue
+        i += 1
+    return "".join(chars)
+
+
+def assemble_logical_commands(
+    relative_path: Path,
+    source: str,
+    language: str,
+    max_lines: int = 32,
+    max_chars: int = 4096,
+) -> tuple[list[tuple[int, str]], list[Finding]]:
+    """Assemble discrete logical commands from script or workflow source.
+
+    Returns (commands, overflow_findings).
+    Fails closed with a critical finding if a logical command exceeds max_lines or max_chars.
+    """
+    commands: list[tuple[int, str]] = []
+    findings: list[Finding] = []
+    norm_path = relative_path.as_posix()
+
+    if language in {"shell", "script", "sh"}:
+        sanitized = strip_hash_comments(source)
+        lines = sanitized.splitlines()
+        i = 0
+        n = len(lines)
+        while i < n:
+            line_str = lines[i]
+            line_num = i + 1
+            if not line_str.strip():
+                i += 1
+                continue
+
+            if len(line_str) > max_chars:
+                findings.append(
+                    Finding(
+                        norm_path,
+                        line_num,
+                        "HOST001",
+                        "critical",
+                        f"Command continuation exceeds analyzable limit ({max_lines} lines / {max_chars} chars); fail-closed.",
+                    )
+                )
+                i += 1
+                continue
+
+            accum = [line_str.rstrip("\r\n")]
+            has_continuation = accum[0].rstrip().endswith("\\")
+            if has_continuation:
+                accum[0] = accum[0].rstrip()[:-1]
+
+            start_line = line_num
+            line_count = 1
+            while has_continuation and i + 1 < n:
+                i += 1
+                line_count += 1
+                curr_line = lines[i].rstrip("\r\n")
+                if curr_line.rstrip().endswith("\\"):
+                    accum.append(curr_line.rstrip()[:-1])
+                    has_continuation = True
+                else:
+                    accum.append(curr_line)
+                    has_continuation = False
+
+                total_chars = sum(len(s) for s in accum)
+                if line_count > max_lines or total_chars > max_chars:
+                    findings.append(
+                        Finding(
+                            norm_path,
+                            start_line,
+                            "HOST001",
+                            "critical",
+                            f"Command continuation exceeds analyzable limit ({max_lines} lines / {max_chars} chars); fail-closed.",
+                        )
+                    )
+                    break
+
+            joined = " ".join(part.strip() for part in accum if part.strip())
+            if joined:
+                for sub_cmd in joined.split(";"):
+                    sub_cmd_clean = sub_cmd.strip()
+                    if sub_cmd_clean:
+                        commands.append((start_line, sub_cmd_clean))
+            i += 1
+
+    elif language in {"powershell", "ps1"}:
+        sanitized = strip_hash_comments(source)
+        lines = sanitized.splitlines()
+        i = 0
+        n = len(lines)
+        while i < n:
+            line_str = lines[i]
+            line_num = i + 1
+            if not line_str.strip():
+                i += 1
+                continue
+
+            if len(line_str) > max_chars:
+                findings.append(
+                    Finding(
+                        norm_path,
+                        line_num,
+                        "HOST001",
+                        "critical",
+                        f"Command continuation exceeds analyzable limit ({max_lines} lines / {max_chars} chars); fail-closed.",
+                    )
+                )
+                i += 1
+                continue
+
+            accum = [line_str.rstrip("\r\n")]
+            has_continuation = accum[0].rstrip().endswith("`")
+            if has_continuation:
+                accum[0] = accum[0].rstrip()[:-1]
+
+            start_line = line_num
+            line_count = 1
+            while has_continuation and i + 1 < n:
+                i += 1
+                line_count += 1
+                curr_line = lines[i].rstrip("\r\n")
+                if curr_line.rstrip().endswith("`"):
+                    accum.append(curr_line.rstrip()[:-1])
+                    has_continuation = True
+                else:
+                    accum.append(curr_line)
+                    has_continuation = False
+
+                total_chars = sum(len(s) for s in accum)
+                if line_count > max_lines or total_chars > max_chars:
+                    findings.append(
+                        Finding(
+                            norm_path,
+                            start_line,
+                            "HOST001",
+                            "critical",
+                            f"Command continuation exceeds analyzable limit ({max_lines} lines / {max_chars} chars); fail-closed.",
+                        )
+                    )
+                    break
+
+            joined = " ".join(part.strip() for part in accum if part.strip())
+            if joined:
+                for sub_cmd in joined.split(";"):
+                    sub_cmd_clean = sub_cmd.strip()
+                    if sub_cmd_clean:
+                        commands.append((start_line, sub_cmd_clean))
+            i += 1
+
+    elif language in {"yaml", "yml", "structured"}:
+        sanitized = strip_hash_comments(source)
+        lines = sanitized.splitlines()
+        i = 0
+        n = len(lines)
+        while i < n:
+            line_str = lines[i]
+            line_num = i + 1
+            run_match = re.search(r"^\s*(?:-\s*)?run\s*:\s*(.*)$", line_str)
+            if run_match:
+                start_line = line_num
+                val = run_match.group(1).strip()
+                is_literal = bool(re.match(r"^\|[+-]?\d*$", val))
+                is_folded = bool(re.match(r"^>[+-]?\d*$", val))
+                if is_literal or is_folded:
+                    indent = len(line_str) - len(line_str.lstrip())
+                    block_lines: list[tuple[int, str]] = []
+                    j = i + 1
+                    while j < n:
+                        curr = lines[j]
+                        curr_indent = len(curr) - len(curr.lstrip())
+                        if curr.strip() and curr_indent <= indent:
+                            break
+                        block_lines.append((j + 1, curr))
+                        j += 1
+                    i = j - 1
+
+                    if is_literal:
+                        k = 0
+                        num_block_lines = len(block_lines)
+                        while k < num_block_lines:
+                            orig_ln, b_line = block_lines[k]
+                            if not b_line.strip():
+                                k += 1
+                                continue
+
+                            accum = [b_line.rstrip("\r\n")]
+                            cmd_start_line = orig_ln
+                            has_continuation = accum[0].rstrip().endswith("\\")
+                            if has_continuation:
+                                accum[0] = accum[0].rstrip()[:-1]
+
+                            cmd_line_count = 1
+                            while has_continuation and k + 1 < num_block_lines:
+                                k += 1
+                                cmd_line_count += 1
+                                next_orig_ln, next_b_line = block_lines[k]
+                                curr_l = next_b_line.rstrip("\r\n")
+                                if curr_l.rstrip().endswith("\\"):
+                                    accum.append(curr_l.rstrip()[:-1])
+                                    has_continuation = True
+                                else:
+                                    accum.append(curr_l)
+                                    has_continuation = False
+
+                                total_chars = sum(len(s) for s in accum)
+                                if (
+                                    cmd_line_count > max_lines
+                                    or total_chars > max_chars
+                                ):
+                                    findings.append(
+                                        Finding(
+                                            norm_path,
+                                            cmd_start_line,
+                                            "HOST001",
+                                            "critical",
+                                            f"Command continuation exceeds analyzable limit ({max_lines} lines / {max_chars} chars); fail-closed.",
+                                        )
+                                    )
+                                    break
+
+                            joined = " ".join(
+                                part.strip() for part in accum if part.strip()
+                            )
+                            if joined:
+                                for sub_cmd in joined.split(";"):
+                                    sub_cmd_clean = sub_cmd.strip()
+                                    if sub_cmd_clean:
+                                        commands.append((cmd_start_line, sub_cmd_clean))
+                            k += 1
+
+                    elif is_folded:
+                        non_empty_block = [
+                            (ln, line) for ln, line in block_lines if line.strip()
+                        ]
+                        folded_line_count = len(non_empty_block)
+                        total_chars = sum(
+                            len(line.strip()) for _, line in non_empty_block
+                        )
+                        if folded_line_count > max_lines or total_chars > max_chars:
+                            findings.append(
+                                Finding(
+                                    norm_path,
+                                    start_line,
+                                    "HOST001",
+                                    "critical",
+                                    f"YAML folded run block exceeds analyzable limit ({max_lines} lines / {max_chars} chars); fail-closed.",
+                                )
+                            )
+                        else:
+                            joined = " ".join(
+                                line.strip()
+                                for _, line in non_empty_block
+                                if line.strip()
+                            )
+                            if joined:
+                                for sub_cmd in joined.split(";"):
+                                    sub_cmd_clean = sub_cmd.strip()
+                                    if sub_cmd_clean:
+                                        commands.append((start_line, sub_cmd_clean))
+                else:
+                    if val:
+                        if len(val) > max_chars:
+                            findings.append(
+                                Finding(
+                                    norm_path,
+                                    start_line,
+                                    "HOST001",
+                                    "critical",
+                                    f"Command continuation exceeds analyzable limit ({max_lines} lines / {max_chars} chars); fail-closed.",
+                                )
+                            )
+                        else:
+                            for sub_cmd in val.split(";"):
+                                sub_cmd_clean = sub_cmd.strip()
+                                if sub_cmd_clean:
+                                    commands.append((start_line, sub_cmd_clean))
+            i += 1
+
+    elif language in {"cmake"}:
+        sanitized = strip_hash_comments(source)
+        lines = sanitized.splitlines()
+        cmake_exec_re = re.compile(
+            r"\b(execute_process|add_custom_command|add_custom_target)\s*\(",
+            re.IGNORECASE,
+        )
+        for line_num, line_str in enumerate(lines, start=1):
+            if cmake_exec_re.search(line_str):
+                accum = [line_str]
+                idx = line_num - 1
+                curr_idx = idx
+                while ")" not in "".join(accum) and curr_idx + 1 < len(lines):
+                    curr_idx += 1
+                    accum.append(lines[curr_idx])
+                    if len(accum) > max_lines or sum(len(s) for s in accum) > max_chars:
+                        findings.append(
+                            Finding(
+                                norm_path,
+                                line_num,
+                                "HOST001",
+                                "critical",
+                                f"CMake execution command exceeds analyzable limit ({max_lines} lines / {max_chars} chars); fail-closed.",
+                            )
+                        )
+                        break
+                joined = " ".join(s.strip() for s in accum)
+                commands.append((line_num, joined))
+
+    return commands, findings
+
+
 def strip_cpp_comments_and_strings(source: str) -> str:
     """Replace comments and string literals with spaces, preserving line breaks and character offsets."""
     chars = list(source)
@@ -497,7 +1032,7 @@ def strip_cpp_comments_and_strings(source: str) -> str:
             chars[i] = " "
             chars[i + 1] = " "
             i += 2
-            while i + 1 < n and not (chars[i] == "*" and chars[i + 1] == "/"):
+            while i < n and not (chars[i] == "*" and chars[i + 1] == "/"):
                 if chars[i] != "\n":
                     chars[i] = " "
                 i += 1
@@ -524,6 +1059,25 @@ def strip_cpp_comments_and_strings(source: str) -> str:
             if i < n and chars[i] == '"':
                 chars[i] = " "
                 i += 1
+            elif chars[i] == "'":
+                chars[i] = " "
+                i += 1
+                while i < n and chars[i] != "'":
+                    if chars[i] == "\\":
+                        chars[i] = " "
+                        if i + 1 < n:
+                            chars[i + 1] = " "
+                            i += 2
+                        else:
+                            i += 1
+                    elif chars[i] == "\n":
+                        i += 1
+                    else:
+                        chars[i] = " "
+                        i += 1
+                if i < n and chars[i] == "'":
+                    chars[i] = " "
+                    i += 1
         elif chars[i] == "'":
             chars[i] = " "
             i += 1
@@ -565,6 +1119,38 @@ def scan_cpp_file(relative_path: Path) -> list[Finding]:
             )
         ]
     findings: list[Finding] = scan_secrets(relative_path, source)
+
+    # 1. Native dangerous APIs
+    sanitized_cpp = strip_cpp_comments(source)
+    for rule, severity, pattern, message in HOST_NATIVE_API_RULES:
+        for m in pattern.finditer(sanitized_cpp):
+            line_no = source[: m.start()].count("\n") + 1
+            findings.append(
+                Finding(
+                    relative_path.as_posix(),
+                    line_no,
+                    rule,
+                    severity,
+                    message,
+                )
+            )
+
+    # 2. Process-launching sinks in C/C++ (system, _wsystem, ShellExecute, CreateProcess, popen, etc.)
+    for m in CPP_PROCESS_SINK_RE.finditer(sanitized_cpp):
+        line_no = source[: m.start()].count("\n") + 1
+        sink_args = m.group(1)
+        for rule, severity, pattern, message in HOST_CLI_MUTATION_RULES:
+            if pattern.search(sink_args):
+                findings.append(
+                    Finding(
+                        relative_path.as_posix(),
+                        line_no,
+                        rule,
+                        severity,
+                        message,
+                    )
+                )
+
     lines = source.splitlines()
 
     for line_number, line in enumerate(lines, start=1):
@@ -711,6 +1297,22 @@ def scan_script_file(relative_path: Path) -> list[Finding]:
         ]
     findings: list[Finding] = scan_secrets(relative_path, source)
 
+    lang = "powershell" if relative_path.suffix.lower() == ".ps1" else "shell"
+    cmds, overflow_findings = assemble_logical_commands(relative_path, source, lang)
+    findings.extend(overflow_findings)
+    for line_num, cmd in cmds:
+        for rule, severity, pattern, message in HOST_CLI_MUTATION_RULES:
+            if pattern.search(cmd):
+                findings.append(
+                    Finding(
+                        relative_path.as_posix(),
+                        line_num,
+                        rule,
+                        severity,
+                        message,
+                    )
+                )
+
     norm = relative_path.as_posix()
     if norm in EVIDENCE_MANIFEST_HASHES:
         expected = EVIDENCE_MANIFEST_HASHES[norm]
@@ -810,6 +1412,22 @@ def scan_cmake_file(relative_path: Path) -> list[Finding]:
     target = REPO_ROOT / relative_path
     source = target.read_text(encoding="utf-8", errors="replace")
     findings = scan_secrets(relative_path, source)
+
+    cmds, overflow_findings = assemble_logical_commands(relative_path, source, "cmake")
+    findings.extend(overflow_findings)
+    for line_num, cmd in cmds:
+        for rule, severity, pattern, message in HOST_CLI_MUTATION_RULES:
+            if pattern.search(cmd):
+                findings.append(
+                    Finding(
+                        relative_path.as_posix(),
+                        line_num,
+                        rule,
+                        severity,
+                        message,
+                    )
+                )
+
     for line_number, line in enumerate(source.splitlines(), start=1):
         if HARDCODED_PASS_RE.search(line):
             findings.append(
@@ -830,6 +1448,24 @@ def scan_structured_file(relative_path: Path) -> list[Finding]:
     target = REPO_ROOT / relative_path
     source = target.read_text(encoding="utf-8", errors="replace")
     findings = scan_secrets(relative_path, source)
+
+    if relative_path.suffix.lower() in {".yaml", ".yml"}:
+        cmds, overflow_findings = assemble_logical_commands(
+            relative_path, source, "yaml"
+        )
+        findings.extend(overflow_findings)
+        for line_num, cmd in cmds:
+            for rule, severity, pattern, message in HOST_CLI_MUTATION_RULES:
+                if pattern.search(cmd):
+                    findings.append(
+                        Finding(
+                            relative_path.as_posix(),
+                            line_num,
+                            rule,
+                            severity,
+                            message,
+                        )
+                    )
 
     if relative_path.suffix.lower() == ".json":
         try:
@@ -1774,7 +2410,7 @@ def scan_file(relative_path: Path) -> list[Finding]:
         return scan_python_file(relative_path)
     if suffix in {".c", ".cc", ".cpp", ".h", ".hpp"}:
         return scan_cpp_file(relative_path)
-    if suffix in {".ps1", ".sh"}:
+    if suffix in {".ps1", ".sh", ".bat", ".cmd"}:
         return scan_script_file(relative_path)
     if suffix == ".mlir":
         return scan_mlir_file(relative_path)

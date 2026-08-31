@@ -261,3 +261,49 @@ The agent must immediately halt execution, mark the task blocked, and report the
 - Cache reproducibility fails between cold and warm builds.
 - A physical execution claim lacks independent external corroboration.
 - Required tests fail or are skipped.
+
+---
+
+## 19. Host, Driver, and System Integrity
+
+The repository environment and host operating system state must remain strictly protected against unauthorized mutation, elevation, and driver tampering.
+
+### Scope and Applicability
+Code, scripts, test hooks, build hooks, CI configurations, and generated commands are strictly prohibited from installing, removing, replacing, patching, reconfiguring, disabling, restarting, or bypassing:
+- Windows drivers, driver packages, or DriverStore contents (`%SystemRoot%\System32\DriverStore\FileRepository`, `%SystemRoot%\System32\drivers`).
+- AMD NPU, XRT, IRON, LLVM-AIE, or Peano toolchains, runtimes, and system installations.
+- Device firmware, microcode, or hardware device configuration registers.
+- Windows services, background daemons, scheduled tasks, boot configuration (`BCD`), or machine-wide registry state (`HKLM` / `HKEY_LOCAL_MACHINE`).
+- System DLLs, system executables, global/system environment variables, or operating system security controls.
+- System-call dispatch tables, OS API dispatch, cross-process memory, or kernel memory.
+
+This prohibition applies universally whether the behavior is immediate, conditional, encoded, obfuscated, executed during build/test/import time, or deferred until a user executes a committed script or command.
+
+### Prohibited Mutation and Elevation Mechanisms
+The following mechanisms and patterns are strictly forbidden across all repository code, tools, workflows, and tests:
+- **Driver Mutation Utilities**: `pnputil` (`/add-driver`, `/delete-driver`, `-i -a`, `-d`), `devcon` (`install`, `remove`, `restart`, `disable`, `update`), and driver-changing DISM operations (`/Add-Driver`, `/Remove-Driver`).
+- **Service & Daemon Mutation**: `sc.exe` (`create`, `delete`, `config`) targeting driver or system services, and PowerShell service cmdlets (`New-Service`, `Set-Service`, `Remove-Service`) modifying machine-wide state.
+- **Registry Tampering**: `reg add`, `reg delete`, `reg import`, `reg restore` targeting `HKLM` / `HKEY_LOCAL_MACHINE`, and PowerShell registry cmdlets (`Set-ItemProperty`, `New-Item`, `Remove-Item`) targeting `HKLM:` or `Registry::HKEY_LOCAL_MACHINE`.
+- **Boot Configuration Modification**: `bcdedit` commands modifying boot parameters (e.g., `/set`, `/deletevalue`, `/create`, `/delete`, `testsigning`, `nointegritychecks`).
+- **Native Driver Installation & Loading APIs**: `SetupCopyOEMInf`, `DiInstallDriver`, `UpdateDriverForPlugAndPlayDevices`, `NtLoadDriver`, `ZwLoadDriver`, `NtUnloadDriver`, `ZwUnloadDriver`, or `CreateService` specifying kernel-driver types.
+- **Memory Injection and API Hooking**: `WriteProcessMemory`, `NtWriteVirtualMemory`, `ZwWriteVirtualMemory`, `CreateRemoteThread`, `NtCreateThreadEx`, `ZwCreateThreadEx`, `SetWindowsHookEx`, `DetourAttach`, `DetourTransactionBegin`, IAT/EAT patching, or direct kernel memory modification.
+- **Elevation and Execution Obfuscation**: `Start-Process -Verb RunAs`, `runas /user:`, `sudo`, encoded PowerShell (`-EncodedCommand`, `-enc`, `-ec`), and download-and-execute one-liners (`Invoke-Expression ... DownloadString`, `iex (iwr ...)`).
+
+### Compatibility Boundary: Unprivileged Device Runtime Operations
+Normal, unprivileged communication with the already-installed XRT and Phoenix NPU driver through the established repository runtime interface remains fully permitted:
+- Opening the existing physical device handle (`xrt::device`, `xclOpen`).
+- Loading a repository-compiled XCLBIN artifact (`device.load_xclbin`).
+- Allocating unprivileged buffer objects (`xrt::bo`, `xrtBOAlloc`).
+- Dispatching execution kernels, synchronizing DMA transfers, and waiting for completion (`kernel()`, `xclSyncBO`, `xclRun`).
+- Reading output buffers and transferring results to host memory.
+- Executing read-only diagnostic and inventory commands (`pnputil /enum-drivers`, `devcon status`, `devcon listclass`, `dism /Export-Driver`, `dism /Get-Drivers`, `reg query`, `Get-Service`, `sc query`, `Get-ItemProperty HKLM:...`).
+- Performing legitimate process-local cryptographic memory sanitization (`SecureZeroMemory`, `memset_s`, `explicit_bzero`, `sodium_memzero`).
+
+### Fail-Closed Escalation Boundary
+If a task, kernel, or test appears to require a driver update, host reconfiguration, firmware patch, service change, registry modification, elevation, or toolchain reinstall:
+1. The agent must immediately stop execution.
+2. The agent must document the exact technical requirement and blocker in `.agent/blockers.json`.
+3. The agent must never implement, encode, script, or automate host/driver mutation to bypass the blocker.
+
+### Human Semantic Review Requirement
+Static scanning tools (`tools/agent_integrity.py`) provide baseline pattern detection for known mutation signatures. Static regex scanning cannot prove the semantic absence of obfuscated, multi-stage, or novel host manipulation. Human semantic diff review remains mandatory for all changes.

