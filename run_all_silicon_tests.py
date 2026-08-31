@@ -1157,6 +1157,36 @@ def parse_gate_output(
                 corroboration_notes.append(
                     f"Parent independent oracle verified all {len(test_buffers)} official NIST ACVP ML-DSA-44 key pairs."
                 )
+        elif gate.gate_id == "DR12":
+            from tests.pqc_device_resident.test_dr12_mldsa44_sign import ACVP_EXPECTED
+            dr12_mismatches = 0
+            for b_idx, buf_entry in enumerate(test_buffers):
+                if not isinstance(buf_entry, dict):
+                    failures.append(f"test_buffers[{b_idx}] must be an object")
+                    continue
+                test_name = buf_entry.get("test_name")
+                sig_hex = buf_entry.get("sig_hex")
+                case_label = buf_entry.get("case_label", f"case_{b_idx}")
+                if not isinstance(test_name, str) or not isinstance(sig_hex, str):
+                    failures.append(f"test_buffers[{b_idx}] malformed fields (expected test_name, sig_hex)")
+                    continue
+                if test_name not in ACVP_EXPECTED:
+                    failures.append(f"test_buffers[{b_idx}] unknown test_name {test_name}")
+                    continue
+                try:
+                    exp_sig = ACVP_EXPECTED[test_name]
+                    actual_sig = bytes.fromhex(sig_hex)
+                    if actual_sig != exp_sig:
+                        dr12_mismatches += 1
+                        failures.append(
+                            f"test_buffers[{b_idx}] ({case_label}) oracle mismatch against official NIST ACVP ML-DSA-44 signature"
+                        )
+                except Exception as exc:
+                    failures.append(f"test_buffers[{b_idx}] oracle evaluation error: {exc}")
+            if dr12_mismatches == 0 and not failures:
+                corroboration_notes.append(
+                    f"Parent independent oracle verified all {len(test_buffers)} official NIST ACVP ML-DSA-44 signatures."
+                )
 
     # 12. Emulation and Redirection Mode Check
     emulation_mode = os.environ.get("XCL_EMULATION_MODE")
