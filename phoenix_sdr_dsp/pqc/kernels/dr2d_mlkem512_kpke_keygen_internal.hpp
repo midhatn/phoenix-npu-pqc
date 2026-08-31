@@ -192,7 +192,6 @@ static inline void derive_g(const uint8_t d[32], uint8_t rho[32], uint8_t sigma[
   for (uint32_t i = 0; i < 32; ++i) state[i] ^= d[i];
   state[32] ^= 2; state[33] ^= 0x06; state[kRateG - 1] ^= 0x80;
   phoenix_sdr_dsp::pqc::dr1::keccak_f1600(state);
-  DR2D_DISABLE_UNROLL
   for (uint32_t i = 0; i < 32; ++i) { rho[i] = state[i]; sigma[i] = state[32 + i]; }
   clear_bytes(state, sizeof(state));
 }
