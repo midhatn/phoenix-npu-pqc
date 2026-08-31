@@ -4,6 +4,7 @@ from __future__ import annotations
 from datetime import datetime, timedelta, timezone
 import hashlib
 import json
+import os
 from pathlib import Path
 import subprocess
 import unittest
@@ -80,10 +81,31 @@ def _make_valid_record(
         "exit_code": exit_code,
         "started_at": st,
         "ended_at": en,
+        "child_pid": 12345,
     }
     if execution_nonce is not None:
         rec["execution_nonce"] = execution_nonce
     return rec
+
+
+def _make_dr0_test_buffers(corrupt_index: int | None = None) -> list[dict[str, object]]:
+    """Generate 24 authentic DR0 test buffers for parent oracle verification tests."""
+    from tests.pqc_device_resident.test_m33_product_dr0 import DIRECTED_VECTORS, randomized_vectors
+    from phoenix_sdr_dsp.pqc import abi
+    buffers: list[dict[str, object]] = []
+    all_vecs = (*DIRECTED_VECTORS, *randomized_vectors())
+    for idx, (name, a, b) in enumerate(all_vecs):
+        expected = abi.reference_negacyclic_product(a, b)
+        output_c = list(expected)
+        if corrupt_index is not None and idx == corrupt_index:
+            output_c[0] = (output_c[0] + 1) % abi.Q
+        buffers.append({
+            "case_name": name,
+            "input_a": a,
+            "input_b": b,
+            "output_c": output_c,
+        })
+    return buffers
 
 
 def _wrap_record_in_stdout(record: dict[str, object], preamble: str = "") -> str:
@@ -502,6 +524,101 @@ class CanonicalSiliconRunnerBehaviorTests(unittest.TestCase):
             self.assertFalse(any(r.success for r in results))
             self.assertEqual(sum(r.cases_passed for r in results), 0)
             self.assertEqual(sum(r.cases_unverified for r in results), 30)
+
+    def test_dr0_valid_test_buffers_verified_by_parent_oracle(self) -> None:
+        gate = GATES[0]
+        now = datetime.now(timezone.utc)
+        rec = _make_valid_record(gate_id="DR0", expected_count=24)
+        rec["test_buffers"] = _make_dr0_test_buffers()
+        stdout = _wrap_record_in_stdout(rec)
+        res = parse_gate_output(
+            gate, stdout, "", 0, 0.5,
+            parent_start_time=now - timedelta(seconds=2),
+            parent_end_time=now + timedelta(seconds=2),
+            execution_nonce="test_nonce_0123456789abcdef",
+        )
+        self.assertFalse(res.success)
+        self.assertEqual(res.status, STATUS_SELF_REPORTED_UNVERIFIED)
+        self.assertTrue(any("Parent independent oracle verified all 24 x 256" in note for note in res.corroboration_notes))
+
+    def test_dr0_corrupted_buffer_coefficient_fails_validation(self) -> None:
+        gate = GATES[0]
+        now = datetime.now(timezone.utc)
+        rec = _make_valid_record(gate_id="DR0", expected_count=24)
+        # Corrupt 1 coefficient in case index 3
+        rec["test_buffers"] = _make_dr0_test_buffers(corrupt_index=3)
+        stdout = _wrap_record_in_stdout(rec)
+        res = parse_gate_output(
+            gate, stdout, "", 0, 0.5,
+            parent_start_time=now - timedelta(seconds=2),
+            parent_end_time=now + timedelta(seconds=2),
+            execution_nonce="test_nonce_0123456789abcdef",
+        )
+        self.assertFalse(res.success)
+        self.assertEqual(res.status, STATUS_FAIL)
+        self.assertIn("oracle mismatch at lane", res.error_message or "")
+
+    def test_dr0_truncated_test_buffers_fails_validation(self) -> None:
+        gate = GATES[0]
+        now = datetime.now(timezone.utc)
+        rec = _make_valid_record(gate_id="DR0", expected_count=24)
+        # Pass only 23 buffers instead of 24
+        rec["test_buffers"] = _make_dr0_test_buffers()[:23]
+        stdout = _wrap_record_in_stdout(rec)
+        res = parse_gate_output(
+            gate, stdout, "", 0, 0.5,
+            parent_start_time=now - timedelta(seconds=2),
+            parent_end_time=now + timedelta(seconds=2),
+            execution_nonce="test_nonce_0123456789abcdef",
+        )
+        self.assertFalse(res.success)
+        self.assertEqual(res.status, STATUS_FAIL)
+        self.assertIn("test_buffers length (23) != expected gate total (24)", res.error_message or "")
+
+    def test_xcl_emulation_mode_fails_closed(self) -> None:
+        gate = GATES[0]
+        now = datetime.now(timezone.utc)
+        rec = _make_valid_record(gate_id="DR0", expected_count=24)
+        stdout = _wrap_record_in_stdout(rec)
+        with mock.patch.dict(os.environ, {"XCL_EMULATION_MODE": "sw_emu"}):
+            # Runner verify_execution_environment rejects emulation
+            ok, msg = verify_execution_environment()
+            self.assertFalse(ok)
+            self.assertIn("XCL_EMULATION_MODE='sw_emu'", msg)
+
+            # parse_gate_output rejects emulation
+            res = parse_gate_output(
+                gate, stdout, "", 0, 0.5,
+                parent_start_time=now - timedelta(seconds=2),
+                parent_end_time=now + timedelta(seconds=2),
+                execution_nonce="test_nonce_0123456789abcdef",
+            )
+            self.assertFalse(res.success)
+            self.assertEqual(res.status, STATUS_FAIL)
+            self.assertIn("XCL_EMULATION_MODE='sw_emu' is active", res.error_message or "")
+
+    def test_invalid_child_pid_fails_validation(self) -> None:
+        gate = GATES[0]
+        now = datetime.now(timezone.utc)
+        rec = _make_valid_record(gate_id="DR0", expected_count=24)
+        rec["child_pid"] = -1
+        stdout = _wrap_record_in_stdout(rec)
+        res = parse_gate_output(
+            gate, stdout, "", 0, 0.5,
+            parent_start_time=now - timedelta(seconds=2),
+            parent_end_time=now + timedelta(seconds=2),
+            execution_nonce="test_nonce_0123456789abcdef",
+        )
+        self.assertFalse(res.success)
+        self.assertEqual(res.status, STATUS_FAIL)
+        self.assertIn("child_pid must be a positive integer", res.error_message or "")
+
+    def test_dr0_module_rejects_emulation_mode(self) -> None:
+        from phoenix_sdr_dsp.pqc import m33_product_graph as graph
+        with mock.patch.dict(os.environ, {"XCL_EMULATION_MODE": "hw_emu"}):
+            with self.assertRaises(graph.NativeBackendUnavailable) as ctx:
+                graph.check_emulation_and_redirection_excluded()
+            self.assertIn("XCL_EMULATION_MODE='hw_emu'", str(ctx.exception))
 
 
 if __name__ == "__main__":
