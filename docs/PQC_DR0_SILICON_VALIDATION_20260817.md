@@ -68,8 +68,7 @@ This record does **not** validate or claim:
 
 - Complete ML-DSA or complete FIPS 204 conformance.
 - Performance, latency, throughput, power, energy, or speedup measurements.
-<!-- [CLAIM-PROVENANCE: status=HISTORICAL; source=pqc_dr0_silicon_validation_20260817; classification=SELF_REPORTED_UNVERIFIED] -->
-- Constant-time execution, side-channel resistance, fault-injection resistance,
+- Constant-time execution, side-channel resistance, fault-injection resistance are not claimed,
   or general cryptographic hardening.
 - Host, AIE-local, DMA, ObjectFIFO, XRT, or compiled-artifact zeroization.
 - Key management, secret-lifetime guarantees, production deployment approval,

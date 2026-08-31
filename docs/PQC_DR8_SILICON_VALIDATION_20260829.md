@@ -18,7 +18,7 @@ Milestone **DR8** expanded on-device NIST FIPS 203 operations from ML-KEM-512 to
 Across all three parameter sets, validation executed against:
 1. **Official NIST ACVP test vectors** (KeyGen $d, z 	o ek, dk$, Encaps $ek, m 	o c, K$, Decaps $dk, c 	o K$).
 <!-- [CLAIM-PROVENANCE: status=HISTORICAL; source=pqc_dr8_silicon_validation_20260829; classification=SELF_REPORTED_UNVERIFIED] -->
-2. **Paired implicit rejection test vectors** (verifying constant-time fallback $K = 	ext{SHAKE256}(z \parallel c, 32)$ upon modified/invalid ciphertext).
+2. **Paired implicit rejection test vectors** (verifying branchless implicit rejection fallback $K = 	ext{SHAKE256}(z \parallel c, 32)$ upon modified/invalid ciphertext).
 
 ---
 

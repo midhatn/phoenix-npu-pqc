@@ -57,8 +57,7 @@ The 420/420 M33a record in
 [`M33_SILICON_VALIDATION_20260817.md`](M33_SILICON_VALIDATION_20260817.md) applies
 to the prior primitive gate, not this fused graph. The dedicated DR0 record
 establishes the separate `m33-dr0:silicon` 24/24 fused-product result, but does
-<!-- [CLAIM-PROVENANCE: status=HISTORICAL; source=pqc_dr0_provenance; classification=SELF_REPORTED_UNVERIFIED] -->
-not inherit a complete ML-DSA/FIPS 204 claim, performance result, constant-time
+does not inherit a complete ML-DSA/FIPS 204 claim, performance result, constant-time
 claim, zeroization claim, or CMVP validation. Those limits are explicit in
 [`PQC_DR0_SILICON_VALIDATION_20260817.md`](PQC_DR0_SILICON_VALIDATION_20260817.md).
 

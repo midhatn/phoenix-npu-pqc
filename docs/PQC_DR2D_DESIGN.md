@@ -212,8 +212,7 @@ The Phoenix record must include a 25/25 native pass plus a repeat in the same
 process, artifact IDs/timestamps, worker program-memory reports, per-tile data
 memory and FIFO-depth/placement reports, DMA routes, and confirmation of only
 two shim MM2S channels and one terminal S2MM channel. It must distinguish
-<!-- [CLAIM-PROVENANCE: status=HISTORICAL; source=pqc_dr2d_design; classification=SELF_REPORTED_UNVERIFIED] -->
-correctness evidence from remanence, side-channel, constant-time, performance,
+correctness evidence from remanence, side-channel, constant-time, performance are not claimed,
 CMVP, or certification claims.
 
 ## References

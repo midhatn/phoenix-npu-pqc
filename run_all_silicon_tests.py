@@ -140,6 +140,7 @@ class NativeGate:
     script: Path
     backend_label: str
     expected_total: int
+    oracle_provenance: str = "official NIST ACVP"
     timeout_seconds: int = 1800
 
     @property
@@ -184,6 +185,101 @@ class GateExecutionResult:
     corroboration_notes: tuple[str, ...] = ()
 
 
+@dataclass(frozen=True)
+class SuiteAccountingSummary:
+    """Dynamic suite-level accounting separating functional correctness from physical provenance."""
+
+    total_gates: int
+    passed_gates: int
+    unverified_gates: int
+    blocked_gates: int
+    failed_gates: int
+    total_cases_selected: int
+    total_cases_executed: int
+    total_cases_matching: int
+    total_cases_failed: int
+    total_cases_blocked: int
+    total_cases_physically_verified: int
+    total_cases_unverified_provenance: int
+
+    def validate_invariants(self) -> None:
+        """Validate non-negativity and dynamic partition invariants."""
+        counts = (
+            self.total_gates,
+            self.passed_gates,
+            self.unverified_gates,
+            self.blocked_gates,
+            self.failed_gates,
+            self.total_cases_selected,
+            self.total_cases_executed,
+            self.total_cases_matching,
+            self.total_cases_failed,
+            self.total_cases_blocked,
+            self.total_cases_physically_verified,
+            self.total_cases_unverified_provenance,
+        )
+        if any(c < 0 for c in counts):
+            raise ValueError(f"Negative count detected in suite accounting: {self}")
+
+        if (
+            self.passed_gates + self.unverified_gates + self.blocked_gates + self.failed_gates
+            != self.total_gates
+        ):
+            raise ValueError(
+                f"Gate partition invariant failed: {self.passed_gates} + {self.unverified_gates} + "
+                f"{self.blocked_gates} + {self.failed_gates} != {self.total_gates}"
+            )
+
+        if (
+            self.total_cases_matching + self.total_cases_failed + self.total_cases_blocked
+            != self.total_cases_selected
+        ):
+            raise ValueError(
+                f"Case partition invariant failed: {self.total_cases_matching} matching + "
+                f"{self.total_cases_failed} failing + {self.total_cases_blocked} blocked != "
+                f"{self.total_cases_selected} selected"
+            )
+
+
+def summarize_suite_execution(
+    results: list[GateExecutionResult],
+    gates: tuple[NativeGate, ...],
+) -> SuiteAccountingSummary:
+    """Aggregate per-gate execution outcomes dynamically and enforce partition invariants."""
+    total_gates = len(gates)
+    passed_gates = sum(1 for r in results if r.success)
+    unverified_gates = sum(1 for r in results if r.status == STATUS_SELF_REPORTED_UNVERIFIED)
+    blocked_gates = sum(1 for r in results if r.status == STATUS_BLOCKED)
+    failed_gates = sum(
+        1 for r in results if not r.success and r.status not in (STATUS_SELF_REPORTED_UNVERIFIED, STATUS_BLOCKED)
+    )
+
+    total_cases_selected = sum(g.expected_total for g in gates)
+    total_cases_executed = sum(r.cases_executed for r in results)
+    total_cases_matching = sum(r.cases_passed + r.cases_unverified for r in results)
+    total_cases_failed = sum(r.cases_failed for r in results)
+    total_cases_blocked = sum(r.cases_selected for r in results if r.status == STATUS_BLOCKED)
+    total_cases_physically_verified = sum(r.cases_passed for r in results if r.success)
+    # All executed cases lack independent physical provenance unless the gate is physically verified
+    total_cases_unverified_provenance = total_cases_executed - total_cases_physically_verified
+
+    summary = SuiteAccountingSummary(
+        total_gates=total_gates,
+        passed_gates=passed_gates,
+        unverified_gates=unverified_gates,
+        blocked_gates=blocked_gates,
+        failed_gates=failed_gates,
+        total_cases_selected=total_cases_selected,
+        total_cases_executed=total_cases_executed,
+        total_cases_matching=total_cases_matching,
+        total_cases_failed=total_cases_failed,
+        total_cases_blocked=total_cases_blocked,
+        total_cases_physically_verified=total_cases_physically_verified,
+        total_cases_unverified_provenance=total_cases_unverified_provenance,
+    )
+    return summary
+
+
 GATES: tuple[NativeGate, ...] = (
     NativeGate(
         gate_id="DR0",
@@ -191,6 +287,7 @@ GATES: tuple[NativeGate, ...] = (
         script=TESTS_DIR / "test_m33_product_dr0.py",
         backend_label="m33-dr0:silicon",
         expected_total=24,
+        oracle_provenance="repository generated",
     ),
     NativeGate(
         gate_id="DR1",
@@ -198,6 +295,7 @@ GATES: tuple[NativeGate, ...] = (
         script=TESTS_DIR / "test_dr1_mldsa44_rejntt_silicon.py",
         backend_label="dr1-mldsa44-expanda-rejntt:silicon",
         expected_total=33,
+        oracle_provenance="official NIST ACVP",
     ),
     NativeGate(
         gate_id="DR2a",
@@ -205,6 +303,7 @@ GATES: tuple[NativeGate, ...] = (
         script=TESTS_DIR / "test_dr2a_mlkem512_samplentt_silicon.py",
         backend_label="dr2a-mlkem512-samplentt:silicon",
         expected_total=13,
+        oracle_provenance="derived from official vector",
     ),
     NativeGate(
         gate_id="DR2b",
@@ -212,6 +311,7 @@ GATES: tuple[NativeGate, ...] = (
         script=TESTS_DIR / "test_dr2b_mlkem512_noise_ntt_silicon.py",
         backend_label="dr2b-mlkem512-noise-ntt:silicon",
         expected_total=13,
+        oracle_provenance="derived from official vector",
     ),
     NativeGate(
         gate_id="DR2c",
@@ -219,6 +319,7 @@ GATES: tuple[NativeGate, ...] = (
         script=TESTS_DIR / "test_dr2c_mlkem512_keygen_row_silicon.py",
         backend_label="dr2c-mlkem512-keygen-row:silicon",
         expected_total=11,
+        oracle_provenance="derived from official vector",
     ),
     NativeGate(
         gate_id="DR2d",
@@ -226,6 +327,7 @@ GATES: tuple[NativeGate, ...] = (
         script=TESTS_DIR / "test_dr2d_mlkem512_kpke_keygen_silicon.py",
         backend_label="dr2d-mlkem512-kpke-keygen:silicon",
         expected_total=25,
+        oracle_provenance="official NIST ACVP",
     ),
     NativeGate(
         gate_id="DR3",
@@ -233,6 +335,7 @@ GATES: tuple[NativeGate, ...] = (
         script=TESTS_DIR / "test_dr3_mlkem512_kpke_encrypt_silicon.py",
         backend_label="dr3-mlkem512-kpke-encrypt:silicon",
         expected_total=25,
+        oracle_provenance="official NIST ACVP",
     ),
     NativeGate(
         gate_id="DR4",
@@ -240,6 +343,7 @@ GATES: tuple[NativeGate, ...] = (
         script=TESTS_DIR / "test_dr4_mlkem512_kpke_decrypt_silicon.py",
         backend_label="dr4-mlkem512-kpke-decrypt:silicon",
         expected_total=25,
+        oracle_provenance="official NIST ACVP",
     ),
     NativeGate(
         gate_id="DR5",
@@ -247,6 +351,7 @@ GATES: tuple[NativeGate, ...] = (
         script=TESTS_DIR / "test_dr5_mlkem512_keygen_silicon.py",
         backend_label="dr5-mlkem512-keygen:silicon",
         expected_total=25,
+        oracle_provenance="official NIST ACVP",
     ),
     NativeGate(
         gate_id="DR6",
@@ -254,6 +359,7 @@ GATES: tuple[NativeGate, ...] = (
         script=TESTS_DIR / "test_dr6_mlkem512_encaps_silicon.py",
         backend_label="dr6-mlkem512-encaps:silicon",
         expected_total=25,
+        oracle_provenance="official NIST ACVP",
     ),
     NativeGate(
         gate_id="DR7",
@@ -261,6 +367,7 @@ GATES: tuple[NativeGate, ...] = (
         script=TESTS_DIR / "test_dr7_mlkem512_decaps_silicon.py",
         backend_label="dr7-mlkem512-decaps:silicon",
         expected_total=25,
+        oracle_provenance="official NIST ACVP",
     ),
     NativeGate(
         gate_id="DR8",
@@ -268,6 +375,7 @@ GATES: tuple[NativeGate, ...] = (
         script=TESTS_DIR / "test_dr8_mlkem_unified_silicon.py",
         backend_label="dr8-mlkem-unified:silicon",
         expected_total=75,
+        oracle_provenance="official NIST ACVP",
     ),
     NativeGate(
         gate_id="DR9",
@@ -275,6 +383,7 @@ GATES: tuple[NativeGate, ...] = (
         script=TESTS_DIR / "test_dr9_fips202_silicon.py",
         backend_label="dr9-fips202:silicon",
         expected_total=122,
+        oracle_provenance="official NIST CAVP",
     ),
     NativeGate(
         gate_id="DR10",
@@ -282,6 +391,7 @@ GATES: tuple[NativeGate, ...] = (
         script=TESTS_DIR / "test_dr10_sealed_lifecycle_silicon.py",
         backend_label="dr10-sealed-lifecycle:silicon",
         expected_total=40,
+        oracle_provenance="repository protocol vector",
     ),
     NativeGate(
         gate_id="DR11",
@@ -289,6 +399,7 @@ GATES: tuple[NativeGate, ...] = (
         script=TESTS_DIR / "test_dr11_mldsa44_keygen_silicon.py",
         backend_label="dr11-mldsa44-keygen:silicon",
         expected_total=25,
+        oracle_provenance="official NIST ACVP",
     ),
     NativeGate(
         gate_id="DR12",
@@ -296,6 +407,7 @@ GATES: tuple[NativeGate, ...] = (
         script=TESTS_DIR / "test_dr12_mldsa44_sign_silicon.py",
         backend_label="dr12-mldsa44-sign:silicon",
         expected_total=30,
+        oracle_provenance="official NIST ACVP",
     ),
     NativeGate(
         gate_id="DR13",
@@ -303,6 +415,7 @@ GATES: tuple[NativeGate, ...] = (
         script=TESTS_DIR / "test_dr13_mldsa44_verify_silicon.py",
         backend_label="dr13-mldsa44-verify:silicon",
         expected_total=30,
+        oracle_provenance="official NIST ACVP",
     ),
     NativeGate(
         gate_id="DR14",
@@ -310,6 +423,7 @@ GATES: tuple[NativeGate, ...] = (
         script=TESTS_DIR / "test_dr14_mldsa65_silicon.py",
         backend_label="dr14-mldsa65:silicon",
         expected_total=85,
+        oracle_provenance="official NIST ACVP",
     ),
     NativeGate(
         gate_id="DR15",
@@ -317,6 +431,7 @@ GATES: tuple[NativeGate, ...] = (
         script=TESTS_DIR / "test_dr15_mldsa87_silicon.py",
         backend_label="dr15-mldsa87:silicon",
         expected_total=85,
+        oracle_provenance="official NIST ACVP",
     ),
 )
 
@@ -327,6 +442,7 @@ EXTENSION_GATES: tuple[NativeGate, ...] = (
         script=TESTS_DIR / "test_dr16_etsi_qkd014_silicon.py",
         backend_label="dr16-etsi014:silicon",
         expected_total=25,
+        oracle_provenance="repository protocol vector",
     ),
     NativeGate(
         gate_id="DR17",
@@ -334,6 +450,7 @@ EXTENSION_GATES: tuple[NativeGate, ...] = (
         script=TESTS_DIR / "test_dr17_mldsa_qkd_auth_silicon.py",
         backend_label="dr17-mldsa-auth:silicon",
         expected_total=25,
+        oracle_provenance="official NIST ACVP",
     ),
     NativeGate(
         gate_id="DR18",
@@ -341,6 +458,7 @@ EXTENSION_GATES: tuple[NativeGate, ...] = (
         script=TESTS_DIR / "test_dr18_dual_key_combiner_silicon.py",
         backend_label="dr18-dual-combiner:silicon",
         expected_total=25,
+        oracle_provenance="derived from official vector",
     ),
     NativeGate(
         gate_id="DR19",
@@ -348,6 +466,7 @@ EXTENSION_GATES: tuple[NativeGate, ...] = (
         script=TESTS_DIR / "test_dr19_hybrid_session_silicon.py",
         backend_label="dr19-hybrid-session:silicon",
         expected_total=25,
+        oracle_provenance="repository protocol vector",
     ),
     NativeGate(
         gate_id="DR27",
@@ -355,6 +474,7 @@ EXTENSION_GATES: tuple[NativeGate, ...] = (
         script=TESTS_DIR / "test_dr27_qrng_reservoir_silicon.py",
         backend_label="dr27-qrng-reservoir:silicon",
         expected_total=21,
+        oracle_provenance="repository protocol vector",
     ),
 )
 
@@ -1601,34 +1721,29 @@ def main() -> int:
     python_exe = get_ironenv_python()
     results, dt_all = execute_suite(active_gates, python_exe, REPO_ROOT)
 
-    total_gates = len(active_gates)
-    passed_gates = sum(1 for r in results if r.success)
-    unverified_gates = sum(1 for r in results if r.status == STATUS_SELF_REPORTED_UNVERIFIED)
-    blocked_gates = sum(1 for r in results if r.status == STATUS_BLOCKED)
-    failed_gates = total_gates - passed_gates - unverified_gates - blocked_gates
-
-    total_cases_selected = sum(g.expected_total for g in active_gates)
-    total_cases_passed = sum(r.cases_passed for r in results)
-    total_cases_unverified = sum(r.cases_unverified for r in results)
-    total_cases_failed = sum(r.cases_failed for r in results)
-    total_cases_blocked = sum(r.cases_selected for r in results if r.status == STATUS_BLOCKED)
+    summary = summarize_suite_execution(results, active_gates)
+    summary.validate_invariants()
 
     print("=" * 80)
-    print(f"MASTER SILICON SUITE RESULT: {passed_gates}/{total_gates} GATES PHYSICALLY VERIFIED ({dt_all:.2f}s)")
-    print(f"Gate Status Breakdown: {unverified_gates} unverified, {blocked_gates} blocked, {failed_gates} failed")
+    print(f"MASTER SILICON SUITE RESULT: {summary.passed_gates}/{summary.total_gates} GATES PHYSICALLY VERIFIED ({dt_all:.2f}s)")
+    print(f"Gate Status Breakdown: {summary.unverified_gates} unverified, {summary.blocked_gates} blocked, {summary.failed_gates} failed")
     print(
-        f"Case Status Breakdown: {total_cases_passed} verified passed, {total_cases_unverified} unverified claims, "
-        f"{total_cases_failed} verified case failures, {total_cases_blocked} blocked of {total_cases_selected} selected."
+        f"Case Status Breakdown: {summary.total_cases_physically_verified} verified passed, {summary.total_cases_matching} matching declared per-gate oracle, "
+        f"{summary.total_cases_failed} case failures, {summary.total_cases_blocked} blocked of {summary.total_cases_selected} selected."
+    )
+    print(
+        f"Physical Execution Provenance: {summary.total_cases_physically_verified} independently physically corroborated, "
+        f"{summary.total_cases_unverified_provenance} physical execution provenance unverified."
     )
     print("NOTICE: Physical silicon verification is BLOCKED pending trusted dispatch and KAT-output corroboration.")
     print("=" * 80)
 
     return 0 if (
-        failed_gates == 0
-        and unverified_gates == 0
-        and blocked_gates == 0
-        and total_gates > 0
-        and total_cases_passed == total_cases_selected
+        summary.failed_gates == 0
+        and summary.unverified_gates == 0
+        and summary.blocked_gates == 0
+        and summary.total_gates > 0
+        and summary.total_cases_physically_verified == summary.total_cases_selected
     ) else 1
 
 

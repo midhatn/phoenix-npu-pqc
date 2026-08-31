@@ -14,6 +14,7 @@ import run_all_silicon_tests as runner
 from run_all_silicon_tests import (
     EXTENSION_GATES,
     GATES,
+    GateExecutionResult,
     NativeGate,
     RESULT_START_MARKER,
     RESULT_END_MARKER,
@@ -22,12 +23,14 @@ from run_all_silicon_tests import (
     STATUS_MISSING,
     STATUS_SELF_REPORTED_UNVERIFIED,
     STATUS_TIMEOUT,
+    SuiteAccountingSummary,
     CaseResult,
     execute_suite,
     extract_canonical_framed_record,
     parse_gate_output,
     run_single_gate,
     scan_diagnostic_markers,
+    summarize_suite_execution,
     verify_execution_environment,
 )
 
@@ -2248,6 +2251,30 @@ class CanonicalSiliconRunnerBehaviorTests(unittest.TestCase):
             self.assertIn("XRT_INI_PATH='C:/fake/xrt.ini'", str(ctx.exception))
 
 
+# Versioned Phase A historical baseline execution record bound to forensic revalidation state
+PHASE_A_HISTORICAL_BASELINE_FIXTURE: tuple[dict[str, object], ...] = (
+    {"gate_id": "DR0", "status": STATUS_SELF_REPORTED_UNVERIFIED, "success": False, "selected": 24, "executed": 24, "passed": 0, "unverified": 24, "failed": 0},
+    {"gate_id": "DR1", "status": STATUS_SELF_REPORTED_UNVERIFIED, "success": False, "selected": 33, "executed": 33, "passed": 0, "unverified": 33, "failed": 0},
+    {"gate_id": "DR2a", "status": STATUS_SELF_REPORTED_UNVERIFIED, "success": False, "selected": 13, "executed": 13, "passed": 0, "unverified": 13, "failed": 0},
+    {"gate_id": "DR2b", "status": STATUS_SELF_REPORTED_UNVERIFIED, "success": False, "selected": 13, "executed": 13, "passed": 0, "unverified": 13, "failed": 0},
+    {"gate_id": "DR2c", "status": STATUS_SELF_REPORTED_UNVERIFIED, "success": False, "selected": 11, "executed": 11, "passed": 0, "unverified": 11, "failed": 0},
+    {"gate_id": "DR2d", "status": STATUS_FAIL, "success": False, "selected": 25, "executed": 25, "passed": 0, "unverified": 0, "failed": 25},
+    {"gate_id": "DR3", "status": STATUS_SELF_REPORTED_UNVERIFIED, "success": False, "selected": 25, "executed": 25, "passed": 0, "unverified": 25, "failed": 0},
+    {"gate_id": "DR4", "status": STATUS_SELF_REPORTED_UNVERIFIED, "success": False, "selected": 25, "executed": 25, "passed": 0, "unverified": 25, "failed": 0},
+    {"gate_id": "DR5", "status": STATUS_SELF_REPORTED_UNVERIFIED, "success": False, "selected": 25, "executed": 25, "passed": 0, "unverified": 25, "failed": 0},
+    {"gate_id": "DR6", "status": STATUS_SELF_REPORTED_UNVERIFIED, "success": False, "selected": 25, "executed": 25, "passed": 0, "unverified": 25, "failed": 0},
+    {"gate_id": "DR7", "status": STATUS_SELF_REPORTED_UNVERIFIED, "success": False, "selected": 25, "executed": 25, "passed": 0, "unverified": 25, "failed": 0},
+    {"gate_id": "DR8", "status": STATUS_SELF_REPORTED_UNVERIFIED, "success": False, "selected": 75, "executed": 75, "passed": 0, "unverified": 75, "failed": 0},
+    {"gate_id": "DR9", "status": STATUS_SELF_REPORTED_UNVERIFIED, "success": False, "selected": 122, "executed": 122, "passed": 0, "unverified": 122, "failed": 0},
+    {"gate_id": "DR10", "status": STATUS_SELF_REPORTED_UNVERIFIED, "success": False, "selected": 40, "executed": 40, "passed": 0, "unverified": 40, "failed": 0},
+    {"gate_id": "DR11", "status": STATUS_SELF_REPORTED_UNVERIFIED, "success": False, "selected": 25, "executed": 25, "passed": 0, "unverified": 25, "failed": 0},
+    {"gate_id": "DR12", "status": STATUS_SELF_REPORTED_UNVERIFIED, "success": False, "selected": 30, "executed": 30, "passed": 0, "unverified": 30, "failed": 0},
+    {"gate_id": "DR13", "status": STATUS_SELF_REPORTED_UNVERIFIED, "success": False, "selected": 30, "executed": 30, "passed": 0, "unverified": 30, "failed": 0},
+    {"gate_id": "DR14", "status": STATUS_FAIL, "success": False, "selected": 85, "executed": 85, "passed": 0, "unverified": 72, "failed": 13},
+    {"gate_id": "DR15", "status": STATUS_FAIL, "success": False, "selected": 85, "executed": 85, "passed": 0, "unverified": 49, "failed": 36},
+)
+
+
 class SuiteAccountingInvariantTests(unittest.TestCase):
     """Dynamic suite accounting invariant tests ensuring zero hardcoded arithmetic errors."""
 
@@ -2257,69 +2284,134 @@ class SuiteAccountingInvariantTests(unittest.TestCase):
         self.assertEqual(selected_cases, 736)
         for g in GATES:
             self.assertGreater(g.expected_total, 0, msg=f"Gate {g.gate_id} must have positive expected_total")
+            self.assertIn(g.oracle_provenance, {
+                "repository generated",
+                "derived from official vector",
+                "official NIST ACVP",
+                "official NIST CAVP",
+                "repository protocol vector",
+            })
 
-    def test_suite_accounting_invariant_and_non_negativity(self) -> None:
-        """Invariant: matching_cases + failing_cases + blocked_cases == selected_cases, all >= 0."""
-        # Baseline ground truth mapping derived directly from per-gate structured execution records
-        gate_outcomes: dict[str, dict[str, int]] = {
-            "DR0": {"matching": 24, "failing": 0, "blocked": 0},
-            "DR1": {"matching": 33, "failing": 0, "blocked": 0},
-            "DR2a": {"matching": 13, "failing": 0, "blocked": 0},
-            "DR2b": {"matching": 13, "failing": 0, "blocked": 0},
-            "DR2c": {"matching": 11, "failing": 0, "blocked": 0},
-            "DR2d": {"matching": 0, "failing": 25, "blocked": 0},
-            "DR3": {"matching": 25, "failing": 0, "blocked": 0},
-            "DR4": {"matching": 25, "failing": 0, "blocked": 0},
-            "DR5": {"matching": 25, "failing": 0, "blocked": 0},
-            "DR6": {"matching": 25, "failing": 0, "blocked": 0},
-            "DR7": {"matching": 25, "failing": 0, "blocked": 0},
-            "DR8": {"matching": 75, "failing": 0, "blocked": 0},
-            "DR9": {"matching": 122, "failing": 0, "blocked": 0},
-            "DR10": {"matching": 40, "failing": 0, "blocked": 0},
-            "DR11": {"matching": 25, "failing": 0, "blocked": 0},
-            "DR12": {"matching": 30, "failing": 0, "blocked": 0},
-            "DR13": {"matching": 30, "failing": 0, "blocked": 0},
-            "DR14": {"matching": 72, "failing": 13, "blocked": 0},  # KeyGen: 25, Sign: 23/7, Verify: 24/6
-            "DR15": {"matching": 49, "failing": 36, "blocked": 0},  # KeyGen: 25, Sign: 0/30, Verify: 24/6
-        }
+    def test_dynamic_suite_aggregation_and_partition_invariant(self) -> None:
+        """Construct GateExecutionResult fixtures and verify production aggregation invariants."""
+        from run_all_silicon_tests import summarize_suite_execution
 
-        total_matching = 0
-        total_failing = 0
-        total_blocked = 0
-        total_selected = 0
+        gate_map = {g.gate_id: g for g in GATES}
+        results: list[GateExecutionResult] = []
 
-        for gate in GATES:
-            self.assertIn(gate.gate_id, gate_outcomes)
-            record = gate_outcomes[gate.gate_id]
-            m = record["matching"]
-            f = record["failing"]
-            b = record["blocked"]
-            s = gate.expected_total
+        for record in PHASE_A_HISTORICAL_BASELINE_FIXTURE:
+            gate = gate_map[str(record["gate_id"])]
+            res = GateExecutionResult(
+                gate=gate,
+                success=bool(record["success"]),
+                status=str(record["status"]),
+                exit_code=0 if record["status"] == STATUS_SELF_REPORTED_UNVERIFIED else 1,
+                cases_selected=int(record["selected"]),
+                cases_executed=int(record["executed"]),
+                cases_passed=int(record["passed"]),
+                cases_failed=int(record["failed"]),
+                cases_unverified=int(record["unverified"]),
+                cases_skipped=0,
+                cases_xfailed=0,
+                case_results=(),
+                duration_seconds=1.0,
+            )
+            results.append(res)
 
-            # Non-negativity requirement
-            self.assertGreaterEqual(m, 0)
-            self.assertGreaterEqual(f, 0)
-            self.assertGreaterEqual(b, 0)
-            self.assertGreaterEqual(s, 0)
+        summary = summarize_suite_execution(results, GATES)
+        summary.validate_invariants()
 
-            # Per-gate partition invariant
-            self.assertEqual(m + f + b, s, msg=f"Gate {gate.gate_id} cases partition failed: {m} + {f} + {b} != {s}")
-
-            total_matching += m
-            total_failing += f
-            total_blocked += b
-            total_selected += s
-
-        # Suite-level invariant
-        self.assertEqual(total_selected, 736)
-        self.assertEqual(total_matching, 662)
-        self.assertEqual(total_failing, 74)
-        self.assertEqual(total_blocked, 0)
+        # Dynamic values derived from production aggregation
+        self.assertEqual(summary.total_cases_selected, 736)
+        self.assertEqual(summary.total_cases_executed, 736)
+        self.assertEqual(summary.total_cases_matching, 662)
+        self.assertEqual(summary.total_cases_failed, 74)
+        self.assertEqual(summary.total_cases_blocked, 0)
+        self.assertEqual(summary.total_cases_physically_verified, 0)
+        self.assertEqual(summary.total_cases_unverified_provenance, 736)
         self.assertEqual(
-            total_matching + total_failing + total_blocked,
-            total_selected,
-            msg=f"Suite accounting invariant failed: {total_matching} + {total_failing} + {total_blocked} != {total_selected}",
+            summary.total_cases_matching + summary.total_cases_failed + summary.total_cases_blocked,
+            summary.total_cases_selected,
         )
+
+    def test_zero_and_partial_cases_aggregation(self) -> None:
+        """Verify aggregation behavior on empty and single-gate collections."""
+        from run_all_silicon_tests import summarize_suite_execution
+
+        # Zero gates
+        empty_summary = summarize_suite_execution([], ())
+        empty_summary.validate_invariants()
+        self.assertEqual(empty_summary.total_gates, 0)
+        self.assertEqual(empty_summary.total_cases_selected, 0)
+        self.assertEqual(empty_summary.total_cases_matching, 0)
+
+        # Single gate partial execution
+        single_gate = GATES[0]
+        partial_res = GateExecutionResult(
+            gate=single_gate,
+            success=False,
+            status=STATUS_SELF_REPORTED_UNVERIFIED,
+            exit_code=0,
+            cases_selected=single_gate.expected_total,
+            cases_executed=10,
+            cases_passed=0,
+            cases_failed=0,
+            cases_unverified=10,
+            cases_skipped=0,
+            cases_xfailed=0,
+            case_results=(),
+            duration_seconds=0.5,
+        )
+        # Missing 14 cases -> partition check should detect mismatch when validating invariants
+        single_summary = summarize_suite_execution([partial_res], (single_gate,))
+        self.assertEqual(single_summary.total_cases_selected, 24)
+        self.assertEqual(single_summary.total_cases_matching, 10)
+        self.assertEqual(single_summary.total_cases_failed, 0)
+        with self.assertRaises(ValueError) as ctx:
+            single_summary.validate_invariants()
+        self.assertIn("Case partition invariant failed", str(ctx.exception))
+
+    def test_negative_and_contradictory_counts_rejected(self) -> None:
+        """Verify that negative or contradictory summary counts are rejected."""
+        from run_all_silicon_tests import SuiteAccountingSummary
+
+        # Negative count
+        invalid_summary = SuiteAccountingSummary(
+            total_gates=1,
+            passed_gates=0,
+            unverified_gates=1,
+            blocked_gates=0,
+            failed_gates=0,
+            total_cases_selected=25,
+            total_cases_executed=25,
+            total_cases_matching=-5,
+            total_cases_failed=30,
+            total_cases_blocked=0,
+            total_cases_physically_verified=0,
+            total_cases_unverified_provenance=25,
+        )
+        with self.assertRaises(ValueError) as ctx:
+            invalid_summary.validate_invariants()
+        self.assertIn("Negative count detected", str(ctx.exception))
+
+        # Gate count mismatch
+        gate_mismatch_summary = SuiteAccountingSummary(
+            total_gates=5,
+            passed_gates=1,
+            unverified_gates=1,
+            blocked_gates=1,
+            failed_gates=1,  # sum is 4 != 5
+            total_cases_selected=100,
+            total_cases_executed=100,
+            total_cases_matching=75,
+            total_cases_failed=25,
+            total_cases_blocked=0,
+            total_cases_physically_verified=25,
+            total_cases_unverified_provenance=75,
+        )
+        with self.assertRaises(ValueError) as ctx:
+            gate_mismatch_summary.validate_invariants()
+        self.assertIn("Gate partition invariant failed", str(ctx.exception))
 
 
 if __name__ == "__main__":

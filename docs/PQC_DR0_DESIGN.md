@@ -135,8 +135,7 @@ used.
 The recorded Phoenix result validates only the fused M33 negacyclic
 polynomial-product graph and its 24 checked vectors. DR0 is **not** a complete
 ML-DSA or FIPS 204 implementation, and this result does not establish
-<!-- [CLAIM-PROVENANCE: status=HISTORICAL; source=pqc_dr0_design; classification=SELF_REPORTED_UNVERIFIED] -->
-performance, latency, throughput, constant-time behavior, side-channel
+No claim is made regarding performance, latency, throughput, constant-time behavior, side-channel
 resistance, fault resistance, zeroization, key-management, CMVP validation, or
 any other production certification claim. In particular:
 

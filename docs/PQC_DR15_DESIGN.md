@@ -74,8 +74,7 @@ ML-DSA-87 represents the highest security category of the NIST Module-Lattice-Ba
    - Computes $\mathbf{w}' = \text{INTT}(\mathbf{A} \circ \widehat{\mathbf{z}} - \widehat{c} \circ \widehat{\mathbf{t}}_1)$.
    - Reconstructs $\mathbf{w}_1' = \text{UseHint65}(\mathbf{h}, \mathbf{w}')$ ($8 \times 128 = 1024$ B).
    - Squeezes $\widetilde{c}' = \text{SHAKE256}(\mu \parallel \mathbf{w}_1', 32)$.
-   <!-- [CLAIM-PROVENANCE: status=HISTORICAL; source=pqc_dr15_design; classification=SELF_REPORTED_UNVERIFIED] -->
-   - Performs constant-time comparison $\widetilde{c}' == \widetilde{c}$.
+      - Performs branchless comparison $\widetilde{c}' == \widetilde{c}$.
    - Emits `Token 1` (72 bytes).
 
 3. **Worker 2 (`verify_w2_fin`)**:

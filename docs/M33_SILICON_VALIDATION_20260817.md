@@ -161,8 +161,7 @@ Supported:
 Not supported:
 
 - Fully NPU-resident or entirely on-tile ML-DSA.
-<!-- [CLAIM-PROVENANCE: status=HISTORICAL; source=m33_silicon_validation_20260817; classification=SELF_REPORTED_UNVERIFIED] -->
-- Constant-time or production-hardened cryptography.
+- Constant-time or production-hardened cryptography is not claimed.
 - CPU/GPU speedup or energy-efficiency claims.
 - Full external-interface, arbitrary-context, randomized-signing, or complete
   ACVP-group coverage.

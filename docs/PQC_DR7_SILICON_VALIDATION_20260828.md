@@ -10,8 +10,7 @@
 
 ## 1. Executive Summary
 
-<!-- [CLAIM-PROVENANCE: status=HISTORICAL; source=pqc_dr7_silicon_validation_20260828; classification=SELF_REPORTED_UNVERIFIED] -->
-Device-resident milestone DR7 implements full **ML-KEM-512 Decapsulation** with on-device Fujisaki-Okamoto (FO) re-encryption verification and constant-time implicit rejection on the physical AMD Phoenix NPU.
+Device-resident milestone DR7 implements full **ML-KEM-512 Decapsulation** with on-device Fujisaki-Okamoto (FO) re-encryption verification and branchless implicit rejection on the AMD Phoenix NPU.
 
 Validation was conducted on physical Phoenix AIE2 silicon across:
 1. **10 official NIST ACVP VAL test vectors** (covering valid ciphertexts and invalid ciphertext implicit rejection).

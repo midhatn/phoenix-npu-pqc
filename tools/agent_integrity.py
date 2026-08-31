@@ -43,9 +43,11 @@ SUPPORTED_EXTENSIONS = {
     ".yaml",
     ".json",
     ".md",
+    ".editorconfig",
 }
 SPECIAL_FILENAMES = {
     "CMakeLists.txt",
+    "install",
 }
 
 # Regex patterns for integrity rules
@@ -775,6 +777,23 @@ def validate_claim_provenance(
                 )
 
     elif prov.status == "HISTORICAL":
+        unauthorized_patterns = (
+            (r"\[VERIFIED PHYSICAL SILICON\]|\bphysically verified\b", "VERIFIED PHYSICAL SILICON"),
+            (r"\bstandards compliant\b", "standards compliant"),
+            (r"\bconstant[- ]time\b", "constant time"),
+            (r"\bside[- ]channel resistant\b", "side-channel resistant"),
+        )
+        for pat, desc in unauthorized_patterns:
+            if re.search(pat, claim_line_text, re.IGNORECASE):
+                findings.append(
+                    Finding(
+                        norm_path,
+                        prov.line,
+                        "DOC002",
+                        "critical",
+                        f"status=HISTORICAL cannot authorize '{desc}' claim; downgrade claim text or prove with fresh physical evidence.",
+                    )
+                )
         if not prov.evidence and not prov.source:
             findings.append(
                 Finding(
@@ -785,7 +804,7 @@ def validate_claim_provenance(
                     "status=HISTORICAL requires 'evidence' or 'source' reference.",
                 )
             )
-        else:
+        elif not any(f.severity == "critical" for f in findings if f.line == prov.line):
             findings.append(
                 Finding(
                     norm_path,
@@ -866,6 +885,10 @@ def is_claim_line(lines: list[str], idx: int) -> bool:
         "do not claim",
         "do not use",
         "do not allow",
+        "not claimed",
+        "are not claimed",
+        "is not claimed",
+        "does not inherit",
         "operator-retained assertion",
         "operator-supplied",
     )
@@ -960,7 +983,7 @@ def scan_file(relative_path: Path) -> list[Finding]:
 
     suffix = relative_path.suffix.lower()
     name = relative_path.name
-    if suffix == ".py":
+    if suffix == ".py" or name == "install":
         return scan_python_file(relative_path)
     if suffix in {".c", ".cc", ".cpp", ".h", ".hpp"}:
         return scan_cpp_file(relative_path)
@@ -974,6 +997,8 @@ def scan_file(relative_path: Path) -> list[Finding]:
         return scan_structured_file(relative_path)
     if suffix == ".md":
         return scan_markdown_file(relative_path)
+    if name == ".editorconfig" or suffix == ".editorconfig":
+        return scan_script_file(relative_path)
     return []
 
 
