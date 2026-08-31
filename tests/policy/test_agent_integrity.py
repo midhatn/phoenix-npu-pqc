@@ -17,7 +17,7 @@ TOOLS = REPO_ROOT / "tools"
 if str(TOOLS) not in sys.path:
     sys.path.insert(0, str(TOOLS))
 
-from agent_integrity import EXCLUDED_POLICY_PATHS, scan_python_file, validate_evidence
+from agent_integrity import EXCLUDED_POLICY_PATHS, REPO_ROOT as LIB_ROOT, scan_python_file, validate_evidence
 
 
 class PythonPolicyTests(unittest.TestCase):
