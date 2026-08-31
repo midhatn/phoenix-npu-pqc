@@ -2,10 +2,14 @@
 
 ## Task
 
-`GENERALIZE-RUNNERS`: Generalize independent framed evidence collection and parent verification across physical gates DR1 through DR15.
+`DR0-MIGRATE`: Bounded DR0 structured evidence migration and parent oracle verification.
 
 ## Status
 
-`READY` (`DR0-EVIDENCE-DESIGN` and `DR0-MIGRATE` completed on `implement/dr0-evidence`).
-DR0 now emits framed JSON evidence with full public test buffers and device metadata; parent runner independently verifies all 24 x 256 coefficients against the independent reference oracle and strictly validates PID, nonce, timestamps, artifact hashes, and emulation exclusion.
+`COMPLETED` (Bounded DR0 implementation & parent-side public-buffer verification completed).
+- Structured framed evidence emission: Implemented (`<<<PQC_SILICON_GATE_RESULT_V1>>>`).
+- Parent-side buffer oracle verification: Implemented (6,144/6,144 coefficients verified bit-exact).
+- Redirection exclusion: `XCL_EMULATION_MODE` and `XRT_INI_PATH` explicitly rejected fail-closed.
+- Physical evidence state: `SELF_REPORTED_UNVERIFIED` (success=False, cases_passed=0, cases_unverified=24).
+- Hardware ground truth: `PHYSICAL_VERIFICATION_BLOCKED` pending independent driver dispatch corroboration.
 

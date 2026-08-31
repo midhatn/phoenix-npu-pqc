@@ -29,12 +29,18 @@ class NativeBackendUnavailable(RuntimeError):
 
 
 def check_emulation_and_redirection_excluded() -> None:
-    """Fail closed if XCL_EMULATION_MODE or runtime redirection variables are set."""
+    """Fail closed if XCL_EMULATION_MODE or XRT_INI_PATH runtime redirection variables are set."""
     emulation_mode = os.environ.get("XCL_EMULATION_MODE")
     if emulation_mode and emulation_mode.strip():
         raise NativeBackendUnavailable(
             f"Physical silicon execution rejected: XCL_EMULATION_MODE={emulation_mode!r} is set. "
             "Hardware ground truth forbids simulation or emulation backends."
+        )
+    xrt_ini = os.environ.get("XRT_INI_PATH")
+    if xrt_ini and xrt_ini.strip():
+        raise NativeBackendUnavailable(
+            f"Physical silicon execution rejected: XRT_INI_PATH={xrt_ini!r} is set. "
+            "Hardware ground truth forbids custom runtime configuration redirection."
         )
 
 

@@ -620,6 +620,35 @@ class CanonicalSiliconRunnerBehaviorTests(unittest.TestCase):
                 graph.check_emulation_and_redirection_excluded()
             self.assertIn("XCL_EMULATION_MODE='hw_emu'", str(ctx.exception))
 
+    def test_xrt_ini_path_fails_closed(self) -> None:
+        gate = GATES[0]
+        now = datetime.now(timezone.utc)
+        rec = _make_valid_record(gate_id="DR0", expected_count=24)
+        stdout = _wrap_record_in_stdout(rec)
+        with mock.patch.dict(os.environ, {"XRT_INI_PATH": "C:/fake/xrt.ini"}):
+            # Runner verify_execution_environment rejects redirection
+            ok, msg = verify_execution_environment()
+            self.assertFalse(ok)
+            self.assertIn("XRT_INI_PATH='C:/fake/xrt.ini'", msg)
+
+            # parse_gate_output rejects redirection
+            res = parse_gate_output(
+                gate, stdout, "", 0, 0.5,
+                parent_start_time=now - timedelta(seconds=2),
+                parent_end_time=now + timedelta(seconds=2),
+                execution_nonce="test_nonce_0123456789abcdef",
+            )
+            self.assertFalse(res.success)
+            self.assertEqual(res.status, STATUS_FAIL)
+            self.assertIn("XRT_INI_PATH='C:/fake/xrt.ini' is active", res.error_message or "")
+
+    def test_dr0_module_rejects_xrt_ini_path(self) -> None:
+        from phoenix_sdr_dsp.pqc import m33_product_graph as graph
+        with mock.patch.dict(os.environ, {"XRT_INI_PATH": "C:/custom/xrt.ini"}):
+            with self.assertRaises(graph.NativeBackendUnavailable) as ctx:
+                graph.check_emulation_and_redirection_excluded()
+            self.assertIn("XRT_INI_PATH='C:/custom/xrt.ini'", str(ctx.exception))
+
 
 if __name__ == "__main__":
     unittest.main()

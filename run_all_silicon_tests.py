@@ -115,6 +115,12 @@ def verify_execution_environment(python_exe: Path | None = None) -> tuple[bool, 
             f"Physical silicon execution rejected: XCL_EMULATION_MODE={emulation_mode!r} is set.\n"
             "Hardware ground truth forbids simulation or emulation backends."
         )
+    xrt_ini = os.environ.get("XRT_INI_PATH")
+    if xrt_ini and xrt_ini.strip():
+        return False, (
+            f"Physical silicon execution rejected: XRT_INI_PATH={xrt_ini!r} is set.\n"
+            "Hardware ground truth forbids custom runtime configuration redirection."
+        )
     target_python = python_exe or get_ironenv_python()
     if not target_python.is_file():
         return False, (
@@ -687,6 +693,9 @@ def parse_gate_output(
     emulation_mode = os.environ.get("XCL_EMULATION_MODE")
     if emulation_mode and emulation_mode.strip():
         failures.append(f"XCL_EMULATION_MODE={emulation_mode!r} is active in environment")
+    xrt_ini = os.environ.get("XRT_INI_PATH")
+    if xrt_ini and xrt_ini.strip():
+        failures.append(f"XRT_INI_PATH={xrt_ini!r} is active in environment")
 
     # 13. Diagnostic Markers Check
     if rejected_findings:
