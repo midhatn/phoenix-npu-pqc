@@ -105,9 +105,22 @@ def verify_execution_environment(python_exe: Path | None = None) -> tuple[bool, 
     """Verify that the configured physical-silicon execution environment interpreter exists.
 
     Checks that the configured IRON virtual environment interpreter file exists.
+    Rejects emulation/simulation modes (XCL_EMULATION_MODE).
     Does not prove NPU presence, driver status, or dispatch authorization.
     Never silently falls back to generic python.
     """
+    emulation_mode = os.environ.get("XCL_EMULATION_MODE")
+    if emulation_mode and emulation_mode.strip():
+        return False, (
+            f"Physical silicon execution rejected: XCL_EMULATION_MODE={emulation_mode!r} is set.\n"
+            "Hardware ground truth forbids simulation or emulation backends."
+        )
+    xrt_ini = os.environ.get("XRT_INI_PATH")
+    if xrt_ini and xrt_ini.strip():
+        return False, (
+            f"Physical silicon execution rejected: XRT_INI_PATH={xrt_ini!r} is set.\n"
+            "Hardware ground truth forbids custom runtime configuration redirection."
+        )
     target_python = python_exe or get_ironenv_python()
     if not target_python.is_file():
         return False, (
@@ -627,7 +640,64 @@ def parse_gate_output(
     if rec_exit != 0 or exit_code != 0:
         failures.append(f"non-zero exit code (child {exit_code}, record {rec_exit})")
 
-    # 10. Diagnostic Markers Check
+    # 10. Process ID (PID) Validation
+    child_pid = record.get("child_pid")
+    if child_pid is not None:
+        if not isinstance(child_pid, int) or isinstance(child_pid, bool) or child_pid <= 0:
+            failures.append(f"child_pid must be a positive integer, got {child_pid!r}")
+        else:
+            corroboration_notes.append(f"Child process PID verified: {child_pid}")
+
+    # 11. Parent-Side Independent Test Buffers / Oracle Verification (DR0 Scope)
+    test_buffers = record.get("test_buffers")
+    if test_buffers is not None:
+        if not isinstance(test_buffers, list):
+            failures.append("test_buffers field must be an array")
+        elif len(test_buffers) != gate.expected_total:
+            failures.append(f"test_buffers length ({len(test_buffers)}) != expected gate total ({gate.expected_total})")
+        else:
+            from phoenix_sdr_dsp.pqc import abi
+            buffer_mismatches = 0
+            for b_idx, buf_entry in enumerate(test_buffers):
+                if not isinstance(buf_entry, dict):
+                    failures.append(f"test_buffers[{b_idx}] must be an object")
+                    continue
+                in_a = buf_entry.get("input_a")
+                in_b = buf_entry.get("input_b")
+                out_c = buf_entry.get("output_c")
+                if not isinstance(in_a, list) or not isinstance(in_b, list) or not isinstance(out_c, list):
+                    failures.append(f"test_buffers[{b_idx}] input_a, input_b, output_c must be integer lists")
+                    continue
+                if len(in_a) != abi.N or len(in_b) != abi.N or len(out_c) != abi.N:
+                    failures.append(f"test_buffers[{b_idx}] buffer lengths must equal {abi.N}")
+                    continue
+                try:
+                    expected = abi.reference_negacyclic_product(in_a, in_b)
+                    if out_c != expected:
+                        buffer_mismatches += 1
+                        mismatch_lane = next(
+                            i for i, (got_val, want_val) in enumerate(zip(out_c, expected)) if got_val != want_val
+                        )
+                        failures.append(
+                            f"test_buffers[{b_idx}] ({buf_entry.get('case_name')}) oracle mismatch at lane {mismatch_lane}: "
+                            f"got {out_c[mismatch_lane]}, expected {expected[mismatch_lane]}"
+                        )
+                except Exception as exc:
+                    failures.append(f"test_buffers[{b_idx}] oracle evaluation error: {exc}")
+            if buffer_mismatches == 0 and not failures:
+                corroboration_notes.append(
+                    f"Parent independent oracle verified all {len(test_buffers)} x {abi.N} output coefficients."
+                )
+
+    # 12. Emulation and Redirection Mode Check
+    emulation_mode = os.environ.get("XCL_EMULATION_MODE")
+    if emulation_mode and emulation_mode.strip():
+        failures.append(f"XCL_EMULATION_MODE={emulation_mode!r} is active in environment")
+    xrt_ini = os.environ.get("XRT_INI_PATH")
+    if xrt_ini and xrt_ini.strip():
+        failures.append(f"XRT_INI_PATH={xrt_ini!r} is active in environment")
+
+    # 13. Diagnostic Markers Check
     if rejected_findings:
         markers_detail = "; ".join(f"line {l}: '{m}' in '{t}'" for l, m, t in rejected_findings)
         failures.append(f"rejected marker(s) detected: {markers_detail}")

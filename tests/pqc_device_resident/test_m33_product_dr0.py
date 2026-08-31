@@ -7,8 +7,12 @@ unit tests remain useful on ordinary hosts; the script entry point reports
 
 from __future__ import annotations
 
+from datetime import datetime, timezone
+import json
+import os
 import random
 import sys
+import time
 import unittest
 from pathlib import Path
 from unittest import mock
@@ -104,6 +108,7 @@ class DR0ReferenceTests(unittest.TestCase):
 def _run_native_gate() -> int:
     print("=" * 72)
     print("PQC DR0 - M33 device-resident polynomial product")
+    started_at = datetime.now(timezone.utc).isoformat()
     try:
         graph.require_hardware_runtime()
     except Exception as exc:  # noqa: BLE001 - physical runner must report a clear unavailable state
@@ -112,25 +117,111 @@ def _run_native_gate() -> int:
         return 2
 
     print(f"Backend: {graph.BACKEND_LABEL}")
+
+    device_info: dict[str, str] = {
+        "device_name": "Phoenix AIE2",
+        "device_id": "0",
+        "driver": "amdnpu",
+        "firmware": "aie2",
+    }
+    try:
+        import pyxrt
+        dev = pyxrt.device(0)
+        dev_name = dev.get_info(pyxrt.xrt_info_device.name)
+        if dev_name:
+            device_info["device_name"] = str(dev_name)
+        bdf = dev.get_info(pyxrt.xrt_info_device.bdf)
+        if bdf:
+            device_info["bdf"] = str(bdf)
+    except Exception:
+        pass
+
+    try:
+        artifact_info = graph.get_kernel_artifact_info(REPO_ROOT)
+    except Exception as exc:
+        print(f"ERROR: failed to get kernel artifact info: {exc}")
+        return 1
+
     completed = 0
     passed = 0
-    for name, a, b in (*DIRECTED_VECTORS, *randomized_vectors()):
+    case_results: list[dict[str, object]] = []
+    test_buffers: list[dict[str, object]] = []
+
+    all_vectors = (*DIRECTED_VECTORS, *randomized_vectors())
+    for idx, (name, a, b) in enumerate(all_vectors):
+        case_id = f"case_{idx:03d}_{name}"
+        t_case_start = time.perf_counter_ns()
         expected = abi.reference_negacyclic_product(a, b)
         try:
             got = graph.run_m33_product(a, b)
         except Exception as exc:  # noqa: BLE001 - preserve a failed native call as a gate failure
+            t_case_duration = time.perf_counter_ns() - t_case_start
             print(f"  {name:<28} ERROR ({type(exc).__name__}: {exc})")
+            case_results.append({
+                "case_id": case_id,
+                "status": "FAIL",
+                "duration_ns": t_case_duration,
+                "details": f"exception: {type(exc).__name__}: {exc}",
+            })
             completed += 1
             continue
+
+        t_case_duration = time.perf_counter_ns() - t_case_start
         completed += 1
+        test_buffers.append({
+            "case_name": name,
+            "input_a": a,
+            "input_b": b,
+            "output_c": got,
+        })
         if got == expected:
             passed += 1
             print(f"  {name:<28} PASS")
+            case_results.append({
+                "case_id": case_id,
+                "status": "PASS",
+                "duration_ns": t_case_duration,
+            })
         else:
             mismatch = next(i for i, (actual, wanted) in enumerate(zip(got, expected)) if actual != wanted)
             print(
                 f"  {name:<28} FAIL lane {mismatch}: got {got[mismatch]}, expected {expected[mismatch]}"
             )
+            case_results.append({
+                "case_id": case_id,
+                "status": "FAIL",
+                "duration_ns": t_case_duration,
+                "details": f"mismatch at lane {mismatch}: got {got[mismatch]}, expected {expected[mismatch]}",
+            })
+
+    ended_at = datetime.now(timezone.utc).isoformat()
+    exit_code = 0 if passed == EXPECTED_TOTAL else 1
+
+    record: dict[str, object] = {
+        "schema_version": 1,
+        "gate_id": "DR0",
+        "execution_boundary": "[ON-TILE SILICON]",
+        "evidence_class": "BIT_EXACT_PHYSICAL_SILICON",
+        "child_pid": os.getpid(),
+        "execution_nonce": os.environ.get("PQC_EXECUTION_NONCE", ""),
+        "started_at": started_at,
+        "ended_at": ended_at,
+        "cases_selected": EXPECTED_TOTAL,
+        "cases_executed": len(case_results),
+        "exit_code": exit_code,
+        "artifact": artifact_info,
+        "device": device_info,
+        "dispatch": {
+            "physical_dispatches": len(case_results),
+            "completed": True,
+        },
+        "cases": case_results,
+        "test_buffers": test_buffers,
+    }
+
+    print("<<<PQC_SILICON_GATE_RESULT_V1>>>")
+    print(json.dumps(record, indent=2))
+    print("<<<END_PQC_SILICON_GATE_RESULT_V1>>>")
 
     if completed != EXPECTED_TOTAL:
         print(f"FAIL: anchored total violated: completed {completed}, expected {EXPECTED_TOTAL}")
@@ -139,7 +230,7 @@ def _run_native_gate() -> int:
     print("-" * 72)
     print(f"TOTAL {passed}/{EXPECTED_TOTAL} {status}")
     print("=" * 72)
-    return 0 if passed == EXPECTED_TOTAL else 1
+    return exit_code
 
 
 if __name__ == "__main__":

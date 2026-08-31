@@ -2,12 +2,14 @@
 
 ## Task
 
-`BASELINE-RUNNERS`: Enforce fail-closed machine-readable evidence protocol and claim-validation baseline in silicon runners.
+`DR0-MIGRATE`: Bounded DR0 structured evidence migration and parent oracle verification.
 
 ## Status
 
-`IN_PROGRESS` (claim-validation baseline implemented, awaiting human review).
-The current code implements claim-format validation and source/file integrity checking; it does not yet corroborate physical device identity, dispatch, or KAT buffers.
-Existing unmigrated production gate scripts remain classified as `BLOCKED`.
-Child-emitted JSON records remain classified as `SELF_REPORTED_UNVERIFIED`.
-Do not proceed to gate migration or commit/push changes until human review is complete.
+`COMPLETED` (Bounded DR0 implementation & parent-side public-buffer verification completed).
+- Structured framed evidence emission: Implemented (`<<<PQC_SILICON_GATE_RESULT_V1>>>`).
+- Parent-side buffer oracle verification: Implemented (6,144/6,144 coefficients verified bit-exact).
+- Redirection exclusion: `XCL_EMULATION_MODE` and `XRT_INI_PATH` explicitly rejected fail-closed.
+- Physical evidence state: `SELF_REPORTED_UNVERIFIED` (success=False, cases_passed=0, cases_unverified=24).
+- Hardware ground truth: `PHYSICAL_VERIFICATION_BLOCKED` pending independent driver dispatch corroboration.
+
