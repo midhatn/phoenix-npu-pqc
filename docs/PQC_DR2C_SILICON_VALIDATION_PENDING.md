@@ -127,7 +127,4 @@ not establish complete K-PKE.KeyGen or complete ML-KEM: `G(d || k)`, both-row
 scheduling, public-key or secret-key serialization, and lifecycle zeroization
 are not resident in DR2c.
 
-Do not infer a performance result from operations-per-cycle metadata. Do not
-claim complete FIPS 203 conformance, constant-time behavior, secure
-zeroization, side-channel resistance, security hardening, CMVP validation, or
-certification.
+Do not infer a performance result from operations-per-cycle metadata. Do not claim complete FIPS 203 conformance, constant-time behavior, secure zeroization, side-channel resistance, security hardening, CMVP validation, or certification.

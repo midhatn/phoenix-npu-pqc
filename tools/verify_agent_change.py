@@ -29,11 +29,7 @@ def parse_args() -> argparse.Namespace:
 
 def main() -> int:
     args = parse_args()
-    paths = (
-        repository_files()
-        if args.all
-        else git_changed_files(args.base, args.head)
-    )
+    paths = repository_files() if args.all else git_changed_files(args.base, args.head)
     findings = scan_paths(paths)
     for finding in findings:
         print(
@@ -56,9 +52,7 @@ def main() -> int:
             encoding="utf-8",
         )
     blocking = [
-        finding
-        for finding in findings
-        if finding.severity in {"critical", "error"}
+        finding for finding in findings if finding.severity in {"critical", "error"}
     ]
     print(
         f"Scanned {len(paths)} file(s) across all languages: "

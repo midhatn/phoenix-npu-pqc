@@ -31,12 +31,7 @@ metadata only, not a measured performance result.
 
 ## Claim boundary
 
-The physical result is only for one terminal ML-KEM-512 `t_hat` row under the
-11-case native corpus. It does not claim complete K-PKE.KeyGen or ML-KEM:
-`G(d || k)`, both-row scheduling, key serialization, and lifecycle zeroization
-remain outside DR2c. It also excludes performance, constant-time,
-secure-zeroization, side-channel, security-hardening, CMVP, and certification
-claims.
+The physical result is only for one terminal ML-KEM-512 `t_hat` row under the 11-case native corpus. It does not claim complete K-PKE.KeyGen or ML-KEM: `G(d || k)`, both-row scheduling, key serialization, and lifecycle zeroization remain outside DR2c. It also excludes performance, constant-time, secure-zeroization, side-channel, security-hardening, CMVP, and certification claims.
 
 ## Local follow-up validation
 

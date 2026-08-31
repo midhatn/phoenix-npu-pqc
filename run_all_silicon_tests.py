@@ -251,9 +251,79 @@ class SuiteAccountingSummary:
 
 def summarize_suite_execution(
     results: list[GateExecutionResult],
-    gates: tuple[NativeGate, ...],
+    gates: tuple[NativeGate, ...] | list[NativeGate],
 ) -> SuiteAccountingSummary:
     """Aggregate per-gate execution outcomes dynamically and enforce partition invariants."""
+    selected_gate_map: dict[str, NativeGate] = {}
+    for gate in gates:
+        if gate.gate_id in selected_gate_map:
+            raise ValueError(f"Duplicate gate ID in selected gates: {gate.gate_id}")
+        selected_gate_map[gate.gate_id] = gate
+
+    if len(results) != len(gates):
+        raise ValueError(
+            f"Result count mismatch: received {len(results)} results for {len(gates)} selected gates"
+        )
+
+    seen_result_gate_ids: set[str] = set()
+    for r in results:
+        if r.gate is None or not hasattr(r.gate, "gate_id"):
+            raise ValueError("Result is missing a valid gate definition")
+        gid = r.gate.gate_id
+        if gid not in selected_gate_map:
+            raise ValueError(f"Unknown gate ID in results: {gid}")
+        if gid in seen_result_gate_ids:
+            raise ValueError(f"Duplicate result for gate ID: {gid}")
+        seen_result_gate_ids.add(gid)
+
+        expected_gate = selected_gate_map[gid]
+        if r.gate != expected_gate:
+            raise ValueError(
+                f"Gate definition mismatch for {gid}: result gate ({r.gate}) != selected gate ({expected_gate})"
+            )
+
+        if r.cases_selected != expected_gate.expected_total:
+            raise ValueError(
+                f"Gate {gid} cases_selected mismatch: expected {expected_gate.expected_total}, got {r.cases_selected}"
+            )
+
+        for field_name in (
+            "cases_selected",
+            "cases_executed",
+            "cases_passed",
+            "cases_unverified",
+            "cases_failed",
+            "cases_skipped",
+            "cases_xfailed",
+        ):
+            val = getattr(r, field_name)
+            if not isinstance(val, int) or isinstance(val, bool) or val < 0:
+                raise ValueError(
+                    f"Gate {gid} {field_name} must be a non-negative integer, got {val!r}"
+                )
+
+        if r.cases_executed > r.cases_selected:
+            raise ValueError(
+                f"Gate {gid} cases_executed ({r.cases_executed}) exceeds cases_selected ({r.cases_selected})"
+            )
+
+        matching_count = r.cases_passed + r.cases_unverified
+        if r.status == STATUS_BLOCKED:
+            if r.cases_executed != 0 or matching_count != 0 or r.cases_failed != 0:
+                raise ValueError(
+                    f"Gate {gid} is BLOCKED but has non-zero execution counts: executed={r.cases_executed}, matching={matching_count}, failed={r.cases_failed}"
+                )
+        else:
+            blocked_cases = 0
+            if matching_count + r.cases_failed + blocked_cases != r.cases_selected:
+                raise ValueError(
+                    f"Gate {gid} case accounting invariant failed: {matching_count} matching + {r.cases_failed} failing + {blocked_cases} blocked != {r.cases_selected} selected"
+                )
+
+    missing_gates = set(selected_gate_map.keys()) - seen_result_gate_ids
+    if missing_gates:
+        raise ValueError(f"Missing results for selected gates: {sorted(missing_gates)}")
+
     total_gates = len(gates)
     passed_gates = sum(1 for r in results if r.success)
     unverified_gates = sum(
@@ -294,6 +364,7 @@ def summarize_suite_execution(
         total_cases_physically_verified=total_cases_physically_verified,
         total_cases_unverified_provenance=total_cases_unverified_provenance,
     )
+    summary.validate_invariants()
     return summary
 
 

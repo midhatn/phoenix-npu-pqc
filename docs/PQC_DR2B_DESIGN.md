@@ -82,10 +82,7 @@ and the native-only gate.  Host compilation is not physical proof.
 
 ## Non-claims
 
-DR2b makes no claim of K-PKE.KeyGen, ML-KEM KeyGen/Encaps/Decaps, full FIPS 203
-conformance, performance, constant-time behavior,
-zeroization strength, side-channel resistance, CMVP validation, or
-certification. The historical runner statement is superseded: DR2b is now the
+DR2b makes no claim of K-PKE.KeyGen, ML-KEM KeyGen/Encaps/Decaps, full FIPS 203 conformance, performance, constant-time behavior, zeroization strength, side-channel resistance, CMVP validation, or certification. The historical runner statement is superseded: DR2b is now the
 fourth native-only canonical gate, while its narrow result still does not close
 integrated DR2.
 

@@ -21,9 +21,7 @@ gate counts or passing banners.
 - Host references must be separate from physical-silicon execution paths.
 - Physical tests must validate complete buffers against independent official
   vectors or independently maintained oracles.
-- Compilation, dispatch, bit-exact correctness, constant-time review,
-  physical leakage evaluation, and external certification are separate
-  evidence levels.
+- Compilation, dispatch, bit-exact correctness, constant-time review, physical leakage evaluation, and external certification are separate evidence levels.
 - NPU residency alone does not prove resistance to timing, power, EM, DMA,
   firmware, fault-injection, or physical attacks.
 - External QKD keys or QRNG bytes are inputs to the NPU. Never claim that the

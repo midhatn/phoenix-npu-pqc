@@ -142,6 +142,4 @@ corpus.  The physical corpus did not inject malformed descriptors or corrupted
 internal tokens; those fail-closed paths remain compiled host-harness and
 source-contract evidence.
 
-Do not claim complete K-PKE KeyGen, complete ML-KEM device residency or
-conformance, performance, constant-time behavior, secure zeroization,
-side-channel resistance, CMVP validation, or certification.
+Do not claim complete K-PKE KeyGen, complete ML-KEM device residency or conformance, performance, constant-time behavior, secure zeroization, side-channel resistance, CMVP validation, or certification.

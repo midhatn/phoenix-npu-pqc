@@ -553,9 +553,7 @@ explicit user-approved roadmap revision changes them.
     domain separation, and standardized input mapping before NPU use.
 12. **Sealed lifecycle:** Supported chained workflows keep private
     inter-operation state internal and expose no host intermediate.
-13. **Evidence before claims:** No performance, security, robustness,
-   constant-time, side-channel, fault-resistance, or certification claim is
-   permitted without evidence supporting that exact claim.
+13. **Evidence before claims:** No performance, security, robustness, constant-time, side-channel, fault-resistance, or certification claim is permitted without evidence supporting that exact claim.
 14. **Canonical runner boundary:** `run_all_silicon_tests.py` is not changed
     without separate explicit user approval.
 15. **Repository hygiene:** Unrelated tracked and untracked files are not
@@ -712,10 +710,7 @@ open.
 
 - This document does not mark any open implementation complete or authorize a
   successor to start before its predecessor's closure gate.
-- It does not claim performance, latency, throughput, power, utilization,
-  constant-time behavior, side-channel resistance, fault resistance, security
-  assurance, interoperability beyond recorded tests, ACVP validation status,
-  FIPS validation, certification, or production readiness.
+- It does not claim performance, latency, throughput, power, utilization, constant-time behavior, side-channel resistance, fault resistance, security assurance, interoperability beyond recorded tests, ACVP validation status, FIPS validation, certification, or production readiness.
 - DR6's deterministic 32-byte input is a test boundary, not an approved
   production entropy architecture.
 - DR10 does not approve a production NPU entropy source merely by defining its

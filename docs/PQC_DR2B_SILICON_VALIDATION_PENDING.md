@@ -146,6 +146,4 @@ successful corpus. The physical corpus did not inject malformed descriptors
 or corrupted internal tokens; those fail-closed paths remain compiled
 host-harness and source-contract evidence.
 
-It is not complete K-PKE.KeyGen and not complete ML-KEM. Do not claim complete
-FIPS 203 conformance, performance, constant-time behavior, secure zeroization,
-side-channel resistance, CMVP validation, or certification.
+It is not complete K-PKE.KeyGen and not complete ML-KEM. Do not claim complete FIPS 203 conformance, performance, constant-time behavior, secure zeroization, side-channel resistance, CMVP validation, or certification.

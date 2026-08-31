@@ -3,15 +3,14 @@
 from __future__ import annotations
 
 import argparse
-from datetime import datetime, timezone
 import json
 import os
-from pathlib import Path
 import subprocess
 import tempfile
+from datetime import datetime, timezone
+from pathlib import Path
 
 from agent_integrity import REPO_ROOT, load_json, validate_evidence
-
 
 STATE_PATH = REPO_ROOT / ".agent" / "state.json"
 
@@ -101,7 +100,9 @@ def main() -> int:
     dr_state["last_evidence_manifest"] = str(manifest_path)
     dr_state["last_verified_commit"] = evidence_commit
     dr_state["promoted_at"] = datetime.now(timezone.utc).isoformat()
-    dr_state["next_action"] = "Perform or update the separately scoped security evaluation."
+    dr_state["next_action"] = (
+        "Perform or update the separately scoped security evaluation."
+    )
     state["last_verified_commit"] = evidence_commit
     state["repository_commit"] = head
     atomic_write_json(STATE_PATH, state)

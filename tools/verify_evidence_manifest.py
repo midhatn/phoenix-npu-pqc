@@ -20,7 +20,7 @@ def main() -> int:
     path = args.manifest.resolve()
     try:
         manifest = load_json(path)
-    except (OSError, ValueError) as exc:
+    except (OSError, ValueError, TypeError) as exc:
         print(f"INVALID: {exc}")
         return 2
     errors = validate_evidence(manifest, path, check_files=args.check_files)

@@ -3,15 +3,14 @@
 from __future__ import annotations
 
 import ast
-from dataclasses import asdict, dataclass
-from datetime import datetime
 import hashlib
 import json
-from pathlib import Path
 import re
 import subprocess
-from typing import Iterable
-
+from collections.abc import Iterable
+from dataclasses import asdict, dataclass
+from datetime import datetime
+from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 PHYSICAL_SUFFIX = "_silicon.py"
@@ -70,9 +69,7 @@ CPP_CATCH_FALLBACK_RE = re.compile(
 CPP_PREPROCESSOR_FALLBACK_RE = re.compile(
     r"#(?:if|ifdef)\s+.*(?:CPU_FALLBACK|HOST_FALLBACK|USE_HOST|USE_SIMULATOR)\b"
 )
-CPP_UNSAFE_MEMCPY_RE = re.compile(
-    r"\bmemcpy\s*\(\s*[^,]+,\s*[^,]+,\s*0\s*\)"
-)
+CPP_UNSAFE_MEMCPY_RE = re.compile(r"\bmemcpy\s*\(\s*[^,]+,\s*[^,]+,\s*0\s*\)")
 
 # Script patterns
 SCRIPT_IGNORED_EXIT_RE = re.compile(
@@ -90,9 +87,7 @@ SCRIPT_DESTRUCTIVE_CMD_RE = re.compile(
 )
 
 # Secret and privacy patterns
-SECRET_PRIVATE_KEY_RE = re.compile(
-    r"-----BEGIN (?:[A-Z0-9_-]+ )?PRIVATE KEY-----"
-)
+SECRET_PRIVATE_KEY_RE = re.compile(r"-----BEGIN (?:[A-Z0-9_-]+ )?PRIVATE KEY-----")
 SECRET_API_KEY_RE = re.compile(
     r"\b(?:ghp|gho|ghu|ghs|ghr)_[A-Za-z0-9_]{36,255}\b|"
     r"\bAKIA[0-9A-Z]{16}\b|"
@@ -114,9 +109,7 @@ DOC_STRONG_CLAIM_RE = re.compile(
     r"\bproduction ready\b|"
     r"\b\d+\s*/\s*\d+\s+(?:TESTS?\s+)?PASS(?:ED|ING)?\b"
 )
-CLAIM_PROVENANCE_RE = re.compile(
-    r"\[CLAIM-PROVENANCE:\s*([^\]]+)\]", re.IGNORECASE
-)
+CLAIM_PROVENANCE_RE = re.compile(r"\[CLAIM-PROVENANCE:\s*([^\]]+)\]", re.IGNORECASE)
 
 
 @dataclass
@@ -148,11 +141,12 @@ def parse_claim_provenance(line_number: int, text: str) -> ClaimProvenance | Non
         status=status,
         evidence=fields.get("evidence"),
         commit=fields.get("commit"),
-        classification=fields.get("classification", "").upper() if "classification" in fields else None,
+        classification=fields.get("classification", "").upper()
+        if "classification" in fields
+        else None,
         source=fields.get("source"),
         line=line_number,
     )
-
 
 
 @dataclass(frozen=True)
@@ -175,10 +169,7 @@ def is_policy_exempt(relative_path: Path) -> bool:
     return relative_path in EXCLUDED_POLICY_PATHS
 
 
-
-def git_changed_files(
-    base: str | None = None, head: str | None = None
-) -> list[Path]:
+def git_changed_files(base: str | None = None, head: str | None = None) -> list[Path]:
     """Return changed tracked and untracked supported paths relative to repository."""
     if base:
         command = ["git", "diff", "--name-only", "--diff-filter=ACMR", base]
@@ -190,7 +181,9 @@ def git_changed_files(
         command, cwd=REPO_ROOT, check=True, capture_output=True, text=True
     )
     paths = {
-        Path(line) for line in result.stdout.splitlines() if is_supported_file(Path(line))
+        Path(line)
+        for line in result.stdout.splitlines()
+        if is_supported_file(Path(line))
     }
     if not base:
         untracked = subprocess.run(
@@ -418,10 +411,9 @@ def scan_python_file(relative_path: Path) -> list[Finding]:
                     "Hardcoded passing count is forbidden; aggregate structured results.",
                 )
             )
-        if (
-            relative_path.name.endswith(PHYSICAL_SUFFIX)
-            and SELF_DECLARED_BACKEND_RE.search(line)
-        ):
+        if relative_path.name.endswith(
+            PHYSICAL_SUFFIX
+        ) and SELF_DECLARED_BACKEND_RE.search(line):
             findings.append(
                 Finding(
                     relative_path.as_posix(),
@@ -508,7 +500,7 @@ def scan_cpp_file(relative_path: Path) -> list[Finding]:
     return findings
 
 
-def load_immutable_evidence_hashes() -> dict[str, str]:
+def load_evidence_manifest_hashes() -> dict[str, str]:
     manifest_file = REPO_ROOT / "docs" / "pqc_dr2_evidence_20260818" / "SHA256SUMS"
     if not manifest_file.is_file():
         return {}
@@ -525,7 +517,7 @@ def load_immutable_evidence_hashes() -> dict[str, str]:
     return hashes
 
 
-IMMUTABLE_EVIDENCE_HASHES = load_immutable_evidence_hashes()
+EVIDENCE_MANIFEST_HASHES = load_evidence_manifest_hashes()
 
 
 def scan_script_file(relative_path: Path) -> list[Finding]:
@@ -547,8 +539,8 @@ def scan_script_file(relative_path: Path) -> list[Finding]:
     findings: list[Finding] = scan_secrets(relative_path, source)
 
     norm = relative_path.as_posix()
-    if norm in IMMUTABLE_EVIDENCE_HASHES:
-        expected = IMMUTABLE_EVIDENCE_HASHES[norm]
+    if norm in EVIDENCE_MANIFEST_HASHES:
+        expected = EVIDENCE_MANIFEST_HASHES[norm]
         actual = sha256_file(target)
         if actual != expected:
             findings.append(
@@ -557,7 +549,7 @@ def scan_script_file(relative_path: Path) -> list[Finding]:
                     1,
                     "EVID001",
                     "critical",
-                    f"Immutable evidence file '{norm}' checksum mismatch: expected {expected}, got {actual}",
+                    f"Evidence file '{norm}' checksum mismatch against SHA256SUMS manifest: expected {expected}, got {actual}",
                 )
             )
         return findings
@@ -703,17 +695,16 @@ def validate_claim_provenance(
         ]
 
     # Validate commit SHA if provided
-    if prov.commit:
-        if not COMMIT_RE.match(prov.commit):
-            findings.append(
-                Finding(
-                    norm_path,
-                    prov.line,
-                    "DOC002",
-                    "critical",
-                    f"Malformed or abbreviated commit SHA '{prov.commit}' in claim provenance; must be 40-character hex SHA.",
-                )
+    if prov.commit and not COMMIT_RE.match(prov.commit):
+        findings.append(
+            Finding(
+                norm_path,
+                prov.line,
+                "DOC002",
+                "critical",
+                f"Malformed or abbreviated commit SHA '{prov.commit}' in claim provenance; must be 40-character hex SHA.",
             )
+        )
 
     # Validate evidence path if provided
     if prov.evidence:
@@ -789,7 +780,111 @@ def validate_claim_provenance(
                     "status=VERIFIED requires an evidence 'classification'.",
                 )
             )
-        else:
+
+        if prov.evidence:
+            raw_ev = prov.evidence.strip()
+            is_abs = (
+                Path(raw_ev).is_absolute()
+                or bool(re.match(r"^[a-zA-Z]:[/\\]", raw_ev))
+                or raw_ev.startswith(("/", "\\"))
+            )
+            if not (".." in Path(raw_ev).parts or is_abs):
+                ev_file = (REPO_ROOT / raw_ev).resolve()
+                if ev_file.is_file():
+                    manifest_data = None
+                    try:
+                        with ev_file.open("r", encoding="utf-8") as handle:
+                            content = handle.read()
+                        if not content.strip():
+                            raise ValueError("Evidence file is empty")
+                        manifest_data = json.loads(content)
+                        if not isinstance(manifest_data, dict):
+                            raise TypeError("Evidence file must be a JSON object")
+                    except (
+                        json.JSONDecodeError,
+                        OSError,
+                        TypeError,
+                        ValueError,
+                    ) as exc:
+                        findings.append(
+                            Finding(
+                                norm_path,
+                                prov.line,
+                                "DOC002",
+                                "critical",
+                                f"Evidence file '{raw_ev}' is empty or malformed JSON: {exc}",
+                            )
+                        )
+
+                    if manifest_data is not None:
+                        # 1. Validate evidence against schema and verify artifact hashes
+                        schema_errors = validate_evidence(
+                            manifest_data, ev_file, check_files=True
+                        )
+                        if schema_errors:
+                            findings.append(
+                                Finding(
+                                    norm_path,
+                                    prov.line,
+                                    "DOC002",
+                                    "critical",
+                                    f"Evidence validation failed for '{raw_ev}': {'; '.join(schema_errors[:3])}",
+                                )
+                            )
+
+                        # 2. Verify commit binding
+                        manifest_commit = (
+                            manifest_data.get("repository", {}).get("commit")
+                            if isinstance(manifest_data.get("repository"), dict)
+                            else None
+                        )
+                        if manifest_commit != prov.commit:
+                            findings.append(
+                                Finding(
+                                    norm_path,
+                                    prov.line,
+                                    "DOC002",
+                                    "critical",
+                                    f"Evidence file '{raw_ev}' is bound to commit '{manifest_commit}' but claim specifies commit '{prov.commit}'.",
+                                )
+                            )
+
+                        # 3. Verify classification matches
+                        manifest_class = manifest_data.get("evidence_class")
+                        if prov.classification != manifest_class:
+                            findings.append(
+                                Finding(
+                                    norm_path,
+                                    prov.line,
+                                    "DOC002",
+                                    "critical",
+                                    f"Claim classification '{prov.classification}' disagrees with evidence manifest '{manifest_class}'.",
+                                )
+                            )
+
+        # Check commit existence in repository history
+        if prov.commit and COMMIT_RE.match(prov.commit):
+            try:
+                commit_check = subprocess.run(
+                    ["git", "cat-file", "-e", f"{prov.commit}^{{commit}}"],
+                    cwd=str(REPO_ROOT),
+                    capture_output=True,
+                    check=False,
+                )
+                if commit_check.returncode != 0:
+                    findings.append(
+                        Finding(
+                            norm_path,
+                            prov.line,
+                            "DOC002",
+                            "critical",
+                            f"Referenced commit '{prov.commit}' does not exist in repository history.",
+                        )
+                    )
+            except (subprocess.CalledProcessError, OSError):
+                pass
+
+        if prov.classification:
             is_physical_claim = bool(
                 re.search(
                     r"\[VERIFIED PHYSICAL SILICON\]|\bphysically verified\b|\bexecuted on silicon\b",
@@ -797,7 +892,10 @@ def validate_claim_provenance(
                     re.IGNORECASE,
                 )
             )
-            if is_physical_claim and prov.classification != "BIT_EXACT_PHYSICAL_SILICON":
+            if (
+                is_physical_claim
+                and prov.classification != "BIT_EXACT_PHYSICAL_SILICON"
+            ):
                 findings.append(
                     Finding(
                         norm_path,
@@ -810,7 +908,10 @@ def validate_claim_provenance(
 
     elif prov.status == "HISTORICAL":
         unauthorized_patterns = (
-            (r"\[VERIFIED PHYSICAL SILICON\]|\bphysically verified\b", "VERIFIED PHYSICAL SILICON"),
+            (
+                r"\[VERIFIED PHYSICAL SILICON\]|\bphysically verified\b",
+                "VERIFIED PHYSICAL SILICON",
+            ),
             (r"\bstandards compliant\b", "standards compliant"),
             (r"\bconstant[- ]time\b", "constant time"),
             (r"\bside[- ]channel resistant\b", "side-channel resistant"),
@@ -876,9 +977,7 @@ def is_claim_line(lines: list[str], idx: int) -> bool:
     line = lines[idx]
     if not DOC_STRONG_CLAIM_RE.search(line):
         return False
-    start = max(0, idx - 2)
-    end = min(len(lines), idx + 3)
-    combined = " ".join(" ".join(lines[start:end]).split()).lower()
+    line_lower = line.lower()
     disclaimers = (
         "does not claim",
         "never claim",
@@ -924,9 +1023,12 @@ def is_claim_line(lines: list[str], idx: int) -> bool:
         "operator-retained assertion",
         "operator-supplied",
     )
-    if any(d in combined for d in disclaimers):
+    if any(d in line_lower for d in disclaimers):
         return False
-    if re.search(r"(?:physically verified|verified)\s*(?:gates|cases|suites)?\s*:\s*0\b", combined):
+    if re.search(
+        r"(?:physically verified|verified)\s*(?:gates|cases|suites)?\s*:\s*0\b",
+        line_lower,
+    ):
         return False
 
     stripped = line.strip()
@@ -984,7 +1086,6 @@ def scan_markdown_file(relative_path: Path) -> list[Finding]:
                 matched_annotation_line = candidate
                 break
 
-
         if matched_annotation_line is not None:
             used_annotations.add(matched_annotation_line)
             prov = annotations[matched_annotation_line]
@@ -1004,8 +1105,6 @@ def scan_markdown_file(relative_path: Path) -> list[Finding]:
             )
 
     return findings
-
-
 
 
 def scan_file(relative_path: Path) -> list[Finding]:
@@ -1064,7 +1163,7 @@ def load_json(path: Path) -> dict[str, object]:
     with path.open("r", encoding="utf-8") as handle:
         value = json.load(handle)
     if not isinstance(value, dict):
-        raise ValueError("top-level JSON value must be an object")
+        raise TypeError("top-level JSON value must be an object")
     return value
 
 
@@ -1121,7 +1220,11 @@ def validate_evidence(
     if execution.get("exit_code") != 0:
         errors.append("`execution.exit_code` must equal 0")
     dispatches = execution.get("physical_dispatches")
-    if not isinstance(dispatches, int) or isinstance(dispatches, bool) or dispatches < 1:
+    if (
+        not isinstance(dispatches, int)
+        or isinstance(dispatches, bool)
+        or dispatches < 1
+    ):
         errors.append("`execution.physical_dispatches` must be a positive integer")
     counts = {}
     for field in (
@@ -1189,7 +1292,9 @@ def validate_evidence(
             if not isinstance(actual, str) or not SHA256_RE.fullmatch(actual):
                 errors.append(f"`comparisons[{index}].actual_sha256` is invalid")
             if expected != actual:
-                errors.append(f"`comparisons[{index}]` expected and actual hashes differ")
+                errors.append(
+                    f"`comparisons[{index}]` expected and actual hashes differ"
+                )
         if len(case_ids) != len(set(case_ids)):
             errors.append("comparison case identifiers must be unique")
         if "cases_passed" in counts and len(comparisons) != counts["cases_passed"]:
@@ -1229,7 +1334,9 @@ def validate_evidence(
             if not isinstance(relative, str) or not relative:
                 errors.append(f"`artifacts[{index}].path` is required")
                 continue
-            if not isinstance(expected_hash, str) or not SHA256_RE.fullmatch(expected_hash):
+            if not isinstance(expected_hash, str) or not SHA256_RE.fullmatch(
+                expected_hash
+            ):
                 errors.append(f"`artifacts[{index}].sha256` is invalid")
                 continue
             if check_files:
@@ -1237,7 +1344,9 @@ def validate_evidence(
                 try:
                     artifact_path.relative_to(manifest_path.parent.resolve())
                 except ValueError:
-                    errors.append(f"`artifacts[{index}].path` escapes the evidence directory")
+                    errors.append(
+                        f"`artifacts[{index}].path` escapes the evidence directory"
+                    )
                     continue
                 if not artifact_path.is_file():
                     errors.append(f"artifact not found: {relative}")

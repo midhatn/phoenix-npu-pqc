@@ -144,7 +144,4 @@ tokens; those fail-closed paths remain host-compiled/source-contract evidence.
 Stack usage, FIFO bank/depth reports, toolchain component versions beyond IRON
 1.4.1, and generated xclbin identity were not captured in this record.
 
-There is no claim of complete FIPS 204 device residency or conformance, full
-ML-DSA key generation/signing/verification, performance or throughput
-improvement, constant-time behavior, secure zeroization, side-channel
-resistance, CMVP validation, or CMVP certification.
+There is no claim of complete FIPS 204 device residency or conformance, full ML-DSA key generation/signing/verification, performance or throughput improvement, constant-time behavior, secure zeroization, side-channel resistance, CMVP validation, or CMVP certification.
