@@ -173,16 +173,7 @@ def is_supported_file(path: Path) -> bool:
 
 
 def is_policy_exempt(relative_path: Path) -> bool:
-    norm = relative_path.as_posix()
-    if relative_path in EXCLUDED_POLICY_PATHS:
-        return True
-    if relative_path.parts and relative_path.parts[:2] == ("tests", "policy"):
-        return True
-    if norm.startswith(".agent/") or norm.startswith(".gemini/"):
-        return True
-    if norm.startswith("docs/pqc_dr2_evidence_20260818/"):
-        return True
-    return False
+    return relative_path in EXCLUDED_POLICY_PATHS
 
 
 
@@ -518,6 +509,26 @@ def scan_cpp_file(relative_path: Path) -> list[Finding]:
     return findings
 
 
+def load_immutable_evidence_hashes() -> dict[str, str]:
+    manifest_file = REPO_ROOT / "docs" / "pqc_dr2_evidence_20260818" / "SHA256SUMS"
+    if not manifest_file.is_file():
+        return {}
+    hashes: dict[str, str] = {}
+    for line in manifest_file.read_text(encoding="utf-8").splitlines():
+        line = line.strip()
+        if not line or line.startswith("#"):
+            continue
+        parts = line.split(maxsplit=1)
+        if len(parts) == 2:
+            h, p = parts
+            p = p.lstrip("./")
+            hashes[f"docs/pqc_dr2_evidence_20260818/{p}"] = h
+    return hashes
+
+
+IMMUTABLE_EVIDENCE_HASHES = load_immutable_evidence_hashes()
+
+
 def scan_script_file(relative_path: Path) -> list[Finding]:
     if is_policy_exempt(relative_path):
         return []
@@ -535,6 +546,23 @@ def scan_script_file(relative_path: Path) -> list[Finding]:
             )
         ]
     findings: list[Finding] = scan_secrets(relative_path, source)
+
+    norm = relative_path.as_posix()
+    if norm in IMMUTABLE_EVIDENCE_HASHES:
+        expected = IMMUTABLE_EVIDENCE_HASHES[norm]
+        actual = sha256_file(target)
+        if actual != expected:
+            findings.append(
+                Finding(
+                    norm,
+                    1,
+                    "EVID001",
+                    "critical",
+                    f"Immutable evidence file '{norm}' checksum mismatch: expected {expected}, got {actual}",
+                )
+            )
+        return findings
+
     lines = source.splitlines()
 
     for line_number, line in enumerate(lines, start=1):
@@ -691,7 +719,12 @@ def validate_claim_provenance(
     # Validate evidence path if provided
     if prov.evidence:
         raw_ev = prov.evidence.strip()
-        if ".." in Path(raw_ev).parts or Path(raw_ev).is_absolute():
+        is_abs = (
+            Path(raw_ev).is_absolute()
+            or bool(re.match(r"^[a-zA-Z]:[/\\]", raw_ev))
+            or raw_ev.startswith(("/", "\\"))
+        )
+        if ".." in Path(raw_ev).parts or is_abs:
             findings.append(
                 Finding(
                     norm_path,
@@ -893,6 +926,8 @@ def is_claim_line(lines: list[str], idx: int) -> bool:
         "operator-supplied",
     )
     if any(d in combined for d in disclaimers):
+        return False
+    if re.search(r"(?:physically verified|verified)\s*(?:gates|cases|suites)?\s*:\s*0\b", combined):
         return False
 
     stripped = line.strip()

@@ -2251,8 +2251,8 @@ class CanonicalSiliconRunnerBehaviorTests(unittest.TestCase):
             self.assertIn("XRT_INI_PATH='C:/fake/xrt.ini'", str(ctx.exception))
 
 
-# Versioned Phase A historical baseline execution record bound to forensic revalidation state
-PHASE_A_HISTORICAL_BASELINE_FIXTURE: tuple[dict[str, object], ...] = (
+# Explicitly named, commit-bound historical baseline execution record (commit 0fc20727475b3aa855b220e24e9e71f668f58f97)
+HISTORICAL_COMMIT_0FC2072_BASELINE_FIXTURE: tuple[dict[str, object], ...] = (
     {"gate_id": "DR0", "status": STATUS_SELF_REPORTED_UNVERIFIED, "success": False, "selected": 24, "executed": 24, "passed": 0, "unverified": 24, "failed": 0},
     {"gate_id": "DR1", "status": STATUS_SELF_REPORTED_UNVERIFIED, "success": False, "selected": 33, "executed": 33, "passed": 0, "unverified": 33, "failed": 0},
     {"gate_id": "DR2a", "status": STATUS_SELF_REPORTED_UNVERIFIED, "success": False, "selected": 13, "executed": 13, "passed": 0, "unverified": 13, "failed": 0},
@@ -2292,14 +2292,104 @@ class SuiteAccountingInvariantTests(unittest.TestCase):
                 "repository protocol vector",
             })
 
-    def test_dynamic_suite_aggregation_and_partition_invariant(self) -> None:
-        """Construct GateExecutionResult fixtures and verify production aggregation invariants."""
+    def test_synthetic_aggregation_and_partition_invariants(self) -> None:
+        """Construct synthetic GateExecutionResult fixtures and verify dynamic aggregation and partition invariants."""
+        from run_all_silicon_tests import (
+            NativeGate,
+            GateExecutionResult,
+            summarize_suite_execution,
+            STATUS_SELF_REPORTED_UNVERIFIED,
+            STATUS_FAIL,
+            STATUS_BLOCKED,
+            STATUS_PASS,
+        )
+
+        synth_gates = (
+            NativeGate(gate_id="SYNTH_1", title="Synthetic Gate 1", script=Path("tests/test_s1.py"), backend_label="s1", expected_total=15),
+            NativeGate(gate_id="SYNTH_2", title="Synthetic Gate 2", script=Path("tests/test_s2.py"), backend_label="s2", expected_total=20),
+            NativeGate(gate_id="SYNTH_3", title="Synthetic Gate 3", script=Path("tests/test_s3.py"), backend_label="s3", expected_total=10),
+        )
+
+        results = [
+            GateExecutionResult(
+                gate=synth_gates[0],
+                success=False,
+                status=STATUS_FAIL,
+                exit_code=1,
+                cases_selected=15,
+                cases_executed=15,
+                cases_passed=0,
+                cases_failed=5,
+                cases_unverified=10,
+                cases_skipped=0,
+                cases_xfailed=0,
+                case_results=(),
+                duration_seconds=0.1,
+            ),
+            GateExecutionResult(
+                gate=synth_gates[1],
+                success=True,
+                status=STATUS_PASS,
+                exit_code=0,
+                cases_selected=20,
+                cases_executed=20,
+                cases_passed=20,
+                cases_failed=0,
+                cases_unverified=0,
+                cases_skipped=0,
+                cases_xfailed=0,
+                case_results=(),
+                duration_seconds=0.2,
+            ),
+            GateExecutionResult(
+                gate=synth_gates[2],
+                success=False,
+                status=STATUS_BLOCKED,
+                exit_code=None,
+                cases_selected=10,
+                cases_executed=0,
+                cases_passed=0,
+                cases_failed=0,
+                cases_unverified=0,
+                cases_skipped=0,
+                cases_xfailed=0,
+                case_results=(),
+                duration_seconds=0.0,
+            ),
+        ]
+
+        # Calculate all expected totals dynamically from synthetic fixture definitions
+        expected_selected = sum(g.expected_total for g in synth_gates)
+        expected_executed = sum(r.cases_executed for r in results)
+        expected_matching = sum(r.cases_passed + r.cases_unverified for r in results)
+        expected_failed = sum(r.cases_failed for r in results)
+        expected_blocked = sum(r.cases_selected for r in results if r.status == STATUS_BLOCKED)
+        expected_physically_verified = sum(r.cases_passed for r in results if r.success)
+        expected_unverified_provenance = expected_executed - expected_physically_verified
+
+        summary = summarize_suite_execution(results, synth_gates)
+        summary.validate_invariants()
+
+        self.assertEqual(summary.total_cases_selected, expected_selected)
+        self.assertEqual(summary.total_cases_executed, expected_executed)
+        self.assertEqual(summary.total_cases_matching, expected_matching)
+        self.assertEqual(summary.total_cases_failed, expected_failed)
+        self.assertEqual(summary.total_cases_blocked, expected_blocked)
+        self.assertEqual(summary.total_cases_physically_verified, expected_physically_verified)
+        self.assertEqual(summary.total_cases_unverified_provenance, expected_unverified_provenance)
+        self.assertEqual(
+            summary.total_cases_matching + summary.total_cases_failed + summary.total_cases_blocked,
+            summary.total_cases_selected,
+        )
+
+    def test_historical_commit_0fc2072_baseline_aggregation(self) -> None:
+        """Verify dynamic aggregation on the explicitly named historical commit 0fc2072 baseline fixture."""
         from run_all_silicon_tests import summarize_suite_execution
 
         gate_map = {g.gate_id: g for g in GATES}
         results: list[GateExecutionResult] = []
 
-        for record in PHASE_A_HISTORICAL_BASELINE_FIXTURE:
+        for record in HISTORICAL_COMMIT_0FC2072_BASELINE_FIXTURE:
             gate = gate_map[str(record["gate_id"])]
             res = GateExecutionResult(
                 gate=gate,

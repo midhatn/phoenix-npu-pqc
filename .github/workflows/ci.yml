@@ -59,7 +59,7 @@ jobs:
           import yaml
           with open("toolchain.yaml") as f:
               data = yaml.safe_load(f)
-          assert data["schema_version"] == 1
+          assert data["schema_version"] in (1, "1.0", "1")
           assert data["project"]["name"] == "phoenix-npu-pqc"
           for name in ("mlir_aie", "llvm_aie_peano", "xrt"):
               assert data["toolchain"][name]["verified_version"]

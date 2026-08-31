@@ -1,7 +1,7 @@
 # Phoenix NPU PQC toolchain and provenance record.
 # Current CI is host-only; these native pins preserve the environment associated
 # with retained research evidence and do not authorize a hardware dispatch.
-schema_version: "1.0"
+schema_version: 1
 
 project:
   name: phoenix-npu-pqc
