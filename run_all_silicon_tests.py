@@ -1216,6 +1216,78 @@ def parse_gate_output(
                 corroboration_notes.append(
                     f"Parent independent oracle verified all {len(test_buffers)} official NIST ACVP ML-DSA-44 verification verdicts."
                 )
+        elif gate.gate_id == "DR14":
+            from tests.pqc_device_resident.test_dr14_mldsa65 import (
+                KEYGEN_EXPECTED,
+                SIGN_EXPECTED,
+                VERIFY_EXPECTED,
+            )
+            dr14_mismatches = 0
+            for b_idx, buf_entry in enumerate(test_buffers):
+                if not isinstance(buf_entry, dict):
+                    failures.append(f"test_buffers[{b_idx}] must be an object")
+                    continue
+                gate_op = buf_entry.get("gate_op")
+                test_name = buf_entry.get("test_name")
+                case_label = buf_entry.get("case_label", f"case_{b_idx}")
+                if not isinstance(gate_op, str) or not isinstance(test_name, str):
+                    failures.append(f"test_buffers[{b_idx}] malformed fields (expected gate_op, test_name)")
+                    continue
+                try:
+                    if gate_op == "keygen":
+                        pk_hex = buf_entry.get("pk_hex")
+                        sk_hex = buf_entry.get("sk_hex")
+                        if not isinstance(pk_hex, str) or not isinstance(sk_hex, str):
+                            failures.append(f"test_buffers[{b_idx}] malformed keygen fields")
+                            continue
+                        if test_name not in KEYGEN_EXPECTED:
+                            failures.append(f"test_buffers[{b_idx}] unknown keygen test_name {test_name}")
+                            continue
+                        exp_pk, exp_sk = KEYGEN_EXPECTED[test_name]
+                        actual_pk = bytes.fromhex(pk_hex)
+                        actual_sk = bytes.fromhex(sk_hex)
+                        if actual_pk != exp_pk or actual_sk != exp_sk:
+                            dr14_mismatches += 1
+                            failures.append(
+                                f"test_buffers[{b_idx}] ({case_label}) oracle mismatch against official NIST ACVP ML-DSA-65 key pair"
+                            )
+                    elif gate_op == "sign":
+                        sig_hex = buf_entry.get("sig_hex")
+                        if not isinstance(sig_hex, str):
+                            failures.append(f"test_buffers[{b_idx}] malformed sign fields")
+                            continue
+                        if test_name not in SIGN_EXPECTED:
+                            failures.append(f"test_buffers[{b_idx}] unknown sign test_name {test_name}")
+                            continue
+                        exp_sig = SIGN_EXPECTED[test_name]
+                        actual_sig = bytes.fromhex(sig_hex)
+                        if actual_sig != exp_sig:
+                            dr14_mismatches += 1
+                            failures.append(
+                                f"test_buffers[{b_idx}] ({case_label}) oracle mismatch against official NIST ACVP ML-DSA-65 signature"
+                            )
+                    elif gate_op == "verify":
+                        actual_valid = buf_entry.get("actual_valid")
+                        if not isinstance(actual_valid, bool):
+                            failures.append(f"test_buffers[{b_idx}] malformed verify fields")
+                            continue
+                        if test_name not in VERIFY_EXPECTED:
+                            failures.append(f"test_buffers[{b_idx}] unknown verify test_name {test_name}")
+                            continue
+                        exp_valid = VERIFY_EXPECTED[test_name]
+                        if actual_valid != exp_valid:
+                            dr14_mismatches += 1
+                            failures.append(
+                                f"test_buffers[{b_idx}] ({case_label}) oracle mismatch against official NIST ACVP ML-DSA-65 verify verdict (got {actual_valid}, expected {exp_valid})"
+                            )
+                    else:
+                        failures.append(f"test_buffers[{b_idx}] unknown gate_op {gate_op}")
+                except Exception as exc:
+                    failures.append(f"test_buffers[{b_idx}] oracle evaluation error: {exc}")
+            if dr14_mismatches == 0 and not failures:
+                corroboration_notes.append(
+                    f"Parent independent oracle verified all {len(test_buffers)} official NIST ACVP ML-DSA-65 cases (KeyGen, Sign, Verify)."
+                )
 
     # 12. Emulation and Redirection Mode Check
     emulation_mode = os.environ.get("XCL_EMULATION_MODE")
