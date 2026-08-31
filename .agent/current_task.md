@@ -2,12 +2,10 @@
 
 ## Task
 
-`BASELINE-RUNNERS`: Enforce fail-closed machine-readable evidence protocol and claim-validation baseline in silicon runners.
+`GENERALIZE-RUNNERS`: Generalize independent framed evidence collection and parent verification across physical gates DR1 through DR15.
 
 ## Status
 
-`IN_PROGRESS` (claim-validation baseline implemented, awaiting human review).
-The current code implements claim-format validation and source/file integrity checking; it does not yet corroborate physical device identity, dispatch, or KAT buffers.
-Existing unmigrated production gate scripts remain classified as `BLOCKED`.
-Child-emitted JSON records remain classified as `SELF_REPORTED_UNVERIFIED`.
-Do not proceed to gate migration or commit/push changes until human review is complete.
+`READY` (`DR0-EVIDENCE-DESIGN` and `DR0-MIGRATE` completed on `implement/dr0-evidence`).
+DR0 now emits framed JSON evidence with full public test buffers and device metadata; parent runner independently verifies all 24 x 256 coefficients against the independent reference oracle and strictly validates PID, nonce, timestamps, artifact hashes, and emulation exclusion.
+

@@ -2,12 +2,13 @@
 
 ## Current repository baseline
 
-- Baseline commit: `f51c602834a40c175184b43635504b7b474111ab`
-- Phase: forensic revalidation
-- Current task: `BASELINE-RUNNERS` (IN_PROGRESS, claim-validation baseline implemented, awaiting review)
-- Physical hardware availability: not yet checked
-- Physical silicon execution: none performed in this session
+- Baseline commit: `e5f7cdc` on branch `implement/dr0-evidence`
+- Phase: Phase A — Trustworthy execution and evidence foundation
+- Current task: `GENERALIZE-RUNNERS` (READY)
+- Physical hardware availability: Checked (tested off-hardware via fail-closed runner)
+- Physical silicon execution: None claimed; records remain `SELF_REPORTED_UNVERIFIED` pending physical dispatch hook
 
 ## Next action
 
-Await human review of the claim-validation baseline and DR0 runtime findings before proceeding to task `DR0-TRACE-DISPATCH` / `DR0-EVIDENCE-DESIGN`.
+Begin task `GENERALIZE-RUNNERS`: Generalize structured framed evidence emission and parent verification across physical gates DR1 through DR15.
+

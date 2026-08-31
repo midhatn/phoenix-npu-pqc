@@ -5,7 +5,7 @@
       "id": "BASELINE-RUNNERS",
       "dr": null,
       "title": "Enforce fail-closed machine-readable evidence protocol and claim-validation baseline in silicon runners",
-      "status": "IN_PROGRESS",
+      "status": "COMPLETED",
       "depends_on": [],
       "acceptance_command": "python -m unittest -v tests/test_canonical_silicon_runner_behavior.py"
     },
@@ -13,7 +13,7 @@
       "id": "DR0-TRACE-DISPATCH",
       "dr": "DR0",
       "title": "Trace DR0 real XRT/IRON dispatch path and identify documented runtime APIs",
-      "status": "READY",
+      "status": "COMPLETED",
       "depends_on": [],
       "acceptance_command": "python tools/verify_agent_change.py"
     },
@@ -21,7 +21,7 @@
       "id": "DR0-EVIDENCE-DESIGN",
       "dr": "DR0",
       "title": "Design independent evidence collection from DR0 ground truth",
-      "status": "PENDING",
+      "status": "COMPLETED",
       "depends_on": ["DR0-TRACE-DISPATCH"],
       "acceptance_command": "python tools/verify_agent_change.py"
     },
@@ -29,7 +29,7 @@
       "id": "DR0-MIGRATE",
       "dr": "DR0",
       "title": "Migrate DR0 to emit framed evidence and verify parent corroboration",
-      "status": "PENDING",
+      "status": "COMPLETED",
       "depends_on": ["DR0-EVIDENCE-DESIGN"],
       "acceptance_command": "python tools/verify_agent_change.py"
     },
@@ -37,7 +37,7 @@
       "id": "GENERALIZE-RUNNERS",
       "dr": null,
       "title": "Generalize independent evidence collection across DR1-DR15",
-      "status": "PENDING",
+      "status": "READY",
       "depends_on": ["DR0-MIGRATE"],
       "acceptance_command": "python tools/verify_agent_change.py"
     },
