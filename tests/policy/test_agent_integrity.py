@@ -1114,5 +1114,238 @@ class SuiteAccountingInvariantTests(unittest.TestCase):
         )
 
 
+class KernelIntegrityAndAntiFabricationTests(unittest.TestCase):
+    """Adversarial and invariant tests for repository-wide kernel integrity policy."""
+
+    def scan_md(self, text: str):
+        with tempfile.TemporaryDirectory(dir=REPO_ROOT) as temporary:
+            path = Path(temporary) / "test_doc.md"
+            path.write_text(text, encoding="utf-8")
+            relative = path.relative_to(REPO_ROOT)
+            with mock.patch.object(
+                agent_integrity,
+                "EXCLUDED_POLICY_PATHS",
+                {Path("tools/agent_integrity.py")},
+            ):
+                return scan_markdown_file(relative)
+
+    def scan_cpp(self, text: str):
+        with tempfile.TemporaryDirectory(dir=REPO_ROOT) as temporary:
+            path = Path(temporary) / "kernel.cc"
+            path.write_text(text, encoding="utf-8")
+            relative = path.relative_to(REPO_ROOT)
+            with mock.patch.object(
+                agent_integrity,
+                "EXCLUDED_POLICY_PATHS",
+                {Path("tools/agent_integrity.py")},
+            ):
+                return scan_cpp_file(relative)
+
+    def test_physical_claim_verified_on_phoenix_aie2_hardware_is_caught(self):
+        findings = self.scan_md("The kernel was verified on Phoenix AIE2 hardware.\n")
+        self.assertTrue(
+            any(f.rule == "DOC001" and f.severity == "critical" for f in findings)
+        )
+
+    def test_physical_claim_result_confirmed_on_silicon_is_caught(self):
+        findings = self.scan_md("The result was confirmed on silicon.\n")
+        self.assertTrue(
+            any(f.rule == "DOC001" and f.severity == "critical" for f in findings)
+        )
+
+    def test_physical_claim_all_cases_passed_on_physical_npu_is_caught(self):
+        findings = self.scan_md("All cases passed on the physical NPU.\n")
+        self.assertTrue(
+            any(f.rule == "DOC001" and f.severity == "critical" for f in findings)
+        )
+
+    def test_nearby_disclaimer_does_not_suppress_later_physical_claim(self):
+        doc = (
+            "This test suite does not claim physical silicon execution.\n\n"
+            "Execution completed successfully.\n\n"
+            "The result was physically verified on device.\n"
+        )
+        findings = self.scan_md(doc)
+        self.assertTrue(
+            any(f.rule == "DOC001" and f.severity == "critical" for f in findings)
+        )
+
+    def test_cpp_known_vector_specialization_is_detected(self):
+        code = "if (request_id == 0x90000001) return expected_output;\n"
+        findings = self.scan_cpp(code)
+        self.assertTrue(
+            any(f.rule == "CPP006" and f.severity == "critical" for f in findings)
+        )
+
+    def test_cpp_input_fingerprint_specialization_is_detected(self):
+        code = "if (sha256(input) == known_hash) { return 0; }\n"
+        findings = self.scan_cpp(code)
+        self.assertTrue(
+            any(f.rule == "CPP006" and f.severity == "critical" for f in findings)
+        )
+
+    def test_cpp_expected_output_copy_is_detected(self):
+        code = "memcpy(out_buf, expected_output, 32);\n"
+        findings = self.scan_cpp(code)
+        self.assertTrue(
+            any(f.rule == "CPP007" and f.severity == "critical" for f in findings)
+        )
+
+    def test_cpp_host_fallback_call_is_detected(self):
+        code = "if (hw_error) run_host_fallback();\n"
+        findings = self.scan_cpp(code)
+        self.assertTrue(
+            any(f.rule == "CPP008" and f.severity == "critical" for f in findings)
+        )
+
+    def test_markdown_accounting_table_inconsistent_sum_is_detected(self):
+        table = (
+            "# Silicon Results\n\n"
+            "| Gate | Selected | Executed | Matching | Failing |\n"
+            "| :--- | :---: | :---: | :---: | :---: |\n"
+            "| DR0  | 1   | 1   | 1   | 0 |\n"
+            "| DR1  | 33  | 33  | 33  | 0 |\n"
+            "| DR2a | 13  | 13  | 13  | 0 |\n"
+            "| DR9  | 85  | 85  | 85  | 0 |\n"
+            "| Total | 736 | 736 | 664 | 72 |\n"
+        )
+        findings = self.scan_md(table)
+        self.assertTrue(
+            any(
+                f.rule == "DOC004"
+                and f.severity == "critical"
+                and "mismatch" in f.message
+                for f in findings
+            )
+        )
+
+    def test_markdown_accounting_table_valid_synthetic_table_passes(self):
+        table = (
+            "# Synthetic Results\n\n"
+            "| Gate | Selected | Executed | Matching | Failing |\n"
+            "| :--- | :---: | :---: | :---: | :---: |\n"
+            "| DR0  | 10 | 10 | 10 | 0 |\n"
+            "| DR1  | 20 | 20 | 20 | 0 |\n"
+            "| DR2  | 15 | 15 | 10 | 5 |\n"
+            "| Total | 45 | 45 | 40 | 5 |\n"
+        )
+        findings = self.scan_md(table)
+        blocking = [f for f in findings if f.severity == "critical"]
+        self.assertEqual(blocking, [])
+
+    def test_markdown_accounting_table_negative_count_is_detected(self):
+        table = (
+            "| Gate | Selected | Executed |\n"
+            "| :--- | :---: | :---: |\n"
+            "| DR0  | -5 | 5 |\n"
+            "| Total | 0 | 5 |\n"
+        )
+        findings = self.scan_md(table)
+        self.assertTrue(
+            any(
+                f.rule == "DOC004"
+                and f.severity == "critical"
+                and "Negative count" in f.message
+                for f in findings
+            )
+        )
+
+    def test_markdown_accounting_table_duplicate_gate_id_is_detected(self):
+        table = (
+            "| Gate | Selected | Executed |\n"
+            "| :--- | :---: | :---: |\n"
+            "| DR1  | 10 | 10 |\n"
+            "| DR1  | 10 | 10 |\n"
+            "| Total | 20 | 20 |\n"
+        )
+        findings = self.scan_md(table)
+        self.assertTrue(
+            any(
+                f.rule == "DOC005"
+                and f.severity == "critical"
+                and "Duplicate gate" in f.message
+                for f in findings
+            )
+        )
+
+    def test_markdown_accounting_table_conflicting_totals_is_detected(self):
+        table = (
+            "| Gate | Selected | Executed |\n"
+            "| :--- | :---: | :---: |\n"
+            "| DR1  | 10 | 10 |\n"
+            "| Total | 10 | 10 |\n"
+            "| Total | 20 | 20 |\n"
+        )
+        findings = self.scan_md(table)
+        self.assertTrue(
+            any(
+                f.rule == "DOC005"
+                and f.severity == "critical"
+                and "Conflicting total" in f.message
+                for f in findings
+            )
+        )
+
+    def test_public_deterministic_vectors_described_as_hidden_is_flagged(self):
+        findings = self.scan_md("These deterministic vectors are hidden inputs.\n")
+        self.assertTrue(
+            any(f.rule == "DOC006" and f.severity == "critical" for f in findings)
+        )
+
+    def test_static_scanner_success_claimed_as_semantic_proof_is_flagged(self):
+        findings = self.scan_md(
+            "Zero scanner findings proves cryptographic correctness.\n"
+        )
+        self.assertTrue(
+            any(f.rule == "DOC006" and f.severity == "critical" for f in findings)
+        )
+
+    def test_cache_hit_described_as_fresh_build_is_flagged(self):
+        findings = self.scan_md("Completed warm cache fresh compile successfully.\n")
+        self.assertTrue(
+            any(f.rule == "DOC006" and f.severity == "critical" for f in findings)
+        )
+
+    def test_repository_root_citation_is_flagged(self):
+        findings = self.scan_md("evidence source: https://github.com/Xilinx/llvm-aie\n")
+        self.assertTrue(
+            any(f.rule == "DOC007" and f.severity == "critical" for f in findings)
+        )
+
+    def test_committed_git_blob_and_compiled_worktree_input_hashes_distinction(self):
+        doc = (
+            "| Source Path | Line Endings |\n"
+            "| :--- | :---: |\n"
+            "| `COMMITTED_GIT_BLOB` | LF |\n"
+            "| `COMPILED_WORKTREE_INPUT` | CRLF |\n"
+        )
+        findings = self.scan_md(doc)
+        blocking = [f for f in findings if f.severity == "critical"]
+        self.assertEqual(blocking, [])
+
+    def test_fabricated_commit_fails_closed(self):
+        fake_sha = "f" * 40
+        doc = f"[CLAIM-PROVENANCE: status=VERIFIED; evidence=docs/manifest.json; commit={fake_sha}; classification=HOST_REFERENCE]\n[VERIFIED PHYSICAL SILICON]\n"
+        findings = self.scan_md(doc)
+        self.assertTrue(
+            any(f.rule == "DOC002" and f.severity == "critical" for f in findings)
+        )
+
+    def test_excluded_policy_paths_only_contains_agent_integrity(self):
+        self.assertEqual(EXCLUDED_POLICY_PATHS, {Path("tools/agent_integrity.py")})
+
+    def test_legitimate_cpp_abi_validation_is_clean(self):
+        code = (
+            "static inline bool valid_descriptor(const uint8_t d[16]) {\n"
+            "  return d[0] == 1 && d[1] == 0x24 && d[2] == 0x52 && d[3] == 0;\n"
+            "}\n"
+            "static inline uint32_t mod_mul(uint32_t a, uint32_t b) {\n"
+            "  return (a * b) % 3329u;\n"
+            "}\n"
+        )
+        findings = self.scan_cpp(code)
+        self.assertEqual(findings, [])
+
+
 if __name__ == "__main__":
     unittest.main()

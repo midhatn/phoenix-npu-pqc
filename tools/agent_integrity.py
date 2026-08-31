@@ -70,6 +70,22 @@ CPP_PREPROCESSOR_FALLBACK_RE = re.compile(
     r"#(?:if|ifdef)\s+.*(?:CPU_FALLBACK|HOST_FALLBACK|USE_HOST|USE_SIMULATOR)\b"
 )
 CPP_UNSAFE_MEMCPY_RE = re.compile(r"\bmemcpy\s*\(\s*[^,]+,\s*[^,]+,\s*0\s*\)")
+CPP_KNOWN_VECTOR_RE = re.compile(
+    r"\bif\s*\([^)]*(?:request_id\s*==\s*0x[0-9a-fA-F]+|tc_id\s*==\s*\d+|known_vector|known_hash|known_seed|kKnownAcvpSeed)[^)]*\)",
+    re.IGNORECASE,
+)
+CPP_FINGERPRINT_MATCH_RE = re.compile(
+    r"\bif\s*\([^)]*(?:sha256|sha3_256|hash)\s*\([^)]*\)\s*==\s*(?:known_hash|0x[0-9a-fA-F]+|\"[0-9a-fA-F]{32,64}\")[^)]*\)",
+    re.IGNORECASE,
+)
+CPP_EXPECTED_OUTPUT_COPY_RE = re.compile(
+    r"\b(?:memcpy|copy_bytes|std::copy)\s*\(\s*[^,]+,\s*(?:expected_output|kExpectedOutput|expected_buf|oracle_output)\b",
+    re.IGNORECASE,
+)
+CPP_HOST_FALLBACK_CALL_RE = re.compile(
+    r"\b(?:run_host_fallback|host_reference_fallback|cpu_fallback)\s*\(",
+    re.IGNORECASE,
+)
 
 # Script patterns
 SCRIPT_IGNORED_EXIT_RE = re.compile(
@@ -102,12 +118,26 @@ DOC_STRONG_CLAIM_RE = re.compile(
     r"(?i)\[VERIFIED PHYSICAL SILICON\]|"
     r"\bphysically verified\b|"
     r"\bexecuted on silicon\b|"
+    r"\bverified on (?:phoenix\s+)?(?:aie2\s+)?hardware\b|"
+    r"\bconfirmed on silicon\b|"
+    r"\bpassed on (?:the\s+)?(?:physical\s+)?npu\b|"
     r"\bhardware accelerated\b|"
     r"\bstandards compliant\b|"
     r"\bconstant[- ]time\b|"
     r"\bside[- ]channel resistant\b|"
     r"\bproduction ready\b|"
     r"\b\d+\s*/\s*\d+\s+(?:TESTS?\s+)?PASS(?:ED|ING)?\b"
+)
+DOC_PROHIBITED_TERMINOLOGY_RE = re.compile(
+    r"\b(?:public|committed|deterministic)\s+.*(?:hidden vectors?|hidden inputs?)\b|"
+    r"\bhidden\s+(?:deterministic|public)\b|"
+    r"\b(?:zero|0)\s+scanner\s+findings?\s+proves?\s+(?:cryptographic\s+correctness|semantic\s+correctness|correctness)\b|"
+    r"\bscanner\s+(?:passed|success)\s+(?:proves|guarantees)\s+(?:cryptographic|semantic)\s+correctness\b|"
+    r"\b(?:warm\s+cache\s+fresh\s+(?:compile|build)|cache\s+hit\s+described\s+as\s+fresh|cache\s+hit\s+fresh\s+(?:compile|build))\b",
+    re.IGNORECASE,
+)
+DOC_REPO_ROOT_CITATION_RE = re.compile(
+    r"(?i)evidence source\s*:\s*https://github\.com/[a-zA-Z0-9_.-]+/[a-zA-Z0-9_.-]+/?\s*$"
 )
 CLAIM_PROVENANCE_RE = re.compile(r"\[CLAIM-PROVENANCE:\s*([^\]]+)\]", re.IGNORECASE)
 
@@ -484,6 +514,36 @@ def scan_cpp_file(relative_path: Path) -> list[Finding]:
                     "CPP005",
                     "warning",
                     "Zero-sized or unsafe memcpy detected; verify buffer bounds.",
+                )
+            )
+        if CPP_KNOWN_VECTOR_RE.search(line) or CPP_FINGERPRINT_MATCH_RE.search(line):
+            findings.append(
+                Finding(
+                    relative_path.as_posix(),
+                    line_number,
+                    "CPP006",
+                    "critical",
+                    "Known-vector specialization or test ID branching is forbidden in kernel/C++ code.",
+                )
+            )
+        if CPP_EXPECTED_OUTPUT_COPY_RE.search(line):
+            findings.append(
+                Finding(
+                    relative_path.as_posix(),
+                    line_number,
+                    "CPP007",
+                    "critical",
+                    "Embedding or copying expected test outputs is forbidden.",
+                )
+            )
+        if CPP_HOST_FALLBACK_CALL_RE.search(line):
+            findings.append(
+                Finding(
+                    relative_path.as_posix(),
+                    line_number,
+                    "CPP008",
+                    "critical",
+                    "Direct host/CPU fallback calls in kernel code are forbidden.",
                 )
             )
 
@@ -1076,6 +1136,11 @@ def is_claim_line(lines: list[str], idx: int) -> bool:
         "does not inherit",
         "operator-retained assertion",
         "operator-supplied",
+        "prohibit",
+        "prohibits",
+        "prohibited",
+        "unqualified phrases",
+        "prohibited unqualified",
     )
     if any(d in line_lower for d in disclaimers):
         return False
@@ -1098,6 +1163,175 @@ def is_claim_line(lines: list[str], idx: int) -> bool:
             "- [ ] ",
         )
     )
+
+
+def validate_markdown_accounting_tables(
+    relative_path: Path, lines: list[str]
+) -> list[Finding]:
+    findings: list[Finding] = []
+    norm_path = relative_path.as_posix()
+
+    i = 0
+    while i < len(lines):
+        line = lines[i].strip()
+        if (
+            line.startswith("|")
+            and i + 1 < len(lines)
+            and re.match(r"^\|(?:\s*:?-+:?\s*\|)+$", lines[i + 1].strip())
+        ):
+            header_cells = [
+                c.strip().lower() for c in lines[i].strip().strip("|").split("|")
+            ]
+            row_idx = i + 2
+            table_rows: list[tuple[int, list[str]]] = []
+            while row_idx < len(lines) and lines[row_idx].strip().startswith("|"):
+                row_cells = [
+                    c.strip() for c in lines[row_idx].strip().strip("|").split("|")
+                ]
+                table_rows.append((row_idx + 1, row_cells))
+                row_idx += 1
+
+            has_gate_col = any(
+                any(k in h for k in ("gate", "milestone", "deliverable"))
+                for h in header_cells
+            )
+            has_count_col = any(
+                any(
+                    k in h
+                    for k in (
+                        "selected",
+                        "executed",
+                        "matching",
+                        "failing",
+                        "passed",
+                        "failed",
+                        "blocked",
+                    )
+                )
+                for h in header_cells
+            )
+
+            if (has_gate_col or has_count_col) and table_rows:
+                gate_col_idx: int | None = None
+                numeric_col_indices: dict[str, int] = {}
+                for c_idx, h in enumerate(header_cells):
+                    if (
+                        any(k in h for k in ("gate", "milestone", "deliverable"))
+                        and gate_col_idx is None
+                    ):
+                        gate_col_idx = c_idx
+                    for k in (
+                        "selected",
+                        "executed",
+                        "matching",
+                        "failing",
+                        "passed",
+                        "failed",
+                        "blocked",
+                    ):
+                        if k in h and k not in numeric_col_indices:
+                            numeric_col_indices[k] = c_idx
+
+                if numeric_col_indices:
+                    detail_rows: list[tuple[int, list[str]]] = []
+                    total_rows: list[tuple[int, list[str]]] = []
+                    gate_ids_seen: set[str] = set()
+
+                    for l_num, cells in table_rows:
+                        clean_cells = [re.sub(r"[*`]", "", c).strip() for c in cells]
+                        first_cell = clean_cells[0].lower() if clean_cells else ""
+                        is_total_row = any(
+                            t in first_cell for t in ("total", "cumulative", "summary")
+                        )
+
+                        if is_total_row:
+                            total_rows.append((l_num, clean_cells))
+                        else:
+                            detail_rows.append((l_num, clean_cells))
+                            if gate_col_idx is not None and gate_col_idx < len(
+                                clean_cells
+                            ):
+                                g_raw = clean_cells[gate_col_idx]
+                                g_match = re.search(
+                                    r"\b(DR[0-9]+[a-zA-Z]?|GATE\s*\d+)\b",
+                                    g_raw,
+                                    re.IGNORECASE,
+                                )
+                                if g_match:
+                                    norm_gid = g_match.group(1).upper().replace(" ", "")
+                                    if norm_gid in gate_ids_seen:
+                                        findings.append(
+                                            Finding(
+                                                norm_path,
+                                                l_num,
+                                                "DOC005",
+                                                "critical",
+                                                f"Duplicate gate identifier '{norm_gid}' in accounting table.",
+                                            )
+                                        )
+                                    gate_ids_seen.add(norm_gid)
+
+                    if len(total_rows) > 1:
+                        first_tot_cells = total_rows[0][1]
+                        for l_num, tot_cells in total_rows[1:]:
+                            if tot_cells != first_tot_cells:
+                                findings.append(
+                                    Finding(
+                                        norm_path,
+                                        l_num,
+                                        "DOC005",
+                                        "critical",
+                                        "Conflicting total rows detected in accounting table.",
+                                    )
+                                )
+
+                    for col_name, col_idx in numeric_col_indices.items():
+                        col_sum = 0
+                        valid_detail_counts = 0
+                        for l_num, cells in detail_rows:
+                            if col_idx < len(cells):
+                                val_str = cells[col_idx]
+                                if not val_str or val_str in ("-", "N/A", "n/a"):
+                                    continue
+                                num_match = re.search(r"^-?\d+$", val_str)
+                                if num_match:
+                                    val = int(val_str)
+                                    if val < 0:
+                                        findings.append(
+                                            Finding(
+                                                norm_path,
+                                                l_num,
+                                                "DOC004",
+                                                "critical",
+                                                f"Negative count '{val}' in accounting table column '{col_name}'.",
+                                            )
+                                        )
+                                    else:
+                                        col_sum += val
+                                        valid_detail_counts += 1
+
+                        if total_rows and valid_detail_counts > 0:
+                            for l_num, cells in total_rows:
+                                if col_idx < len(cells):
+                                    tot_str = cells[col_idx]
+                                    num_match = re.search(r"^-?\d+$", tot_str)
+                                    if num_match:
+                                        tot_val = int(tot_str)
+                                        if tot_val != col_sum:
+                                            findings.append(
+                                                Finding(
+                                                    norm_path,
+                                                    l_num,
+                                                    "DOC004",
+                                                    "critical",
+                                                    f"Accounting table sum mismatch for column '{col_name}': detail rows sum to {col_sum} but Total row claims {tot_val}.",
+                                                )
+                                            )
+            i = row_idx
+        else:
+            i += 1
+
+    return findings
 
 
 def scan_markdown_file(relative_path: Path) -> list[Finding]:
@@ -1130,6 +1364,27 @@ def scan_markdown_file(relative_path: Path) -> list[Finding]:
     used_annotations: set[int] = set()
 
     for line_number, line in enumerate(lines, start=1):
+        if DOC_PROHIBITED_TERMINOLOGY_RE.search(line):
+            findings.append(
+                Finding(
+                    relative_path.as_posix(),
+                    line_number,
+                    "DOC006",
+                    "critical",
+                    "Prohibited terminology or uncorroborated claim regarding hidden inputs, scanner semantic proof, or cache freshness.",
+                )
+            )
+        if DOC_REPO_ROOT_CITATION_RE.search(line):
+            findings.append(
+                Finding(
+                    relative_path.as_posix(),
+                    line_number,
+                    "DOC007",
+                    "critical",
+                    "Repository root citation is insufficient; cite specific issue, PR, or commit permalink.",
+                )
+            )
+
         if not is_claim_line(lines, line_number - 1):
             continue
 
@@ -1158,6 +1413,7 @@ def scan_markdown_file(relative_path: Path) -> list[Finding]:
                 )
             )
 
+    findings.extend(validate_markdown_accounting_tables(relative_path, lines))
     return findings
 
 
