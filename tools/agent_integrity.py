@@ -900,7 +900,7 @@ def assemble_logical_commands(
                             while has_continuation and k + 1 < num_block_lines:
                                 k += 1
                                 cmd_line_count += 1
-                                next_orig_ln, next_b_line = block_lines[k]
+                                _next_orig_ln, next_b_line = block_lines[k]
                                 curr_l = next_b_line.rstrip("\r\n")
                                 if curr_l.rstrip().endswith("\\"):
                                     accum.append(curr_l.rstrip()[:-1])

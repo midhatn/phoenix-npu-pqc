@@ -2298,6 +2298,7 @@ class HostAndDriverIntegrityTests(unittest.TestCase):
                 capture_output=True,
                 text=True,
                 timeout=15,
+                check=False,
             )
             self.assertEqual(proc.returncode, 0, f"Child process failed: {proc.stderr}")
             self.assertIn("PERF_STRESS_PASSED", proc.stdout)
