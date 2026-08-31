@@ -64,6 +64,30 @@
       "status": "COMPLETED",
       "depends_on": ["GENERALIZE-RUNNERS"],
       "acceptance_command": "python tools/verify_agent_change.py --all"
+    },
+    {
+      "id": "FIX-DR2D-FUNCTIONAL-MISMATCH",
+      "dr": "DR2d",
+      "title": "Debug and fix observed functional mismatch in DR2d ML-KEM-512 K-PKE KeyGen",
+      "status": "READY",
+      "depends_on": ["GENERALIZE-RUNNERS"],
+      "acceptance_command": "python -m unittest -v tests/pqc_device_resident/test_dr2d_mlkem512_kpke_keygen.py"
+    },
+    {
+      "id": "FIX-DR14-FUNCTIONAL-MISMATCH",
+      "dr": "DR14",
+      "title": "Debug and fix observed functional mismatches in DR14 ML-DSA-65 Sign (7 cases) and Verify (6 cases)",
+      "status": "READY",
+      "depends_on": ["GENERALIZE-RUNNERS"],
+      "acceptance_command": "python -m unittest -v tests/pqc_device_resident/test_dr14_mldsa65.py"
+    },
+    {
+      "id": "FIX-DR15-FUNCTIONAL-MISMATCH",
+      "dr": "DR15",
+      "title": "Debug and fix observed functional mismatches in DR15 ML-DSA-87 Sign (30 cases) and Verify (6 cases)",
+      "status": "READY",
+      "depends_on": ["GENERALIZE-RUNNERS"],
+      "acceptance_command": "python -m unittest -v tests/pqc_device_resident/test_dr15_mldsa87.py"
     }
   ]
 }
