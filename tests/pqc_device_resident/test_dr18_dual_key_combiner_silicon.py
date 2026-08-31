@@ -8,7 +8,6 @@ import secrets
 import sys
 import time
 import uuid
-from hashlib import shake_256
 from pathlib import Path
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
@@ -17,10 +16,7 @@ if str(PROJECT_ROOT) not in sys.path:
 
 from phoenix_sdr_dsp.pqc.dr18_dual_key_combiner_graph import combine_keys_on_aie2
 from phoenix_sdr_dsp.pqc import dr18_dual_key_combiner_abi as abi
-
-def compute_ref_k_final(k_qkd: bytes, k_pqc: bytes, key_id: uuid.UUID, epoch: int, out_len: int = 32) -> bytes:
-    inp = abi.pack_combiner_input(k_qkd, k_pqc, key_id, epoch)
-    return shake_256(inp).digest(out_len)
+from tests.pqc_device_resident.test_dr18_dual_key_combiner import compute_ref_k_final
 
 def main():
     print("=" * 70)

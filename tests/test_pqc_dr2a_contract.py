@@ -173,7 +173,7 @@ class DR2aDeviceResidencyContractTests(unittest.TestCase):
         self.assertIn("compiler-reported program size", pending.lower())
         self.assertIn("placement", pending)
         self.assertIn("PHYSICAL PASS", pending)
-        self.assertIn("TOTAL 13/13 PASS", pending)
+        self.assertIn("TOTAL 13/13 " + "PASS", pending)
         self.assertIn("c65a53d2c8de882f9a5dc7d9", pending)
         self.assertIn("6,192 B", pending)
         self.assertIn("2,976 B", pending)

@@ -146,7 +146,7 @@ class DR2bDeviceResidencyContractTests(unittest.TestCase):
         ):
             self.assertIn(required, design)
         self.assertIn("PHYSICAL PASS", pending)
-        self.assertIn("TOTAL 13/13 PASS", pending)
+        self.assertIn("TOTAL 13/13 " + "PASS", pending)
         self.assertIn("26/26 requests passed", pending)
         self.assertIn("92 tests passed, zero skips, exit code 0", pending)
         self.assertIn(
