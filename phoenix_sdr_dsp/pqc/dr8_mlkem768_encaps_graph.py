@@ -15,8 +15,27 @@ U1_TOKEN_BYTES = 4816
 U2_TOKEN_BYTES = 4592
 RESULT_BYTES = 1152 # Header[32] || c[1088] || K[32]
 
+import os
+
 class NativeBackendUnavailable(RuntimeError):
     """The native IRON/XRT DR8 backend is unavailable or failed closed."""
+
+
+def check_emulation_and_redirection_excluded() -> None:
+    """Fail closed if XCL_EMULATION_MODE or XRT_INI_PATH runtime redirection variables are set."""
+    emulation_mode = os.environ.get("XCL_EMULATION_MODE")
+    if emulation_mode and emulation_mode.strip():
+        raise NativeBackendUnavailable(
+            f"Physical silicon execution rejected: XCL_EMULATION_MODE={emulation_mode!r} is set. "
+            "Hardware ground truth forbids simulation or emulation backends."
+        )
+    xrt_ini = os.environ.get("XRT_INI_PATH")
+    if xrt_ini and xrt_ini.strip():
+        raise NativeBackendUnavailable(
+            f"Physical silicon execution rejected: XRT_INI_PATH={xrt_ini!r} is set. "
+            "Hardware ground truth forbids custom runtime configuration redirection."
+        )
+
 
 def _clear_host_staging(array: np.ndarray, tensor: Any | None) -> None:
     array.fill(0)
@@ -26,7 +45,9 @@ def _clear_host_staging(array: np.ndarray, tensor: Any | None) -> None:
     elif isinstance(backing, memoryview) and not backing.readonly: backing[:] = b"\x00" * backing.nbytes
     elif isinstance(backing, bytearray): backing[:] = b"\x00" * len(backing)
 
+
 def _load_iron() -> tuple[Any, ...]:
+    check_emulation_and_redirection_excluded()
     try:
         from aie import iron
         from aie.iron import (

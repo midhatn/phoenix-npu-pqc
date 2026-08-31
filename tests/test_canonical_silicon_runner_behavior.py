@@ -381,6 +381,32 @@ def _make_dr7_test_buffers(
     return buffers
 
 
+def _make_dr8_test_buffers(
+    corrupt_index: int | None = None,
+) -> list[dict[str, object]]:
+    """Generate 75 authentic DR8 test buffers for parent oracle verification tests."""
+    from tests.pqc_device_resident.test_dr8_mlkem_unified import (
+        ACVP_EXPECTED,
+        PRE_SILICON_CORPUS,
+    )
+    buffers: list[dict[str, object]] = []
+    for idx, case in enumerate(PRE_SILICON_CORPUS):
+        case_id = f"dr8_case_{idx:03d}_{case.param_set}_{case.tc_id}"
+        expected_k = ACVP_EXPECTED[case.tc_id]
+        k_bytes = bytearray(expected_k)
+        if corrupt_index is not None and idx == corrupt_index:
+            k_bytes[0] ^= 0xFF
+        buffers.append({
+            "case_id": case_id,
+            "case_label": f"{case.param_set}_{case.tc_id}",
+            "tc_id": case.tc_id,
+            "param_set": case.param_set,
+            "request_id": case.request_id,
+            "k_hex": bytes(k_bytes).hex(),
+        })
+    return buffers
+
+
 def _wrap_record_in_stdout(record: dict[str, object], preamble: str = "") -> str:
     serialized = json.dumps(record, indent=2)
     return f"{preamble}\n{RESULT_START_MARKER}\n{serialized}\n{RESULT_END_MARKER}\n"
@@ -1492,6 +1518,61 @@ class CanonicalSiliconRunnerBehaviorTests(unittest.TestCase):
         with mock.patch.dict(os.environ, {"XRT_INI_PATH": "C:/fake/xrt.ini"}):
             with self.assertRaises(graph.NativeBackendUnavailable) as ctx:
                 graph.check_emulation_and_redirection_excluded()
+            self.assertIn("XRT_INI_PATH='C:/fake/xrt.ini'", str(ctx.exception))
+
+    def test_dr8_valid_test_buffers_verified_by_parent_oracle(self) -> None:
+        gate = GATES[11]  # DR8
+        now = datetime.now(timezone.utc)
+        rec = _make_valid_record(
+            gate_id="DR8",
+            expected_count=75,
+            artifact_rel="phoenix_sdr_dsp/pqc/kernels/dr8_mlkem768_keygen_finalize.cc",
+            dispatches=75,
+        )
+        rec["test_buffers"] = _make_dr8_test_buffers()
+        stdout = _wrap_record_in_stdout(rec)
+        res = parse_gate_output(
+            gate, stdout, "", 0, 0.5,
+            parent_start_time=now - timedelta(seconds=2),
+            parent_end_time=now + timedelta(seconds=2),
+            execution_nonce="test_nonce_0123456789abcdef",
+        )
+        self.assertFalse(res.success)
+        self.assertEqual(res.status, STATUS_SELF_REPORTED_UNVERIFIED)
+        self.assertTrue(any("Parent independent oracle verified all 75 official NIST ACVP ML-KEM (512, 768, 1024) shared keys" in note for note in res.corroboration_notes))
+
+    def test_dr8_corrupted_key_fails_validation(self) -> None:
+        gate = GATES[11]
+        now = datetime.now(timezone.utc)
+        rec = _make_valid_record(
+            gate_id="DR8",
+            expected_count=75,
+            artifact_rel="phoenix_sdr_dsp/pqc/kernels/dr8_mlkem768_keygen_finalize.cc",
+            dispatches=75,
+        )
+        # Corrupt 1 shared key in case index 0
+        rec["test_buffers"] = _make_dr8_test_buffers(corrupt_index=0)
+        stdout = _wrap_record_in_stdout(rec)
+        res = parse_gate_output(
+            gate, stdout, "", 0, 0.5,
+            parent_start_time=now - timedelta(seconds=2),
+            parent_end_time=now + timedelta(seconds=2),
+            execution_nonce="test_nonce_0123456789abcdef",
+        )
+        self.assertFalse(res.success)
+        self.assertEqual(res.status, STATUS_FAIL)
+        self.assertIn("oracle mismatch against official NIST ACVP shared key", res.error_message or "")
+
+    def test_dr8_module_rejects_emulation_and_xrt_ini_path(self) -> None:
+        from phoenix_sdr_dsp.pqc import dr8_mlkem_service as service
+        with mock.patch.dict(os.environ, {"XCL_EMULATION_MODE": "sw_emu"}):
+            with self.assertRaises(service.NativeBackendUnavailable) as ctx:
+                service.check_emulation_and_redirection_excluded()
+            self.assertIn("XCL_EMULATION_MODE='sw_emu'", str(ctx.exception))
+
+        with mock.patch.dict(os.environ, {"XRT_INI_PATH": "C:/fake/xrt.ini"}):
+            with self.assertRaises(service.NativeBackendUnavailable) as ctx:
+                service.check_emulation_and_redirection_excluded()
             self.assertIn("XRT_INI_PATH='C:/fake/xrt.ini'", str(ctx.exception))
 
 

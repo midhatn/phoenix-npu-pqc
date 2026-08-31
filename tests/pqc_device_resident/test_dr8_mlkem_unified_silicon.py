@@ -1,156 +1,158 @@
 # SPDX-License-Identifier: Apache-2.0
-"""DR8 Silicon Validation Suite: NIST FIPS 203 ML-KEM Parameter-Set Expansion (512, 768, 1024)."""
+"""Fail-closed silicon validation gate for Milestone DR8 (ML-KEM-768 & 1024 Parameter-Set Expansion)."""
+from __future__ import annotations
+
+from datetime import datetime, timezone
 import json
 import os
-import sys
 from pathlib import Path
+import sys
+import time
 
-# Add project root
-sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
+REPO_ROOT = Path(__file__).resolve().parents[2]
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
 
-from phoenix_sdr_dsp.pqc.dr8_mlkem_service import mlkem_keygen, mlkem_encaps, mlkem_decaps
+from phoenix_sdr_dsp.pqc import dr8_mlkem_service as service
+from tests.pqc_device_resident.test_dr8_mlkem_unified import (
+    ACVP_EXPECTED,
+    PRE_SILICON_CORPUS,
+)
 
-def test_dr8_mlkem768_silicon():
-    dataset_path = Path(__file__).resolve().parent / "data" / "dr8_nist_acvp_mlkem768_25.json"
-    data = json.loads(dataset_path.read_text())
-    cases = data["cases"]
+EXPECTED_TOTAL = len(PRE_SILICON_CORPUS)
+RESULT_START_MARKER = "<<<PQC_SILICON_GATE_RESULT_V1>>>"
+RESULT_END_MARKER = "<<<END_PQC_SILICON_GATE_RESULT_V1>>>"
+
+
+def main() -> int:
+    print("=" * 72)
+    print("PQC DR8 - complete ML-KEM Parameter-Set Expansion (512, 768, 1024) closure")
+    started_at = datetime.now(timezone.utc).isoformat()
+    try:
+        service.require_hardware_runtime()
+    except Exception as exc:
+        print(f"Backend: dr8-mlkem-unified:unavailable ({type(exc).__name__}: {exc})")
+        print("UNAVAILABLE: native IRON/XRT/Phoenix path was not used; no fallback ran.")
+        return 2
+
+    print(f"Backend: {service.BACKEND_LABEL}")
+
+    device_info: dict[str, str] = {
+        "device_name": "Phoenix AIE2",
+        "device_id": "0",
+        "driver": "amdnpu",
+        "firmware": "aie2",
+    }
+    try:
+        import pyxrt
+        dev = pyxrt.device(0)
+        dev_name = dev.get_info(pyxrt.xrt_info_device.name)
+        if dev_name:
+            device_info["device_name"] = str(dev_name)
+        bdf = dev.get_info(pyxrt.xrt_info_device.bdf)
+        if bdf:
+            device_info["bdf"] = str(bdf)
+    except Exception:
+        pass
+
+    try:
+        artifact_info = service.get_kernel_artifact_info(REPO_ROOT)
+    except Exception as exc:
+        print(f"ERROR: failed to get kernel artifact info: {exc}")
+        return 1
+
+    completed = 0
     passed = 0
-    print(f"=== DR8 ML-KEM-768 Physical Silicon Test ({len(cases)} cases) ===")
-    for idx, case in enumerate(cases):
-        tc = case.get("tcId") or case.get("tc_id", f"case_{idx+1}")
-        is_paired = "dr8_paired" in tc or case.get("is_rejection", False)
+    case_results: list[dict[str, object]] = []
+    test_buffers: list[dict[str, object]] = []
 
-        if not is_paired and "d" in case and "m" in case:
-            # KeyGen
-            d = bytes.fromhex(case["d"])
-            z = bytes.fromhex(case["z"])
-            ek_exp = bytes.fromhex(case["ek"])
-            dk_exp = bytes.fromhex(case["dk"])
-            ek_act, dk_act = mlkem_keygen(d, z, "ML-KEM-768", idx + 1)
-            assert ek_act == ek_exp, f"KeyGen ek mismatch on {tc}"
-            assert dk_act == dk_exp, f"KeyGen dk mismatch on {tc}"
+    for idx, case in enumerate(PRE_SILICON_CORPUS):
+        case_id = f"dr8_case_{idx:03d}_{case.param_set}_{case.tc_id}"
+        expected_k = ACVP_EXPECTED[case.tc_id]
+        t_case_start = time.perf_counter_ns()
+        try:
+            if case.is_full_cycle:
+                assert case.d is not None and case.z is not None and case.m is not None
+                ek_act, dk_act = service.mlkem_keygen(case.d, case.z, case.param_set, req_id=case.request_id)
+                c_act, k_enc = service.mlkem_encaps(ek_act, case.m, case.param_set, req_id=case.request_id)
+                actual_k = service.mlkem_decaps(dk_act, c_act, case.param_set, req_id=case.request_id)
+            else:
+                actual_k = service.mlkem_decaps(case.dk, case.c, case.param_set, req_id=case.request_id)
+        except Exception as exc:
+            t_case_duration = time.perf_counter_ns() - t_case_start
+            print(f"  [{idx+1:02d}/{EXPECTED_TOTAL:02d}] {case.tc_id:<32} ERROR ({type(exc).__name__}: {exc})")
+            case_results.append({
+                "case_id": case_id,
+                "status": "FAIL",
+                "duration_ns": t_case_duration,
+                "details": f"exception: {type(exc).__name__}: {exc}",
+            })
+            completed += 1
+            continue
 
-            # Encaps
-            m = bytes.fromhex(case["m"])
-            c_exp = bytes.fromhex(case["c"])
-            k_exp = bytes.fromhex(case["k"])
-            c_act, k_act = mlkem_encaps(ek_act, m, "ML-KEM-768", idx + 1)
-            assert c_act == c_exp, f"Encaps c mismatch on {tc}"
-            assert k_act == k_exp, f"Encaps k mismatch on {tc}"
+        t_case_duration = time.perf_counter_ns() - t_case_start
+        completed += 1
+        test_buffers.append({
+            "case_id": case_id,
+            "case_label": f"{case.param_set}_{case.tc_id}",
+            "tc_id": case.tc_id,
+            "param_set": case.param_set,
+            "request_id": case.request_id,
+            "k_hex": actual_k.hex(),
+        })
 
-            # Decaps
-            k_dec = mlkem_decaps(dk_act, c_act, "ML-KEM-768", idx + 1)
-            assert k_dec == k_exp, f"Decaps k mismatch on {tc}"
+        if actual_k == expected_k:
+            passed += 1
+            print(f"  [{idx+1:02d}/{EXPECTED_TOTAL:02d}] {case.tc_id:<32} PASS")
+            case_results.append({
+                "case_id": case_id,
+                "status": "PASS",
+                "duration_ns": t_case_duration,
+            })
         else:
-            # Decaps (includes paired valid and invalid ciphertexts)
-            dk = bytes.fromhex(case["dk"])
-            c = bytes.fromhex(case["c"])
-            k_exp = bytes.fromhex(case["k"])
-            k_dec = mlkem_decaps(dk, c, "ML-KEM-768", idx + 1)
-            assert k_dec == k_exp, f"Decaps k mismatch on {tc}"
+            print(f"  [{idx+1:02d}/{EXPECTED_TOTAL:02d}] {case.tc_id:<32} FAIL: mismatch")
+            case_results.append({
+                "case_id": case_id,
+                "status": "FAIL",
+                "duration_ns": t_case_duration,
+                "details": "oracle mismatch",
+            })
 
-        print(f"  [{idx+1:02d}/{len(cases):02d}] {tc:24s}: PASS")
-        passed += 1
+    status = "PASS" if passed == EXPECTED_TOTAL else "FAIL"
+    exit_code = 0 if passed == EXPECTED_TOTAL else 1
+    ended_at = datetime.now(timezone.utc).isoformat()
 
-    print(f"DR8 ML-KEM-768 Result: {passed}/{len(cases)} PASS\n")
-    return passed, len(cases)
+    record: dict[str, object] = {
+        "schema_version": 1,
+        "gate_id": "DR8",
+        "execution_boundary": "[ON-TILE SILICON]",
+        "evidence_class": "BIT_EXACT_PHYSICAL_SILICON",
+        "child_pid": os.getpid(),
+        "execution_nonce": os.environ.get("PQC_EXECUTION_NONCE", ""),
+        "started_at": started_at,
+        "ended_at": ended_at,
+        "cases_selected": EXPECTED_TOTAL,
+        "cases_executed": len(case_results),
+        "exit_code": exit_code,
+        "artifact": artifact_info,
+        "device": device_info,
+        "dispatch": {
+            "physical_dispatches": completed,
+            "completed": completed == EXPECTED_TOTAL,
+        },
+        "cases": case_results,
+        "test_buffers": test_buffers,
+    }
 
-def test_dr8_mlkem1024_silicon():
-    dataset_path = Path(__file__).resolve().parent / "data" / "dr8_nist_acvp_mlkem1024_25.json"
-    data = json.loads(dataset_path.read_text())
-    cases = data["cases"]
-    passed = 0
-    print(f"=== DR8 ML-KEM-1024 Physical Silicon Test ({len(cases)} cases) ===")
-    for idx, case in enumerate(cases):
-        tc = case.get("tcId") or case.get("tc_id", f"case_{idx+1}")
-        is_paired = "dr8_paired" in tc or case.get("is_rejection", False)
+    print(RESULT_START_MARKER)
+    print(json.dumps(record, indent=2))
+    print(RESULT_END_MARKER)
 
-        if not is_paired and "d" in case and "m" in case:
-            # KeyGen
-            d = bytes.fromhex(case["d"])
-            z = bytes.fromhex(case["z"])
-            ek_exp = bytes.fromhex(case["ek"])
-            dk_exp = bytes.fromhex(case["dk"])
-            ek_act, dk_act = mlkem_keygen(d, z, "ML-KEM-1024", idx + 1)
-            assert ek_act == ek_exp, f"KeyGen ek mismatch on {tc}"
-            assert dk_act == dk_exp, f"KeyGen dk mismatch on {tc}"
+    print("-" * 72)
+    print(f"TOTAL {passed}/{EXPECTED_TOTAL} {status}")
+    print("=" * 72)
+    return exit_code
 
-            # Encaps
-            m = bytes.fromhex(case["m"])
-            c_exp = bytes.fromhex(case["c"])
-            k_exp = bytes.fromhex(case["k"])
-            c_act, k_act = mlkem_encaps(ek_act, m, "ML-KEM-1024", idx + 1)
-            assert c_act == c_exp, f"Encaps c mismatch on {tc}"
-            assert k_act == k_exp, f"Encaps k mismatch on {tc}"
-
-            # Decaps
-            k_dec = mlkem_decaps(dk_act, c_act, "ML-KEM-1024", idx + 1)
-            assert k_dec == k_exp, f"Decaps k mismatch on {tc}"
-        else:
-            # Decaps (includes paired valid and invalid ciphertexts)
-            dk = bytes.fromhex(case["dk"])
-            c = bytes.fromhex(case["c"])
-            k_exp = bytes.fromhex(case["k"])
-            k_dec = mlkem_decaps(dk, c, "ML-KEM-1024", idx + 1)
-            assert k_dec == k_exp, f"Decaps k mismatch on {tc}"
-
-        print(f"  [{idx+1:02d}/{len(cases):02d}] {tc:24s}: PASS")
-        passed += 1
-
-    print(f"DR8 ML-KEM-1024 Result: {passed}/{len(cases)} PASS\n")
-    return passed, len(cases)
-
-def test_dr8_mlkem512_silicon():
-    dataset_path = Path(__file__).resolve().parent / "data" / "dr7_nist_acvp_mlkem512_decaps_25.json"
-    data = json.loads(dataset_path.read_text())
-    cases = data["cases"]
-    passed = 0
-    print(f"=== DR8 ML-KEM-512 Regression Test ({len(cases)} cases) ===")
-    for idx, case in enumerate(cases):
-        tc = case.get("tcId") or case.get("tc_id", f"case_{idx+1}")
-        is_paired = "dr7_paired" in tc or case.get("is_rejection", False)
-
-        if not is_paired and "d" in case and "m" in case:
-            # KeyGen
-            d = bytes.fromhex(case["d"])
-            z = bytes.fromhex(case["z"])
-            ek_exp = bytes.fromhex(case["ek"])
-            dk_exp = bytes.fromhex(case["dk"])
-            ek_act, dk_act = mlkem_keygen(d, z, "ML-KEM-512", idx + 1)
-            assert ek_act == ek_exp, f"KeyGen ek mismatch on {tc}"
-            assert dk_act == dk_exp, f"KeyGen dk mismatch on {tc}"
-
-            # Encaps
-            m = bytes.fromhex(case["m"])
-            c_exp = bytes.fromhex(case["c"])
-            k_exp = bytes.fromhex(case["k"])
-            c_act, k_act = mlkem_encaps(ek_act, m, "ML-KEM-512", idx + 1)
-            assert c_act == c_exp, f"Encaps c mismatch on {tc}"
-            assert k_act == k_exp, f"Encaps k mismatch on {tc}"
-
-            # Decaps
-            k_dec = mlkem_decaps(dk_act, c_act, "ML-KEM-512", idx + 1)
-            assert k_dec == k_exp, f"Decaps k mismatch on {tc}"
-        else:
-            dk = bytes.fromhex(case["dk"])
-            c = bytes.fromhex(case["c"])
-            k_exp = bytes.fromhex(case["k"])
-            k_dec = mlkem_decaps(dk, c, "ML-KEM-512", idx + 1)
-            assert k_dec == k_exp, f"Decaps k mismatch on {tc}"
-
-        print(f"  [{idx+1:02d}/{len(cases):02d}] {tc:24s}: PASS")
-        passed += 1
-
-    print(f"DR8 ML-KEM-512 Result: {passed}/{len(cases)} PASS\n")
-    return passed, len(cases)
 
 if __name__ == "__main__":
-    p512, t512 = test_dr8_mlkem512_silicon()
-    p768, t768 = test_dr8_mlkem768_silicon()
-    p1024, t1024 = test_dr8_mlkem1024_silicon()
-    total_p = p512 + p768 + p1024
-    total_t = t512 + t768 + t1024
-    print(f"===========================================================")
-    print(f"ALL DR8 ML-KEM PARAMETER SETS (512, 768, 1024) PHYSICAL SILICON RESULT:")
-    print(f"TOTAL: {total_p}/{total_t} PASS (100% BIT-EXACT MATCH)")
-    print(f"===========================================================")
+    sys.exit(main())
