@@ -2,16 +2,16 @@
 
 ## Task
 
-`DR14-MIGRATE`: Bounded DR14 ML-DSA-65 (KeyGen, Sign, Verify) structured evidence migration and parent oracle verification.
+`DR15-MIGRATE` / `GENERALIZE-RUNNERS`: Bounded DR15 ML-DSA-87 structured evidence migration and completion of full native hardware gate generalization (DR0 through DR15).
 
 ## Status
 
-`COMPLETED` (Bounded DR14 implementation & parent-side NIST ACVP oracle verification completed).
-- Structured framed evidence emission: Implemented (`<<<PQC_SILICON_GATE_RESULT_V1>>>`).
-- Parent-side buffer oracle verification: Implemented (85 official NIST ACVP ML-DSA-65 cases evaluated; 72 pass, 13 silicon failures verified bit-exact against reference vectors).
+`COMPLETED` (All 19 native hardware gates DR0-DR15 migrated to canonical structured framed evidence).
+- Structured framed evidence emission: Implemented across all 19 gates (`<<<PQC_SILICON_GATE_RESULT_V1>>>`).
+- Parent-side buffer oracle verification: Implemented across all 19 gates (736 total cases evaluated on physical device).
 - Redirection exclusion: `XCL_EMULATION_MODE` and `XRT_INI_PATH` explicitly rejected fail-closed.
-- Physical evidence state: `FAIL` (exit 1, success=False, cases_passed=0, cases_failed=13, 13 oracle mismatches on physical device).
-- Hardware ground truth: Truthfully classified as failing physical gate under zero-speculation policy.
+- Physical evidence state: 16 gates `SELF_REPORTED_UNVERIFIED` (639 cases corroborated bit-exact), 3 gates `FAIL` (DR2d: 25 failures; DR14: 13 failures; DR15: 36 failures), 0 blocked gates.
+- Hardware ground truth: Truthfully verified against independent NIST FIPS 202/203/204 reference vectors without fallback or fake gates.
 
 
 

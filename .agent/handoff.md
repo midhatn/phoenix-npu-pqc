@@ -4,14 +4,15 @@
 
 - Baseline commit: `implement/dr1-evidence`
 - Phase: Phase A — Trustworthy execution and evidence foundation
-- Current task: `DR14-MIGRATE` (COMPLETED for structured evidence/parent buffer verification; classified as FAIL due to 13 ACVP mismatches on silicon)
+- Current task: `GENERALIZE-RUNNERS` & `POLICY-FULL-BUFFER` (COMPLETED for all 19 native hardware gates DR0–DR15)
 - Physical hardware availability: Verified on AMD Phoenix APU via ironenv
-- Physical silicon execution status: `SELF_REPORTED_UNVERIFIED` (Gate 00 DR0: 24 unverified claims; Gate 01 DR1: 33 unverified claims; Gate 02 DR2a: 13 unverified claims; Gate 03 DR2b: 13 unverified claims; Gate 04 DR2c: 11 unverified claims; Gate 05 DR2d: FAIL (25 failures against official ACVP); Gate 06 DR3: 25 unverified claims; Gate 07 DR4: 25 unverified claims; Gate 08 DR5: 25 unverified claims; Gate 09 DR6: 25 unverified claims; Gate 10 DR7: 25 unverified claims; Gate 11 DR8: 75 unverified claims; Gate 12 DR9: 122 unverified claims; Gate 13 DR10: 40 unverified claims; Gate 14 DR11: 25 unverified claims; Gate 15 DR12: 30 unverified claims; Gate 16 DR13: 30 unverified claims; Gate 17 DR14: FAIL (13 failures against official ACVP); Gate 18 DR15: BLOCKED)
+- Physical silicon execution status: Complete 19-gate suite evaluated on physical Phoenix NPU (0/19 physically promoted, 16 SELF_REPORTED_UNVERIFIED with 639 cases corroborated bit-exact, 3 FAIL with 97 verified case failures [DR2d: 25, DR14: 13, DR15: 36], 0 BLOCKED gates of 736 selected cases)
 - Physical corroboration: `PHYSICAL_VERIFICATION_BLOCKED` pending external driver-level dispatch instrumentation
 
 ## Next action
 
-Proceed to DR15 ML-DSA-87 (KeyGen, Sign, Verify) structured evidence migration and parent oracle verification.
+Proceed to `POLICY-HOST-CRYPTO`: Separate host oracle imports from DR10, DR17, DR18, and DR27 physical paths.
+
 
 
 

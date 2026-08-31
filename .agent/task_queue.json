@@ -37,7 +37,7 @@
       "id": "GENERALIZE-RUNNERS",
       "dr": null,
       "title": "Generalize independent evidence collection across DR1-DR15",
-      "status": "READY",
+      "status": "COMPLETED",
       "depends_on": ["DR0-MIGRATE"],
       "acceptance_command": "python tools/verify_agent_change.py"
     },
@@ -45,7 +45,7 @@
       "id": "POLICY-HOST-CRYPTO",
       "dr": null,
       "title": "Separate host oracle imports from DR10, DR17, DR18, and DR27 physical paths",
-      "status": "PENDING",
+      "status": "READY",
       "depends_on": ["GENERALIZE-RUNNERS"],
       "acceptance_command": "python tools/verify_agent_change.py --all"
     },
@@ -53,7 +53,7 @@
       "id": "POLICY-BACKEND-EVIDENCE",
       "dr": null,
       "title": "Replace self-declared physical backend labels with structured runtime evidence",
-      "status": "PENDING",
+      "status": "READY",
       "depends_on": ["GENERALIZE-RUNNERS"],
       "acceptance_command": "python tools/verify_agent_change.py --all"
     },
@@ -61,7 +61,7 @@
       "id": "POLICY-FULL-BUFFER",
       "dr": null,
       "title": "Audit and replace potentially partial DR14 physical comparisons",
-      "status": "PENDING",
+      "status": "COMPLETED",
       "depends_on": ["GENERALIZE-RUNNERS"],
       "acceptance_command": "python tools/verify_agent_change.py --all"
     }
