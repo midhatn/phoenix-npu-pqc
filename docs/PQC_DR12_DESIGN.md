@@ -6,6 +6,7 @@
 **Standard**: NIST FIPS 204 (*Module-Lattice-Based Digital Signature Standard*)  
 **Target Hardware**: AMD Phoenix APU (Ryzen 7 7840HS / 7940HS / 8840HS / Hawk Point) with XDNA1 / AIE2 Architecture  
 **Hardware Invariant**: **100% NPU Residency** — Zero host CPU cryptographic computation, zero host side-channel exposure, sealed lifecycle boundary.  
+<!-- [CLAIM-PROVENANCE: status=HISTORICAL; source=pqc_dr12_design; classification=SELF_REPORTED_UNVERIFIED] -->
 **Validation Verdict**: **30 / 30 PASS (100% bit-exact across NIST ACVP test groups 7 & 8 on physical Phoenix silicon)**.
 
 ---
@@ -54,7 +55,10 @@ graph TD
 
 ## 4. Hardware Verification Summary
 
+<!-- [CLAIM-PROVENANCE: status=HISTORICAL; source=pqc_dr12_design; classification=SELF_REPORTED_UNVERIFIED] -->
 - **Total Test Cases**: 30 / 30 PASS (100%)
+<!-- [CLAIM-PROVENANCE: status=HISTORICAL; source=pqc_dr12_design; classification=SELF_REPORTED_UNVERIFIED] -->
 - **Test Group 7 (`externalMu=True`)**: 15 / 15 PASS
+<!-- [CLAIM-PROVENANCE: status=HISTORICAL; source=pqc_dr12_design; classification=SELF_REPORTED_UNVERIFIED] -->
 - **Test Group 8 (`externalMu=False`)**: 15 / 15 PASS
 - **Status**: 100% Bit-Exact Match against NIST ACVP reference signatures on physical AMD Phoenix AIE2 silicon.

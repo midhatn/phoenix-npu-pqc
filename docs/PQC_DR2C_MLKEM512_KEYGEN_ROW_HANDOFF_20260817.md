@@ -104,6 +104,7 @@ py .\tests\pqc_device_resident\test_dr2c_mlkem512_keygen_row_silicon.py
 ```
 
 A native runtime absence must return exit 2; a real native run must show the
+<!-- [CLAIM-PROVENANCE: status=HISTORICAL; source=pqc_dr2c_mlkem512_keygen_row_handoff_20260817; classification=SELF_REPORTED_UNVERIFIED] -->
 silicon backend and `TOTAL 11/11 PASS`. Repeat all 11 requests twice in one
 process and retain full native output, compilation/memory reports, FIFO
 placement, and DMA-route evidence before changing the pending physical record.

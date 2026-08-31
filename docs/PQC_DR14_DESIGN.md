@@ -93,8 +93,11 @@ To achieve sub-15ms execution while fitting within the 16 KiB `.text` budget per
 
 | Operation | Pipeline Workers | Peak Tile RAM | Max Kernel `.text` Size | Physical Silicon Status |
 |---|---|---|---|---|
+<!-- [CLAIM-PROVENANCE: status=HISTORICAL; source=pqc_dr14_design; classification=SELF_REPORTED_UNVERIFIED] -->
 | **KeyGen** | 5 Workers | 48.2 KiB | 15.6 KiB (`w4_finalize.o`) | **25 / 25 PASS (100% Bit-Exact)** |
+<!-- [CLAIM-PROVENANCE: status=HISTORICAL; source=pqc_dr14_design; classification=SELF_REPORTED_UNVERIFIED] -->
 | **Sign** | 3 Workers | 52.4 KiB | 15.4 KiB (`sign_w1.o`) | **23 / 30 PASS (100% Hardware Sync)** |
+<!-- [CLAIM-PROVENANCE: status=HISTORICAL; source=pqc_dr14_design; classification=SELF_REPORTED_UNVERIFIED] -->
 | **Verify** | 3 Workers | 46.1 KiB | 14.8 KiB (`ver_w0.o`) | **30 / 30 PASS (100% Hardware Sync)** |
 
 All kernels operate strictly under the 16 KiB `.text` instruction limit and 64 KiB local tile memory capacity.

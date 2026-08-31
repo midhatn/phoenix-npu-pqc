@@ -3,6 +3,7 @@
 **Date:** 2026-08-29  
 **Platform:** AMD Phoenix NPU (Ryzen 7040 / 8040 AIE2 Architecture, XDNA1)  
 **Host Environment:** Windows 11 x86_64, MLIR-AIE 1.4.1, XRT Native Runtime  
+<!-- [CLAIM-PROVENANCE: status=HISTORICAL; source=pqc_dr16_silicon_validation_20260829; classification=SELF_REPORTED_UNVERIFIED] -->
 **Status:** **CLOSED & PHYSICALLY VALIDATED ON SILICON (25/25 PASS across all ETSI 014 containers and rejection paths)**
 
 ---
@@ -20,7 +21,11 @@ Milestone **DR16** evaluated the on-device ETSI GS QKD 014 key container parsing
 
 | Ingress Test Suite | Cases | Physical Silicon Result | Status | Physical Runtime |
 |---|---|---|---|---|
+<!-- [CLAIM-PROVENANCE: status=HISTORICAL; source=pqc_dr16_silicon_validation_20260829; classification=SELF_REPORTED_UNVERIFIED] -->
 | **ETSI 014 256-bit Ingress** | 15 | 15 / 15 PASS | **100% Pass** | 0.38s |
+<!-- [CLAIM-PROVENANCE: status=HISTORICAL; source=pqc_dr16_silicon_validation_20260829; classification=SELF_REPORTED_UNVERIFIED] -->
 | **ETSI 014 512-bit Ingress** | 5 | 5 / 5 PASS | **100% Pass** | 0.12s |
+<!-- [CLAIM-PROVENANCE: status=HISTORICAL; source=pqc_dr16_silicon_validation_20260829; classification=SELF_REPORTED_UNVERIFIED] -->
 | **Stale Epoch Replay Rejection** | 5 | 5 / 5 PASS | **100% Pass** | 0.13s |
+<!-- [CLAIM-PROVENANCE: status=HISTORICAL; source=pqc_dr16_silicon_validation_20260829; classification=SELF_REPORTED_UNVERIFIED] -->
 | **TOTAL DR16** | **25** | **25 / 25 PASS** | **100% Pass Rate** | **0.63s** |

@@ -3,6 +3,7 @@
 **Date:** 2026-08-29  
 **Platform:** AMD Phoenix NPU (Ryzen 7040 / 8040 AIE2 Architecture, XDNA1)  
 **Host Environment:** Windows 11 x86_64, MLIR-AIE 1.4.1, XRT Native Runtime  
+<!-- [CLAIM-PROVENANCE: status=HISTORICAL; source=pqc_dr17_silicon_validation_20260829; classification=SELF_REPORTED_UNVERIFIED] -->
 **Status:** **CLOSED & PHYSICALLY VALIDATED ON SILICON (25/25 PASS across all ML-DSA parameter sets and tamper injection tests)**
 
 ---
@@ -20,7 +21,11 @@ Milestone **DR17** evaluated the on-device ML-DSA verification of QKD session ma
 
 | Authentication Test Suite | Cases | Physical Silicon Result | Status | Physical Runtime |
 |---|---|---|---|---|
+<!-- [CLAIM-PROVENANCE: status=HISTORICAL; source=pqc_dr17_silicon_validation_20260829; classification=SELF_REPORTED_UNVERIFIED] -->
 | **Authentic ML-DSA-44 Verification** | 10 | 10 / 10 PASS | **100% Pass** | 0.14s |
+<!-- [CLAIM-PROVENANCE: status=HISTORICAL; source=pqc_dr17_silicon_validation_20260829; classification=SELF_REPORTED_UNVERIFIED] -->
 | **Authentic ML-DSA-65 Verification** | 5 | 5 / 5 PASS | **100% Pass** | 0.08s |
+<!-- [CLAIM-PROVENANCE: status=HISTORICAL; source=pqc_dr17_silicon_validation_20260829; classification=SELF_REPORTED_UNVERIFIED] -->
 | **Anti-MitM Tampered Manifest Rejection** | 10 | 10 / 10 PASS | **100% Pass** | 0.13s |
+<!-- [CLAIM-PROVENANCE: status=HISTORICAL; source=pqc_dr17_silicon_validation_20260829; classification=SELF_REPORTED_UNVERIFIED] -->
 | **TOTAL DR17** | **25** | **25 / 25 PASS** | **100% Pass Rate** | **3.17s** |

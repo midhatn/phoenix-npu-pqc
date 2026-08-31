@@ -34,6 +34,7 @@ Measured using the master physical silicon regression suite (`run_all_silicon_te
 | **07** | **FIPS 203** | DR4: ML-KEM-512 K-PKE.Decrypt Pipeline | 25 | 0.72 s | **28.8 ms** |
 | **08** | **FIPS 203** | DR5: ML-KEM-512 ML-KEM.KeyGen Graph | 25 | 0.85 s | **34.0 ms** |
 | **09** | **FIPS 203** | DR6: ML-KEM-512 ML-KEM.Encaps Graph | 30 | 0.73 s | **24.3 ms** |
+<!-- [CLAIM-PROVENANCE: status=HISTORICAL; source=benchmarks; classification=SELF_REPORTED_UNVERIFIED] -->
 | **10** | **FIPS 203** | DR7: ML-KEM-512 ML-KEM.Decaps (Constant-Time CCA2) | 30 | 0.85 s | **28.3 ms** |
 | **11** | **FIPS 203** | DR8: ML-KEM-768 & 1024 Expansion Suite | 80 | 1.98 s | **24.8 ms** |
 | **12** | **FIPS 202** | DR9: FIPS 202 SHA-3 & SHAKE Service | 32 | 0.87 s | **27.2 ms** |

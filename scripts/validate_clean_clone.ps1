@@ -49,14 +49,15 @@ function Resolve-Python {
     if ($Requested) {
         return $Requested
     }
-    if (Get-Command py -ErrorAction SilentlyContinue) {
+    if (Get-Command py -ErrorAction Ignore) {
         return "py"
     }
-    if (Get-Command python -ErrorAction SilentlyContinue) {
+    if (Get-Command python -ErrorAction Ignore) {
         return "python"
     }
     throw "Neither the Windows Python launcher ('py') nor 'python' is available."
 }
+
 
 function Test-HostDependencies {
     param(

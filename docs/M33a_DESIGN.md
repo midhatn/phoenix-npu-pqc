@@ -112,6 +112,7 @@ transliteration as a silicon pass. Static transliteration checks validate
 constants and source shape only.
 
 Phoenix laptop silicon gate recorded on 2026-08-17:
+<!-- [CLAIM-PROVENANCE: status=HISTORICAL; source=m33a_design; classification=SELF_REPORTED_UNVERIFIED] -->
 `Backend: m33a:silicon`, **420/420 PASS** across NTT, INTT, base
 multiplication, reduction, and end-to-end polynomial multiplication. See
 [`M33_SILICON_VALIDATION_20260817.md`](M33_SILICON_VALIDATION_20260817.md).
@@ -135,10 +136,14 @@ multiplication, reduction, and end-to-end polynomial multiplication. See
 
 | ID     | Component                                                       | Status  |
 |:-------|:----------------------------------------------------------------|:--------|
+<!-- [CLAIM-PROVENANCE: status=HISTORICAL; source=m33a_design; classification=SELF_REPORTED_UNVERIFIED] -->
 | M33a   | Dilithium NTT / INTT / BASEMUL / REDUCE (this doc)              | Phoenix silicon: 420/420 PASS |
+<!-- [CLAIM-PROVENANCE: status=HISTORICAL; source=m33a_design; classification=SELF_REPORTED_UNVERIFIED] -->
 | M33b   | SampleInBall, Power2Round, Decompose (HighBits / LowBits), MakeHint / UseHint | Phoenix silicon: 700/700 PASS |
 | M33c   | SHAKE128 / SHAKE256 (reuse M32c kernel unchanged)                | Reuse   |
+<!-- [CLAIM-PROVENANCE: status=HISTORICAL; source=m33a_design; classification=SELF_REPORTED_UNVERIFIED] -->
 | M33d   | KeyGen composer (FIPS 204 Alg 1 / 6), all 3 param sets           | Hybrid host/NPU: 75/75 PASS |
+<!-- [CLAIM-PROVENANCE: status=HISTORICAL; source=m33a_design; classification=SELF_REPORTED_UNVERIFIED] -->
 | M33e   | Sign + Verify composer with rejection loop, ACVP KATs 44/65/87   | Hybrid host/NPU: 180/180 PASS |
 
 The primitive silicon and hybrid-composer results are recorded separately;

@@ -1,23 +1,28 @@
 # Release Notes: Version 1.2.0 (PQC, Hybrid QKD, QRNG & Enterprise Token Engine)
 
-**Release Date:** August 29, 2026  
-**Target Hardware:** AMD Phoenix / Hawk Point APU (Ryzen 7 7840HS / Ryzen 9 7940HS w/ AIE2 / XDNA1 NPU)  
-**Silicon Verification:** 24 / 24 Hardware Gates PASS (100.00%) · 857 / 857 Test Cases Bit-Exact on Physical Silicon in 29.84s  
+> [!NOTE]
+> <!-- [CLAIM-PROVENANCE: status=HISTORICAL; source=v1.2.0_historical_release; classification=SELF_REPORTED_UNVERIFIED] -->
+> [HISTORICAL CLAIM - UNVERIFIED / PENDING PHYSICAL DISPATCH CORROBORATION]
+> The historical metrics below reflect pre-refactor self-reported test tallies. Under current Phase A policy, 19 gates are actively evaluated with 0 independently physically verified gates pending driver-level hardware dispatch trace corroboration.
+
+**Release Date:** August 29, 2026
+**Target Hardware:** AMD Phoenix / Hawk Point APU (Ryzen 7 7840HS / Ryzen 9 7940HS w/ AIE2 / XDNA1 NPU)
+**Historical Scope:** 24 Legacy Hardware Gates tracked across DR0–DR19, DR27
 
 ---
 
 ## 1. Executive Summary
 
-Version 1.2.0 of `phoenix-npu-pqc` expands the world's first 100% device-resident Post-Quantum Cryptography (PQC) and Quantum Key Distribution (QKD) hardware engine on the AMD Phoenix NPU (AIE2 / XDNA1) by introducing **Milestone DR27 (Palo Alto Networks QRNG-OPENAPI v1.0 & On-Device SRAM Entropy Reservoir)** and **Milestone DR23 (OpenSSL 3.x Native Provider & OASIS PKCS#11 v3.0 HSM Python Prototypes)**.
+Version 1.2.0 of `phoenix-npu-pqc` expands the Post-Quantum Cryptography (PQC) and Quantum Key Distribution (QKD) hardware engine on the AMD Phoenix NPU (AIE2 / XDNA1) by introducing **Milestone DR27 (Palo Alto Networks QRNG-OPENAPI v1.0 & On-Device SRAM Entropy Reservoir)** and **Milestone DR23 (OpenSSL 3.x Native Provider & OASIS PKCS#11 v3.0 HSM Python Prototypes)**.
 
-With these additions, enterprise software (Nginx, Envoy, Apache, OpenSSH) and standard cryptographic token interfaces can now harness 100% on-device lattice cryptography and quantum entropy with zero host CPU cryptographic execution.
+With these additions, enterprise software (Nginx, Envoy, Apache, OpenSSH) and standard cryptographic token interfaces can now harness on-device lattice cryptography and quantum entropy with zero host CPU cryptographic execution.
 
 ---
 
 ## 2. Key New Features in v1.2.0
 
-### Milestone DR27: QRNG-OPENAPI v1.0 & On-Chip Key Reservoir (Gate 23) [VERIFIED PHYSICAL SILICON]
-* **Standards Conformance**: Palo Alto Networks QRNG-OPENAPI v1.0, NIST SP 800-90B, and NIST SP 800-56C Rev. 2.
+### Milestone DR27: QRNG-OPENAPI v1.0 & On-Chip Key Reservoir (Gate 23)
+* **Standards Reference**: Palo Alto Networks QRNG-OPENAPI v1.0, NIST SP 800-90B, and NIST SP 800-56C Rev. 2.
 * **Sealed Ingress Daemon (`dr27_qrng_daemon.py`)**:
   - Implements `POST /v1/entropy` and `GET /v1/healthtest` endpoints.
   - Performs continuous on-the-fly NIST SP 800-90B health evaluations (Repetition Count Test & Adaptive Proportion Test).
@@ -28,7 +33,7 @@ With these additions, enterprise software (Nginx, Envoy, Apache, OpenSSH) and st
   - Enforces instant hardware register zeroization (`0x00` overwrite) on reset or panic.
 
 ### Milestone DR23: OpenSSL 3.x Provider & PKCS#11 HSM Token [HOST PYTHON REFERENCE / PROTOTYPE]
-* **Standards Conformance**: OpenSSL 3.0+ Provider API & OASIS PKCS#11 v3.0 Cryptoki.
+* **Standards Reference**: OpenSSL 3.0+ Provider API & OASIS PKCS#11 v3.0 Cryptoki.
 * **OpenSSL 3.x Provider Prototype (`dr23_openssl_provider.py`)**:
   - Implements standard `OSSL_PROVIDER` dispatch tables (`OSSL_FUNC_PROVIDER_GET_PARAMS`, `OSSL_FUNC_PROVIDER_QUERY_OPERATION`).
   - Exposes `OSSL_OP_KEM` (14): `ML-KEM-512`, `ML-KEM-768`, `ML-KEM-1024`, `X25519-ML-KEM-768`, `QKD-ML-KEM-768`.
@@ -41,40 +46,11 @@ With these additions, enterprise software (Nginx, Envoy, Apache, OpenSSH) and st
 
 ---
 
-## 3. Master Silicon Validation Matrix (24 Gates Verified)
+## 3. Historical Scope & Gate Overview
 
-```
-================================================================================
-100% ON-DEVICE PQC & HYBRID QKD MASTER SILICON VALIDATION SUITE
-Hardware: AMD Phoenix APU (Ryzen 7 7840HS / Ryzen 9 7940HS w/ AIE2 / XDNA1)
-Scope: Verified Hardware Gates (DR0–DR19, DR27)
-================================================================================
-[+] Gate 00: DR0 M33 Ring Product                        : PASS ( 0.91s)
-[+] Gate 01: DR1 ML-DSA-44 ExpandA                       : PASS ( 0.75s)
-[+] Gate 02: DR2a ML-KEM-512 SampleNTT                   : PASS ( 0.69s)
-[+] Gate 03: DR2b ML-KEM-512 CBD3/NTT                    : PASS ( 0.71s)
-[+] Gate 04: DR2c ML-KEM-512 KeyGen Row                  : PASS ( 0.71s)
-[+] Gate 05: DR2d ML-KEM-512 K-PKE KeyGen                : PASS ( 0.78s)
-[+] Gate 06: DR3 ML-KEM-512 K-PKE Encrypt                : PASS ( 0.75s)
-[+] Gate 07: DR4 ML-KEM-512 K-PKE Decrypt                : PASS ( 0.71s)
-[+] Gate 08: DR5 ML-KEM-512 ML-KEM KeyGen                : PASS ( 0.76s)
-[+] Gate 09: DR6 ML-KEM-512 ML-KEM Encaps                : PASS ( 0.75s)
-[+] Gate 10: DR7 ML-KEM-512 ML-KEM Decaps                : PASS ( 0.80s)
-[+] Gate 11: DR8 ML-KEM-768 & 1024 Expansion             : PASS ( 1.82s)
-[+] Gate 12: DR9 FIPS 202 SHA-3/SHAKE Service            : PASS ( 0.86s)
-[+] Gate 13: DR10 Sealed Lifecycle & Key Sources         : PASS ( 0.80s)
-[+] Gate 14: DR11 ML-DSA-44 KeyGen                       : PASS ( 0.89s)
-[+] Gate 15: DR12 ML-DSA-44 Sign                         : PASS ( 2.30s)
-[+] Gate 16: DR13 ML-DSA-44 Verify                       : PASS ( 1.35s)
-[+] Gate 17: DR14 ML-DSA-65 (KeyGen, Sign, Verify)       : PASS ( 4.84s)
-[+] Gate 18: DR15 ML-DSA-87 (KeyGen, Sign, Verify)       : PASS ( 3.56s)
-[+] Gate 19: DR16 ETSI GS QKD 014 Sealed Ingress         : PASS ( 0.70s)
-[+] Gate 20: DR17 ML-DSA Asymmetric QKD Control          : PASS ( 2.71s)
-[+] Gate 21: DR18 NIST SP 800-56C Dual Combiner          : PASS ( 1.11s)
-[+] Gate 22: DR19 Hybrid QKD-PQC Session Orchestrator    : PASS ( 0.65s)
-[+] Gate 23: DR27 QRNG-OPENAPI & Entropy Reservoir       : PASS ( 1.23s)
-================================================================================
-MASTER SILICON SUITE RESULT: 24/24 GATES PASS (100.00%) in 29.84s
-STATUS: ALL 24 VERIFIED GATES PASSED (100.00% Physical Silicon Correctness)
-================================================================================
-```
+The historical baseline evaluated the following modules across the AMD Phoenix AIE2 architecture:
+
+1. **DR0–DR10**: Foundation, ring arithmetic, ML-KEM-512 pipeline, SHA-3/SHAKE services, and sealed lifecycle management.
+2. **DR11–DR15**: ML-DSA-44, ML-DSA-65, and ML-DSA-87 KeyGen, Sign, and Verify services.
+3. **DR16–DR19**: ETSI QKD 014 ingress, ML-DSA QKD control, NIST SP 800-56C dual key combiner, and full-duplex session orchestrator.
+4. **DR27**: QRNG-OPENAPI entropy ingress and SRAM reservoir core.

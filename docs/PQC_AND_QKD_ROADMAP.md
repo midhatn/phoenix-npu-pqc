@@ -89,50 +89,54 @@ This architecture ensures full physical and mathematical resilience: if the phys
 
 ## 2. Standards Conformance Matrix
 
+> [!NOTE]
+> [HISTORICAL CLAIM - UNVERIFIED / PENDING PHYSICAL DISPATCH CORROBORATION]
+> Legacy rows marked with physical claims reflect uncorroborated pre-refactor self-reports. All 19 active gates currently remain physically unverified pending driver-level dispatch trace corroboration.
+
 | Standard / Organization | Specification Reference | Role in Hybrid Pipeline | AIE2 Implementation Milestone | Status |
 |---|---|---|---|:---:|
-| **Palo Alto / Consortium** | **QRNG-OPENAPI (v1.0)** | REST Entropy Ingestion & SRAM Reservoir | **DR27** (Ingress + Reservoir Core) | **[VERIFIED PHYSICAL SILICON]** |
+| **Palo Alto / Consortium** | **QRNG-OPENAPI (v1.0)** | REST Entropy Ingestion & SRAM Reservoir | **DR27** (Ingress + Reservoir Core) | [HISTORICAL CLAIM - UNVERIFIED] |
 | **OpenSSL / OASIS** | **OpenSSL 3.x / PKCS#11 v3.0** | Native Provider Plugin & Cryptoki HSM Token | **DR23** (OpenSSL + HSM Token) | **[HOST PYTHON REFERENCE / PROTOTYPE]** |
-| **ETSI** | **ETSI GS QKD 014 (v1.1.1 / v1.3.1)** | REST Key Delivery API for KME Ingress | **DR16** (Sealed Key Ingress) | **[VERIFIED PHYSICAL SILICON]** |
-| **ETSI** | **ETSI GS QKD 015 (v2.1.1)** | Orchestration and Control-Plane Security | **DR17** (Asymmetric Auth Control) | **[VERIFIED PHYSICAL SILICON]** |
-| **NIST** | **FIPS PUB 204 (2024)** | ML-DSA Digital Signature Verification | **DR11–DR15, DR17** (Auth Hub) | **[VERIFIED PHYSICAL SILICON]** |
-| **NIST** | **FIPS PUB 203 (2024)** | ML-KEM Key Encapsulation Mechanism | **DR2d, DR3–DR8** (Lattice KEM) | **[VERIFIED PHYSICAL SILICON]** |
-| **NIST** | **FIPS PUB 202 (2015)** | SHA-3 / SHAKE / Keccak-f[1600] Permutations | **DR9** (Hashing/Expansion) | **[VERIFIED PHYSICAL SILICON]** |
-| **NIST** | **SP 800-56C Rev. 2 (2020)** | Two-Step Key Extraction and Expansion | **DR18** (Dual Key Combiner) | **[VERIFIED PHYSICAL SILICON]** |
-| **NIST** | **SP 800-227 (2024)** | Multi-Key Encapsulation Combiners | **DR18** (Hybrid Session KDF) | **[VERIFIED PHYSICAL SILICON]** |
+| **ETSI** | **ETSI GS QKD 014 (v1.1.1 / v1.3.1)** | REST Key Delivery API for KME Ingress | **DR16** (Sealed Key Ingress) | [HISTORICAL CLAIM - UNVERIFIED] |
+| **ETSI** | **ETSI GS QKD 015 (v2.1.1)** | Orchestration and Control-Plane Security | **DR17** (Asymmetric Auth Control) | [HISTORICAL CLAIM - UNVERIFIED] |
+| **NIST** | **FIPS PUB 204 (2024)** | ML-DSA Digital Signature Verification | **DR11–DR15, DR17** (Auth Hub) | [HISTORICAL CLAIM - UNVERIFIED] |
+| **NIST** | **FIPS PUB 203 (2024)** | ML-KEM Key Encapsulation Mechanism | **DR2d, DR3–DR8** (Lattice KEM) | [HISTORICAL CLAIM - UNVERIFIED] |
+| **NIST** | **FIPS PUB 202 (2015)** | SHA-3 / SHAKE / Keccak-f[1600] Permutations | **DR9** (Hashing/Expansion) | [HISTORICAL CLAIM - UNVERIFIED] |
+| **NIST** | **SP 800-56C Rev. 2 (2020)** | Two-Step Key Extraction and Expansion | **DR18** (Dual Key Combiner) | [HISTORICAL CLAIM - UNVERIFIED] |
+| **NIST** | **SP 800-227 (2024)** | Multi-Key Encapsulation Combiners | **DR18** (Hybrid Session KDF) | [HISTORICAL CLAIM - UNVERIFIED] |
 | **NIST** | **SP 800-208 / RFC 8554** | Stateful Hash Signatures (LMS Verification Only) | **DR28** (Immutable Root of Trust) | *Planned v1.2* |
 | **NSA** | **CNSA 2.0 (2022/2024)** | Category 5 Mandate (ML-KEM-1024, ML-DSA-87) | **DR29** (Distributed Memory Engine) | *Planned v1.2* |
-| **IETF** | **RFC 9370 / RFC 8784 (2023)** | Multi-KEM IKEv2 / IPsec Protocol Models | **DR19** (Session Orchestrator) | **[VERIFIED PHYSICAL SILICON]** |
+| **IETF** | **RFC 9370 / RFC 8784 (2023)** | Multi-KEM IKEv2 / IPsec Protocol Models | **DR19** (Session Orchestrator) | [HISTORICAL CLAIM - UNVERIFIED] |
 | **3GPP** | **TS 33.501 (Rel-18/19)** | 5G/6G Core Network SUCI Post-Quantum Security | **DR30** (Telecom Interconnect) | *Planned v1.2* |
 | **NIST** | **FIPS PUB 205 (2024)** | Stateless Hash-Based Signatures (SLH-DSA) | **DR21** (SPHINCS+ Engine) | **[HOST PYTHON REFERENCE / PROTOTYPE]** |
 | **NIST** | **FIPS PUB 206 (2025)** | Fast-Fourier Lattice Signatures (FN-DSA) | **DR22** (Falcon Verification Core) | *Planned v1.2* |
 
 ---
 
-## 3. Core Modules & Verified Silicon Gates (24 Silicon Gates · 857 Test Cases)
+## 3. Core Modules & Historical Silicon Gates Matrix
 
 ### Module 1: NIST FIPS 202 (SHA-3 / SHAKE — Milestone DR9)
-* **Status**: [VERIFIED PHYSICAL SILICON] (**122 / 122 PASS**).
+* **Status**: [HISTORICAL CLAIM - UNVERIFIED / PENDING PHYSICAL DISPATCH CORROBORATION] (122 cases).
 
 ### Module 2: NIST FIPS 203 (ML-KEM — Milestones DR2d, DR3–DR8)
-* **Status**: [VERIFIED PHYSICAL SILICON] (**225 / 225 PASS**).
+* **Status**: [HISTORICAL CLAIM - UNVERIFIED / PENDING PHYSICAL DISPATCH CORROBORATION] (225 cases).
 
 ### Module 3: NIST FIPS 204 (ML-DSA — Milestones DR11–DR15)
-* **Status**: [VERIFIED PHYSICAL SILICON] (**255 / 255 PASS**).
+* **Status**: [HISTORICAL CLAIM - UNVERIFIED / PENDING PHYSICAL DISPATCH CORROBORATION] (255 cases).
 
 ### Module 4: Hardware Lifecycle & Foundation (Milestones DR0, DR1, DR2a–DR2c, DR10)
-* **Status**: [VERIFIED PHYSICAL SILICON] (**134 / 134 PASS**).
+* **Status**: [HISTORICAL CLAIM - UNVERIFIED / PENDING PHYSICAL DISPATCH CORROBORATION] (134 cases).
 
 ### Module 5: Hybrid QKD & Post-Quantum Defense-in-Depth (Milestones DR16–DR19)
-* **Milestone DR16 (Gate 19)**: [VERIFIED PHYSICAL SILICON] ETSI GS QKD 014 Sealed Ingress Kernel (`dr16_etsi_qkd014_service.cc`) — **25 / 25 PASS**.
-* **Milestone DR17 (Gate 20)**: [VERIFIED PHYSICAL SILICON] ML-DSA Asymmetric QKD Control Authenticator (`dr17_mldsa_qkd_auth_service.cc`) — **25 / 25 PASS**.
-* **Milestone DR18 (Gate 21)**: [VERIFIED PHYSICAL SILICON] NIST SP 800-56C Dual Combiner (`dr18_dual_key_combiner_service.cc`) — **25 / 25 PASS**.
-* **Milestone DR19 (Gate 22)**: [VERIFIED PHYSICAL SILICON] Full-Duplex Session Orchestrator (`dr19_hybrid_session_service.cc`) — **25 / 25 PASS**.
+* **Milestone DR16 (Gate 19)**: [HISTORICAL CLAIM - UNVERIFIED / PENDING PHYSICAL DISPATCH CORROBORATION] ETSI GS QKD 014 Sealed Ingress Kernel (`dr16_etsi_qkd014_service.cc`) — 25 cases.
+* **Milestone DR17 (Gate 20)**: [HISTORICAL CLAIM - UNVERIFIED / PENDING PHYSICAL DISPATCH CORROBORATION] ML-DSA Asymmetric QKD Control Authenticator (`dr17_mldsa_qkd_auth_service.cc`) — 25 cases.
+* **Milestone DR18 (Gate 21)**: [HISTORICAL CLAIM - UNVERIFIED / PENDING PHYSICAL DISPATCH CORROBORATION] NIST SP 800-56C Dual Combiner (`dr18_dual_key_combiner_service.cc`) — 25 cases.
+* **Milestone DR19 (Gate 22)**: [HISTORICAL CLAIM - UNVERIFIED / PENDING PHYSICAL DISPATCH CORROBORATION] Full-Duplex Session Orchestrator (`dr19_hybrid_session_service.cc`) — 25 cases.
 
 ### Module 6: True Quantum Entropy & Integration (Milestones DR27, DR23)
-* **Milestone DR27 (Gate 23)**: [VERIFIED PHYSICAL SILICON] QRNG-OPENAPI v1.0 Ingress & On-Device Reservoir (`dr27_qrng_reservoir_service.cc`) — **21 / 21 PASS**.
+* **Milestone DR27 (Gate 23)**: [HISTORICAL CLAIM - UNVERIFIED / PENDING PHYSICAL DISPATCH CORROBORATION] QRNG-OPENAPI v1.0 Ingress & On-Device Reservoir (`dr27_qrng_reservoir_service.cc`) — 21 cases.
 * **Milestone DR23**: [HOST PYTHON REFERENCE / PROTOTYPE] OpenSSL 3.x Native Provider & OASIS PKCS#11 v3.0 HSM Token (`dr23_openssl_provider.py`, `dr23_pkcs11_hsm.py`).
-* **Universal Master Silicon Suite ([`run_all_silicon_tests.py`](file:///C:/Users/midhat/.gemini/antigravity/scratch/phoenix-npu-pqc/run_all_silicon_tests.py))**: **24/24 Gates PASS (100.00%) · 857 / 857 Tests PASS in 29.84s**.
+* **Universal Master Silicon Suite**: [HISTORICAL CLAIM - UNVERIFIED / PENDING PHYSICAL DISPATCH CORROBORATION] 857 test cases tracked across legacy gate set.
 
 ---
 
@@ -175,7 +179,7 @@ To prevent session re-negotiation spikes ("state flapping") when QKD key arrival
 
 [MODULE 6] Conservative & Compact PQC Extensions
   • Milestone DR21: NIST FIPS 205 (SLH-DSA / SPHINCS+) On-Device Tree Hashing Engine on AIE2 Keccak Core.
-  • Milestone DR22: NIST FIPS 206 (FN-DSA / FALCON) Precision-Safe Verification Engine & Constant-Time Signing.
+  • Milestone DR22: NIST FIPS 206 (FN-DSA / FALCON) Precision-Safe Verification Engine & Signing Design.
 
 [MODULE 7] Production Network Offload & Cryptographic Provider Subsystems
   • Milestone DR23: OpenSSL 3.x Native Provider Plugin (`phoenix-pqc-provider`) & PKCS#11 HSM Token.
@@ -204,7 +208,8 @@ To prevent session re-negotiation spikes ("state flapping") when QKD key arrival
 #### Milestone DR22: NIST FIPS 206 (FN-DSA / FALCON) Precision-Safe Verification Engine
 * **Standard**: NIST FIPS 206 (FN-DSA-512 and FN-DSA-1024).
 * **Objective**: Ultra-compact lattice signatures (~666 bytes) using Fast Fourier sampling over NTRU lattices.
-* **Architecture & Precision Hardening**: Native 512-bit vector floating-point (FP32) butterfly pipelines are utilized strictly for signature verification. Signature generation utilizes emulated 53-bit double precision (FP64) / fixed-point routines with constant-time cycle enforcement to prevent timing side channels on denormalized floats.
+* **Architecture & Precision Handling**: Native 512-bit vector floating-point (FP32) butterfly pipelines are targeted strictly for signature verification. Signature generation utilizes emulated 53-bit double precision (FP64) / fixed-point routines with deterministic cycle constraints to avoid timing variation on denormalized floats.
+
 
 #### Milestone DR23: OpenSSL 3.x Provider Plugin & PKCS#11 HSM Integration
 * **Standard**: OpenSSL 3.0+ Provider Architecture & PKCS#11 v3.0.
@@ -258,7 +263,8 @@ A rigorous cryptographic and physical accelerator roadmap must candidly address 
   NIST FIPS 206 (FN-DSA / Falcon) requires Fast Fourier Sampling over NTRU lattices using **53-bit double-precision floating-point (FP64)**. The AMD Phoenix AIE2 vector processor has native **FP32** support, but **lacks native hardware FP64**. If FP64 is emulated naively in software, floating-point denormals (subnormal floats) execute in variable clock cycles, creating a **timing side-channel that can leak secret keys**.
 * **Proven Mitigation**:
   1. **Verification on Hardware**: Falcon *verification* only requires integer polynomial arithmetic and norm comparisons—it runs natively on AIE2 vector tiles with zero floating-point vulnerability.
-  2. **Constant-Time Signing**: For signing, we utilize **fixed-point 64-bit integer arithmetic** with fractional scaling, or enable hardware Flush-to-Zero (FTZ) and Default-NaN modes in VLIW registers to enforce cycle-accurate constant-time execution on vector pipelines.
+  2. **Deterministic Signing**: For signing, we utilize **fixed-point 64-bit integer arithmetic** with fractional scaling, or enable hardware Flush-to-Zero (FTZ) and Default-NaN modes in VLIW registers to enforce cycle-accurate execution on vector pipelines.
+
 
 ### ⚠️ Challenge 2: NSA CNSA 2.0 (DR29) 64 KiB Tile SRAM Limits for ML-DSA-87 / 1024
 * **The Pitfall**: 
@@ -292,7 +298,6 @@ A rigorous cryptographic and physical accelerator roadmap must candidly address 
 ## 7. Version History & Milestone Release Matrix
 
 | Version | Status | Modules Included | Milestones | Physical Silicon Status |
-|---|---|---|---|:---:|
-| **v1.0.0** | **Released (Verified)** | Modules 1–6 (Core PQC + Hybrid QKD + QRNG Reservoir) | **DR0–DR19, DR27** (24 Gates) | **[VERIFIED PHYSICAL SILICON] 857 / 857 PASS** (29.84s) |
+| **v1.0.0** | **Historical Baseline** | Modules 1–6 (Core PQC + Hybrid QKD + QRNG Reservoir) | **DR0–DR19, DR27** (24 Gates) | [HISTORICAL CLAIM - UNVERIFIED / PENDING PHYSICAL DISPATCH CORROBORATION] |
 | **v1.1.0** | **Prototypes** | Host Integration & Formatters | **DR21, DR23, DR32** | **[HOST PYTHON REFERENCE / PROTOTYPE]** |
 | **v1.2.0** | **Planned** | Advanced Hardware Extensions (FIPS 205/206, WireGuard, Masking, CNSA 2.0) | **DR21–DR22, DR24–DR26, DR28–DR30** | *Planned Hardware Acceleration* |

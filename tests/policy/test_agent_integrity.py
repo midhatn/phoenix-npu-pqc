@@ -1,15 +1,15 @@
 # SPDX-License-Identifier: Apache-2.0
-"""Tests for deterministic agent and evidence policy enforcement."""
+"""Tests for deterministic multi-language agent and evidence policy enforcement."""
 
 from __future__ import annotations
 
 import hashlib
+import inspect
 import json
 from pathlib import Path
 import tempfile
 import unittest
 from unittest import mock
-
 import sys
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
@@ -17,7 +17,22 @@ TOOLS = REPO_ROOT / "tools"
 if str(TOOLS) not in sys.path:
     sys.path.insert(0, str(TOOLS))
 
-from agent_integrity import EXCLUDED_POLICY_PATHS, REPO_ROOT as LIB_ROOT, scan_python_file, validate_evidence
+import agent_integrity
+from agent_integrity import (
+    EXCLUDED_POLICY_PATHS,
+    REPO_ROOT as LIB_ROOT,
+    git_changed_files,
+    repository_files,
+    scan_cmake_file,
+    scan_cpp_file,
+    scan_file,
+    scan_markdown_file,
+    scan_mlir_file,
+    scan_python_file,
+    scan_script_file,
+    scan_structured_file,
+    validate_evidence,
+)
 
 
 class PythonPolicyTests(unittest.TestCase):
@@ -66,12 +81,334 @@ class PythonPolicyTests(unittest.TestCase):
         )
         self.assertTrue(any(f.rule == "TEST002" and f.severity == "critical" for f in findings))
 
+
+class CppPolicyTests(unittest.TestCase):
+    def scan_source(self, filename: str, source: str):
+        with tempfile.TemporaryDirectory(dir=REPO_ROOT) as temporary:
+            path = Path(temporary) / filename
+            path.write_text(source, encoding="utf-8")
+            relative = path.relative_to(REPO_ROOT)
+            with mock.patch("agent_integrity.EXCLUDED_POLICY_PATHS", set()):
+                return scan_cpp_file(relative)
+
+    def test_trivial_assert_true_is_blocked(self):
+        findings = self.scan_source("kernel.cc", "assert(true);\n")
+        self.assertIn("CPP001", {f.rule for f in findings})
+
+    def test_trivial_static_assert_is_blocked(self):
+        findings = self.scan_source("kernel.cpp", "static_assert(true, \"ok\");\n")
+        self.assertIn("CPP001", {f.rule for f in findings})
+
+    def test_catch_all_fallback_is_blocked(self):
+        findings = self.scan_source(
+            "driver.cc",
+            "try { run_npu(); } catch (...) { run_host_fallback(); }\n",
+        )
+        self.assertIn("CPP002", {f.rule for f in findings})
+
+    def test_preprocessor_cpu_fallback_is_blocked(self):
+        findings = self.scan_source(
+            "crypto.h",
+            "#ifdef USE_CPU_FALLBACK\nvoid exec() {}\n#endif\n",
+        )
+        self.assertIn("CPP003", {f.rule for f in findings})
+
+    def test_hardcoded_pass_count_in_cpp_is_blocked(self):
+        findings = self.scan_source(
+            "test.cpp",
+            'std::puts("Result: 256/256 passed (100% PASS)");\n',
+        )
+        self.assertIn("CPP004", {f.rule for f in findings})
+
+
+class ScriptPolicyTests(unittest.TestCase):
+    def scan_source(self, filename: str, source: str):
+        with tempfile.TemporaryDirectory(dir=REPO_ROOT) as temporary:
+            path = Path(temporary) / filename
+            path.write_text(source, encoding="utf-8")
+            relative = path.relative_to(REPO_ROOT)
+            with mock.patch("agent_integrity.EXCLUDED_POLICY_PATHS", set()):
+                return scan_script_file(relative)
+
+    def test_exit_code_masking_is_blocked(self):
+        findings = self.scan_source("run.sh", "pytest tests || exit 0\n")
+        self.assertIn("SH001", {f.rule for f in findings})
+
+    def test_or_true_masking_is_blocked(self):
+        findings = self.scan_source("run.sh", "./run_test || true\n")
+        self.assertIn("SH001", {f.rule for f in findings})
+
+    def test_powershell_silently_continue_is_blocked(self):
+        findings = self.scan_source(
+            "run.ps1",
+            '$ErrorActionPreference = "SilentlyContinue"\n',
+        )
+        self.assertIn("SH002", {f.rule for f in findings})
+
+    def test_powershell_erroraction_silently_continue_is_blocked(self):
+        findings = self.scan_source(
+            "run.ps1",
+            "Get-ChildItem -ErrorAction SilentlyContinue\n",
+        )
+        self.assertIn("SH002", {f.rule for f in findings})
+
+    def test_generic_python_fallback_is_blocked(self):
+        findings = self.scan_source(
+            "test_runner.ps1",
+            "if (-not $env:IRON_PYTHON) { python test.py }\n",
+        )
+        self.assertIn("SH003", {f.rule for f in findings})
+
+    def test_hardcoded_pass_banner_in_script_is_blocked(self):
+        findings = self.scan_source("deploy.sh", 'echo "TOTAL: 857 / 857 PASS"\n')
+        self.assertIn("SH004", {f.rule for f in findings})
+
+    def test_destructive_command_in_script_is_blocked(self):
+        findings = self.scan_source("clean.sh", "rm -rf /\n")
+        self.assertIn("SH005", {f.rule for f in findings})
+
+
+class SecretsAndSafetyTests(unittest.TestCase):
+    def scan_source(self, filename: str, source: str):
+        with tempfile.TemporaryDirectory(dir=REPO_ROOT) as temporary:
+            path = Path(temporary) / filename
+            path.write_text(source, encoding="utf-8")
+            relative = path.relative_to(REPO_ROOT)
+            with mock.patch("agent_integrity.EXCLUDED_POLICY_PATHS", set()):
+                return scan_file(relative)
+
+    def test_private_key_header_is_blocked(self):
+        findings = self.scan_source(
+            "key.json",
+            '{"key": "-----BEGIN RSA PRIVATE KEY-----"}\n',
+        )
+        self.assertIn("SEC001", {f.rule for f in findings})
+
+    def test_github_pat_token_is_blocked(self):
+        findings = self.scan_source(
+            "config.yaml",
+            "token: ghp_1234567890abcdefghijklmnopqrstuvwxyzAB\n",
+        )
+        self.assertIn("SEC001", {f.rule for f in findings})
+
+    def test_personal_windows_path_is_blocked(self):
+        findings = self.scan_source(
+            "notes.md",
+            "Captured at C:\\Users\\johndoe\\Documents\\test.log\n",
+        )
+        self.assertIn("SEC002", {f.rule for f in findings})
+
+    def test_personal_linux_path_is_blocked(self):
+        findings = self.scan_source(
+            "config.json",
+            '{"log_dir": "/home/developer/logs"}\n',
+        )
+        self.assertIn("SEC002", {f.rule for f in findings})
+
+    def test_path_traversal_is_blocked(self):
+        findings = scan_file(Path("../../outside_repo.py"))
+        self.assertIn("PATH001", {f.rule for f in findings})
+
+
+class DocumentationAndFormatTests(unittest.TestCase):
+    def scan_source(self, filename: str, source: str):
+        with tempfile.TemporaryDirectory(dir=REPO_ROOT) as temporary:
+            path = Path(temporary) / filename
+            path.write_text(source, encoding="utf-8")
+            relative = path.relative_to(REPO_ROOT)
+            with mock.patch("agent_integrity.EXCLUDED_POLICY_PATHS", set()):
+                return scan_markdown_file(relative)
+
+    def test_unannotated_physical_silicon_claim_in_markdown_is_blocked(self):
+        findings = self.scan_source(
+            "doc.md",
+            "# Report\n[VERIFIED PHYSICAL SILICON] 24/24 gates pass.\n",
+        )
+        self.assertIn("DOC001", {f.rule for f in findings})
+
+    def test_marker_at_top_does_not_suppress_later_claim(self):
+        source = (
+            "<!-- [CLAIM-PROVENANCE: status=HISTORICAL; source=legacy_run; classification=SELF_REPORTED_UNVERIFIED] -->\n"
+            "# Title\n\n"
+            "Paragraph one.\n\n"
+            "Paragraph two.\n\n"
+            "24 / 24 PASS on silicon\n"
+        )
+        findings = self.scan_source("doc.md", source)
+        self.assertTrue(any(f.rule == "DOC001" and f.line == 8 for f in findings))
+
+
+    def test_marker_at_bottom_does_not_suppress_earlier_claim(self):
+        source = (
+            "24 / 24 PASS on silicon\n\n"
+            "Paragraph one.\n\n"
+            "<!-- [CLAIM-PROVENANCE: status=HISTORICAL; source=legacy_run; classification=SELF_REPORTED_UNVERIFIED] -->\n"
+        )
+        findings = self.scan_source("doc.md", source)
+        self.assertTrue(any(f.rule == "DOC001" and f.line == 1 for f in findings))
+
+    def test_bare_historical_claim_label_does_not_suppress_finding(self):
+        source = "> [HISTORICAL CLAIM - UNVERIFIED]\n24 / 24 PASS on silicon\n"
+        findings = self.scan_source("doc.md", source)
+        self.assertTrue(any(f.rule == "DOC001" for f in findings))
+
+    def test_valid_annotation_applies_to_only_one_adjacent_claim(self):
+        source = (
+            "<!-- [CLAIM-PROVENANCE: status=HISTORICAL; source=legacy; classification=SELF_REPORTED_UNVERIFIED] -->\n"
+            "24 / 24 PASS\n"
+            "33 / 33 PASS\n"
+        )
+        findings = self.scan_source("doc.md", source)
+        self.assertTrue(any(f.rule == "DOC001" and f.line == 3 for f in findings))
+
+    def test_second_unannotated_claim_in_same_document_is_detected(self):
+        source = (
+            "<!-- [CLAIM-PROVENANCE: status=HISTORICAL; source=legacy; classification=SELF_REPORTED_UNVERIFIED] -->\n"
+            "24 / 24 PASS\n\n"
+            "Some text in between.\n\n"
+            "857 / 857 PASS\n"
+        )
+        findings = self.scan_source("doc.md", source)
+        self.assertTrue(any(f.rule == "DOC001" and f.line == 6 for f in findings))
+
+    def test_missing_evidence_file_is_rejected(self):
+        source = (
+            "<!-- [CLAIM-PROVENANCE: status=VERIFIED; evidence=nonexistent/path/evidence.json; commit=f51c602834a40c175184b43635504b7b474111ab; classification=BIT_EXACT_PHYSICAL_SILICON] -->\n"
+            "[VERIFIED PHYSICAL SILICON] 24/24 gates pass.\n"
+        )
+        findings = self.scan_source("doc.md", source)
+        self.assertTrue(any(f.rule == "DOC002" and "does not exist" in f.message for f in findings))
+
+    def test_evidence_path_using_traversal_is_rejected(self):
+        source = (
+            "<!-- [CLAIM-PROVENANCE: status=VERIFIED; evidence=../outside.json; commit=f51c602834a40c175184b43635504b7b474111ab; classification=BIT_EXACT_PHYSICAL_SILICON] -->\n"
+            "[VERIFIED PHYSICAL SILICON] 24/24 gates pass.\n"
+        )
+        findings = self.scan_source("doc.md", source)
+        self.assertTrue(any(f.rule == "DOC002" and "escapes repository root" in f.message for f in findings))
+
+    def test_evidence_path_outside_repository_is_rejected(self):
+        source = (
+            "<!-- [CLAIM-PROVENANCE: status=VERIFIED; evidence=C:/Windows/system32/cmd.exe; commit=f51c602834a40c175184b43635504b7b474111ab; classification=BIT_EXACT_PHYSICAL_SILICON] -->\n"
+            "[VERIFIED PHYSICAL SILICON] 24/24 gates pass.\n"
+        )
+        findings = self.scan_source("doc.md", source)
+        self.assertTrue(any(f.rule == "DOC002" and "escapes repository root" in f.message for f in findings))
+
+    def test_malformed_or_abbreviated_commit_sha_is_rejected(self):
+        source = (
+            "<!-- [CLAIM-PROVENANCE: status=HISTORICAL; source=legacy; commit=f51c602] -->\n"
+            "24 / 24 PASS\n"
+        )
+        findings = self.scan_source("doc.md", source)
+        self.assertTrue(any(f.rule == "DOC002" and "abbreviated commit SHA" in f.message for f in findings))
+
+    def test_self_reported_unverified_cannot_authorize_verified_physical_silicon(self):
+        with tempfile.NamedTemporaryFile(dir=REPO_ROOT, suffix=".json") as tmp:
+            rel_ev = Path(tmp.name).relative_to(REPO_ROOT).as_posix()
+            source = (
+                f"<!-- [CLAIM-PROVENANCE: status=VERIFIED; evidence={rel_ev}; commit=f51c602834a40c175184b43635504b7b474111ab; classification=SELF_REPORTED_UNVERIFIED] -->\n"
+                "[VERIFIED PHYSICAL SILICON] 24/24 gates pass.\n"
+            )
+            findings = self.scan_source("doc.md", source)
+            self.assertTrue(any(f.rule == "DOC002" and "cannot authorize a VERIFIED physical silicon claim" in f.message for f in findings))
+
+    def test_mentioning_doc_provenance_marker_in_policy_does_not_disable_scanning(self):
+        source = (
+            "# Policy Doc\n"
+            "We mention DOC_PROVENANCE_MARKER here.\n\n"
+            "[VERIFIED PHYSICAL SILICON] 24/24 gates pass.\n"
+        )
+        findings = self.scan_source("doc.md", source)
+        self.assertTrue(any(f.rule == "DOC001" and f.line == 4 for f in findings))
+
+    def test_scanner_integrity_invariant_no_document_wide_bypass(self):
+        """Invariant: No marker, comment, annotation, filename, or directory may cause an entire document to skip claim scanning."""
+        source_code = inspect.getsource(agent_integrity.scan_markdown_file)
+        self.assertNotIn("if DOC_PROVENANCE_MARKER in source:", source_code)
+        loop_pos = source_code.find("for line_number")
+        self.assertGreater(loop_pos, 0, "scan_markdown_file must contain a line scanning loop")
+        # Ensure there is no early return findings before the loop
+        prefix = source_code[:loop_pos]
+        self.assertNotIn("return findings", prefix)
+
+    def test_malformed_json_is_blocked(self):
+        with tempfile.TemporaryDirectory(dir=REPO_ROOT) as temporary:
+            path = Path(temporary) / "data.json"
+            path.write_text("{ malformed json: true }\n", encoding="utf-8")
+            relative = path.relative_to(REPO_ROOT)
+            with mock.patch("agent_integrity.EXCLUDED_POLICY_PATHS", set()):
+                findings = scan_structured_file(relative)
+                self.assertIn("FMT001", {f.rule for f in findings})
+
+    def test_valid_json_passes(self):
+        with tempfile.TemporaryDirectory(dir=REPO_ROOT) as temporary:
+            path = Path(temporary) / "data.json"
+            path.write_text('{"valid": true}\n', encoding="utf-8")
+            relative = path.relative_to(REPO_ROOT)
+            with mock.patch("agent_integrity.EXCLUDED_POLICY_PATHS", set()):
+                findings = scan_structured_file(relative)
+                self.assertEqual([f for f in findings if f.rule == "FMT001"], [])
+
+    def test_mlir_pass_banner_is_blocked(self):
+        with tempfile.TemporaryDirectory(dir=REPO_ROOT) as temporary:
+            path = Path(temporary) / "kernel.mlir"
+            path.write_text("// Total: 25 / 25 PASS\nmodule {}\n", encoding="utf-8")
+            relative = path.relative_to(REPO_ROOT)
+            with mock.patch("agent_integrity.EXCLUDED_POLICY_PATHS", set()):
+                findings = scan_mlir_file(relative)
+                self.assertIn("MLIR001", {f.rule for f in findings})
+
+    def test_cmake_pass_banner_is_blocked(self):
+        with tempfile.TemporaryDirectory(dir=REPO_ROOT) as temporary:
+            path = Path(temporary) / "CMakeLists.txt"
+            path.write_text("# 24/24 PASS on device\ncmake_minimum_required(VERSION 3.20)\n", encoding="utf-8")
+            relative = path.relative_to(REPO_ROOT)
+            with mock.patch("agent_integrity.EXCLUDED_POLICY_PATHS", set()):
+                findings = scan_cmake_file(relative)
+                self.assertIn("CMAKE001", {f.rule for f in findings})
+
+
+class CIWorkflowIntegrityTests(unittest.TestCase):
+    def test_ci_workflow_exists_and_contains_required_checks(self):
+        ci_path = REPO_ROOT / ".github" / "workflows" / "ci.yml"
+        self.assertTrue(ci_path.is_file(), "CI workflow file .github/workflows/ci.yml must exist")
+        content = ci_path.read_text(encoding="utf-8")
+
+        required_job_names = [
+            "Lint Python",
+            "Validate metadata",
+            "Host-safe PQC tests",
+            "Verify protected DR2 evidence",
+            "Check Markdown links",
+        ]
+        for job_name in required_job_names:
+            self.assertIn(
+                job_name,
+                content,
+                f"CI workflow must define job name '{job_name}' for GitHub branch protection.",
+            )
+
+        self.assertIn("pull_request:", content, "CI workflow must trigger on pull_request")
+        self.assertIn("push:", content, "CI workflow must trigger on push")
+
+
+class ScannerSelfProtectionTests(unittest.TestCase):
     def test_excluded_policy_paths_only_contains_self_exclusion(self):
         self.assertEqual(
             EXCLUDED_POLICY_PATHS,
             {Path("tools/agent_integrity.py")},
             "No executable repository tools may be added to EXCLUDED_POLICY_PATHS without explicit policy review.",
         )
+
+    def test_discovery_covers_multi_language_extensions(self):
+        all_files = repository_files()
+        expected_extensions = {".py", ".cc", ".cpp", ".json", ".md", ".yml"}
+        for ext in expected_extensions:
+            self.assertTrue(
+                any(p.suffix.lower() == ext for p in all_files),
+                f"repository_files() must discover files with extension '{ext}'",
+            )
 
 
 class EvidenceTests(unittest.TestCase):
@@ -175,6 +512,71 @@ class EvidenceTests(unittest.TestCase):
 class RepositoryLocationTests(unittest.TestCase):
     def test_library_uses_repository_root(self):
         self.assertEqual(LIB_ROOT, REPO_ROOT)
+
+
+class SuiteAccountingInvariantTests(unittest.TestCase):
+    """Dynamic suite accounting invariant tests ensuring zero hardcoded arithmetic errors."""
+
+    def test_suite_accounting_invariant_and_non_negativity(self) -> None:
+        """Invariant: matching_cases + failing_cases + blocked_cases == selected_cases, all >= 0."""
+        from run_all_silicon_tests import GATES
+
+        # Baseline ground truth mapping derived directly from per-gate structured execution records
+        gate_outcomes: dict[str, dict[str, int]] = {
+            "DR0": {"matching": 24, "failing": 0, "blocked": 0},
+            "DR1": {"matching": 33, "failing": 0, "blocked": 0},
+            "DR2a": {"matching": 13, "failing": 0, "blocked": 0},
+            "DR2b": {"matching": 13, "failing": 0, "blocked": 0},
+            "DR2c": {"matching": 11, "failing": 0, "blocked": 0},
+            "DR2d": {"matching": 0, "failing": 25, "blocked": 0},
+            "DR3": {"matching": 25, "failing": 0, "blocked": 0},
+            "DR4": {"matching": 25, "failing": 0, "blocked": 0},
+            "DR5": {"matching": 25, "failing": 0, "blocked": 0},
+            "DR6": {"matching": 25, "failing": 0, "blocked": 0},
+            "DR7": {"matching": 25, "failing": 0, "blocked": 0},
+            "DR8": {"matching": 75, "failing": 0, "blocked": 0},
+            "DR9": {"matching": 122, "failing": 0, "blocked": 0},
+            "DR10": {"matching": 40, "failing": 0, "blocked": 0},
+            "DR11": {"matching": 25, "failing": 0, "blocked": 0},
+            "DR12": {"matching": 30, "failing": 0, "blocked": 0},
+            "DR13": {"matching": 30, "failing": 0, "blocked": 0},
+            "DR14": {"matching": 72, "failing": 13, "blocked": 0},
+            "DR15": {"matching": 49, "failing": 36, "blocked": 0},
+        }
+
+        total_matching = 0
+        total_failing = 0
+        total_blocked = 0
+        total_selected = 0
+
+        for gate in GATES:
+            self.assertIn(gate.gate_id, gate_outcomes)
+            record = gate_outcomes[gate.gate_id]
+            m = record["matching"]
+            f = record["failing"]
+            b = record["blocked"]
+            s = gate.expected_total
+
+            self.assertGreaterEqual(m, 0)
+            self.assertGreaterEqual(f, 0)
+            self.assertGreaterEqual(b, 0)
+            self.assertGreaterEqual(s, 0)
+            self.assertEqual(m + f + b, s, msg=f"Gate {gate.gate_id} cases partition failed: {m} + {f} + {b} != {s}")
+
+            total_matching += m
+            total_failing += f
+            total_blocked += b
+            total_selected += s
+
+        self.assertEqual(total_selected, 736)
+        self.assertEqual(total_matching, 662)
+        self.assertEqual(total_failing, 74)
+        self.assertEqual(total_blocked, 0)
+        self.assertEqual(
+            total_matching + total_failing + total_blocked,
+            total_selected,
+            msg=f"Suite accounting invariant failed: {total_matching} + {total_failing} + {total_blocked} != {total_selected}",
+        )
 
 
 if __name__ == "__main__":

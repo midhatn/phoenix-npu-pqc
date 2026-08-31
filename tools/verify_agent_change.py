@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Reject integrity violations introduced by an agent-authored change."""
+"""Reject integrity violations introduced by an agent-authored change across all languages."""
 
 from __future__ import annotations
 
@@ -9,8 +9,8 @@ from pathlib import Path
 
 from agent_integrity import (
     REPO_ROOT,
-    git_changed_python_files,
-    repository_python_files,
+    git_changed_files,
+    repository_files,
     scan_paths,
 )
 
@@ -22,7 +22,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--all",
         action="store_true",
-        help="Strictly scan every tracked Python file, including legacy findings",
+        help="Strictly scan all covered repository files (.py, .c, .cc, .cpp, .h, .hpp, .mlir, .ps1, .sh, .cmake, .yml, .yaml, .json, .md)",
     )
     parser.add_argument("--report", type=Path, help="Write structured JSON findings")
     return parser.parse_args()
@@ -31,9 +31,9 @@ def parse_args() -> argparse.Namespace:
 def main() -> int:
     args = parse_args()
     paths = (
-        repository_python_files()
+        repository_files()
         if args.all
-        else git_changed_python_files(args.base, args.head)
+        else git_changed_files(args.base, args.head)
     )
     findings = scan_paths(paths)
     for finding in findings:
@@ -62,7 +62,7 @@ def main() -> int:
         if finding.severity in {"critical", "error"}
     ]
     print(
-        f"Scanned {len(paths)} Python file(s): "
+        f"Scanned {len(paths)} file(s) across all languages: "
         f"{len(blocking)} blocking, {len(findings) - len(blocking)} warning."
     )
     return 1 if blocking else 0

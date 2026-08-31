@@ -106,6 +106,7 @@ The transliteration cross-check tool [`tools/m32b_kernel_transliteration_check.p
 5. Primary `poly_add` / `poly_sub` vs bigint modular reference.
 6. Primary `basemul` replayed step-by-step in bigint Montgomery form.
 
+<!-- [CLAIM-PROVENANCE: status=HISTORICAL; source=m32b_design; classification=SELF_REPORTED_UNVERIFIED] -->
 Sandbox result: **17/17 PASS**.
 
 ## 6. Track 4 progress after M32b

@@ -1,5 +1,6 @@
 # PQC DR2c Design: ML-KEM-512 K-PKE.KeyGen Terminal Row
 
+<!-- [CLAIM-PROVENANCE: status=HISTORICAL; source=pqc_dr2c_design; classification=SELF_REPORTED_UNVERIFIED] -->
 **Status:** a narrow physical `TOTAL 11/11 PASS` record is retained for the
 terminal-row scope, with repeated `22/22` execution recorded separately. DR2c
 is a narrow terminal-only subgraph toward K-PKE.KeyGen; it is **not K-PKE KeyGen**,

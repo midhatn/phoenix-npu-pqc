@@ -4,6 +4,7 @@
 
 DR7 implements the complete, device-resident **ML-KEM-512 Decapsulation** algorithm ($	ext{ML-KEM.Decaps}$) as specified in **NIST FIPS 203 Algorithm 17**, executing 100% on the **AMD Phoenix Ryzen 7040 / 8040 NPU** (XDNA1 architecture / AIE2 tile array).
 
+<!-- [CLAIM-PROVENANCE: status=HISTORICAL; source=pqc_dr7_design; classification=SELF_REPORTED_UNVERIFIED] -->
 The decapsulation procedure securely decapsulates the shared secret key $K \in \{0, 1\}^{256}$ from a received ciphertext $c \in \{0, 1\}^{768 	imes 8}$ using the decapsulation key $dk \in \{0, 1\}^{1632 	imes 8}$, employing constant-time Fujisaki-Okamoto (FO) re-encryption verification and implicit rejection.
 
 ```
@@ -17,6 +18,7 @@ The decapsulation procedure securely decapsulates the shared secret key $K \in \
 |  2. (K_bar', r') <- G(m' || H(ek))                                                                          |
 |  3. K_bar <- J(z || c, 32) = SHAKE256(z || c, 32)                                                           |
 |  4. c' <- K-PKE.Encrypt(ek, m', r')                                                                         |
+<!-- [CLAIM-PROVENANCE: status=HISTORICAL; source=pqc_dr7_design; classification=SELF_REPORTED_UNVERIFIED] -->
 |  5. if c == c' then return K_bar' else return K_bar (constant-time selection)                              |
 +-------------------------------------------------------------------------------------------------------------+
 ```
@@ -61,10 +63,13 @@ To conform to the 16 KiB program memory and 64 KiB local data memory constraints
 +------------------+
       |
       v
+<!-- [CLAIM-PROVENANCE: status=HISTORICAL; source=pqc_dr7_design; classification=SELF_REPORTED_UNVERIFIED] -->
 +------------------+  Tile (5,2): Worker 5 (Finalize & Constant-Time FO Selection)
 | Worker 5:        |  - u'_1 = INTT(A^T[1,0] * r'_0 + A^T[1,1] * r'_1) + e'_1,1 -> Compress_10 (320 B)
 | Finalize Tile    |  - v' = INTT(t_hat[0] * r'_0 + t_hat[1] * r'_1) + (e'_2 + mu) -> Compress_4 (128 B)
+<!-- [CLAIM-PROVENANCE: status=HISTORICAL; source=pqc_dr7_design; classification=SELF_REPORTED_UNVERIFIED] -->
 +------------------+  - Constant-time comparison: diff = c ^ (u'_0 || u'_1 || v')
+      <!-- [CLAIM-PROVENANCE: status=HISTORICAL; source=pqc_dr7_design; classification=SELF_REPORTED_UNVERIFIED] -->
       |               - Constant-time select: K = (diff == 0) ? K_bar' : K_bar
       v               - CRC32 verification and terminal packet creation (52 B)
 [Host DMA Out]
@@ -83,6 +88,7 @@ All kernels are compiled using `clang++ -O2 --target=aie2-none-unknown-elf` with
 | **Worker 2** | `dr7_mlkem512_decaps_row0_expand.cc` | SampleNTT $\mathbf{A}^T[0,*]$, SHAKE256 $ar{K}$ | **6,976 B** | 16,384 B | 9,408 B (57.4%) |
 | **Worker 3** | `dr7_mlkem512_decaps_row0_accumulate.cc` | $u'_0$ accumulation & $	ext{Compress}_{10}$ | **8,352 B** | 16,384 B | 8,032 B (49.0%) |
 | **Worker 4** | `dr7_mlkem512_decaps_row1_expand.cc` | SampleNTT $\mathbf{A}^T[1,*]$ | **4,480 B** | 16,384 B | 11,904 B (72.7%) |
+<!-- [CLAIM-PROVENANCE: status=HISTORICAL; source=pqc_dr7_design; classification=SELF_REPORTED_UNVERIFIED] -->
 | **Worker 5** | `dr7_mlkem512_decaps_finalize.cc` | $u'_1, v'$, constant-time compare & select | **10,320 B** | 16,384 B | 6,064 B (37.0%) |
 
 ---

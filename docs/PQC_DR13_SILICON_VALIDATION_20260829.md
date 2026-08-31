@@ -78,6 +78,7 @@ Running 30 NIST ACVP ML-DSA-44 Verify vectors on AMD Phoenix NPU...
   [29/30] acvp_mldsa44_verify_tg8_tc119           : PASS (INVALID (Rejected))
   [30/30] acvp_mldsa44_verify_tg8_tc120           : PASS (INVALID (Rejected))
 ------------------------------------------------------------
+<!-- [CLAIM-PROVENANCE: status=HISTORICAL; source=pqc_dr13_silicon_validation_20260829; classification=SELF_REPORTED_UNVERIFIED] -->
 TOTAL: 30/30 PASS (100% BIT-EXACT MATCH ON PHYSICAL SILICON)
 ============================================================
 ```

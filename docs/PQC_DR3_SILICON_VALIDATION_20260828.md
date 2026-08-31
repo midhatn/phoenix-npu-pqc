@@ -43,6 +43,7 @@ Backend: dr3-mlkem512-kpke-encrypt:silicon
   acvp-tcId-24                     PASS
   acvp-tcId-25                     PASS
 ------------------------------------------------------------------------
+<!-- [CLAIM-PROVENANCE: status=HISTORICAL; source=pqc_dr3_silicon_validation_20260828; classification=SELF_REPORTED_UNVERIFIED] -->
 TOTAL 25/25 PASS
 ========================================================================
 ```
@@ -68,13 +69,20 @@ TOTAL 25/25 PASS
 ================================================================================
 ALL 6/6 PQC MILESTONES PASSED 100% BIT-EXACT ON PHYSICAL SILICON!
 ================================================================================
+  <!-- [CLAIM-PROVENANCE: status=HISTORICAL; source=pqc_dr3_silicon_validation_20260828; classification=SELF_REPORTED_UNVERIFIED] -->
   - DR1  (ML-DSA-44 RejNTT)       : 33/33 PASS
+  <!-- [CLAIM-PROVENANCE: status=HISTORICAL; source=pqc_dr3_silicon_validation_20260828; classification=SELF_REPORTED_UNVERIFIED] -->
   - DR2a (ML-KEM-512 SampleNTT)   : 13/13 PASS
+  <!-- [CLAIM-PROVENANCE: status=HISTORICAL; source=pqc_dr3_silicon_validation_20260828; classification=SELF_REPORTED_UNVERIFIED] -->
   - DR2b (ML-KEM-512 Noise+NTT)   : 13/13 PASS
+  <!-- [CLAIM-PROVENANCE: status=HISTORICAL; source=pqc_dr3_silicon_validation_20260828; classification=SELF_REPORTED_UNVERIFIED] -->
   - DR2c (ML-KEM-512 KeyGen Row)  : 11/11 PASS
+  <!-- [CLAIM-PROVENANCE: status=HISTORICAL; source=pqc_dr3_silicon_validation_20260828; classification=SELF_REPORTED_UNVERIFIED] -->
   - DR2d (ML-KEM-512 K-PKE.KeyGen): 25/25 PASS
+  <!-- [CLAIM-PROVENANCE: status=HISTORICAL; source=pqc_dr3_silicon_validation_20260828; classification=SELF_REPORTED_UNVERIFIED] -->
   - DR3  (ML-KEM-512 K-PKE.Encrypt): 25/25 PASS
 --------------------------------------------------------------------------------
+<!-- [CLAIM-PROVENANCE: status=HISTORICAL; source=pqc_dr3_silicon_validation_20260828; classification=SELF_REPORTED_UNVERIFIED] -->
 TOTAL ON-DEVICE SILICON TESTS: 120/120 PASS (100.0% RELIABILITY)
 ================================================================================
 ```

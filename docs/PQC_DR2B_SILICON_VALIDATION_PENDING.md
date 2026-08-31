@@ -35,6 +35,7 @@ counters, eight deterministic varied-seed requests, and one alternating
 |---|---|
 | Backend label | `dr2b-mlkem512-noise-ntt:silicon` |
 | Physical corpus | counters 0 through 3 for `sigma=bytes(range(32))`; eight deterministic varied-sigma requests; one alternating `00/ff` boundary sigma |
+<!-- [CLAIM-PROVENANCE: status=HISTORICAL; source=pqc_dr2b_silicon_validation_pending; classification=SELF_REPORTED_UNVERIFIED] -->
 | Terminal result | `TOTAL 13/13 PASS` |
 | Exact comparisons | 13 requests x 256 lanes = 3,328 exact coefficient comparisons |
 | Repeated-operation result | two complete corpora in one Python process; 26/26 requests passed; `first=0, second=0` |
@@ -109,6 +110,7 @@ graph, while only the terminal NTT result returns to the host.
 
    A missing runtime must print `Backend: dr2b-mlkem512-noise-ntt:unavailable`
    and return exit status 2. That is unavailable, not a pass. A successful
+   <!-- [CLAIM-PROVENANCE: status=HISTORICAL; source=pqc_dr2b_silicon_validation_pending; classification=SELF_REPORTED_UNVERIFIED] -->
    native run must show the silicon backend and `TOTAL 13/13 PASS`.
 
 3. Retain the exact source revision, dirty state, full native output, JIT cache

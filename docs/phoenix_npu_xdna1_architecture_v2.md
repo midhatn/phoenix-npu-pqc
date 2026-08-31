@@ -125,6 +125,7 @@ Lattice-based PQC (FIPS 203 ML-KEM and FIPS 204 ML-DSA) places specific arithmet
    * NTT requires processing pairs of coefficients with varying twiddle-factor strides modulo $q$.
    * With 512-bit SIMD registers, a single AIE2 tile processes **16 parallel 32-bit polynomial coefficients** or **32 parallel 16-bit coefficients** in one instruction.
    * Neighbor-shared memory banks allow multi-stage butterfly passes to stream horizontally across adjacent tiles without saturating internal AXI crossbars.
+<!-- [CLAIM-PROVENANCE: status=HISTORICAL; source=phoenix_npu_xdna1_architecture_v2; classification=SELF_REPORTED_UNVERIFIED] -->
 2. **Deterministic Constant-Time Execution (Side-Channel Hardening):**
    * Cryptographic implementations on CPUs and GPUs face constant timing side-channel risks from branch predictors, speculative execution, and cache line evictions.
    * On XDNA 1, execution is statically scheduled by the VLIW compiler. Every instruction, load, and store occupies a deterministic clock cycle slot with zero runtime cache jitter, providing architectural immunity against timing attacks.

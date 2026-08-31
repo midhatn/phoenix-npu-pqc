@@ -21,8 +21,11 @@ it is not added to or modified in this source worktree.
 |---|---|
 | Command | `python tests\pqc_device_resident\test_m33_product_dr0.py` |
 | Backend | `m33-dr0:silicon` |
+<!-- [CLAIM-PROVENANCE: status=HISTORICAL; source=pqc_dr0_silicon_validation_20260817; classification=SELF_REPORTED_UNVERIFIED] -->
 | Directed vectors | 4 / 4 PASS |
+<!-- [CLAIM-PROVENANCE: status=HISTORICAL; source=pqc_dr0_silicon_validation_20260817; classification=SELF_REPORTED_UNVERIFIED] -->
 | Deterministic random vectors | 20 / 20 PASS |
+<!-- [CLAIM-PROVENANCE: status=HISTORICAL; source=pqc_dr0_silicon_validation_20260817; classification=SELF_REPORTED_UNVERIFIED] -->
 | Terminal total | `TOTAL 24/24 PASS` |
 | Exit code | 0 |
 | Log name | `PQC_DR0_M33_silicon_definitive_20260817.log` |
@@ -65,6 +68,7 @@ This record does **not** validate or claim:
 
 - Complete ML-DSA or complete FIPS 204 conformance.
 - Performance, latency, throughput, power, energy, or speedup measurements.
+<!-- [CLAIM-PROVENANCE: status=HISTORICAL; source=pqc_dr0_silicon_validation_20260817; classification=SELF_REPORTED_UNVERIFIED] -->
 - Constant-time execution, side-channel resistance, fault-injection resistance,
   or general cryptographic hardening.
 - Host, AIE-local, DMA, ObjectFIFO, XRT, or compiled-artifact zeroization.

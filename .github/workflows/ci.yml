@@ -1,0 +1,110 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+      - "**"
+  pull_request:
+    branches:
+      - main
+      - "**"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  lint:
+    name: Lint Python
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.13"
+      - name: Install ruff
+        run: python -m pip install ruff==0.16.3
+      - name: Lint maintained Python
+        run: ruff check .
+      - name: Check Python formatting
+        run: |
+          ruff format --check \
+            install.py run_all_pqc_tests.py run_all_silicon_tests.py \
+            phoenix_sdr_dsp/pqc/dr2d_mlkem512_kpke_keygen_graph.py \
+            phoenix_sdr_dsp/pqc/dr2d_mlkem512_kpke_keygen_terminal_probe_graph.py \
+            phoenix_sdr_dsp/pqc/dr2d_mlkem512_kpke_keygen_w0_token_tap_graph.py \
+            tests/production_dependency_guard.py tests/test_install_bootstrap.py \
+            tests/test_markdown_math_contract.py \
+            tests/test_pqc_dr1_contract.py tests/test_pqc_dr2a_contract.py \
+            tests/test_pqc_dr2b_contract.py tests/test_pqc_dr2c_contract.py \
+            tests/test_pqc_dr2d_contract.py \
+            tests/test_release_materials_contract.py
+
+  validate-metadata:
+    name: Validate metadata
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.13"
+      - name: Install validators
+        run: python -m pip install cffconvert==2.0.0 PyYAML==6.0.3
+      - name: Validate citation metadata
+        run: cffconvert --validate
+      - name: Validate toolchain record
+        run: |
+          python - <<'PY'
+          import yaml
+          with open("toolchain.yaml") as f:
+              data = yaml.safe_load(f)
+          assert data["schema_version"] == 1
+          assert data["project"]["name"] == "phoenix-npu-pqc"
+          for name in ("mlir_aie", "llvm_aie_peano", "xrt"):
+              assert data["toolchain"][name]["verified_version"]
+          xrt = data["toolchain"]["xrt"]
+          for name in ("sdk_url", "sdk_bytes", "sdk_sha256", "release_url"):
+              assert xrt[name], f"toolchain.xrt missing {name}"
+          print("toolchain.yaml OK")
+          PY
+
+  host-pqc-tests:
+    name: Host-safe PQC tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.13"
+      - name: Install host test dependency
+        run: python -m pip install numpy==2.5.2
+      - name: List host-safe test plan
+        run: python run_all_pqc_tests.py --dry-run
+      - name: Run host-safe PQC suite
+        run: python run_all_pqc_tests.py
+      - name: Run policy test suite
+        run: python -m unittest discover -s tests/policy -v
+      - name: Verify repository integrity
+        run: python tools/verify_agent_change.py --all
+      - name: Compile Python without execution
+        run: python -m compileall -q phoenix_sdr_dsp tests run_all_pqc_tests.py run_all_silicon_tests.py
+
+  evidence-integrity:
+    name: Verify protected DR2 evidence
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Verify SHA-256 manifest
+        run: (cd docs/pqc_dr2_evidence_20260818 && sha256sum -c SHA256SUMS)
+
+  link-check:
+    name: Check Markdown links
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Link check
+        uses: gaurav-nelson/github-action-markdown-link-check@3c3b66f1f7d0900e37b71eca45b63ea9eedfce31 # v1.0.17
+        with:
+          use-quiet-mode: "yes"
+          config-file: ".github/mlc_config.json"

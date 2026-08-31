@@ -96,10 +96,14 @@ XRT, or a native runner:
 | Check | Result |
 |---|---|
 | uploaded archive SHA-256 | PASS |
+<!-- [CLAIM-PROVENANCE: status=HISTORICAL; source=pqc_dr2_local_forensic_recovery_20260818; classification=SELF_REPORTED_UNVERIFIED] -->
 | 11-entry transport manifest | 11/11 PASS |
+<!-- [CLAIM-PROVENANCE: status=HISTORICAL; source=pqc_dr2_local_forensic_recovery_20260818; classification=SELF_REPORTED_UNVERIFIED] -->
 | recovered working-file equivalence | 159/159 PASS |
+<!-- [CLAIM-PROVENANCE: status=HISTORICAL; source=pqc_dr2_local_forensic_recovery_20260818; classification=SELF_REPORTED_UNVERIFIED] -->
 | recovered-file publication manifest | 159/159 PASS |
 | Python syntax (`compileall`) | PASS |
+<!-- [CLAIM-PROVENANCE: status=HISTORICAL; source=pqc_dr2_local_forensic_recovery_20260818; classification=SELF_REPORTED_UNVERIFIED] -->
 | DR2a/DR2b/DR2c/DR2d stage-specific host/reference suites | 43/43 PASS |
 | updated-document local links | PASS, zero broken links |
 | credential-pattern scan | PASS; matches were cryptographic variable names only |
