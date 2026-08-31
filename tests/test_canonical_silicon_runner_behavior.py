@@ -108,6 +108,36 @@ def _make_dr0_test_buffers(corrupt_index: int | None = None) -> list[dict[str, o
     return buffers
 
 
+def _make_dr1_test_buffers(
+    corrupt_index: int | None = None,
+    corrupt_fingerprint_index: int | None = None,
+) -> list[dict[str, object]]:
+    """Generate 33 authentic DR1 test buffers for parent oracle verification tests."""
+    from tests.pqc_device_resident.dr1_reference import expanda_rejntt_reference
+    from tests.pqc_device_resident.test_dr1_mldsa44_rejntt import PRE_SILICON_CORPUS, _coefficient_digest
+    buffers: list[dict[str, object]] = []
+    for idx, case in enumerate(PRE_SILICON_CORPUS):
+        case_id = f"dr1_case_{idx:03d}_{case.label}"
+        expected = expanda_rejntt_reference(case.rho, case.j, case.i)
+        out_coeffs = list(expected.coefficients)
+        if corrupt_index is not None and idx == corrupt_index:
+            out_coeffs[0] = (out_coeffs[0] + 1) % 8380417
+        fp = _coefficient_digest(out_coeffs)
+        if corrupt_fingerprint_index is not None and idx == corrupt_fingerprint_index:
+            fp = "0" * 64
+        buffers.append({
+            "case_id": case_id,
+            "case_label": case.label,
+            "rho_hex": case.rho.hex(),
+            "j": case.j,
+            "i": case.i,
+            "request_id": case.request_id,
+            "output_coefficients": out_coeffs,
+            "fingerprint_sha256": fp,
+        })
+    return buffers
+
+
 def _wrap_record_in_stdout(record: dict[str, object], preamble: str = "") -> str:
     serialized = json.dumps(record, indent=2)
     return f"{preamble}\n{RESULT_START_MARKER}\n{serialized}\n{RESULT_END_MARKER}\n"
@@ -648,6 +678,83 @@ class CanonicalSiliconRunnerBehaviorTests(unittest.TestCase):
             with self.assertRaises(graph.NativeBackendUnavailable) as ctx:
                 graph.check_emulation_and_redirection_excluded()
             self.assertIn("XRT_INI_PATH='C:/custom/xrt.ini'", str(ctx.exception))
+
+    def test_dr1_valid_test_buffers_verified_by_parent_oracle(self) -> None:
+        gate = GATES[1]  # DR1
+        now = datetime.now(timezone.utc)
+        rec = _make_valid_record(
+            gate_id="DR1",
+            expected_count=33,
+            artifact_rel="phoenix_sdr_dsp/pqc/kernels/dr1_mldsa44_rejntt.cc",
+            dispatches=33,
+        )
+        rec["test_buffers"] = _make_dr1_test_buffers()
+        stdout = _wrap_record_in_stdout(rec)
+        res = parse_gate_output(
+            gate, stdout, "", 0, 0.5,
+            parent_start_time=now - timedelta(seconds=2),
+            parent_end_time=now + timedelta(seconds=2),
+            execution_nonce="test_nonce_0123456789abcdef",
+        )
+        self.assertFalse(res.success)
+        self.assertEqual(res.status, STATUS_SELF_REPORTED_UNVERIFIED)
+        self.assertTrue(any("Parent independent oracle verified all 33 x 256" in note for note in res.corroboration_notes))
+
+    def test_dr1_corrupted_coefficient_fails_validation(self) -> None:
+        gate = GATES[1]
+        now = datetime.now(timezone.utc)
+        rec = _make_valid_record(
+            gate_id="DR1",
+            expected_count=33,
+            artifact_rel="phoenix_sdr_dsp/pqc/kernels/dr1_mldsa44_rejntt.cc",
+            dispatches=33,
+        )
+        # Corrupt 1 coefficient in case index 5
+        rec["test_buffers"] = _make_dr1_test_buffers(corrupt_index=5)
+        stdout = _wrap_record_in_stdout(rec)
+        res = parse_gate_output(
+            gate, stdout, "", 0, 0.5,
+            parent_start_time=now - timedelta(seconds=2),
+            parent_end_time=now + timedelta(seconds=2),
+            execution_nonce="test_nonce_0123456789abcdef",
+        )
+        self.assertFalse(res.success)
+        self.assertEqual(res.status, STATUS_FAIL)
+        self.assertIn("oracle mismatch at lane", res.error_message or "")
+
+    def test_dr1_corrupted_fingerprint_fails_validation(self) -> None:
+        gate = GATES[1]
+        now = datetime.now(timezone.utc)
+        rec = _make_valid_record(
+            gate_id="DR1",
+            expected_count=33,
+            artifact_rel="phoenix_sdr_dsp/pqc/kernels/dr1_mldsa44_rejntt.cc",
+            dispatches=33,
+        )
+        # Corrupt fingerprint in case index 2
+        rec["test_buffers"] = _make_dr1_test_buffers(corrupt_fingerprint_index=2)
+        stdout = _wrap_record_in_stdout(rec)
+        res = parse_gate_output(
+            gate, stdout, "", 0, 0.5,
+            parent_start_time=now - timedelta(seconds=2),
+            parent_end_time=now + timedelta(seconds=2),
+            execution_nonce="test_nonce_0123456789abcdef",
+        )
+        self.assertFalse(res.success)
+        self.assertEqual(res.status, STATUS_FAIL)
+        self.assertIn("fingerprint mismatch", res.error_message or "")
+
+    def test_dr1_module_rejects_emulation_and_xrt_ini_path(self) -> None:
+        from phoenix_sdr_dsp.pqc import dr1_mldsa44_rejntt_graph as graph
+        with mock.patch.dict(os.environ, {"XCL_EMULATION_MODE": "sw_emu"}):
+            with self.assertRaises(graph.NativeBackendUnavailable) as ctx:
+                graph.check_emulation_and_redirection_excluded()
+            self.assertIn("XCL_EMULATION_MODE='sw_emu'", str(ctx.exception))
+
+        with mock.patch.dict(os.environ, {"XRT_INI_PATH": "C:/fake/xrt.ini"}):
+            with self.assertRaises(graph.NativeBackendUnavailable) as ctx:
+                graph.check_emulation_and_redirection_excluded()
+            self.assertIn("XRT_INI_PATH='C:/fake/xrt.ini'", str(ctx.exception))
 
 
 if __name__ == "__main__":

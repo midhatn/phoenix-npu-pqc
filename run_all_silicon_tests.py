@@ -648,14 +648,14 @@ def parse_gate_output(
         else:
             corroboration_notes.append(f"Child process PID verified: {child_pid}")
 
-    # 11. Parent-Side Independent Test Buffers / Oracle Verification (DR0 Scope)
+    # 11. Parent-Side Independent Test Buffers / Oracle Verification (DR0 & DR1 Scope)
     test_buffers = record.get("test_buffers")
     if test_buffers is not None:
         if not isinstance(test_buffers, list):
             failures.append("test_buffers field must be an array")
         elif len(test_buffers) != gate.expected_total:
             failures.append(f"test_buffers length ({len(test_buffers)}) != expected gate total ({gate.expected_total})")
-        else:
+        elif gate.gate_id == "DR0":
             from phoenix_sdr_dsp.pqc import abi
             buffer_mismatches = 0
             for b_idx, buf_entry in enumerate(test_buffers):
@@ -687,6 +687,55 @@ def parse_gate_output(
             if buffer_mismatches == 0 and not failures:
                 corroboration_notes.append(
                     f"Parent independent oracle verified all {len(test_buffers)} x {abi.N} output coefficients."
+                )
+        elif gate.gate_id == "DR1":
+            from tests.pqc_device_resident.dr1_reference import expanda_rejntt_reference
+            from tests.pqc_device_resident.test_dr1_mldsa44_rejntt import FINGERPRINT_BY_LABEL, _coefficient_digest
+            dr1_mismatches = 0
+            for b_idx, buf_entry in enumerate(test_buffers):
+                if not isinstance(buf_entry, dict):
+                    failures.append(f"test_buffers[{b_idx}] must be an object")
+                    continue
+                rho_hex = buf_entry.get("rho_hex")
+                j = buf_entry.get("j")
+                i = buf_entry.get("i")
+                out_coeffs = buf_entry.get("output_coefficients")
+                case_label = buf_entry.get("case_label", f"case_{b_idx}")
+                if not isinstance(rho_hex, str) or not isinstance(j, int) or not isinstance(i, int) or not isinstance(out_coeffs, list):
+                    failures.append(f"test_buffers[{b_idx}] malformed fields (expected rho_hex, j, i, output_coefficients)")
+                    continue
+                if len(out_coeffs) != 256:
+                    failures.append(f"test_buffers[{b_idx}] output_coefficients length ({len(out_coeffs)}) != 256")
+                    continue
+                try:
+                    rho = bytes.fromhex(rho_hex)
+                    expected = expanda_rejntt_reference(rho, j, i)
+                    actual_digest = _coefficient_digest(out_coeffs)
+                    if out_coeffs != list(expected.coefficients):
+                        dr1_mismatches += 1
+                        mismatch_lane = next(
+                            k for k, (got_val, want_val) in enumerate(zip(out_coeffs, expected.coefficients)) if got_val != want_val
+                        )
+                        failures.append(
+                            f"test_buffers[{b_idx}] ({case_label}) oracle mismatch at lane {mismatch_lane}: "
+                            f"got {out_coeffs[mismatch_lane]}, expected {expected.coefficients[mismatch_lane]}"
+                        )
+                    claimed_digest = buf_entry.get("fingerprint_sha256")
+                    if claimed_digest and claimed_digest != actual_digest:
+                        dr1_mismatches += 1
+                        failures.append(
+                            f"test_buffers[{b_idx}] ({case_label}) claimed fingerprint mismatch: {claimed_digest} != computed {actual_digest}"
+                        )
+                    if case_label in FINGERPRINT_BY_LABEL and actual_digest != FINGERPRINT_BY_LABEL[case_label]:
+                        dr1_mismatches += 1
+                        failures.append(
+                            f"test_buffers[{b_idx}] ({case_label}) frozen fingerprint mismatch: {actual_digest} != {FINGERPRINT_BY_LABEL[case_label]}"
+                        )
+                except Exception as exc:
+                    failures.append(f"test_buffers[{b_idx}] oracle evaluation error: {exc}")
+            if dr1_mismatches == 0 and not failures:
+                corroboration_notes.append(
+                    f"Parent independent oracle verified all {len(test_buffers)} x 256 output coefficients and fingerprints."
                 )
 
     # 12. Emulation and Redirection Mode Check
