@@ -26,7 +26,6 @@ HOST_CRYPTO_MODULES = {
 FALLBACK_TOKENS = ("cpu", "fallback", "host", "reference", "simulate", "mock")
 EXCLUDED_POLICY_PATHS = {
     Path("tools/agent_integrity.py"),
-    Path("tools/m32d_kernel_transliteration_check.py"),
 }
 HARDCODED_PASS_RE = re.compile(
     r"\b\d+\s*/\s*\d+\s+(?:TESTS?\s+)?PASS\b", re.IGNORECASE

@@ -217,6 +217,17 @@ def indep_tomsg(coeffs):
     return out
 
 
+from dataclasses import dataclass
+
+@dataclass(frozen=True)
+class CheckResult:
+    name: str
+    selected: int
+    executed: int
+    passed: int
+    failed: int
+
+
 # ------------------------------------------------------------------
 # Cross-checks
 
@@ -226,123 +237,160 @@ def _random_signed_poly(rng):
     return v
 
 
-def check1_canonical():
+def check1_canonical() -> CheckResult:
     """(1) _canonical primary vs indep_canonical over full int16 range restricted
     to values the reference could ever encounter after ntt_inverse (broad window)."""
-    fails = 0
+    selected = 2 * KYBER_Q
+    executed = 0
+    passed = 0
+    failed = 0
     # Full canonical range test
     for v in range(-KYBER_Q, KYBER_Q):
+        executed += 1
         prim = ref._canonical(v) & 0xFFFF
-        # primary returns int16 wrap; for v in [-q, q-1] the correction yields [0, 2q-1)
-        # then we take mod q for comparison
         indep = v % KYBER_Q
-        # primary is either v (if v >= 0) or v + q (if v < 0). Both lie in [0, 2q-1).
-        if (prim % KYBER_Q) != indep:
-            fails += 1
-    assert fails == 0, f"canonical: {fails} mismatches vs bigint modular"
-    print("[cross] (1) _canonical primary vs bigint modular over [-q, q): PASS")
+        if (prim % KYBER_Q) == indep:
+            passed += 1
+        else:
+            failed += 1
+    print(f"[cross] (1) _canonical primary vs bigint modular over [-q, q): {passed}/{executed} matched ({failed} failed)")
+    return CheckResult("canonical", selected, executed, passed, failed)
 
 
-def check2_compress_d4():
+def check2_compress_d4() -> CheckResult:
     """(2) primary ref_compress_d4/decompress_d4 vs independent implementation."""
     rng = np.random.default_rng(0xCC01)
-    fails = 0
+    selected = 10
+    executed = 0
+    passed = 0
+    failed = 0
+
     for k in range(5):
+        executed += 1
         a = _random_signed_poly(rng)
         prim_bytes = ref.ref_compress_d4(a)
         indep_bytes = indep_compress_d4_bytes(a)
-        if not np.array_equal(prim_bytes, indep_bytes):
-            fails += 1
-    assert fails == 0, f"compress_d4: {fails}/5 mismatches"
+        if np.array_equal(prim_bytes, indep_bytes):
+            passed += 1
+        else:
+            failed += 1
 
     # Decompress on random 128-byte streams
-    fails2 = 0
     for k in range(5):
+        executed += 1
         y = rng.integers(0, 256, size=128, dtype=np.uint8)
         p1 = ref.ref_decompress_d4(y)
         p2 = indep_decompress_d4_from_bytes(y)
-        if not np.array_equal(p1, p2):
-            fails2 += 1
-    assert fails2 == 0, f"decompress_d4: {fails2}/5 mismatches"
-    print("[cross] (2) compress/decompress d=4 primary vs indep: 5/5 PASS each")
+        if np.array_equal(p1, p2):
+            passed += 1
+        else:
+            failed += 1
+
+    print(f"[cross] (2) compress/decompress d=4 primary vs indep: {passed}/{executed} matched ({failed} failed)")
+    return CheckResult("compress_d4", selected, executed, passed, failed)
 
 
-def check3_compress_d10():
+def check3_compress_d10() -> CheckResult:
     """(3) primary ref_compress_d10/decompress_d10 vs independent."""
     rng = np.random.default_rng(0xCC02)
-    fails = 0
+    selected = 10
+    executed = 0
+    passed = 0
+    failed = 0
+
     for k in range(5):
+        executed += 1
         a = _random_signed_poly(rng)
         p = ref.ref_compress_d10(a)
         i = indep_compress_d10_bytes(a)
-        if not np.array_equal(p, i):
-            fails += 1
-    assert fails == 0, f"compress_d10: {fails}/5 mismatches"
+        if np.array_equal(p, i):
+            passed += 1
+        else:
+            failed += 1
 
-    fails2 = 0
     for k in range(5):
+        executed += 1
         y = rng.integers(0, 256, size=320, dtype=np.uint8)
         p1 = ref.ref_decompress_d10(y)
         p2 = indep_decompress_d10_from_bytes(y)
-        if not np.array_equal(p1, p2):
-            fails2 += 1
-    assert fails2 == 0, f"decompress_d10: {fails2}/5 mismatches"
-    print("[cross] (3) compress/decompress d=10 primary vs indep: 5/5 PASS each")
+        if np.array_equal(p1, p2):
+            passed += 1
+        else:
+            failed += 1
+
+    print(f"[cross] (3) compress/decompress d=10 primary vs indep: {passed}/{executed} matched ({failed} failed)")
+    return CheckResult("compress_d10", selected, executed, passed, failed)
 
 
-def check4_tobytes_d12():
+def check4_tobytes_d12() -> CheckResult:
     """(4) primary ref_tobytes_d12/frombytes_d12 vs independent serialization."""
     rng = np.random.default_rng(0xCC03)
-    fails = 0
+    selected = 10
+    executed = 0
+    passed = 0
+    failed = 0
+
     for k in range(5):
+        executed += 1
         a = _random_signed_poly(rng)
         p1 = ref.ref_tobytes_d12(a)
         p2 = indep_tobytes_d12(a)
-        if not np.array_equal(p1, p2):
-            fails += 1
-    assert fails == 0, f"tobytes_d12: {fails}/5 mismatches"
+        if np.array_equal(p1, p2):
+            passed += 1
+        else:
+            failed += 1
 
-    fails2 = 0
     for k in range(5):
+        executed += 1
         y = rng.integers(0, 256, size=384, dtype=np.uint8)
         p1 = ref.ref_frombytes_d12(y)
         p2 = indep_frombytes_d12(y)
-        if not np.array_equal(p1, p2):
-            fails2 += 1
-    assert fails2 == 0, f"frombytes_d12: {fails2}/5 mismatches"
-    print("[cross] (4) tobytes/frombytes d=12 primary vs indep: 5/5 PASS each")
+        if np.array_equal(p1, p2):
+            passed += 1
+        else:
+            failed += 1
+
+    print(f"[cross] (4) tobytes/frombytes d=12 primary vs indep: {passed}/{executed} matched ({failed} failed)")
+    return CheckResult("tobytes_d12", selected, executed, passed, failed)
 
 
-def check5_msg():
+def check5_msg() -> CheckResult:
     """(5) primary ref_frommsg/tomsg vs independent."""
     rng = np.random.default_rng(0xCC04)
-    fails = 0
+    selected = 10
+    executed = 0
+    passed = 0
+    failed = 0
+
     for k in range(5):
+        executed += 1
         m = rng.integers(0, 256, size=32, dtype=np.uint8)
         p1 = ref.ref_frommsg(m)
         p2 = indep_frommsg(m)
-        if not np.array_equal(p1, p2):
-            fails += 1
-    assert fails == 0, f"frommsg: {fails}/5 mismatches"
+        if np.array_equal(p1, p2):
+            passed += 1
+        else:
+            failed += 1
 
-    # tomsg on random polys drawn to look like Kyber-decrypted values:
-    # values near 0 or near (q+1)/2 (bit=1 lane).
-    fails2 = 0
+    # tomsg on random polys drawn to look like Kyber-decrypted values
     for k in range(5):
+        executed += 1
         m = rng.integers(0, 256, size=32, dtype=np.uint8)
-        # produce a canonical decoded poly, then add small noise
         p = indep_frommsg(m)
         noise = rng.integers(-100, 101, size=KYBER_N, dtype=np.int16)
         pp = ((p.astype(np.int32) + noise.astype(np.int32)) % KYBER_Q).astype(np.int16)
         p1 = ref.ref_tomsg(pp)
         p2 = indep_tomsg(pp)
-        if not np.array_equal(p1, p2):
-            fails2 += 1
-    assert fails2 == 0, f"tomsg: {fails2}/5 mismatches vs indep"
-    print("[cross] (5) frommsg/tomsg primary vs indep: 5/5 PASS each")
+        if np.array_equal(p1, p2):
+            passed += 1
+        else:
+            failed += 1
+
+    print(f"[cross] (5) frommsg/tomsg primary vs indep: {passed}/{executed} matched ({failed} failed)")
+    return CheckResult("msg", selected, executed, passed, failed)
 
 
-def check6_full_round_trips():
+def check6_full_round_trips() -> CheckResult:
     """(6) End-to-end algebraic identities:
       Compress_d4(Decompress_d4(y))     == y  for uint4 lattice y
       Compress_d10(Decompress_d10(y))   == y  for uint10 lattice y
@@ -351,21 +399,28 @@ def check6_full_round_trips():
     Using the PRIMARY reference for both directions -- exercises the actual
     C-transliterated code path end-to-end."""
     rng = np.random.default_rng(0xCC05)
+    selected = 20
+    executed = 0
+    passed = 0
+    failed = 0
+
     # d=4 round-trip
-    fails = 0
     for _ in range(5):
+        executed += 1
         y = rng.integers(0, 16, size=KYBER_N, dtype=np.uint8)
         packed = np.zeros(128, dtype=np.uint8)
         for i in range(KYBER_N // 2):
             packed[i] = (y[2 * i] | (y[2 * i + 1] << 4)) & 0xFF
         p = ref.ref_decompress_d4(packed)
         back = ref.ref_compress_d4(p)
-        if not np.array_equal(back, packed):
-            fails += 1
-    assert fails == 0, f"d=4 round-trip: {fails}/5 failed"
+        if np.array_equal(back, packed):
+            passed += 1
+        else:
+            failed += 1
 
     # d=10
     for _ in range(5):
+        executed += 1
         y = rng.integers(0, 1 << 10, size=KYBER_N, dtype=np.uint16)
         packed = np.zeros(320, dtype=np.uint8)
         r = 0
@@ -379,35 +434,62 @@ def check6_full_round_trips():
             r += 5
         p = ref.ref_decompress_d10(packed)
         back = ref.ref_compress_d10(p)
-        assert np.array_equal(back, packed), "d=10 round-trip failed"
+        if np.array_equal(back, packed):
+            passed += 1
+        else:
+            failed += 1
 
     # d=12 lossless
     for _ in range(5):
+        executed += 1
         a = _random_signed_poly(rng)
         packed = ref.ref_tobytes_d12(a)
         back = ref.ref_frombytes_d12(packed)
         exp = np.array([ref._canonical(int(x)) & 0xFFF for x in a], dtype=np.int16)
-        assert np.array_equal(back, exp), "d=12 lossless failed"
+        if np.array_equal(back, exp):
+            passed += 1
+        else:
+            failed += 1
 
     # message
     for _ in range(5):
+        executed += 1
         m = rng.integers(0, 256, size=32, dtype=np.uint8)
         p = ref.ref_frommsg(m)
         back = ref.ref_tomsg(p)
-        assert np.array_equal(back, m), "message round-trip failed"
+        if np.array_equal(back, m):
+            passed += 1
+        else:
+            failed += 1
 
-    print("[cross] (6) primary round-trip identities: 4 x 5 PASS")
+    print(f"[cross] (6) primary round-trip identities: {passed}/{executed} matched ({failed} failed)")
+    return CheckResult("full_round_trips", selected, executed, passed, failed)
 
 
-def main():
-    check1_canonical()
-    check2_compress_d4()
-    check3_compress_d10()
-    check4_tobytes_d12()
-    check5_msg()
-    check6_full_round_trips()
-    print("\nM32d transliteration check: 6/6 PASS")
+def main() -> int:
+    checks = [
+        check1_canonical,
+        check2_compress_d4,
+        check3_compress_d10,
+        check4_tobytes_d12,
+        check5_msg,
+        check6_full_round_trips,
+    ]
+    results = [check() for check in checks]
+    total_selected = sum(r.selected for r in results)
+    total_executed = sum(r.executed for r in results)
+    total_passed = sum(r.passed for r in results)
+    total_failed = sum(r.failed for r in results)
+    checks_passed = sum(1 for r in results if r.failed == 0 and r.passed == r.selected)
+
+    print(
+        f"\nM32d transliteration check: {checks_passed} of {len(checks)} checks successful "
+        f"({total_passed} of {total_selected} comparisons matched, {total_failed} failures)"
+    )
+    if total_failed > 0 or total_passed != total_selected or total_executed != total_selected:
+        return 1
+    return 0
 
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main())

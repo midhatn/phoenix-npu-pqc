@@ -36,7 +36,7 @@ adaptations, tests, or comparison tools, not asserted upstream byte copies.
 | `tests/m32_mlkem/test_ntt_m32b.py` | `b34eb228b14acb6506dac4dd4e345c935eb84c8ea3e8d578c3fd963d35646531` | `KYBER-REF` |
 | `tests/m32_mlkem/test_kpke_m32d.py` | `757cad7572afb5559434fdd5c71bc9de4886cb2f42067ce41a5ac04a3c363f17` | `KYBER-REF` |
 | `tools/m32b_kernel_transliteration_check.py` | `61406b51df6a08cfa6c7c5b53ee1dc917eac72318913067f195529193ab581eb` | `KYBER-REF` |
-| `tools/m32d_kernel_transliteration_check.py` | `728d049b519c9d1929bb8a1e007db00b864e6a6174fdde0858911b43e792c0a1` | `KYBER-REF` |
+| `tools/m32d_kernel_transliteration_check.py` | `b84d95e7c5adb2f2d3b1f90c4a940cdd9de140664493b8bd091b789c4ac25650` | `KYBER-REF` |
 | `tools/m32e_kernel_transliteration_check.py` | `7ea112d42c3d841d121713def3fc6923a7d6f954e75a154bad365af7be5f3120` | `KYBER-REF` |
 | `tests/m33_mldsa/dilithium_ntt_kernel.cc` | `1f2005bd0f10b94005a155c12ac7d29822299a3edb85afd6f3cfcc8831da06ec` | `DILITHIUM-REF` |
 | `tests/m33_mldsa/dilithium_sampler_kernel.cc` | `99ec00d9ca92d9d798e6b78acc880f4e637d34b2562896d44c922a2e39174a57` | `DILITHIUM-REF` |
