@@ -236,19 +236,13 @@ class DocumentationAndFormatTests(unittest.TestCase):
         self.assertTrue(any(f.rule == "DOC001" and f.line == 3 for f in findings))
 
     def test_valid_annotation_suppresses_claim_finding(self):
-        head = subprocess.check_output(
-            ["git", "rev-parse", "HEAD"], cwd=str(REPO_ROOT), text=True
-        ).strip()
-        with tempfile.TemporaryDirectory(dir=REPO_ROOT) as temporary:
-            temp_dir = Path(temporary)
-            ev_file = self._create_valid_evidence_bundle(temp_dir, commit_sha=head)
-            rel_ev = ev_file.relative_to(REPO_ROOT).as_posix()
-            source = (
-                f"<!-- [CLAIM-PROVENANCE: status=VERIFIED; evidence={rel_ev}; commit={head}; classification=BIT_EXACT_PHYSICAL_SILICON] -->\n"
-                "[VERIFIED PHYSICAL SILICON] 24/24 gates pass.\n"
-            )
-            findings = self.scan_source("doc.md", source)
-            self.assertEqual(findings, [])
+        source = (
+            "<!-- [CLAIM-PROVENANCE: status=HISTORICAL; source=legacy_run; classification=SELF_REPORTED_UNVERIFIED] -->\n"
+            + "24 "
+            + "/ 24 PASS on silicon\n"
+        )
+        findings = self.scan_source("doc.md", source)
+        self.assertFalse(any(f.rule == "DOC001" for f in findings))
 
     def test_marker_at_top_does_not_suppress_later_claim(self):
         source = (
@@ -446,7 +440,7 @@ class DocumentationAndFormatTests(unittest.TestCase):
         manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
         return manifest_path
 
-    def test_valid_verified_claim_passes(self):
+    def test_syntactically_valid_bundle_rejected_for_physical_claim(self):
         head = subprocess.check_output(
             ["git", "rev-parse", "HEAD"], cwd=str(REPO_ROOT), text=True
         ).strip()
@@ -459,8 +453,65 @@ class DocumentationAndFormatTests(unittest.TestCase):
                 "[VERIFIED PHYSICAL SILICON] 24/24 gates pass.\n"
             )
             findings = self.scan_source("doc.md", source)
-            self.assertEqual(
-                [f for f in findings if f.rule in {"DOC001", "DOC002"}], []
+            self.assertTrue(
+                any(
+                    f.rule == "DOC002"
+                    and "independent physical dispatch corroboration is unavailable"
+                    in f.message
+                    for f in findings
+                )
+            )
+
+    def test_non_physical_verified_claim_passes(self):
+        head = subprocess.check_output(
+            ["git", "rev-parse", "HEAD"], cwd=str(REPO_ROOT), text=True
+        ).strip()
+        with tempfile.TemporaryDirectory(dir=REPO_ROOT) as temporary:
+            temp_dir = Path(temporary)
+            manifest = {
+                "schema_version": 1,
+                "evidence_class": "HOST_REFERENCE",
+                "repository": {"commit": head, "clean": True},
+            }
+            manifest_path = temp_dir / "host_evidence.json"
+            manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
+            rel_ev = manifest_path.relative_to(REPO_ROOT).as_posix()
+            source = (
+                f"<!-- [CLAIM-PROVENANCE: status=VERIFIED; evidence={rel_ev}; commit={head}; classification=HOST_REFERENCE] -->\n"
+                + "[HOST REFERENCE] 21"
+                + "/21 PASS on host.\n"
+            )
+            findings = self.scan_source("doc.md", source)
+            self.assertEqual(findings, [])
+
+    def test_git_verification_exception_is_fail_closed(self):
+        head = subprocess.check_output(
+            ["git", "rev-parse", "HEAD"], cwd=str(REPO_ROOT), text=True
+        ).strip()
+        with tempfile.TemporaryDirectory(dir=REPO_ROOT) as temporary:
+            temp_dir = Path(temporary)
+            manifest = {
+                "schema_version": 1,
+                "evidence_class": "HOST_REFERENCE",
+                "repository": {"commit": head, "clean": True},
+            }
+            manifest_path = temp_dir / "host_evidence.json"
+            manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
+            rel_ev = manifest_path.relative_to(REPO_ROOT).as_posix()
+            source = (
+                f"<!-- [CLAIM-PROVENANCE: status=VERIFIED; evidence={rel_ev}; commit={head}; classification=HOST_REFERENCE] -->\n"
+                + "[HOST REFERENCE] 21"
+                + "/21 PASS on host.\n"
+            )
+            with mock.patch.object(
+                agent_integrity.subprocess, "run", side_effect=OSError("git not found")
+            ):
+                findings = self.scan_source("doc.md", source)
+            self.assertTrue(
+                any(
+                    f.rule == "DOC002" and "Failed to verify commit" in f.message
+                    for f in findings
+                )
             )
 
     def test_empty_evidence_file_is_rejected(self):

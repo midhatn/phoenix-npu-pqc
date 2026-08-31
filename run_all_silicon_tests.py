@@ -204,6 +204,8 @@ class SuiteAccountingSummary:
     total_cases_blocked: int
     total_cases_physically_verified: int
     total_cases_unverified_provenance: int
+    total_cases_skipped: int = 0
+    total_cases_xfailed: int = 0
 
     def validate_invariants(self) -> None:
         """Validate non-negativity and dynamic partition invariants."""
@@ -220,6 +222,8 @@ class SuiteAccountingSummary:
             self.total_cases_blocked,
             self.total_cases_physically_verified,
             self.total_cases_unverified_provenance,
+            self.total_cases_skipped,
+            self.total_cases_xfailed,
         )
         if any(c < 0 for c in counts):
             raise ValueError(f"Negative count detected in suite accounting: {self}")
@@ -240,11 +244,14 @@ class SuiteAccountingSummary:
             self.total_cases_matching
             + self.total_cases_failed
             + self.total_cases_blocked
+            + self.total_cases_skipped
+            + self.total_cases_xfailed
             != self.total_cases_selected
         ):
             raise ValueError(
                 f"Case partition invariant failed: {self.total_cases_matching} matching + "
-                f"{self.total_cases_failed} failing + {self.total_cases_blocked} blocked != "
+                f"{self.total_cases_failed} failing + {self.total_cases_blocked} blocked + "
+                f"{self.total_cases_skipped} skipped + {self.total_cases_xfailed} xfailed != "
                 f"{self.total_cases_selected} selected"
             )
 
@@ -302,22 +309,66 @@ def summarize_suite_execution(
                     f"Gate {gid} {field_name} must be a non-negative integer, got {val!r}"
                 )
 
-        if r.cases_executed > r.cases_selected:
+        # 1. Success and status rules
+        if r.success and r.status != STATUS_PASS:
             raise ValueError(
-                f"Gate {gid} cases_executed ({r.cases_executed}) exceeds cases_selected ({r.cases_selected})"
+                f"Gate {gid} has success=True but status is '{r.status}' (expected '{STATUS_PASS}')"
             )
-
-        matching_count = r.cases_passed + r.cases_unverified
-        if r.status == STATUS_BLOCKED:
-            if r.cases_executed != 0 or matching_count != 0 or r.cases_failed != 0:
+        if r.status == STATUS_PASS:
+            if not r.success:
                 raise ValueError(
-                    f"Gate {gid} is BLOCKED but has non-zero execution counts: executed={r.cases_executed}, matching={matching_count}, failed={r.cases_failed}"
+                    f"Gate {gid} has status='{STATUS_PASS}' but success=False"
+                )
+            if (
+                r.cases_passed != r.cases_executed
+                or r.cases_unverified != 0
+                or r.cases_failed != 0
+                or r.cases_skipped != 0
+                or r.cases_xfailed != 0
+            ):
+                raise ValueError(
+                    f"Gate {gid} has status='{STATUS_PASS}' but has non-pass cases: "
+                    f"passed={r.cases_passed}, unverified={r.cases_unverified}, failed={r.cases_failed}, "
+                    f"skipped={r.cases_skipped}, xfailed={r.cases_xfailed}, executed={r.cases_executed}"
+                )
+
+        # 2. Blocked vs non-blocked execution & partition accounting
+        if r.status == STATUS_BLOCKED:
+            if (
+                r.cases_executed != 0
+                or r.cases_passed != 0
+                or r.cases_unverified != 0
+                or r.cases_failed != 0
+                or r.cases_skipped != 0
+                or r.cases_xfailed != 0
+            ):
+                raise ValueError(
+                    f"Gate {gid} is BLOCKED but has non-zero execution/category counts: "
+                    f"executed={r.cases_executed}, passed={r.cases_passed}, unverified={r.cases_unverified}, "
+                    f"failed={r.cases_failed}, skipped={r.cases_skipped}, xfailed={r.cases_xfailed}"
                 )
         else:
-            blocked_cases = 0
-            if matching_count + r.cases_failed + blocked_cases != r.cases_selected:
+            if not r.success and r.cases_passed != 0:
                 raise ValueError(
-                    f"Gate {gid} case accounting invariant failed: {matching_count} matching + {r.cases_failed} failing + {blocked_cases} blocked != {r.cases_selected} selected"
+                    f"Gate {gid} has success=False but non-zero cases_passed ({r.cases_passed})"
+                )
+            if r.cases_selected != r.cases_executed:
+                raise ValueError(
+                    f"Gate {gid} cases_executed ({r.cases_executed}) != cases_selected ({r.cases_selected})"
+                )
+            partition_sum = (
+                r.cases_passed
+                + r.cases_unverified
+                + r.cases_failed
+                + r.cases_skipped
+                + r.cases_xfailed
+            )
+            if partition_sum != r.cases_executed:
+                raise ValueError(
+                    f"Gate {gid} case accounting partition invariant failed: "
+                    f"{r.cases_passed} passed + {r.cases_unverified} unverified + "
+                    f"{r.cases_failed} failed + {r.cases_skipped} skipped + "
+                    f"{r.cases_xfailed} xfailed != {r.cases_executed} executed"
                 )
 
     missing_gates = set(selected_gate_map.keys()) - seen_result_gate_ids
@@ -341,6 +392,8 @@ def summarize_suite_execution(
     total_cases_executed = sum(r.cases_executed for r in results)
     total_cases_matching = sum(r.cases_passed + r.cases_unverified for r in results)
     total_cases_failed = sum(r.cases_failed for r in results)
+    total_cases_skipped = sum(r.cases_skipped for r in results)
+    total_cases_xfailed = sum(r.cases_xfailed for r in results)
     total_cases_blocked = sum(
         r.cases_selected for r in results if r.status == STATUS_BLOCKED
     )
@@ -363,6 +416,8 @@ def summarize_suite_execution(
         total_cases_blocked=total_cases_blocked,
         total_cases_physically_verified=total_cases_physically_verified,
         total_cases_unverified_provenance=total_cases_unverified_provenance,
+        total_cases_skipped=total_cases_skipped,
+        total_cases_xfailed=total_cases_xfailed,
     )
     summary.validate_invariants()
     return summary

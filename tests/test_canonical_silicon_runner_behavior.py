@@ -3173,7 +3173,7 @@ class SuiteAccountingInvariantTests(unittest.TestCase):
         # Missing 14 cases -> summarize_suite_execution should reject before aggregation
         with self.assertRaises(ValueError) as ctx:
             summarize_suite_execution([partial_res], (single_gate,))
-        self.assertIn("case accounting invariant failed", str(ctx.exception))
+        self.assertIn("cases_executed (10) != cases_selected (24)", str(ctx.exception))
 
     def test_summarize_suite_execution_adversarial_rejections(self) -> None:
         """Verify that summarize_suite_execution fail-closes on all invalid inputs."""
@@ -3280,23 +3280,103 @@ class SuiteAccountingInvariantTests(unittest.TestCase):
             summarize_suite_execution([bool_count_res], (gate0,))
         self.assertIn("must be a non-negative integer", str(ctx.exception))
 
-        # 8. cases_executed exceeds cases_selected
-        overflow_exec_res = dataclasses.replace(
-            valid_res0, cases_executed=gate0.expected_total + 5
+        # 8. cases_executed != cases_selected (e.g. selected=10/executed=1/unverified=10)
+        synth_gate_10 = NativeGate(
+            gate_id="DR_SYNTH10",
+            title="Synthetic 10-case Gate",
+            script=gate0.script,
+            backend_label="synth",
+            expected_total=10,
+            oracle_provenance="none",
+        )
+        selected_10_exec_1_res = GateExecutionResult(
+            gate=synth_gate_10,
+            success=False,
+            status=STATUS_SELF_REPORTED_UNVERIFIED,
+            exit_code=0,
+            cases_selected=10,
+            cases_executed=1,
+            cases_passed=0,
+            cases_failed=0,
+            cases_unverified=10,
+            cases_skipped=0,
+            cases_xfailed=0,
+            case_results=(),
+            duration_seconds=0.1,
         )
         with self.assertRaises(ValueError) as ctx:
-            summarize_suite_execution([overflow_exec_res], (gate0,))
-        self.assertIn("exceeds cases_selected", str(ctx.exception))
+            summarize_suite_execution([selected_10_exec_1_res], (synth_gate_10,))
+        self.assertIn("cases_executed (1) != cases_selected (10)", str(ctx.exception))
 
-        # 9. Case accounting partition mismatch
+        # 9. Case accounting partition mismatch & skipped/xfailed omissions
         broken_partition_res = dataclasses.replace(
             valid_res0, cases_unverified=gate0.expected_total - 5, cases_failed=0
         )
         with self.assertRaises(ValueError) as ctx:
             summarize_suite_execution([broken_partition_res], (gate0,))
-        self.assertIn("case accounting invariant failed", str(ctx.exception))
+        self.assertIn("case accounting partition invariant failed", str(ctx.exception))
 
-        # 10. BLOCKED gate with non-zero executed count
+        # Valid with skipped/xfailed properly accounted
+        valid_with_skipped = dataclasses.replace(
+            valid_res0,
+            cases_unverified=gate0.expected_total - 3,
+            cases_skipped=2,
+            cases_xfailed=1,
+        )
+        skipped_summary = summarize_suite_execution([valid_with_skipped], (gate0,))
+        self.assertEqual(skipped_summary.total_gates, 1)
+
+        # 10. Success and status contradictions
+        # success=True with status!=STATUS_PASS
+        success_unverified_res = dataclasses.replace(
+            valid_res0,
+            success=True,
+            status=STATUS_SELF_REPORTED_UNVERIFIED,
+        )
+        with self.assertRaises(ValueError) as ctx:
+            summarize_suite_execution([success_unverified_res], (gate0,))
+        self.assertIn(
+            "has success=True but status is 'SELF_REPORTED_UNVERIFIED'",
+            str(ctx.exception),
+        )
+
+        # success=False with status=STATUS_PASS
+        pass_status_failed_res = dataclasses.replace(
+            valid_res0,
+            success=False,
+            status=STATUS_PASS,
+            cases_passed=gate0.expected_total,
+            cases_unverified=0,
+        )
+        with self.assertRaises(ValueError) as ctx:
+            summarize_suite_execution([pass_status_failed_res], (gate0,))
+        self.assertIn("has status='PASS' but success=False", str(ctx.exception))
+
+        # success=False with non-zero cases_passed
+        failed_with_passed_cases_res = dataclasses.replace(
+            valid_res0,
+            success=False,
+            status=STATUS_FAIL,
+            cases_passed=gate0.expected_total,
+            cases_unverified=0,
+        )
+        with self.assertRaises(ValueError) as ctx:
+            summarize_suite_execution([failed_with_passed_cases_res], (gate0,))
+        self.assertIn("has success=False but non-zero cases_passed", str(ctx.exception))
+
+        # STATUS_PASS with unverified cases
+        pass_with_unverified_res = dataclasses.replace(
+            valid_res0,
+            success=True,
+            status=STATUS_PASS,
+            cases_passed=gate0.expected_total - 1,
+            cases_unverified=1,
+        )
+        with self.assertRaises(ValueError) as ctx:
+            summarize_suite_execution([pass_with_unverified_res], (gate0,))
+        self.assertIn("has non-pass cases", str(ctx.exception))
+
+        # 11. BLOCKED gate with non-zero executed or category counts
         blocked_with_exec_res = dataclasses.replace(
             valid_res0,
             status=STATUS_BLOCKED,
@@ -3307,8 +3387,33 @@ class SuiteAccountingInvariantTests(unittest.TestCase):
         with self.assertRaises(ValueError) as ctx:
             summarize_suite_execution([blocked_with_exec_res], (gate0,))
         self.assertIn(
-            "is BLOCKED but has non-zero execution counts", str(ctx.exception)
+            "is BLOCKED but has non-zero execution/category counts", str(ctx.exception)
         )
+
+        for cat_field in (
+            "cases_passed",
+            "cases_unverified",
+            "cases_failed",
+            "cases_skipped",
+            "cases_xfailed",
+        ):
+            overrides = {
+                "status": STATUS_BLOCKED,
+                "cases_executed": 0,
+                "cases_passed": 0,
+                "cases_unverified": 0,
+                "cases_failed": 0,
+                "cases_skipped": 0,
+                "cases_xfailed": 0,
+            }
+            overrides[cat_field] = 1
+            blocked_cat_res = dataclasses.replace(valid_res0, **overrides)
+            with self.assertRaises(ValueError) as ctx:
+                summarize_suite_execution([blocked_cat_res], (gate0,))
+            self.assertIn(
+                "is BLOCKED but has non-zero execution/category counts",
+                str(ctx.exception),
+            )
 
     def test_negative_and_contradictory_counts_rejected(self) -> None:
         """Verify that negative or contradictory summary counts are rejected."""

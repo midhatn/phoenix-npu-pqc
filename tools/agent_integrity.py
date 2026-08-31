@@ -817,18 +817,48 @@ def validate_claim_provenance(
                         )
 
                     if manifest_data is not None:
-                        # 1. Validate evidence against schema and verify artifact hashes
-                        schema_errors = validate_evidence(
-                            manifest_data, ev_file, check_files=True
-                        )
-                        if schema_errors:
+                        # 1. Validate evidence invariants and verify artifact hashes
+                        manifest_class = manifest_data.get("evidence_class")
+                        if (
+                            manifest_class == "BIT_EXACT_PHYSICAL_SILICON"
+                            or prov.classification == "BIT_EXACT_PHYSICAL_SILICON"
+                        ):
+                            evidence_errors = validate_evidence(
+                                manifest_data, ev_file, check_files=True
+                            )
+                            if evidence_errors:
+                                findings.append(
+                                    Finding(
+                                        norm_path,
+                                        prov.line,
+                                        "DOC002",
+                                        "critical",
+                                        f"Evidence validation failed for '{raw_ev}': {'; '.join(evidence_errors[:3])}",
+                                    )
+                                )
+                        elif manifest_class in {
+                            "HOST_REFERENCE",
+                            "CONTRACT",
+                            "COMPILE_ONLY",
+                        }:
+                            if manifest_data.get("schema_version") != 1:
+                                findings.append(
+                                    Finding(
+                                        norm_path,
+                                        prov.line,
+                                        "DOC002",
+                                        "critical",
+                                        f"Evidence manifest '{raw_ev}' schema_version must equal 1",
+                                    )
+                                )
+                        else:
                             findings.append(
                                 Finding(
                                     norm_path,
                                     prov.line,
                                     "DOC002",
                                     "critical",
-                                    f"Evidence validation failed for '{raw_ev}': {'; '.join(schema_errors[:3])}",
+                                    f"Evidence manifest '{raw_ev}' has invalid evidence_class '{manifest_class}'",
                                 )
                             )
 
@@ -850,7 +880,6 @@ def validate_claim_provenance(
                             )
 
                         # 3. Verify classification matches
-                        manifest_class = manifest_data.get("evidence_class")
                         if prov.classification != manifest_class:
                             findings.append(
                                 Finding(
@@ -881,21 +910,36 @@ def validate_claim_provenance(
                             f"Referenced commit '{prov.commit}' does not exist in repository history.",
                         )
                     )
-            except (subprocess.CalledProcessError, OSError):
-                pass
+            except (subprocess.CalledProcessError, OSError) as exc:
+                findings.append(
+                    Finding(
+                        norm_path,
+                        prov.line,
+                        "DOC002",
+                        "critical",
+                        f"Failed to verify commit '{prov.commit}' in repository history: {exc}",
+                    )
+                )
 
-        if prov.classification:
-            is_physical_claim = bool(
-                re.search(
-                    r"\[VERIFIED PHYSICAL SILICON\]|\bphysically verified\b|\bexecuted on silicon\b",
-                    claim_line_text,
-                    re.IGNORECASE,
+        # Enforce physical claim restrictions while PHYSICAL-DISPATCH-CORROBORATION is OPEN
+        is_physical_claim = bool(
+            re.search(
+                r"\[VERIFIED PHYSICAL SILICON\]|\bphysically verified\b|\bexecuted on silicon\b|\bon[- ]tile silicon\b|\bphysical silicon\b|\bhardware verified\b",
+                claim_line_text,
+                re.IGNORECASE,
+            )
+        )
+        if is_physical_claim:
+            findings.append(
+                Finding(
+                    norm_path,
+                    prov.line,
+                    "DOC002",
+                    "critical",
+                    "Physical silicon claim cannot be authorized: independent physical dispatch corroboration is unavailable while PHYSICAL-DISPATCH-CORROBORATION remains OPEN.",
                 )
             )
-            if (
-                is_physical_claim
-                and prov.classification != "BIT_EXACT_PHYSICAL_SILICON"
-            ):
+            if prov.classification != "BIT_EXACT_PHYSICAL_SILICON":
                 findings.append(
                     Finding(
                         norm_path,
@@ -905,6 +949,16 @@ def validate_claim_provenance(
                         f"Evidence classification '{prov.classification}' cannot authorize a VERIFIED physical silicon claim; BIT_EXACT_PHYSICAL_SILICON is required.",
                     )
                 )
+        elif prov.classification == "BIT_EXACT_PHYSICAL_SILICON":
+            findings.append(
+                Finding(
+                    norm_path,
+                    prov.line,
+                    "DOC002",
+                    "critical",
+                    "status=VERIFIED cannot authorize BIT_EXACT_PHYSICAL_SILICON classification while PHYSICAL-DISPATCH-CORROBORATION remains OPEN.",
+                )
+            )
 
     elif prov.status == "HISTORICAL":
         unauthorized_patterns = (
