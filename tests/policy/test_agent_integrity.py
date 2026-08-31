@@ -17,11 +17,10 @@ TOOLS = REPO_ROOT / "tools"
 if str(TOOLS) not in sys.path:
     sys.path.insert(0, str(TOOLS))
 
-import agent_integrity
-from agent_integrity import (
+import agent_integrity  # noqa: E402
+from agent_integrity import (  # noqa: E402
     EXCLUDED_POLICY_PATHS,
     REPO_ROOT as LIB_ROOT,
-    git_changed_files,
     repository_files,
     scan_cmake_file,
     scan_cpp_file,
@@ -543,7 +542,6 @@ class SuiteAccountingInvariantTests(unittest.TestCase):
             NativeGate,
             GateExecutionResult,
             summarize_suite_execution,
-            STATUS_SELF_REPORTED_UNVERIFIED,
             STATUS_FAIL,
             STATUS_BLOCKED,
             STATUS_PASS,

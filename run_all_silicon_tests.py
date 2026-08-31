@@ -21,6 +21,7 @@ hardware device identity verification, and independent KAT buffer comparison. Ev
 child-emitted record remains SELF_REPORTED_UNVERIFIED until corroborated by independent
 runtime verification. No physical PASS pathway exists in this baseline stage.
 """
+
 from __future__ import annotations
 
 import argparse
@@ -223,7 +224,10 @@ class SuiteAccountingSummary:
             raise ValueError(f"Negative count detected in suite accounting: {self}")
 
         if (
-            self.passed_gates + self.unverified_gates + self.blocked_gates + self.failed_gates
+            self.passed_gates
+            + self.unverified_gates
+            + self.blocked_gates
+            + self.failed_gates
             != self.total_gates
         ):
             raise ValueError(
@@ -232,7 +236,9 @@ class SuiteAccountingSummary:
             )
 
         if (
-            self.total_cases_matching + self.total_cases_failed + self.total_cases_blocked
+            self.total_cases_matching
+            + self.total_cases_failed
+            + self.total_cases_blocked
             != self.total_cases_selected
         ):
             raise ValueError(
@@ -249,20 +255,29 @@ def summarize_suite_execution(
     """Aggregate per-gate execution outcomes dynamically and enforce partition invariants."""
     total_gates = len(gates)
     passed_gates = sum(1 for r in results if r.success)
-    unverified_gates = sum(1 for r in results if r.status == STATUS_SELF_REPORTED_UNVERIFIED)
+    unverified_gates = sum(
+        1 for r in results if r.status == STATUS_SELF_REPORTED_UNVERIFIED
+    )
     blocked_gates = sum(1 for r in results if r.status == STATUS_BLOCKED)
     failed_gates = sum(
-        1 for r in results if not r.success and r.status not in (STATUS_SELF_REPORTED_UNVERIFIED, STATUS_BLOCKED)
+        1
+        for r in results
+        if not r.success
+        and r.status not in (STATUS_SELF_REPORTED_UNVERIFIED, STATUS_BLOCKED)
     )
 
     total_cases_selected = sum(g.expected_total for g in gates)
     total_cases_executed = sum(r.cases_executed for r in results)
     total_cases_matching = sum(r.cases_passed + r.cases_unverified for r in results)
     total_cases_failed = sum(r.cases_failed for r in results)
-    total_cases_blocked = sum(r.cases_selected for r in results if r.status == STATUS_BLOCKED)
+    total_cases_blocked = sum(
+        r.cases_selected for r in results if r.status == STATUS_BLOCKED
+    )
     total_cases_physically_verified = sum(r.cases_passed for r in results if r.success)
     # All executed cases lack independent physical provenance unless the gate is physically verified
-    total_cases_unverified_provenance = total_cases_executed - total_cases_physically_verified
+    total_cases_unverified_provenance = (
+        total_cases_executed - total_cases_physically_verified
+    )
 
     summary = SuiteAccountingSummary(
         total_gates=total_gates,
@@ -503,17 +518,27 @@ def extract_canonical_framed_record(
     end_count = stdout.count(RESULT_END_MARKER)
 
     if start_count == 0 and end_count == 0:
-        return None, stdout, "No machine-readable framed evidence record found in stdout (unmigrated text output is non-authoritative)"
+        return (
+            None,
+            stdout,
+            "No machine-readable framed evidence record found in stdout (unmigrated text output is non-authoritative)",
+        )
     if start_count != 1 or end_count != 1:
-        return None, stdout, f"Framing delimiter anomaly: {start_count} start marker(s), {end_count} end marker(s)"
+        return (
+            None,
+            stdout,
+            f"Framing delimiter anomaly: {start_count} start marker(s), {end_count} end marker(s)",
+        )
 
     start_pos = stdout.find(RESULT_START_MARKER)
     end_pos = stdout.find(RESULT_END_MARKER)
     if start_pos >= end_pos:
         return None, stdout, "Framing error: start delimiter occurs after end delimiter"
 
-    block = stdout[start_pos + len(RESULT_START_MARKER):end_pos].strip()
-    non_json_text = stdout[:start_pos] + "\n" + stdout[end_pos + len(RESULT_END_MARKER):]
+    block = stdout[start_pos + len(RESULT_START_MARKER) : end_pos].strip()
+    non_json_text = (
+        stdout[:start_pos] + "\n" + stdout[end_pos + len(RESULT_END_MARKER) :]
+    )
 
     try:
         parsed = json.loads(block)
@@ -532,7 +557,10 @@ def parse_iso_timestamp(val: object) -> tuple[datetime | None, str | None]:
     try:
         dt = datetime.fromisoformat(raw.replace("Z", "+00:00"))
         if dt.tzinfo is None:
-            return None, f"Timezone-naive timestamp rejected ({raw!r}); explicit timezone offset is required"
+            return (
+                None,
+                f"Timezone-naive timestamp rejected ({raw!r}); explicit timezone offset is required",
+            )
         return dt, None
     except ValueError as exc:
         return None, f"Invalid ISO timestamp format ({raw!r}): {exc}"
@@ -561,7 +589,9 @@ def parse_gate_output(
         return GateExecutionResult(
             gate=gate,
             success=False,
-            status=STATUS_INFRASTRUCTURE_FAILURE if "interpreter" in str(error_message).lower() else STATUS_FAIL,
+            status=STATUS_INFRASTRUCTURE_FAILURE
+            if "interpreter" in str(error_message).lower()
+            else STATUS_FAIL,
             exit_code=exit_code,
             cases_selected=gate.expected_total,
             cases_executed=0,
@@ -579,12 +609,16 @@ def parse_gate_output(
         )
 
     record, non_json_diag, framing_err = extract_canonical_framed_record(stdout)
-    rejected_findings = scan_diagnostic_markers(non_json_diag + ("\n" + stderr if stderr else ""))
+    rejected_findings = scan_diagnostic_markers(
+        non_json_diag + ("\n" + stderr if stderr else "")
+    )
 
     if record is None:
         err = framing_err or "No machine-readable framed record"
         if rejected_findings:
-            markers_detail = "; ".join(f"line {l}: '{m}' in '{t}'" for l, m, t in rejected_findings)
+            markers_detail = "; ".join(
+                f"line {line_no}: '{m}' in '{t}'" for line_no, m, t in rejected_findings
+            )
             err += f"; rejected marker(s) detected: {markers_detail}"
         return GateExecutionResult(
             gate=gate,
@@ -613,38 +647,63 @@ def parse_gate_output(
     if execution_nonce is not None:
         rec_nonce = record.get("execution_nonce")
         if rec_nonce != execution_nonce:
-            failures.append(f"execution_nonce mismatch or missing (expected {execution_nonce!r}, got {rec_nonce!r})")
+            failures.append(
+                f"execution_nonce mismatch or missing (expected {execution_nonce!r}, got {rec_nonce!r})"
+            )
         else:
-            corroboration_notes.append("Execution nonce verified and bound to current run.")
+            corroboration_notes.append(
+                "Execution nonce verified and bound to current run."
+            )
 
     # 2. Schema and Gate Identity
     if record.get("schema_version") != 1:
-        failures.append(f"schema_version must equal 1 (got {record.get('schema_version')})")
+        failures.append(
+            f"schema_version must equal 1 (got {record.get('schema_version')})"
+        )
     if record.get("gate_id") != gate.gate_id:
-        failures.append(f"gate_id {record.get('gate_id')!r} != expected {gate.gate_id!r}")
+        failures.append(
+            f"gate_id {record.get('gate_id')!r} != expected {gate.gate_id!r}"
+        )
     if record.get("execution_boundary") != "[ON-TILE SILICON]":
-        failures.append(f"execution_boundary {record.get('execution_boundary')!r} != '[ON-TILE SILICON]'")
+        failures.append(
+            f"execution_boundary {record.get('execution_boundary')!r} != '[ON-TILE SILICON]'"
+        )
     if record.get("evidence_class") != "BIT_EXACT_PHYSICAL_SILICON":
-        failures.append(f"evidence_class {record.get('evidence_class')!r} != 'BIT_EXACT_PHYSICAL_SILICON'")
+        failures.append(
+            f"evidence_class {record.get('evidence_class')!r} != 'BIT_EXACT_PHYSICAL_SILICON'"
+        )
 
     # 3. Independent Timestamp Verification (Strict Timezone-Aware)
     child_start, start_err = parse_iso_timestamp(record.get("started_at"))
     if start_err:
         failures.append(f"started_at error: {start_err}")
-    child_end, end_err = parse_iso_timestamp(record.get("ended_at") or record.get("completed_at"))
+    child_end, end_err = parse_iso_timestamp(
+        record.get("ended_at") or record.get("completed_at")
+    )
     if end_err:
         failures.append(f"ended_at error: {end_err}")
 
     if child_start is not None and child_end is not None:
         if child_start > child_end:
-            failures.append(f"Timestamp inversion: started_at ({child_start}) > ended_at ({child_end})")
+            failures.append(
+                f"Timestamp inversion: started_at ({child_start}) > ended_at ({child_end})"
+            )
         if parent_start_time is not None and parent_end_time is not None:
-            if child_start.timestamp() < parent_start_time.timestamp() - tolerance_seconds:
-                failures.append(f"Stale started_at ({child_start}) before parent spawn ({parent_start_time})")
+            if (
+                child_start.timestamp()
+                < parent_start_time.timestamp() - tolerance_seconds
+            ):
+                failures.append(
+                    f"Stale started_at ({child_start}) before parent spawn ({parent_start_time})"
+                )
             if child_end.timestamp() > parent_end_time.timestamp() + tolerance_seconds:
-                failures.append(f"Future ended_at ({child_end}) after parent completion ({parent_end_time})")
+                failures.append(
+                    f"Future ended_at ({child_end}) after parent completion ({parent_end_time})"
+                )
         if not failures:
-            corroboration_notes.append("Timestamps parsed and verified within parent-observed execution window.")
+            corroboration_notes.append(
+                "Timestamps parsed and verified within parent-observed execution window."
+            )
 
     # 4. Source / File Integrity Check
     artifact = record.get("artifact")
@@ -655,8 +714,12 @@ def parse_gate_output(
         art_claimed_sha = artifact.get("sha256")
         if not isinstance(art_rel, str) or not art_rel.strip():
             failures.append("artifact.path must be a non-empty string")
-        elif not isinstance(art_claimed_sha, str) or not re.fullmatch(r"^[0-9a-f]{64}$", art_claimed_sha.lower()):
-            failures.append("artifact.sha256 must be a 64-character lowercase hex digest")
+        elif not isinstance(art_claimed_sha, str) or not re.fullmatch(
+            r"^[0-9a-f]{64}$", art_claimed_sha.lower()
+        ):
+            failures.append(
+                "artifact.sha256 must be a 64-character lowercase hex digest"
+            )
         else:
             try:
                 art_full = (repo_root / art_rel).resolve()
@@ -666,13 +729,17 @@ def parse_gate_output(
                 elif not art_full.is_file():
                     failures.append(f"Artifact file not found on disk: {art_rel}")
                 else:
-                    recomputed_sha = hashlib.sha256(art_full.read_bytes()).hexdigest().lower()
+                    recomputed_sha = (
+                        hashlib.sha256(art_full.read_bytes()).hexdigest().lower()
+                    )
                     if recomputed_sha != art_claimed_sha.lower():
                         failures.append(
                             f"Artifact SHA-256 mismatch: recomputed {recomputed_sha} != claimed {art_claimed_sha}"
                         )
                     else:
-                        corroboration_notes.append(f"Source/file integrity verified: {art_rel} matches disk SHA-256.")
+                        corroboration_notes.append(
+                            f"Source/file integrity verified: {art_rel} matches disk SHA-256."
+                        )
             except Exception as exc:
                 failures.append(f"Artifact verification error: {exc}")
 
@@ -691,7 +758,11 @@ def parse_gate_output(
         failures.append("dispatch field must be an object")
     else:
         dispatches = dispatch.get("physical_dispatches")
-        if not isinstance(dispatches, int) or isinstance(dispatches, bool) or dispatches < 1:
+        if (
+            not isinstance(dispatches, int)
+            or isinstance(dispatches, bool)
+            or dispatches < 1
+        ):
             failures.append("dispatch.physical_dispatches must be an integer >= 1")
         if dispatch.get("completed") is not True:
             failures.append("dispatch.completed must be true")
@@ -701,9 +772,13 @@ def parse_gate_output(
     if decl_selected is None:
         failures.append("Missing required field: cases_selected")
     elif not isinstance(decl_selected, int) or isinstance(decl_selected, bool):
-        failures.append(f"cases_selected must be an integer, got {type(decl_selected).__name__}")
+        failures.append(
+            f"cases_selected must be an integer, got {type(decl_selected).__name__}"
+        )
     elif decl_selected != gate.expected_total:
-        failures.append(f"cases_selected ({decl_selected}) != expected total ({gate.expected_total})")
+        failures.append(
+            f"cases_selected ({decl_selected}) != expected total ({gate.expected_total})"
+        )
 
     # 8. Explicit Cases Array Verification
     cases = record.get("cases")
@@ -717,12 +792,18 @@ def parse_gate_output(
         if decl_executed is None:
             failures.append("Missing required field: cases_executed")
         elif not isinstance(decl_executed, int) or isinstance(decl_executed, bool):
-            failures.append(f"cases_executed must be an integer, got {type(decl_executed).__name__}")
+            failures.append(
+                f"cases_executed must be an integer, got {type(decl_executed).__name__}"
+            )
         elif decl_executed != len(cases):
-            failures.append(f"cases_executed ({decl_executed}) != cases length ({len(cases)})")
+            failures.append(
+                f"cases_executed ({decl_executed}) != cases length ({len(cases)})"
+            )
 
         if len(cases) != gate.expected_total:
-            failures.append(f"cases array length ({len(cases)}) != expected gate total ({gate.expected_total})")
+            failures.append(
+                f"cases array length ({len(cases)}) != expected gate total ({gate.expected_total})"
+            )
 
         seen_case_ids: set[str] = set()
         for idx, case in enumerate(cases):
@@ -737,7 +818,9 @@ def parse_gate_output(
                 failures.append(f"duplicate case_id {cid!r} at index {idx}")
             seen_case_ids.add(cid)
             st = str(case.get("status", "")).upper()
-            case_results_list.append(CaseResult(case_id=cid, status=st, details=str(case.get("details", ""))))
+            case_results_list.append(
+                CaseResult(case_id=cid, status=st, details=str(case.get("details", "")))
+            )
             if st == "PASS":
                 counts["passed_claims"] += 1
             elif st in {"SKIP", "SKIPPED"}:
@@ -748,7 +831,9 @@ def parse_gate_output(
                 counts["failed_claims"] += 1
 
         if counts["passed_claims"] != gate.expected_total:
-            failures.append(f"passed claims ({counts['passed_claims']}) != expected ({gate.expected_total})")
+            failures.append(
+                f"passed claims ({counts['passed_claims']}) != expected ({gate.expected_total})"
+            )
         if counts["failed_claims"] > 0:
             failures.append(f"{counts['failed_claims']} case(s) reported failure")
         if counts["skipped"] > 0:
@@ -764,7 +849,11 @@ def parse_gate_output(
     # 10. Process ID (PID) Validation
     child_pid = record.get("child_pid")
     if child_pid is not None:
-        if not isinstance(child_pid, int) or isinstance(child_pid, bool) or child_pid <= 0:
+        if (
+            not isinstance(child_pid, int)
+            or isinstance(child_pid, bool)
+            or child_pid <= 0
+        ):
             failures.append(f"child_pid must be a positive integer, got {child_pid!r}")
         else:
             corroboration_notes.append(f"Child process PID verified: {child_pid}")
@@ -775,9 +864,12 @@ def parse_gate_output(
         if not isinstance(test_buffers, list):
             failures.append("test_buffers field must be an array")
         elif len(test_buffers) != gate.expected_total:
-            failures.append(f"test_buffers length ({len(test_buffers)}) != expected gate total ({gate.expected_total})")
+            failures.append(
+                f"test_buffers length ({len(test_buffers)}) != expected gate total ({gate.expected_total})"
+            )
         elif gate.gate_id == "DR0":
             from phoenix_sdr_dsp.pqc import abi
+
             buffer_mismatches = 0
             for b_idx, buf_entry in enumerate(test_buffers):
                 if not isinstance(buf_entry, dict):
@@ -786,32 +878,50 @@ def parse_gate_output(
                 in_a = buf_entry.get("input_a")
                 in_b = buf_entry.get("input_b")
                 out_c = buf_entry.get("output_c")
-                if not isinstance(in_a, list) or not isinstance(in_b, list) or not isinstance(out_c, list):
-                    failures.append(f"test_buffers[{b_idx}] input_a, input_b, output_c must be integer lists")
+                if (
+                    not isinstance(in_a, list)
+                    or not isinstance(in_b, list)
+                    or not isinstance(out_c, list)
+                ):
+                    failures.append(
+                        f"test_buffers[{b_idx}] input_a, input_b, output_c must be integer lists"
+                    )
                     continue
                 if len(in_a) != abi.N or len(in_b) != abi.N or len(out_c) != abi.N:
-                    failures.append(f"test_buffers[{b_idx}] buffer lengths must equal {abi.N}")
+                    failures.append(
+                        f"test_buffers[{b_idx}] buffer lengths must equal {abi.N}"
+                    )
                     continue
                 try:
                     expected = abi.reference_negacyclic_product(in_a, in_b)
                     if out_c != expected:
                         buffer_mismatches += 1
                         mismatch_lane = next(
-                            i for i, (got_val, want_val) in enumerate(zip(out_c, expected)) if got_val != want_val
+                            i
+                            for i, (got_val, want_val) in enumerate(
+                                zip(out_c, expected)
+                            )
+                            if got_val != want_val
                         )
                         failures.append(
                             f"test_buffers[{b_idx}] ({buf_entry.get('case_name')}) oracle mismatch at lane {mismatch_lane}: "
                             f"got {out_c[mismatch_lane]}, expected {expected[mismatch_lane]}"
                         )
                 except Exception as exc:
-                    failures.append(f"test_buffers[{b_idx}] oracle evaluation error: {exc}")
+                    failures.append(
+                        f"test_buffers[{b_idx}] oracle evaluation error: {exc}"
+                    )
             if buffer_mismatches == 0 and not failures:
                 corroboration_notes.append(
                     f"Parent independent oracle verified all {len(test_buffers)} x {abi.N} output coefficients."
                 )
         elif gate.gate_id == "DR1":
             from tests.pqc_device_resident.dr1_reference import expanda_rejntt_reference
-            from tests.pqc_device_resident.test_dr1_mldsa44_rejntt import FINGERPRINT_BY_LABEL, _coefficient_digest
+            from tests.pqc_device_resident.test_dr1_mldsa44_rejntt import (
+                FINGERPRINT_BY_LABEL,
+                _coefficient_digest,
+            )
+
             dr1_mismatches = 0
             for b_idx, buf_entry in enumerate(test_buffers):
                 if not isinstance(buf_entry, dict):
@@ -822,11 +932,20 @@ def parse_gate_output(
                 i = buf_entry.get("i")
                 out_coeffs = buf_entry.get("output_coefficients")
                 case_label = buf_entry.get("case_label", f"case_{b_idx}")
-                if not isinstance(rho_hex, str) or not isinstance(j, int) or not isinstance(i, int) or not isinstance(out_coeffs, list):
-                    failures.append(f"test_buffers[{b_idx}] malformed fields (expected rho_hex, j, i, output_coefficients)")
+                if (
+                    not isinstance(rho_hex, str)
+                    or not isinstance(j, int)
+                    or not isinstance(i, int)
+                    or not isinstance(out_coeffs, list)
+                ):
+                    failures.append(
+                        f"test_buffers[{b_idx}] malformed fields (expected rho_hex, j, i, output_coefficients)"
+                    )
                     continue
                 if len(out_coeffs) != 256:
-                    failures.append(f"test_buffers[{b_idx}] output_coefficients length ({len(out_coeffs)}) != 256")
+                    failures.append(
+                        f"test_buffers[{b_idx}] output_coefficients length ({len(out_coeffs)}) != 256"
+                    )
                     continue
                 try:
                     rho = bytes.fromhex(rho_hex)
@@ -835,7 +954,11 @@ def parse_gate_output(
                     if out_coeffs != list(expected.coefficients):
                         dr1_mismatches += 1
                         mismatch_lane = next(
-                            k for k, (got_val, want_val) in enumerate(zip(out_coeffs, expected.coefficients)) if got_val != want_val
+                            k
+                            for k, (got_val, want_val) in enumerate(
+                                zip(out_coeffs, expected.coefficients)
+                            )
+                            if got_val != want_val
                         )
                         failures.append(
                             f"test_buffers[{b_idx}] ({case_label}) oracle mismatch at lane {mismatch_lane}: "
@@ -847,19 +970,25 @@ def parse_gate_output(
                         failures.append(
                             f"test_buffers[{b_idx}] ({case_label}) claimed fingerprint mismatch: {claimed_digest} != computed {actual_digest}"
                         )
-                    if case_label in FINGERPRINT_BY_LABEL and actual_digest != FINGERPRINT_BY_LABEL[case_label]:
+                    if (
+                        case_label in FINGERPRINT_BY_LABEL
+                        and actual_digest != FINGERPRINT_BY_LABEL[case_label]
+                    ):
                         dr1_mismatches += 1
                         failures.append(
                             f"test_buffers[{b_idx}] ({case_label}) frozen fingerprint mismatch: {actual_digest} != {FINGERPRINT_BY_LABEL[case_label]}"
                         )
                 except Exception as exc:
-                    failures.append(f"test_buffers[{b_idx}] oracle evaluation error: {exc}")
+                    failures.append(
+                        f"test_buffers[{b_idx}] oracle evaluation error: {exc}"
+                    )
             if dr1_mismatches == 0 and not failures:
                 corroboration_notes.append(
                     f"Parent independent oracle verified all {len(test_buffers)} x 256 output coefficients and fingerprints."
                 )
         elif gate.gate_id == "DR2a":
             from tests.pqc_device_resident.dr2a_reference import samplentt_reference
+
             dr2a_mismatches = 0
             for b_idx, buf_entry in enumerate(test_buffers):
                 if not isinstance(buf_entry, dict):
@@ -870,35 +999,53 @@ def parse_gate_output(
                 i = buf_entry.get("i")
                 out_coeffs = buf_entry.get("output_coefficients")
                 case_label = buf_entry.get("case_label", f"case_{b_idx}")
-                if not isinstance(rho_hex, str) or not isinstance(j, int) or not isinstance(i, int) or not isinstance(out_coeffs, list):
-                    failures.append(f"test_buffers[{b_idx}] malformed fields (expected rho_hex, j, i, output_coefficients)")
+                if (
+                    not isinstance(rho_hex, str)
+                    or not isinstance(j, int)
+                    or not isinstance(i, int)
+                    or not isinstance(out_coeffs, list)
+                ):
+                    failures.append(
+                        f"test_buffers[{b_idx}] malformed fields (expected rho_hex, j, i, output_coefficients)"
+                    )
                     continue
                 if len(out_coeffs) != 256:
-                    failures.append(f"test_buffers[{b_idx}] output_coefficients length ({len(out_coeffs)}) != 256")
+                    failures.append(
+                        f"test_buffers[{b_idx}] output_coefficients length ({len(out_coeffs)}) != 256"
+                    )
                     continue
                 try:
                     rho = bytes.fromhex(rho_hex)
                     expected = samplentt_reference(rho, j, i)
                     if expected.limit_exceeded:
                         dr2a_mismatches += 1
-                        failures.append(f"test_buffers[{b_idx}] ({case_label}) oracle rejected: candidate block limit exceeded")
+                        failures.append(
+                            f"test_buffers[{b_idx}] ({case_label}) oracle rejected: candidate block limit exceeded"
+                        )
                     elif out_coeffs != list(expected.coefficients):
                         dr2a_mismatches += 1
                         mismatch_lane = next(
-                            k for k, (got_val, want_val) in enumerate(zip(out_coeffs, expected.coefficients)) if got_val != want_val
+                            k
+                            for k, (got_val, want_val) in enumerate(
+                                zip(out_coeffs, expected.coefficients)
+                            )
+                            if got_val != want_val
                         )
                         failures.append(
                             f"test_buffers[{b_idx}] ({case_label}) oracle mismatch at lane {mismatch_lane}: "
                             f"got {out_coeffs[mismatch_lane]}, expected {expected.coefficients[mismatch_lane]}"
                         )
                 except Exception as exc:
-                    failures.append(f"test_buffers[{b_idx}] oracle evaluation error: {exc}")
+                    failures.append(
+                        f"test_buffers[{b_idx}] oracle evaluation error: {exc}"
+                    )
             if dr2a_mismatches == 0 and not failures:
                 corroboration_notes.append(
                     f"Parent independent oracle verified all {len(test_buffers)} x 256 output coefficients."
                 )
         elif gate.gate_id == "DR2b":
             from tests.pqc_device_resident.dr2b_reference import noise_ntt_reference
+
             dr2b_mismatches = 0
             for b_idx, buf_entry in enumerate(test_buffers):
                 if not isinstance(buf_entry, dict):
@@ -908,11 +1055,19 @@ def parse_gate_output(
                 counter = buf_entry.get("counter")
                 out_coeffs = buf_entry.get("output_coefficients")
                 case_label = buf_entry.get("case_label", f"case_{b_idx}")
-                if not isinstance(sigma_hex, str) or not isinstance(counter, int) or not isinstance(out_coeffs, list):
-                    failures.append(f"test_buffers[{b_idx}] malformed fields (expected sigma_hex, counter, output_coefficients)")
+                if (
+                    not isinstance(sigma_hex, str)
+                    or not isinstance(counter, int)
+                    or not isinstance(out_coeffs, list)
+                ):
+                    failures.append(
+                        f"test_buffers[{b_idx}] malformed fields (expected sigma_hex, counter, output_coefficients)"
+                    )
                     continue
                 if len(out_coeffs) != 256:
-                    failures.append(f"test_buffers[{b_idx}] output_coefficients length ({len(out_coeffs)}) != 256")
+                    failures.append(
+                        f"test_buffers[{b_idx}] output_coefficients length ({len(out_coeffs)}) != 256"
+                    )
                     continue
                 try:
                     sigma = bytes.fromhex(sigma_hex)
@@ -920,20 +1075,27 @@ def parse_gate_output(
                     if out_coeffs != expected:
                         dr2b_mismatches += 1
                         mismatch_lane = next(
-                            k for k, (got_val, want_val) in enumerate(zip(out_coeffs, expected)) if got_val != want_val
+                            k
+                            for k, (got_val, want_val) in enumerate(
+                                zip(out_coeffs, expected)
+                            )
+                            if got_val != want_val
                         )
                         failures.append(
                             f"test_buffers[{b_idx}] ({case_label}) oracle mismatch at lane {mismatch_lane}: "
                             f"got {out_coeffs[mismatch_lane]}, expected {expected[mismatch_lane]}"
                         )
                 except Exception as exc:
-                    failures.append(f"test_buffers[{b_idx}] oracle evaluation error: {exc}")
+                    failures.append(
+                        f"test_buffers[{b_idx}] oracle evaluation error: {exc}"
+                    )
             if dr2b_mismatches == 0 and not failures:
                 corroboration_notes.append(
                     f"Parent independent oracle verified all {len(test_buffers)} x 256 output coefficients."
                 )
         elif gate.gate_id == "DR2c":
             from tests.pqc_device_resident.dr2c_reference import keygen_row_reference
+
             dr2c_mismatches = 0
             for b_idx, buf_entry in enumerate(test_buffers):
                 if not isinstance(buf_entry, dict):
@@ -944,11 +1106,20 @@ def parse_gate_output(
                 row_index = buf_entry.get("row_index")
                 out_coeffs = buf_entry.get("output_coefficients")
                 case_label = buf_entry.get("case_label", f"case_{b_idx}")
-                if not isinstance(rho_hex, str) or not isinstance(sigma_hex, str) or not isinstance(row_index, int) or not isinstance(out_coeffs, list):
-                    failures.append(f"test_buffers[{b_idx}] malformed fields (expected rho_hex, sigma_hex, row_index, output_coefficients)")
+                if (
+                    not isinstance(rho_hex, str)
+                    or not isinstance(sigma_hex, str)
+                    or not isinstance(row_index, int)
+                    or not isinstance(out_coeffs, list)
+                ):
+                    failures.append(
+                        f"test_buffers[{b_idx}] malformed fields (expected rho_hex, sigma_hex, row_index, output_coefficients)"
+                    )
                     continue
                 if len(out_coeffs) != 256:
-                    failures.append(f"test_buffers[{b_idx}] output_coefficients length ({len(out_coeffs)}) != 256")
+                    failures.append(
+                        f"test_buffers[{b_idx}] output_coefficients length ({len(out_coeffs)}) != 256"
+                    )
                     continue
                 try:
                     rho = bytes.fromhex(rho_hex)
@@ -957,20 +1128,29 @@ def parse_gate_output(
                     if out_coeffs != expected:
                         dr2c_mismatches += 1
                         mismatch_lane = next(
-                            k for k, (got_val, want_val) in enumerate(zip(out_coeffs, expected)) if got_val != want_val
+                            k
+                            for k, (got_val, want_val) in enumerate(
+                                zip(out_coeffs, expected)
+                            )
+                            if got_val != want_val
                         )
                         failures.append(
                             f"test_buffers[{b_idx}] ({case_label}) oracle mismatch at lane {mismatch_lane}: "
                             f"got {out_coeffs[mismatch_lane]}, expected {expected[mismatch_lane]}"
                         )
                 except Exception as exc:
-                    failures.append(f"test_buffers[{b_idx}] oracle evaluation error: {exc}")
+                    failures.append(
+                        f"test_buffers[{b_idx}] oracle evaluation error: {exc}"
+                    )
             if dr2c_mismatches == 0 and not failures:
                 corroboration_notes.append(
                     f"Parent independent oracle verified all {len(test_buffers)} x 256 output coefficients."
                 )
         elif gate.gate_id == "DR2d":
-            from tests.pqc_device_resident.test_dr2d_mlkem512_kpke_keygen import ACVP_EXPECTED
+            from tests.pqc_device_resident.test_dr2d_mlkem512_kpke_keygen import (
+                ACVP_EXPECTED,
+            )
+
             dr2d_mismatches = 0
             for b_idx, buf_entry in enumerate(test_buffers):
                 if not isinstance(buf_entry, dict):
@@ -981,8 +1161,15 @@ def parse_gate_output(
                 ek_pke_hex = buf_entry.get("ek_pke_hex")
                 dk_pke_hex = buf_entry.get("dk_pke_hex")
                 case_label = buf_entry.get("case_label", f"case_{b_idx}")
-                if not isinstance(tc_id, int) or not isinstance(d_hex, str) or not isinstance(ek_pke_hex, str) or not isinstance(dk_pke_hex, str):
-                    failures.append(f"test_buffers[{b_idx}] malformed fields (expected tc_id, d_hex, ek_pke_hex, dk_pke_hex)")
+                if (
+                    not isinstance(tc_id, int)
+                    or not isinstance(d_hex, str)
+                    or not isinstance(ek_pke_hex, str)
+                    or not isinstance(dk_pke_hex, str)
+                ):
+                    failures.append(
+                        f"test_buffers[{b_idx}] malformed fields (expected tc_id, d_hex, ek_pke_hex, dk_pke_hex)"
+                    )
                     continue
                 if tc_id not in ACVP_EXPECTED:
                     failures.append(f"test_buffers[{b_idx}] unknown tc_id {tc_id}")
@@ -997,13 +1184,18 @@ def parse_gate_output(
                             f"test_buffers[{b_idx}] ({case_label}) oracle mismatch against official NIST ACVP vector"
                         )
                 except Exception as exc:
-                    failures.append(f"test_buffers[{b_idx}] oracle evaluation error: {exc}")
+                    failures.append(
+                        f"test_buffers[{b_idx}] oracle evaluation error: {exc}"
+                    )
             if dr2d_mismatches == 0 and not failures:
                 corroboration_notes.append(
                     f"Parent independent oracle verified all {len(test_buffers)} official NIST ACVP key pairs."
                 )
         elif gate.gate_id == "DR3":
-            from tests.pqc_device_resident.test_dr3_mlkem512_kpke_encrypt import ACVP_EXPECTED
+            from tests.pqc_device_resident.test_dr3_mlkem512_kpke_encrypt import (
+                ACVP_EXPECTED,
+            )
+
             dr3_mismatches = 0
             for b_idx, buf_entry in enumerate(test_buffers):
                 if not isinstance(buf_entry, dict):
@@ -1013,7 +1205,9 @@ def parse_gate_output(
                 c_hex = buf_entry.get("c_hex")
                 case_label = buf_entry.get("case_label", f"case_{b_idx}")
                 if not isinstance(tc_id, int) or not isinstance(c_hex, str):
-                    failures.append(f"test_buffers[{b_idx}] malformed fields (expected tc_id, c_hex)")
+                    failures.append(
+                        f"test_buffers[{b_idx}] malformed fields (expected tc_id, c_hex)"
+                    )
                     continue
                 if tc_id not in ACVP_EXPECTED:
                     failures.append(f"test_buffers[{b_idx}] unknown tc_id {tc_id}")
@@ -1027,13 +1221,18 @@ def parse_gate_output(
                             f"test_buffers[{b_idx}] ({case_label}) oracle mismatch against official NIST ACVP ciphertext"
                         )
                 except Exception as exc:
-                    failures.append(f"test_buffers[{b_idx}] oracle evaluation error: {exc}")
+                    failures.append(
+                        f"test_buffers[{b_idx}] oracle evaluation error: {exc}"
+                    )
             if dr3_mismatches == 0 and not failures:
                 corroboration_notes.append(
                     f"Parent independent oracle verified all {len(test_buffers)} official NIST ACVP ciphertexts."
                 )
         elif gate.gate_id == "DR4":
-            from tests.pqc_device_resident.test_dr4_mlkem512_kpke_decrypt import ACVP_EXPECTED
+            from tests.pqc_device_resident.test_dr4_mlkem512_kpke_decrypt import (
+                ACVP_EXPECTED,
+            )
+
             dr4_mismatches = 0
             for b_idx, buf_entry in enumerate(test_buffers):
                 if not isinstance(buf_entry, dict):
@@ -1043,7 +1242,9 @@ def parse_gate_output(
                 m_hex = buf_entry.get("m_hex")
                 case_label = buf_entry.get("case_label", f"case_{b_idx}")
                 if not isinstance(tc_id, int) or not isinstance(m_hex, str):
-                    failures.append(f"test_buffers[{b_idx}] malformed fields (expected tc_id, m_hex)")
+                    failures.append(
+                        f"test_buffers[{b_idx}] malformed fields (expected tc_id, m_hex)"
+                    )
                     continue
                 if tc_id not in ACVP_EXPECTED:
                     failures.append(f"test_buffers[{b_idx}] unknown tc_id {tc_id}")
@@ -1057,13 +1258,16 @@ def parse_gate_output(
                             f"test_buffers[{b_idx}] ({case_label}) oracle mismatch against official NIST ACVP decrypted message"
                         )
                 except Exception as exc:
-                    failures.append(f"test_buffers[{b_idx}] oracle evaluation error: {exc}")
+                    failures.append(
+                        f"test_buffers[{b_idx}] oracle evaluation error: {exc}"
+                    )
             if dr4_mismatches == 0 and not failures:
                 corroboration_notes.append(
                     f"Parent independent oracle verified all {len(test_buffers)} official NIST ACVP decrypted messages."
                 )
         elif gate.gate_id == "DR5":
             from tests.pqc_device_resident.test_dr5_mlkem512_keygen import ACVP_EXPECTED
+
             dr5_mismatches = 0
             for b_idx, buf_entry in enumerate(test_buffers):
                 if not isinstance(buf_entry, dict):
@@ -1073,8 +1277,14 @@ def parse_gate_output(
                 ek_hex = buf_entry.get("ek_hex")
                 dk_hex = buf_entry.get("dk_hex")
                 case_label = buf_entry.get("case_label", f"case_{b_idx}")
-                if not isinstance(tc_id, int) or not isinstance(ek_hex, str) or not isinstance(dk_hex, str):
-                    failures.append(f"test_buffers[{b_idx}] malformed fields (expected tc_id, ek_hex, dk_hex)")
+                if (
+                    not isinstance(tc_id, int)
+                    or not isinstance(ek_hex, str)
+                    or not isinstance(dk_hex, str)
+                ):
+                    failures.append(
+                        f"test_buffers[{b_idx}] malformed fields (expected tc_id, ek_hex, dk_hex)"
+                    )
                     continue
                 if tc_id not in ACVP_EXPECTED:
                     failures.append(f"test_buffers[{b_idx}] unknown tc_id {tc_id}")
@@ -1089,13 +1299,16 @@ def parse_gate_output(
                             f"test_buffers[{b_idx}] ({case_label}) oracle mismatch against official NIST ACVP key pair"
                         )
                 except Exception as exc:
-                    failures.append(f"test_buffers[{b_idx}] oracle evaluation error: {exc}")
+                    failures.append(
+                        f"test_buffers[{b_idx}] oracle evaluation error: {exc}"
+                    )
             if dr5_mismatches == 0 and not failures:
                 corroboration_notes.append(
                     f"Parent independent oracle verified all {len(test_buffers)} official NIST ACVP key pairs."
                 )
         elif gate.gate_id == "DR6":
             from tests.pqc_device_resident.test_dr6_mlkem512_encaps import ACVP_EXPECTED
+
             dr6_mismatches = 0
             for b_idx, buf_entry in enumerate(test_buffers):
                 if not isinstance(buf_entry, dict):
@@ -1105,8 +1318,14 @@ def parse_gate_output(
                 c_hex = buf_entry.get("c_hex")
                 k_hex = buf_entry.get("k_hex")
                 case_label = buf_entry.get("case_label", f"case_{b_idx}")
-                if not isinstance(tc_id, int) or not isinstance(c_hex, str) or not isinstance(k_hex, str):
-                    failures.append(f"test_buffers[{b_idx}] malformed fields (expected tc_id, c_hex, k_hex)")
+                if (
+                    not isinstance(tc_id, int)
+                    or not isinstance(c_hex, str)
+                    or not isinstance(k_hex, str)
+                ):
+                    failures.append(
+                        f"test_buffers[{b_idx}] malformed fields (expected tc_id, c_hex, k_hex)"
+                    )
                     continue
                 if tc_id not in ACVP_EXPECTED:
                     failures.append(f"test_buffers[{b_idx}] unknown tc_id {tc_id}")
@@ -1121,13 +1340,16 @@ def parse_gate_output(
                             f"test_buffers[{b_idx}] ({case_label}) oracle mismatch against official NIST ACVP encapsulated ciphertext/shared key"
                         )
                 except Exception as exc:
-                    failures.append(f"test_buffers[{b_idx}] oracle evaluation error: {exc}")
+                    failures.append(
+                        f"test_buffers[{b_idx}] oracle evaluation error: {exc}"
+                    )
             if dr6_mismatches == 0 and not failures:
                 corroboration_notes.append(
                     f"Parent independent oracle verified all {len(test_buffers)} official NIST ACVP encapsulated ciphertexts and shared keys."
                 )
         elif gate.gate_id == "DR7":
             from tests.pqc_device_resident.test_dr7_mlkem512_decaps import ACVP_EXPECTED
+
             dr7_mismatches = 0
             for b_idx, buf_entry in enumerate(test_buffers):
                 if not isinstance(buf_entry, dict):
@@ -1137,7 +1359,9 @@ def parse_gate_output(
                 k_hex = buf_entry.get("k_hex")
                 case_label = buf_entry.get("case_label", f"case_{b_idx}")
                 if not isinstance(tc_id, str) or not isinstance(k_hex, str):
-                    failures.append(f"test_buffers[{b_idx}] malformed fields (expected tc_id, k_hex)")
+                    failures.append(
+                        f"test_buffers[{b_idx}] malformed fields (expected tc_id, k_hex)"
+                    )
                     continue
                 if tc_id not in ACVP_EXPECTED:
                     failures.append(f"test_buffers[{b_idx}] unknown tc_id {tc_id}")
@@ -1151,13 +1375,16 @@ def parse_gate_output(
                             f"test_buffers[{b_idx}] ({case_label}) oracle mismatch against official NIST ACVP decapsulated shared key"
                         )
                 except Exception as exc:
-                    failures.append(f"test_buffers[{b_idx}] oracle evaluation error: {exc}")
+                    failures.append(
+                        f"test_buffers[{b_idx}] oracle evaluation error: {exc}"
+                    )
             if dr7_mismatches == 0 and not failures:
                 corroboration_notes.append(
                     f"Parent independent oracle verified all {len(test_buffers)} official NIST ACVP decapsulated shared keys."
                 )
         elif gate.gate_id == "DR8":
             from tests.pqc_device_resident.test_dr8_mlkem_unified import ACVP_EXPECTED
+
             dr8_mismatches = 0
             for b_idx, buf_entry in enumerate(test_buffers):
                 if not isinstance(buf_entry, dict):
@@ -1167,7 +1394,9 @@ def parse_gate_output(
                 k_hex = buf_entry.get("k_hex")
                 case_label = buf_entry.get("case_label", f"case_{b_idx}")
                 if not isinstance(tc_id, str) or not isinstance(k_hex, str):
-                    failures.append(f"test_buffers[{b_idx}] malformed fields (expected tc_id, k_hex)")
+                    failures.append(
+                        f"test_buffers[{b_idx}] malformed fields (expected tc_id, k_hex)"
+                    )
                     continue
                 if tc_id not in ACVP_EXPECTED:
                     failures.append(f"test_buffers[{b_idx}] unknown tc_id {tc_id}")
@@ -1181,13 +1410,16 @@ def parse_gate_output(
                             f"test_buffers[{b_idx}] ({case_label}) oracle mismatch against official NIST ACVP shared key"
                         )
                 except Exception as exc:
-                    failures.append(f"test_buffers[{b_idx}] oracle evaluation error: {exc}")
+                    failures.append(
+                        f"test_buffers[{b_idx}] oracle evaluation error: {exc}"
+                    )
             if dr8_mismatches == 0 and not failures:
                 corroboration_notes.append(
                     f"Parent independent oracle verified all {len(test_buffers)} official NIST ACVP ML-KEM (512, 768, 1024) shared keys."
                 )
         elif gate.gate_id == "DR9":
             from tests.pqc_device_resident.test_dr9_fips202 import ACVP_EXPECTED
+
             dr9_mismatches = 0
             for b_idx, buf_entry in enumerate(test_buffers):
                 if not isinstance(buf_entry, dict):
@@ -1197,7 +1429,9 @@ def parse_gate_output(
                 digest_hex = buf_entry.get("digest_hex")
                 case_label = buf_entry.get("case_label", f"case_{b_idx}")
                 if not isinstance(tc_id, str) or not isinstance(digest_hex, str):
-                    failures.append(f"test_buffers[{b_idx}] malformed fields (expected tc_id, digest_hex)")
+                    failures.append(
+                        f"test_buffers[{b_idx}] malformed fields (expected tc_id, digest_hex)"
+                    )
                     continue
                 if tc_id not in ACVP_EXPECTED:
                     failures.append(f"test_buffers[{b_idx}] unknown tc_id {tc_id}")
@@ -1211,13 +1445,18 @@ def parse_gate_output(
                             f"test_buffers[{b_idx}] ({case_label}) oracle mismatch against official NIST FIPS 202 digest"
                         )
                 except Exception as exc:
-                    failures.append(f"test_buffers[{b_idx}] oracle evaluation error: {exc}")
+                    failures.append(
+                        f"test_buffers[{b_idx}] oracle evaluation error: {exc}"
+                    )
             if dr9_mismatches == 0 and not failures:
                 corroboration_notes.append(
                     f"Parent independent oracle verified all {len(test_buffers)} official NIST FIPS 202 digests."
                 )
         elif gate.gate_id == "DR10":
-            from tests.pqc_device_resident.test_dr10_sealed_lifecycle import EXPECTED_RESULTS
+            from tests.pqc_device_resident.test_dr10_sealed_lifecycle import (
+                EXPECTED_RESULTS,
+            )
+
             dr10_mismatches = 0
             for b_idx, buf_entry in enumerate(test_buffers):
                 if not isinstance(buf_entry, dict):
@@ -1227,27 +1466,38 @@ def parse_gate_output(
                 status = buf_entry.get("status")
                 active_slot = buf_entry.get("active_slot")
                 case_label = buf_entry.get("case_label", f"case_{b_idx}")
-                if not isinstance(name, str) or not isinstance(status, int) or not isinstance(active_slot, int):
-                    failures.append(f"test_buffers[{b_idx}] malformed fields (expected name, status, active_slot)")
+                if (
+                    not isinstance(name, str)
+                    or not isinstance(status, int)
+                    or not isinstance(active_slot, int)
+                ):
+                    failures.append(
+                        f"test_buffers[{b_idx}] malformed fields (expected name, status, active_slot)"
+                    )
                     continue
                 if name not in EXPECTED_RESULTS:
                     failures.append(f"test_buffers[{b_idx}] unknown name {name}")
                     continue
                 try:
                     exp_status, exp_active = EXPECTED_RESULTS[name]
-                    if status != exp_status or (exp_active is not None and active_slot != exp_active):
+                    if status != exp_status or (
+                        exp_active is not None and active_slot != exp_active
+                    ):
                         dr10_mismatches += 1
                         failures.append(
                             f"test_buffers[{b_idx}] ({case_label}) oracle mismatch against DR10 lifecycle specification (got status={status}, active={active_slot}; expected status={exp_status}, active={exp_active})"
                         )
                 except Exception as exc:
-                    failures.append(f"test_buffers[{b_idx}] oracle evaluation error: {exc}")
+                    failures.append(
+                        f"test_buffers[{b_idx}] oracle evaluation error: {exc}"
+                    )
             if dr10_mismatches == 0 and not failures:
                 corroboration_notes.append(
                     f"Parent independent oracle verified all {len(test_buffers)} DR10 lifecycle cases."
                 )
         elif gate.gate_id == "DR11":
             from tests.pqc_device_resident.test_dr11_mldsa44_keygen import ACVP_EXPECTED
+
             dr11_mismatches = 0
             for b_idx, buf_entry in enumerate(test_buffers):
                 if not isinstance(buf_entry, dict):
@@ -1257,8 +1507,14 @@ def parse_gate_output(
                 pk_hex = buf_entry.get("pk_hex")
                 sk_hex = buf_entry.get("sk_hex")
                 case_label = buf_entry.get("case_label", f"case_{b_idx}")
-                if not isinstance(tc_id, str) or not isinstance(pk_hex, str) or not isinstance(sk_hex, str):
-                    failures.append(f"test_buffers[{b_idx}] malformed fields (expected tc_id, pk_hex, sk_hex)")
+                if (
+                    not isinstance(tc_id, str)
+                    or not isinstance(pk_hex, str)
+                    or not isinstance(sk_hex, str)
+                ):
+                    failures.append(
+                        f"test_buffers[{b_idx}] malformed fields (expected tc_id, pk_hex, sk_hex)"
+                    )
                     continue
                 if tc_id not in ACVP_EXPECTED:
                     failures.append(f"test_buffers[{b_idx}] unknown tc_id {tc_id}")
@@ -1273,13 +1529,16 @@ def parse_gate_output(
                             f"test_buffers[{b_idx}] ({case_label}) oracle mismatch against official NIST ACVP ML-DSA-44 key pair"
                         )
                 except Exception as exc:
-                    failures.append(f"test_buffers[{b_idx}] oracle evaluation error: {exc}")
+                    failures.append(
+                        f"test_buffers[{b_idx}] oracle evaluation error: {exc}"
+                    )
             if dr11_mismatches == 0 and not failures:
                 corroboration_notes.append(
                     f"Parent independent oracle verified all {len(test_buffers)} official NIST ACVP ML-DSA-44 key pairs."
                 )
         elif gate.gate_id == "DR12":
             from tests.pqc_device_resident.test_dr12_mldsa44_sign import ACVP_EXPECTED
+
             dr12_mismatches = 0
             for b_idx, buf_entry in enumerate(test_buffers):
                 if not isinstance(buf_entry, dict):
@@ -1289,10 +1548,14 @@ def parse_gate_output(
                 sig_hex = buf_entry.get("sig_hex")
                 case_label = buf_entry.get("case_label", f"case_{b_idx}")
                 if not isinstance(test_name, str) or not isinstance(sig_hex, str):
-                    failures.append(f"test_buffers[{b_idx}] malformed fields (expected test_name, sig_hex)")
+                    failures.append(
+                        f"test_buffers[{b_idx}] malformed fields (expected test_name, sig_hex)"
+                    )
                     continue
                 if test_name not in ACVP_EXPECTED:
-                    failures.append(f"test_buffers[{b_idx}] unknown test_name {test_name}")
+                    failures.append(
+                        f"test_buffers[{b_idx}] unknown test_name {test_name}"
+                    )
                     continue
                 try:
                     exp_sig = ACVP_EXPECTED[test_name]
@@ -1303,13 +1566,16 @@ def parse_gate_output(
                             f"test_buffers[{b_idx}] ({case_label}) oracle mismatch against official NIST ACVP ML-DSA-44 signature"
                         )
                 except Exception as exc:
-                    failures.append(f"test_buffers[{b_idx}] oracle evaluation error: {exc}")
+                    failures.append(
+                        f"test_buffers[{b_idx}] oracle evaluation error: {exc}"
+                    )
             if dr12_mismatches == 0 and not failures:
                 corroboration_notes.append(
                     f"Parent independent oracle verified all {len(test_buffers)} official NIST ACVP ML-DSA-44 signatures."
                 )
         elif gate.gate_id == "DR13":
             from tests.pqc_device_resident.test_dr13_mldsa44_verify import ACVP_EXPECTED
+
             dr13_mismatches = 0
             for b_idx, buf_entry in enumerate(test_buffers):
                 if not isinstance(buf_entry, dict):
@@ -1319,10 +1585,14 @@ def parse_gate_output(
                 actual_valid = buf_entry.get("actual_valid")
                 case_label = buf_entry.get("case_label", f"case_{b_idx}")
                 if not isinstance(test_name, str) or not isinstance(actual_valid, bool):
-                    failures.append(f"test_buffers[{b_idx}] malformed fields (expected test_name, actual_valid)")
+                    failures.append(
+                        f"test_buffers[{b_idx}] malformed fields (expected test_name, actual_valid)"
+                    )
                     continue
                 if test_name not in ACVP_EXPECTED:
-                    failures.append(f"test_buffers[{b_idx}] unknown test_name {test_name}")
+                    failures.append(
+                        f"test_buffers[{b_idx}] unknown test_name {test_name}"
+                    )
                     continue
                 try:
                     exp_valid = ACVP_EXPECTED[test_name]
@@ -1332,7 +1602,9 @@ def parse_gate_output(
                             f"test_buffers[{b_idx}] ({case_label}) oracle mismatch against official NIST ACVP ML-DSA-44 verify verdict (got {actual_valid}, expected {exp_valid})"
                         )
                 except Exception as exc:
-                    failures.append(f"test_buffers[{b_idx}] oracle evaluation error: {exc}")
+                    failures.append(
+                        f"test_buffers[{b_idx}] oracle evaluation error: {exc}"
+                    )
             if dr13_mismatches == 0 and not failures:
                 corroboration_notes.append(
                     f"Parent independent oracle verified all {len(test_buffers)} official NIST ACVP ML-DSA-44 verification verdicts."
@@ -1343,6 +1615,7 @@ def parse_gate_output(
                 SIGN_EXPECTED,
                 VERIFY_EXPECTED,
             )
+
             dr14_mismatches = 0
             for b_idx, buf_entry in enumerate(test_buffers):
                 if not isinstance(buf_entry, dict):
@@ -1352,17 +1625,23 @@ def parse_gate_output(
                 test_name = buf_entry.get("test_name")
                 case_label = buf_entry.get("case_label", f"case_{b_idx}")
                 if not isinstance(gate_op, str) or not isinstance(test_name, str):
-                    failures.append(f"test_buffers[{b_idx}] malformed fields (expected gate_op, test_name)")
+                    failures.append(
+                        f"test_buffers[{b_idx}] malformed fields (expected gate_op, test_name)"
+                    )
                     continue
                 try:
                     if gate_op == "keygen":
                         pk_hex = buf_entry.get("pk_hex")
                         sk_hex = buf_entry.get("sk_hex")
                         if not isinstance(pk_hex, str) or not isinstance(sk_hex, str):
-                            failures.append(f"test_buffers[{b_idx}] malformed keygen fields")
+                            failures.append(
+                                f"test_buffers[{b_idx}] malformed keygen fields"
+                            )
                             continue
                         if test_name not in KEYGEN_EXPECTED:
-                            failures.append(f"test_buffers[{b_idx}] unknown keygen test_name {test_name}")
+                            failures.append(
+                                f"test_buffers[{b_idx}] unknown keygen test_name {test_name}"
+                            )
                             continue
                         exp_pk, exp_sk = KEYGEN_EXPECTED[test_name]
                         actual_pk = bytes.fromhex(pk_hex)
@@ -1375,10 +1654,14 @@ def parse_gate_output(
                     elif gate_op == "sign":
                         sig_hex = buf_entry.get("sig_hex")
                         if not isinstance(sig_hex, str):
-                            failures.append(f"test_buffers[{b_idx}] malformed sign fields")
+                            failures.append(
+                                f"test_buffers[{b_idx}] malformed sign fields"
+                            )
                             continue
                         if test_name not in SIGN_EXPECTED:
-                            failures.append(f"test_buffers[{b_idx}] unknown sign test_name {test_name}")
+                            failures.append(
+                                f"test_buffers[{b_idx}] unknown sign test_name {test_name}"
+                            )
                             continue
                         exp_sig = SIGN_EXPECTED[test_name]
                         actual_sig = bytes.fromhex(sig_hex)
@@ -1390,10 +1673,14 @@ def parse_gate_output(
                     elif gate_op == "verify":
                         actual_valid = buf_entry.get("actual_valid")
                         if not isinstance(actual_valid, bool):
-                            failures.append(f"test_buffers[{b_idx}] malformed verify fields")
+                            failures.append(
+                                f"test_buffers[{b_idx}] malformed verify fields"
+                            )
                             continue
                         if test_name not in VERIFY_EXPECTED:
-                            failures.append(f"test_buffers[{b_idx}] unknown verify test_name {test_name}")
+                            failures.append(
+                                f"test_buffers[{b_idx}] unknown verify test_name {test_name}"
+                            )
                             continue
                         exp_valid = VERIFY_EXPECTED[test_name]
                         if actual_valid != exp_valid:
@@ -1402,9 +1689,13 @@ def parse_gate_output(
                                 f"test_buffers[{b_idx}] ({case_label}) oracle mismatch against official NIST ACVP ML-DSA-65 verify verdict (got {actual_valid}, expected {exp_valid})"
                             )
                     else:
-                        failures.append(f"test_buffers[{b_idx}] unknown gate_op {gate_op}")
+                        failures.append(
+                            f"test_buffers[{b_idx}] unknown gate_op {gate_op}"
+                        )
                 except Exception as exc:
-                    failures.append(f"test_buffers[{b_idx}] oracle evaluation error: {exc}")
+                    failures.append(
+                        f"test_buffers[{b_idx}] oracle evaluation error: {exc}"
+                    )
             if dr14_mismatches == 0 and not failures:
                 corroboration_notes.append(
                     f"Parent independent oracle verified all {len(test_buffers)} official NIST ACVP ML-DSA-65 cases (KeyGen, Sign, Verify)."
@@ -1415,6 +1706,7 @@ def parse_gate_output(
                 SIGN_EXPECTED,
                 VERIFY_EXPECTED,
             )
+
             dr15_mismatches = 0
             for b_idx, buf_entry in enumerate(test_buffers):
                 if not isinstance(buf_entry, dict):
@@ -1424,17 +1716,23 @@ def parse_gate_output(
                 test_name = buf_entry.get("test_name")
                 case_label = buf_entry.get("case_label", f"case_{b_idx}")
                 if not isinstance(gate_op, str) or not isinstance(test_name, str):
-                    failures.append(f"test_buffers[{b_idx}] malformed fields (expected gate_op, test_name)")
+                    failures.append(
+                        f"test_buffers[{b_idx}] malformed fields (expected gate_op, test_name)"
+                    )
                     continue
                 try:
                     if gate_op == "keygen":
                         pk_hex = buf_entry.get("pk_hex")
                         sk_hex = buf_entry.get("sk_hex")
                         if not isinstance(pk_hex, str) or not isinstance(sk_hex, str):
-                            failures.append(f"test_buffers[{b_idx}] malformed keygen fields")
+                            failures.append(
+                                f"test_buffers[{b_idx}] malformed keygen fields"
+                            )
                             continue
                         if test_name not in KEYGEN_EXPECTED:
-                            failures.append(f"test_buffers[{b_idx}] unknown keygen test_name {test_name}")
+                            failures.append(
+                                f"test_buffers[{b_idx}] unknown keygen test_name {test_name}"
+                            )
                             continue
                         exp_pk, exp_sk = KEYGEN_EXPECTED[test_name]
                         actual_pk = bytes.fromhex(pk_hex)
@@ -1447,10 +1745,14 @@ def parse_gate_output(
                     elif gate_op == "sign":
                         sig_hex = buf_entry.get("sig_hex")
                         if not isinstance(sig_hex, str):
-                            failures.append(f"test_buffers[{b_idx}] malformed sign fields")
+                            failures.append(
+                                f"test_buffers[{b_idx}] malformed sign fields"
+                            )
                             continue
                         if test_name not in SIGN_EXPECTED:
-                            failures.append(f"test_buffers[{b_idx}] unknown sign test_name {test_name}")
+                            failures.append(
+                                f"test_buffers[{b_idx}] unknown sign test_name {test_name}"
+                            )
                             continue
                         exp_sig = SIGN_EXPECTED[test_name]
                         actual_sig = bytes.fromhex(sig_hex)
@@ -1462,10 +1764,14 @@ def parse_gate_output(
                     elif gate_op == "verify":
                         actual_valid = buf_entry.get("actual_valid")
                         if not isinstance(actual_valid, bool):
-                            failures.append(f"test_buffers[{b_idx}] malformed verify fields")
+                            failures.append(
+                                f"test_buffers[{b_idx}] malformed verify fields"
+                            )
                             continue
                         if test_name not in VERIFY_EXPECTED:
-                            failures.append(f"test_buffers[{b_idx}] unknown verify test_name {test_name}")
+                            failures.append(
+                                f"test_buffers[{b_idx}] unknown verify test_name {test_name}"
+                            )
                             continue
                         exp_valid = VERIFY_EXPECTED[test_name]
                         if actual_valid != exp_valid:
@@ -1474,9 +1780,13 @@ def parse_gate_output(
                                 f"test_buffers[{b_idx}] ({case_label}) oracle mismatch against official NIST ACVP ML-DSA-87 verify verdict (got {actual_valid}, expected {exp_valid})"
                             )
                     else:
-                        failures.append(f"test_buffers[{b_idx}] unknown gate_op {gate_op}")
+                        failures.append(
+                            f"test_buffers[{b_idx}] unknown gate_op {gate_op}"
+                        )
                 except Exception as exc:
-                    failures.append(f"test_buffers[{b_idx}] oracle evaluation error: {exc}")
+                    failures.append(
+                        f"test_buffers[{b_idx}] oracle evaluation error: {exc}"
+                    )
             if dr15_mismatches == 0 and not failures:
                 corroboration_notes.append(
                     f"Parent independent oracle verified all {len(test_buffers)} official NIST ACVP ML-DSA-87 cases (KeyGen, Sign, Verify)."
@@ -1485,14 +1795,18 @@ def parse_gate_output(
     # 12. Emulation and Redirection Mode Check
     emulation_mode = os.environ.get("XCL_EMULATION_MODE")
     if emulation_mode and emulation_mode.strip():
-        failures.append(f"XCL_EMULATION_MODE={emulation_mode!r} is active in environment")
+        failures.append(
+            f"XCL_EMULATION_MODE={emulation_mode!r} is active in environment"
+        )
     xrt_ini = os.environ.get("XRT_INI_PATH")
     if xrt_ini and xrt_ini.strip():
         failures.append(f"XRT_INI_PATH={xrt_ini!r} is active in environment")
 
     # 13. Diagnostic Markers Check
     if rejected_findings:
-        markers_detail = "; ".join(f"line {l}: '{m}' in '{t}'" for l, m, t in rejected_findings)
+        markers_detail = "; ".join(
+            f"line {line_no}: '{m}' in '{t}'" for line_no, m, t in rejected_findings
+        )
         failures.append(f"rejected marker(s) detected: {markers_detail}")
 
     has_errors = len(failures) > 0
@@ -1513,10 +1827,7 @@ def parse_gate_output(
         cases_failed = 0
 
     executed_total = (
-        cases_unverified
-        + cases_failed
-        + counts["skipped"]
-        + counts["xfailed"]
+        cases_unverified + cases_failed + counts["skipped"] + counts["xfailed"]
     )
     return GateExecutionResult(
         gate=gate,
@@ -1545,11 +1856,7 @@ def run_single_gate(
     repo_root: Path = REPO_ROOT,
 ) -> GateExecutionResult:
     """Run one native gate and return independently verified structured execution evidence."""
-    full_path = (
-        gate.script
-        if gate.script.is_absolute()
-        else repo_root / gate.script
-    )
+    full_path = gate.script if gate.script.is_absolute() else repo_root / gate.script
     if not full_path.is_file():
         return GateExecutionResult(
             gate=gate,
@@ -1627,7 +1934,9 @@ def run_single_gate(
             case_results=(),
             duration_seconds=dt,
             error_message=f"Gate timed out after {gate.timeout_seconds}s",
-            rejected_markers=tuple(scan_diagnostic_markers(stdout_str + "\n" + stderr_str)),
+            rejected_markers=tuple(
+                scan_diagnostic_markers(stdout_str + "\n" + stderr_str)
+            ),
             machine_readable_record=None,
             corroboration_notes=(),
         )
@@ -1678,7 +1987,9 @@ def execute_suite(
                 )
             else:
                 reason = f", {result.error_message}" if result.error_message else ""
-                exit_str = f", exit {result.exit_code}" if result.exit_code is not None else ""
+                exit_str = (
+                    f", exit {result.exit_code}" if result.exit_code is not None else ""
+                )
                 status_label = result.status
                 print(
                     f"[-] {gate.title:<52} : {status_label} "
@@ -1690,7 +2001,9 @@ def execute_suite(
 
 def main() -> int:
     parser = argparse.ArgumentParser(description="Master Silicon Validation Suite")
-    parser.add_argument("--list", action="store_true", help="List all registered candidate native gates")
+    parser.add_argument(
+        "--list", action="store_true", help="List all registered candidate native gates"
+    )
     parser.add_argument(
         "--all",
         action="store_true",
@@ -1702,7 +2015,9 @@ def main() -> int:
 
     if args.list:
         total_cases = sum(g.expected_total for g in active_gates)
-        print(f"Registered {len(active_gates)} Candidate Native Hardware Gates ({total_cases} total cases):")
+        print(
+            f"Registered {len(active_gates)} Candidate Native Hardware Gates ({total_cases} total cases):"
+        )
         for g in active_gates:
             print(f"  {g.gate_id:<6}: {g.title} ({g.expected_total} cases)")
         return 0
@@ -1726,8 +2041,12 @@ def main() -> int:
     summary.validate_invariants()
 
     print("=" * 80)
-    print(f"MASTER SILICON SUITE RESULT: {summary.passed_gates}/{summary.total_gates} GATES PHYSICALLY VERIFIED ({dt_all:.2f}s)")
-    print(f"Gate Status Breakdown: {summary.unverified_gates} unverified, {summary.blocked_gates} blocked, {summary.failed_gates} failed")
+    print(
+        f"MASTER SILICON SUITE RESULT: {summary.passed_gates}/{summary.total_gates} GATES PHYSICALLY VERIFIED ({dt_all:.2f}s)"
+    )
+    print(
+        f"Gate Status Breakdown: {summary.unverified_gates} unverified, {summary.blocked_gates} blocked, {summary.failed_gates} failed"
+    )
     print(
         f"Case Status Breakdown: {summary.total_cases_physically_verified} verified passed, {summary.total_cases_matching} matching declared per-gate oracle, "
         f"{summary.total_cases_failed} case failures, {summary.total_cases_blocked} blocked of {summary.total_cases_selected} selected."
@@ -1736,16 +2055,22 @@ def main() -> int:
         f"Physical Execution Provenance: {summary.total_cases_physically_verified} independently physically corroborated, "
         f"{summary.total_cases_unverified_provenance} physical execution provenance unverified."
     )
-    print("NOTICE: Physical silicon verification is BLOCKED pending trusted dispatch and KAT-output corroboration.")
+    print(
+        "NOTICE: Physical silicon verification is BLOCKED pending trusted dispatch and KAT-output corroboration."
+    )
     print("=" * 80)
 
-    return 0 if (
-        summary.failed_gates == 0
-        and summary.unverified_gates == 0
-        and summary.blocked_gates == 0
-        and summary.total_gates > 0
-        and summary.total_cases_physically_verified == summary.total_cases_selected
-    ) else 1
+    return (
+        0
+        if (
+            summary.failed_gates == 0
+            and summary.unverified_gates == 0
+            and summary.blocked_gates == 0
+            and summary.total_gates > 0
+            and summary.total_cases_physically_verified == summary.total_cases_selected
+        )
+        else 1
+    )
 
 
 if __name__ == "__main__":

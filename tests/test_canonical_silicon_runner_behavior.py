@@ -21,12 +21,12 @@ from run_all_silicon_tests import (
     STATUS_BLOCKED,
     STATUS_FAIL,
     STATUS_MISSING,
+    STATUS_PASS,
     STATUS_SELF_REPORTED_UNVERIFIED,
     STATUS_TIMEOUT,
     SuiteAccountingSummary,
     CaseResult,
     execute_suite,
-    extract_canonical_framed_record,
     parse_gate_output,
     run_single_gate,
     scan_diagnostic_markers,
@@ -2294,16 +2294,6 @@ class SuiteAccountingInvariantTests(unittest.TestCase):
 
     def test_synthetic_aggregation_and_partition_invariants(self) -> None:
         """Construct synthetic GateExecutionResult fixtures and verify dynamic aggregation and partition invariants."""
-        from run_all_silicon_tests import (
-            NativeGate,
-            GateExecutionResult,
-            summarize_suite_execution,
-            STATUS_SELF_REPORTED_UNVERIFIED,
-            STATUS_FAIL,
-            STATUS_BLOCKED,
-            STATUS_PASS,
-        )
-
         synth_gates = (
             NativeGate(gate_id="SYNTH_1", title="Synthetic Gate 1", script=Path("tests/test_s1.py"), backend_label="s1", expected_total=15),
             NativeGate(gate_id="SYNTH_2", title="Synthetic Gate 2", script=Path("tests/test_s2.py"), backend_label="s2", expected_total=20),
@@ -2384,8 +2374,6 @@ class SuiteAccountingInvariantTests(unittest.TestCase):
 
     def test_historical_commit_0fc2072_baseline_aggregation(self) -> None:
         """Verify dynamic aggregation on the explicitly named historical commit 0fc2072 baseline fixture."""
-        from run_all_silicon_tests import summarize_suite_execution
-
         gate_map = {g.gate_id: g for g in GATES}
         results: list[GateExecutionResult] = []
 
@@ -2426,8 +2414,6 @@ class SuiteAccountingInvariantTests(unittest.TestCase):
 
     def test_zero_and_partial_cases_aggregation(self) -> None:
         """Verify aggregation behavior on empty and single-gate collections."""
-        from run_all_silicon_tests import summarize_suite_execution
-
         # Zero gates
         empty_summary = summarize_suite_execution([], ())
         empty_summary.validate_invariants()
@@ -2463,7 +2449,6 @@ class SuiteAccountingInvariantTests(unittest.TestCase):
 
     def test_negative_and_contradictory_counts_rejected(self) -> None:
         """Verify that negative or contradictory summary counts are rejected."""
-        from run_all_silicon_tests import SuiteAccountingSummary
 
         # Negative count
         invalid_summary = SuiteAccountingSummary(
