@@ -1,5 +1,7 @@
 """DR2b terminal-only ML-KEM-512 SHAKE256 PRF -> CBD(3) -> NTT graph."""
 
+import hashlib
+import os
 from pathlib import Path
 from typing import Any
 
@@ -8,6 +10,8 @@ import numpy as np
 from . import dr2b_mlkem512_noise_ntt_abi as abi
 
 BACKEND_LABEL = "dr2b-mlkem512-noise-ntt:silicon"
+KERNEL_REL_PATH = "phoenix_sdr_dsp/pqc/kernels/dr2b_mlkem512_cbd_ntt.cc"
+SERVICE_REL_PATH = "phoenix_sdr_dsp/pqc/kernels/dr2b_mlkem512_shake256_prf_service.cc"
 _PROGRAM: Any | None = None
 
 
@@ -15,7 +19,38 @@ class NativeBackendUnavailable(RuntimeError):
     """The native IRON/XRT DR2b backend is unavailable or failed closed."""
 
 
+def check_emulation_and_redirection_excluded() -> None:
+    """Fail closed if XCL_EMULATION_MODE or XRT_INI_PATH runtime redirection variables are set."""
+    emulation_mode = os.environ.get("XCL_EMULATION_MODE")
+    if emulation_mode and emulation_mode.strip():
+        raise NativeBackendUnavailable(
+            f"Physical silicon execution rejected: XCL_EMULATION_MODE={emulation_mode!r} is set. "
+            "Hardware ground truth forbids simulation or emulation backends."
+        )
+    xrt_ini = os.environ.get("XRT_INI_PATH")
+    if xrt_ini and xrt_ini.strip():
+        raise NativeBackendUnavailable(
+            f"Physical silicon execution rejected: XRT_INI_PATH={xrt_ini!r} is set. "
+            "Hardware ground truth forbids custom runtime configuration redirection."
+        )
+
+
+def get_kernel_artifact_info(repo_root: Path | None = None) -> dict[str, Any]:
+    """Return verified path and SHA-256 digest of the DR2b AIE2 kernel source."""
+    root = repo_root or Path(__file__).resolve().parents[2]
+    kernel_path = root / KERNEL_REL_PATH
+    if not kernel_path.is_file():
+        raise FileNotFoundError(f"Kernel source file not found: {kernel_path}")
+    data = kernel_path.read_bytes()
+    return {
+        "path": KERNEL_REL_PATH,
+        "size_bytes": len(data),
+        "sha256": hashlib.sha256(data).hexdigest().lower(),
+    }
+
+
 def _load_iron() -> tuple[Any, ...]:
+    check_emulation_and_redirection_excluded()
     try:
         from aie import iron
         from aie.iron import (
@@ -200,7 +235,11 @@ def run_mlkem512_eta1_noise_ntt(
 run = run_mlkem512_eta1_noise_ntt
 __all__ = [
     "BACKEND_LABEL",
+    "KERNEL_REL_PATH",
+    "SERVICE_REL_PATH",
     "NativeBackendUnavailable",
+    "check_emulation_and_redirection_excluded",
+    "get_kernel_artifact_info",
     "require_hardware_runtime",
     "run",
     "run_mlkem512_eta1_noise_ntt",
