@@ -737,6 +737,45 @@ def parse_gate_output(
                 corroboration_notes.append(
                     f"Parent independent oracle verified all {len(test_buffers)} x 256 output coefficients and fingerprints."
                 )
+        elif gate.gate_id == "DR2a":
+            from tests.pqc_device_resident.dr2a_reference import samplentt_reference
+            dr2a_mismatches = 0
+            for b_idx, buf_entry in enumerate(test_buffers):
+                if not isinstance(buf_entry, dict):
+                    failures.append(f"test_buffers[{b_idx}] must be an object")
+                    continue
+                rho_hex = buf_entry.get("rho_hex")
+                j = buf_entry.get("j")
+                i = buf_entry.get("i")
+                out_coeffs = buf_entry.get("output_coefficients")
+                case_label = buf_entry.get("case_label", f"case_{b_idx}")
+                if not isinstance(rho_hex, str) or not isinstance(j, int) or not isinstance(i, int) or not isinstance(out_coeffs, list):
+                    failures.append(f"test_buffers[{b_idx}] malformed fields (expected rho_hex, j, i, output_coefficients)")
+                    continue
+                if len(out_coeffs) != 256:
+                    failures.append(f"test_buffers[{b_idx}] output_coefficients length ({len(out_coeffs)}) != 256")
+                    continue
+                try:
+                    rho = bytes.fromhex(rho_hex)
+                    expected = samplentt_reference(rho, j, i)
+                    if expected.limit_exceeded:
+                        dr2a_mismatches += 1
+                        failures.append(f"test_buffers[{b_idx}] ({case_label}) oracle rejected: candidate block limit exceeded")
+                    elif out_coeffs != list(expected.coefficients):
+                        dr2a_mismatches += 1
+                        mismatch_lane = next(
+                            k for k, (got_val, want_val) in enumerate(zip(out_coeffs, expected.coefficients)) if got_val != want_val
+                        )
+                        failures.append(
+                            f"test_buffers[{b_idx}] ({case_label}) oracle mismatch at lane {mismatch_lane}: "
+                            f"got {out_coeffs[mismatch_lane]}, expected {expected.coefficients[mismatch_lane]}"
+                        )
+                except Exception as exc:
+                    failures.append(f"test_buffers[{b_idx}] oracle evaluation error: {exc}")
+            if dr2a_mismatches == 0 and not failures:
+                corroboration_notes.append(
+                    f"Parent independent oracle verified all {len(test_buffers)} x 256 output coefficients."
+                )
 
     # 12. Emulation and Redirection Mode Check
     emulation_mode = os.environ.get("XCL_EMULATION_MODE")
