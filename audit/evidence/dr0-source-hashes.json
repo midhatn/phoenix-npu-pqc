@@ -1,0 +1,93 @@
+{
+  "schema_version": 1,
+  "audit_id": "DR0-DISPATCH-TRACE",
+  "repository_commit": "90d5a461a2074587060aa8d03d4df67c41d8e5ca",
+  "classification": "PHYSICAL_DISPATCH_EVIDENCE_BLOCKED",
+  "generated_at": "2026-08-31T00:45:59.175535+00:00",
+  "files": [
+    {
+      "path": "phoenix_sdr_dsp/pqc/kernels/m33_product_graph.cc",
+      "provenance": "REPOSITORY_TRACKED",
+      "size_bytes": 2090,
+      "sha256": "fca88ec53640f940f158d4ccc6d79ab0e784c326470e89c03bc64c7132c8b9d3"
+    },
+    {
+      "path": "phoenix_sdr_dsp/pqc/kernels/m33a_arithmetic.hpp",
+      "provenance": "REPOSITORY_TRACKED",
+      "size_bytes": 7753,
+      "sha256": "c490a3249d01a59de62e007261b5a4c6088d3a98c3979b165c6e0bc5fc7eb935"
+    },
+    {
+      "path": "phoenix_sdr_dsp/pqc/m33_product_graph.py",
+      "provenance": "REPOSITORY_TRACKED",
+      "size_bytes": 5842,
+      "sha256": "e539ab65ff87b333d664e0fc7d3b8ba26228ff8ec17e4e4fd43c0176ed7a79cb"
+    },
+    {
+      "path": "phoenix_sdr_dsp/pqc/abi.py",
+      "provenance": "REPOSITORY_TRACKED",
+      "size_bytes": 2854,
+      "sha256": "2237b76a1b96a4e2a889a0b508f6afa94da439ccf2d9c431a519bc8fd9ace845"
+    },
+    {
+      "path": "tests/pqc_device_resident/test_m33_product_dr0.py",
+      "provenance": "REPOSITORY_TRACKED",
+      "size_bytes": 5742,
+      "sha256": "9d70bd92630c7f4ab17f751419180a8ac1b67a13ac27cb5e2c06fb33c52e4baf"
+    },
+    {
+      "path": "C:\\Projects\\phoenix-npu-pqc\\third_party\\mlir-aie\\ironenv\\Lib\\site-packages\\mlir_aie\\python\\aie\\iron\\__init__.py",
+      "provenance": "LOCAL_IRONENV",
+      "size_bytes": 4714,
+      "sha256": "3455cee66906dd767d7cfe786aad7f527ea37d1783e43e9a9b883413ee7f4a7c"
+    },
+    {
+      "path": "C:\\Projects\\phoenix-npu-pqc\\third_party\\mlir-aie\\ironenv\\Lib\\site-packages\\mlir_aie\\python\\aie\\utils\\callabledesign.py",
+      "provenance": "LOCAL_IRONENV",
+      "size_bytes": 23452,
+      "sha256": "c2817e3da56b51509c4a963bc9e8759d356382736fb66d4a45cd0d0e30ce29ed"
+    },
+    {
+      "path": "C:\\Projects\\phoenix-npu-pqc\\third_party\\mlir-aie\\ironenv\\Lib\\site-packages\\mlir_aie\\python\\aie\\utils\\compile\\jit\\compilabledesign.py",
+      "provenance": "LOCAL_IRONENV",
+      "size_bytes": 46682,
+      "sha256": "918a939ce33d9e0d9241baf3a194ba1f6c6dc18a9e60456062c8fc09faa816df"
+    },
+    {
+      "path": "C:\\Projects\\phoenix-npu-pqc\\third_party\\mlir-aie\\ironenv\\Lib\\site-packages\\mlir_aie\\python\\aie\\iron\\program.py",
+      "provenance": "LOCAL_IRONENV",
+      "size_bytes": 14564,
+      "sha256": "8309d290dd323467ae3c425a80fe1ff2a276a268170bfa79fb54d6d4a8adff45"
+    },
+    {
+      "path": "C:\\Projects\\phoenix-npu-pqc\\third_party\\mlir-aie\\ironenv\\Lib\\site-packages\\mlir_aie\\python\\aie\\utils\\compile\\utils.py",
+      "provenance": "LOCAL_IRONENV",
+      "size_bytes": 28564,
+      "sha256": "7736b83cce917b44b8c0ec0cc17aa31dbac1c9547432000222b00682716164dd"
+    },
+    {
+      "path": "C:\\Projects\\phoenix-npu-pqc\\third_party\\mlir-aie\\ironenv\\Lib\\site-packages\\mlir_aie\\python\\aie\\utils\\hostruntime\\xrtruntime\\hostruntime.py",
+      "provenance": "LOCAL_IRONENV",
+      "size_bytes": 38423,
+      "sha256": "fd45050e6849ee482c431a1a9515325fb003fe6e41b2d69d3c7a259db3db526c"
+    },
+    {
+      "path": "C:\\Projects\\phoenix-npu-pqc\\third_party\\mlir-aie\\ironenv\\Lib\\site-packages\\mlir_aie\\python\\aie\\utils\\hostruntime\\xrtruntime\\tensor.py",
+      "provenance": "LOCAL_IRONENV",
+      "size_bytes": 8300,
+      "sha256": "17a407ea8e67f2d632e702cf5983e8dc884d943bb1ceac943b757ddd4dd21a96"
+    },
+    {
+      "path": "C:\\Projects\\phoenix-npu-pqc\\third_party\\mlir-aie\\ironenv\\Lib\\site-packages\\mlir_aie\\python\\aie\\utils\\hostruntime\\tensor_class.py",
+      "provenance": "LOCAL_IRONENV",
+      "size_bytes": 46869,
+      "sha256": "0a944a96c7b30bc6ac87057b8310e3de50bcd4dd6a5e644770883844c3331e5f"
+    },
+    {
+      "path": "C:\\Projects\\phoenix-npu-pqc\\third_party\\mlir-aie\\ironenv\\pyxrt.pyd",
+      "provenance": "LOCAL_IRONENV",
+      "size_bytes": 527360,
+      "sha256": "4d4af5e5b2786ccfcb1c93d8a81939ac0c577e7769a9da373def62d9af525922"
+    }
+  ]
+}
