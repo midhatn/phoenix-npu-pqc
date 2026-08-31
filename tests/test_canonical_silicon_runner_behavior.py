@@ -407,6 +407,34 @@ def _make_dr8_test_buffers(
     return buffers
 
 
+def _make_dr9_test_buffers(
+    corrupt_index: int | None = None,
+) -> list[dict[str, object]]:
+    """Generate 122 authentic DR9 test buffers for parent oracle verification tests."""
+    from tests.pqc_device_resident.test_dr9_fips202 import (
+        ACVP_EXPECTED,
+        PRE_SILICON_CORPUS,
+    )
+    buffers: list[dict[str, object]] = []
+    for idx, case in enumerate(PRE_SILICON_CORPUS):
+        case_id = f"dr9_case_{idx:03d}_{case.tc_id}"
+        expected_digest = ACVP_EXPECTED[case.tc_id]
+        digest_bytes = bytearray(expected_digest)
+        if corrupt_index is not None and idx == corrupt_index:
+            digest_bytes[0] ^= 0xFF
+        buffers.append({
+            "case_id": case_id,
+            "case_label": case.tc_id,
+            "tc_id": case.tc_id,
+            "func_name": case.func_name,
+            "msg_hex": case.msg.hex(),
+            "out_len": case.out_len,
+            "request_id": case.request_id,
+            "digest_hex": bytes(digest_bytes).hex(),
+        })
+    return buffers
+
+
 def _wrap_record_in_stdout(record: dict[str, object], preamble: str = "") -> str:
     serialized = json.dumps(record, indent=2)
     return f"{preamble}\n{RESULT_START_MARKER}\n{serialized}\n{RESULT_END_MARKER}\n"
@@ -1573,6 +1601,61 @@ class CanonicalSiliconRunnerBehaviorTests(unittest.TestCase):
         with mock.patch.dict(os.environ, {"XRT_INI_PATH": "C:/fake/xrt.ini"}):
             with self.assertRaises(service.NativeBackendUnavailable) as ctx:
                 service.check_emulation_and_redirection_excluded()
+            self.assertIn("XRT_INI_PATH='C:/fake/xrt.ini'", str(ctx.exception))
+
+    def test_dr9_valid_test_buffers_verified_by_parent_oracle(self) -> None:
+        gate = GATES[12]  # DR9
+        now = datetime.now(timezone.utc)
+        rec = _make_valid_record(
+            gate_id="DR9",
+            expected_count=122,
+            artifact_rel="phoenix_sdr_dsp/pqc/kernels/dr9_fips202_service.cc",
+            dispatches=122,
+        )
+        rec["test_buffers"] = _make_dr9_test_buffers()
+        stdout = _wrap_record_in_stdout(rec)
+        res = parse_gate_output(
+            gate, stdout, "", 0, 0.5,
+            parent_start_time=now - timedelta(seconds=2),
+            parent_end_time=now + timedelta(seconds=2),
+            execution_nonce="test_nonce_0123456789abcdef",
+        )
+        self.assertFalse(res.success)
+        self.assertEqual(res.status, STATUS_SELF_REPORTED_UNVERIFIED)
+        self.assertTrue(any("Parent independent oracle verified all 122 official NIST FIPS 202 digests" in note for note in res.corroboration_notes))
+
+    def test_dr9_corrupted_key_fails_validation(self) -> None:
+        gate = GATES[12]
+        now = datetime.now(timezone.utc)
+        rec = _make_valid_record(
+            gate_id="DR9",
+            expected_count=122,
+            artifact_rel="phoenix_sdr_dsp/pqc/kernels/dr9_fips202_service.cc",
+            dispatches=122,
+        )
+        # Corrupt 1 digest in case index 0
+        rec["test_buffers"] = _make_dr9_test_buffers(corrupt_index=0)
+        stdout = _wrap_record_in_stdout(rec)
+        res = parse_gate_output(
+            gate, stdout, "", 0, 0.5,
+            parent_start_time=now - timedelta(seconds=2),
+            parent_end_time=now + timedelta(seconds=2),
+            execution_nonce="test_nonce_0123456789abcdef",
+        )
+        self.assertFalse(res.success)
+        self.assertEqual(res.status, STATUS_FAIL)
+        self.assertIn("oracle mismatch against official NIST FIPS 202 digest", res.error_message or "")
+
+    def test_dr9_module_rejects_emulation_and_xrt_ini_path(self) -> None:
+        from phoenix_sdr_dsp.pqc import dr9_fips202_graph as graph
+        with mock.patch.dict(os.environ, {"XCL_EMULATION_MODE": "sw_emu"}):
+            with self.assertRaises(graph.NativeBackendUnavailable) as ctx:
+                graph.check_emulation_and_redirection_excluded()
+            self.assertIn("XCL_EMULATION_MODE='sw_emu'", str(ctx.exception))
+
+        with mock.patch.dict(os.environ, {"XRT_INI_PATH": "C:/fake/xrt.ini"}):
+            with self.assertRaises(graph.NativeBackendUnavailable) as ctx:
+                graph.check_emulation_and_redirection_excluded()
             self.assertIn("XRT_INI_PATH='C:/fake/xrt.ini'", str(ctx.exception))
 
 
