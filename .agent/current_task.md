@@ -2,20 +2,14 @@
 
 ## Task
 
-`POLICY-MULTILANG-INTEGRITY`: Implement repository-wide multi-language integrity enforcement and claim-level provenance validation on bounded branch `policy/multilang-integrity`.
+`FIX-DR15-FUNCTIONAL-MISMATCH`: Debug and resolve observed functional mismatches in DR15 ML-DSA-87 across canonical silicon gates (KeyGen, Sign, Verify).
 
 ## Status
 
-`COMPLETED` (Tasks 1 through 4 Finished).
-1. `POLICY-MULTILANG-COVERAGE`: Extended `tools/agent_integrity.py` and `tools/verify_agent_change.py` to scan all 15 supported repository extensions (`.py`, `.c`, `.cc`, `.cpp`, `.h`, `.hpp`, `.mlir`, `.ps1`, `.sh`, `.cmake`, `CMakeLists.txt`, `.yml`, `.yaml`, `.json`, `.md`) with language-specific rules (`CPP*`, `SH*`, `SEC*`, `DOC*`, `FMT*`, `PATH*`, `MLIR*`, `CMAKE*`).
-2. `POLICY-DOC-CLAIM-AUDIT`: Replaced document-wide suppression with strict claim-level provenance parsing (CLAIM-PROVENANCE tags with status, evidence, commit, classification), validated line-by-line single-claim adjacency, and audited all repository documentation lines.
-3. `CI-REQUIRED-CHECK-TRIGGERS`: Restored `.github/workflows/ci.yml` defining the exact 5 branch protection jobs (`Lint Python`, `Validate metadata`, `Host-safe PQC tests`, `Verify protected DR2 evidence`, `Check Markdown links`) triggering across all PRs.
-4. `POLICY-SCANNER-SELF-PROTECTION`: Validated single-self-exclusion (`EXCLUDED_POLICY_PATHS == {Path("tools/agent_integrity.py")}`), non-mutating read-only scanner behavior, path traversal guards (`PATH001`), and comprehensive adversarial test coverage (47 unit tests passing including all 13 claim-level provenance regression tests).
+`IN_PROGRESS` (Active Milestone: DR15 ML-DSA-87).
+1. DR2d ML-KEM-512 K-PKE KeyGen: `COMPLETED` (25/25 vectors PASS, merged in PR #10, protected evidence archive at `C:\Projects\phoenix-validation-evidence\dr2d-a0405851-20260901`).
+2. DR14 ML-DSA-65: `COMPLETED` (85/85 vectors PASS — 25 KeyGen, 30 Sign, 30 Verify — merged in PR #13 at commit `f4f1658`).
+3. DR15 ML-DSA-87: `READY` for parameter audit (FIPS 204 ML-DSA-87 parameters: $k=8, l=7, \tau=60, \lambda=256, \gamma_1=2^{19}, \gamma_2=(q-1)/32=261888, \beta=120, \omega=75, \tilde{c}=64\text{ B}, h=83\text{ B}, z=4480\text{ B}$, total signature size: $64 + 4480 + 83 = 4627\text{ bytes}$).
 
-## Remaining Tasks in Queue
-- `ARTIFACT-CACHE-PROVENANCE` (READY)
-- `SUPPLY-CHAIN-AND-LICENSE-AUDIT` (READY)
-- `PHYSICAL-DISPATCH-CORROBORATION` (BLOCKED)
-- `FIX-DR2D-FUNCTIONAL-MISMATCH` (READY - reserved for dedicated repair branch)
-- `FIX-DR14-FUNCTIONAL-MISMATCH` (READY - reserved for dedicated repair branch)
-- `FIX-DR15-FUNCTIONAL-MISMATCH` (READY - reserved for dedicated repair branch)
+## Next Action
+Create milestone branch `fix/dr15-mldsa87-correctness`, audit C++ kernels and graph token sizes, run mathematical transliteration checks, and execute physical silicon suite `tests/pqc_device_resident/test_dr15_mldsa87_silicon.py`.

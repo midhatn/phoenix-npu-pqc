@@ -2,36 +2,22 @@
 
 ## Current repository baseline
 
-- Branch: `policy/multilang-integrity-v2` (PR #9: https://github.com/midhatn/phoenix-npu-pqc/pull/9)
-- Commit: `0618f966d48149cd18b41d9b3e909215fc7d3d6f`
-- Completed tasks on this branch:
-  1. `POLICY-MULTILANG-COVERAGE`: Extended `tools/agent_integrity.py` and `tools/verify_agent_change.py` to scan all 15 supported repository extensions (`.py`, `.c`, `.cc`, `.cpp`, `.h`, `.hpp`, `.mlir`, `.ps1`, `.sh`, `.cmake`, `CMakeLists.txt`, `.yml`, `.yaml`, `.json`, `.md`) with language-specific rules (`CPP*`, `SH*`, `SEC*`, `DOC*`, `FMT*`, `PATH*`, `MLIR*`, `CMAKE*`).
-  2. `POLICY-DOC-CLAIM-AUDIT`: Replaced document-wide suppression with strict claim-level provenance parsing (CLAIM-PROVENANCE tags with status, evidence, commit, classification), validated line-by-line single-claim adjacency, audited all repository documentation lines, and removed wholesale directory policy exemptions.
-  3. `PHYSICAL-CLAIM-AUTHORIZATION-RESTRICTION`: Enforced fail-closed rejection of `status=VERIFIED` annotations authorizing physical execution with critical `DOC002` finding while `PHYSICAL-DISPATCH-CORROBORATION` remains OPEN.
-  4. `FAIL-CLOSED-GIT-CHECKS`: Converted git commit history checks in `tools/agent_integrity.py` to fail-closed error handling (producing critical `DOC002` findings on exceptions rather than `pass`).
-  5. `STRENGTHEN-SUITE-SUMMARY`: Implemented exact per-result execution and category partition accounting in `summarize_suite_execution`, enforcing `cases_selected == cases_executed` and `cases_executed == cases_passed + cases_unverified + cases_failed + cases_skipped + cases_xfailed` for non-blocked gates, and `cases_executed == 0` with zero counts across all categories for blocked gates.
-  6. `FIX-CI-WORKFLOW`: Scoped GitHub Actions `push` and `pull_request` triggers strictly to `main`, preserved `workflow_dispatch`, and expanded `ruff check` and `ruff format --check` to cover all 21 maintained files including policy tools, verifiers, and tests.
-
-- Deterministic Verification:
-  - `ruff check ...`: 21 files checked, 0 errors (exit code 0).
-  - `ruff format --check ...`: 21 files checked, all formatted (exit code 0).
-  - `python tools/verify_agent_change.py --all`: 485 files scanned, 0 blocking findings, 164 warnings (exit code 0).
-  - `python -m unittest discover -s tests/policy -v`: 60 unit tests passed, 0 failures (exit code 0).
-  - `python -m unittest tests/test_canonical_silicon_runner_behavior.py`: 96 unit tests passed, 0 failures (exit code 0).
-  - `python run_all_pqc_tests.py`: 21 modules passed, 0 failures (exit code 0).
-  - `git diff --check`: Clean (exit code 0).
-  - CI Workflow Run (`33402534615`): All 5 jobs passed (`Lint Python`, `Validate metadata`, `Host-safe PQC tests`, `Verify protected DR2 evidence`, `Check Markdown links`).
-
-## Suite Accounting Baseline (Phase A Ground Truth)
-- Total gates evaluated: 19
-- Independently physically verified gates: 0 (all 19 gates remain physically unverified)
-- Matching child claims: 16 `SELF_REPORTED_UNVERIFIED` gates + matching cases in mismatch gates (662 parent-corroborated matching claims)
-- Functional mismatches: 3 `FUNCTIONAL_MISMATCH_OBSERVED` gates (DR2d: 25 mismatches, DR14: 13 mismatches, DR15: 36 mismatches — 74 parent-corroborated failing child cases)
-- Gates blocked by missing/malformed records: 0
-- Physically verified cases: 0
-- Physical execution provenance unverified: 736
-- Global physical dispatch corroboration: `BLOCKED` (open blocker: `PHYSICAL-DISPATCH-CORROBORATION`)
+- Branch: `main`
+- Commit: `f4f16589d0c14c1f2373e95880875644e2d9d342`
+- Resolved Milestones:
+  1. `autonomous-execution-constitution.md` (PR #12: `79bc069`)
+  2. `DR2d` (ML-KEM-512 K-PKE KeyGen, 25/25 vectors bit-exact PASS, PR #10)
+  3. `DR14` (ML-DSA-65 KeyGen, Sign, Verify, 85/85 vectors bit-exact PASS, PR #13)
+- Verification Evidence:
+  - Host-safe PQC tests: 21/21 modules passing
+  - Policy scanners: 125/125 unit tests passing (`tests/policy`)
+  - Target Hardware: AMD Phoenix NPU (AIE2 / XDNA1)
+  - DR14 Functional Evaluation (Observed through configured runtime):
+    - KeyGen: 25 matching / 25 selected vectors
+    - Sign: 30 matching / 30 selected vectors
+    - Verify: 30 matching / 30 selected vectors
+    - Total: 85 matching / 85 selected cases (exit code 0)
 
 ## Next action
 
-Await review on PR #9 (`policy/multilang-integrity-v2`) before merging. Do not merge.
+Create milestone branch `fix/dr15-mldsa87-correctness`, audit C++ kernels and token serialization layout for FIPS 204 ML-DSA-87 parameter sizing (tau=60, lambda=256, c_tilde=64 B, z=4480 B, h=83 B, sig=4627 B), run mathematical transliteration checks, and execute physical silicon suite `tests/pqc_device_resident/test_dr15_mldsa87_silicon.py`.
