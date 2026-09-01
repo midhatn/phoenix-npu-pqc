@@ -1,9 +1,9 @@
 {
   "schema_version": 1,
-  "repository_commit": "d747a997e21d80e0051222a5785d28515afc025d",
-  "current_dr": "DR22",
+  "repository_commit": "0c4512beba85ac57b90cbb562683e54d0688e86e",
+  "current_dr": "DR23",
   "current_phase": "milestone_execution",
-  "last_verified_commit": "d747a997e21d80e0051222a5785d28515afc025d",
+  "last_verified_commit": "0c4512beba85ac57b90cbb562683e54d0688e86e",
   "hardware_available": true,
   "drs": {
     "DR0": {"functional_status": "BIT_EXACT_MATCHING", "security_status": "UNREVIEWED", "evidence_class": "BIT_EXACT_PHYSICAL_SILICON", "attempts": 1, "blockers": [], "next_action": "Maintain framed silicon validation."},
@@ -31,7 +31,7 @@
     "DR19": {"functional_status": "BIT_EXACT_MATCHING", "security_status": "UNREVIEWED", "evidence_class": "BIT_EXACT_PHYSICAL_SILICON", "attempts": 1, "blockers": [], "next_action": "Maintain framed silicon validation."},
     "DR20": {"functional_status": "SPECIFICATION_BLOCKED", "security_status": "UNREVIEWED", "evidence_class": "NONE", "attempts": 0, "blockers": ["No authoritative DR20 scope supplied."], "next_action": "Obtain an authoritative scope from the repository owner."},
     "DR21": {"functional_status": "BIT_EXACT_MATCHING", "security_status": "UNREVIEWED", "evidence_class": "BIT_EXACT_PHYSICAL_SILICON", "attempts": 1, "blockers": [], "next_action": "Maintain framed silicon validation."},
-    "DR22": {"functional_status": "PLANNED", "security_status": "UNREVIEWED", "evidence_class": "NONE", "attempts": 0, "blockers": [], "next_action": "Verify the authoritative FN-DSA specification status."},
+    "DR22": {"functional_status": "BIT_EXACT_MATCHING", "security_status": "UNREVIEWED", "evidence_class": "BIT_EXACT_PHYSICAL_SILICON", "attempts": 1, "blockers": [], "next_action": "Maintain framed silicon validation."},
     "DR23": {"functional_status": "HOST_INTEGRATION", "security_status": "UNREVIEWED", "evidence_class": "HOST_RUNTIME", "attempts": 0, "blockers": [], "next_action": "Define host ABI and NPU cryptographic boundary."},
     "DR24": {"functional_status": "PLANNED", "security_status": "UNREVIEWED", "evidence_class": "NONE", "attempts": 0, "blockers": [], "next_action": "Verify protocol scope and execution boundaries."},
     "DR25": {"functional_status": "PLANNED", "security_status": "UNREVIEWED", "evidence_class": "NONE", "attempts": 0, "blockers": [], "next_action": "Define masking model and randomness assumptions."},
