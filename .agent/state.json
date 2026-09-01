@@ -1,8 +1,8 @@
 {
   "schema_version": 1,
-  "repository_commit": "b7e298a0994d5ff1a052ff6d8b9ba54ea2c5d1ae",
-  "current_dr": "DR0",
-  "current_phase": "forensic_revalidation",
+  "repository_commit": "f4f16589d0c14c1f2373e95880875644e2d9d342",
+  "current_dr": "DR15",
+  "current_phase": "milestone_execution",
   "last_verified_commit": null,
   "hardware_available": null,
   "drs": {
