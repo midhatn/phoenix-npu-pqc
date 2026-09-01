@@ -1,9 +1,9 @@
 {
   "schema_version": 1,
-  "repository_commit": "19108762fa36a8b386f49549daf1f486c0f542af",
-  "current_dr": "DR21",
+  "repository_commit": "d747a997e21d80e0051222a5785d28515afc025d",
+  "current_dr": "DR22",
   "current_phase": "milestone_execution",
-  "last_verified_commit": "19108762fa36a8b386f49549daf1f486c0f542af",
+  "last_verified_commit": "d747a997e21d80e0051222a5785d28515afc025d",
   "hardware_available": true,
   "drs": {
     "DR0": {"functional_status": "BIT_EXACT_MATCHING", "security_status": "UNREVIEWED", "evidence_class": "BIT_EXACT_PHYSICAL_SILICON", "attempts": 1, "blockers": [], "next_action": "Maintain framed silicon validation."},
@@ -30,7 +30,7 @@
     "DR18": {"functional_status": "BIT_EXACT_MATCHING", "security_status": "UNREVIEWED", "evidence_class": "BIT_EXACT_PHYSICAL_SILICON", "attempts": 1, "blockers": [], "next_action": "Maintain framed silicon validation."},
     "DR19": {"functional_status": "BIT_EXACT_MATCHING", "security_status": "UNREVIEWED", "evidence_class": "BIT_EXACT_PHYSICAL_SILICON", "attempts": 1, "blockers": [], "next_action": "Maintain framed silicon validation."},
     "DR20": {"functional_status": "SPECIFICATION_BLOCKED", "security_status": "UNREVIEWED", "evidence_class": "NONE", "attempts": 0, "blockers": ["No authoritative DR20 scope supplied."], "next_action": "Obtain an authoritative scope from the repository owner."},
-    "DR21": {"functional_status": "HOST_REFERENCE", "security_status": "UNREVIEWED", "evidence_class": "HOST_REFERENCE", "attempts": 0, "blockers": [], "next_action": "Implement AIE2 kernel pipeline and framed silicon validation runner for FIPS 205 SLH-DSA."},
+    "DR21": {"functional_status": "BIT_EXACT_MATCHING", "security_status": "UNREVIEWED", "evidence_class": "BIT_EXACT_PHYSICAL_SILICON", "attempts": 1, "blockers": [], "next_action": "Maintain framed silicon validation."},
     "DR22": {"functional_status": "PLANNED", "security_status": "UNREVIEWED", "evidence_class": "NONE", "attempts": 0, "blockers": [], "next_action": "Verify the authoritative FN-DSA specification status."},
     "DR23": {"functional_status": "HOST_INTEGRATION", "security_status": "UNREVIEWED", "evidence_class": "HOST_RUNTIME", "attempts": 0, "blockers": [], "next_action": "Define host ABI and NPU cryptographic boundary."},
     "DR24": {"functional_status": "PLANNED", "security_status": "UNREVIEWED", "evidence_class": "NONE", "attempts": 0, "blockers": [], "next_action": "Verify protocol scope and execution boundaries."},
