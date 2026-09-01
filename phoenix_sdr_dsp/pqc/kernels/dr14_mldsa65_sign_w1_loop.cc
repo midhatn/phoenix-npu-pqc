@@ -8,9 +8,9 @@ using namespace phoenix_sdr_dsp::pqc::dr14;
 
 extern "C" void dr14_mldsa65_sign_w1_loop(
     const uint8_t in_token[17572],
-    uint8_t out_token[12836]) {
+    uint8_t out_token[12852]) {
 
-  clear_bytes(out_token, 12836);
+  clear_bytes(out_token, 12852);
 
   const uint32_t request_id = load_le32(in_token + 0);
   store_le32(out_token + 0, request_id);
@@ -22,9 +22,9 @@ extern "C" void dr14_mldsa65_sign_w1_loop(
   const int32_t *s2_hat = reinterpret_cast<const int32_t *>(in_token + 5284);
   const int32_t *t0_hat = reinterpret_cast<const int32_t *>(in_token + 11428);
 
-  int32_t *z_out = reinterpret_cast<int32_t *>(out_token + 36);      // [36..5155] (5120 B)
-  int32_t *h_out = reinterpret_cast<int32_t *>(out_token + 5156);    // [5156..6691] (1536 B)
-  int32_t *w_plain = reinterpret_cast<int32_t *>(out_token + 6692);  // [6692..12835] (6144 B)
+  int32_t *z_out = reinterpret_cast<int32_t *>(out_token + 52);      // [52..5171] (5120 B)
+  uint8_t *h_out = out_token + 5172;                                 // [5172..6707] (1536 B)
+  int32_t *w_plain = reinterpret_cast<int32_t *>(out_token + 6708);  // [6708..12851] (6144 B)
 
   uint16_t kappa = 0;
   int32_t y_ntt[5][256];
@@ -32,7 +32,7 @@ extern "C" void dr14_mldsa65_sign_w1_loop(
   int32_t poly[256];
   int32_t poly2[256];
   int32_t poly3[256];
-  uint8_t c_tilde[32];
+  uint8_t c_tilde[48];
   uint8_t w1_bytes[768];
   uint8_t mu_w1[832];
 
@@ -73,10 +73,10 @@ extern "C" void dr14_mldsa65_sign_w1_loop(
       encode_w1_poly65(poly, w1_bytes + row * 128);
     }
 
-    // 3. c_tilde = SHAKE256(mu || w1_bytes, 32)
+    // 3. c_tilde = SHAKE256(mu || w1_bytes, 48)
     DR11_DISABLE_UNROLL
     for (uint32_t c = 0; c < 768; ++c) mu_w1[64 + c] = w1_bytes[c];
-    keccak_sponge(136, mu_w1, 832, 0x1F, c_tilde, 32);
+    keccak_sponge(136, mu_w1, 832, 0x1F, c_tilde, 48);
 
     // 4. c = SampleInBall65 -> NTT(c)
     sample_in_ball65(c_tilde, c_ntt);
@@ -129,7 +129,7 @@ extern "C" void dr14_mldsa65_sign_w1_loop(
       for (uint32_t c = 0; c < 256; ++c) {
         const int32_t minus_ct0 = canonicalize(-poly3[c]);
         const int32_t r_plus_z = canonicalize(w_plain[row * 256 + c] - poly2[c] + poly3[c]);
-        h_out[row * 256 + c] = make_hint65(minus_ct0, r_plus_z);
+        h_out[row * 256 + c] = static_cast<uint8_t>(make_hint65(minus_ct0, r_plus_z));
         if (h_out[row * 256 + c] != 0) {
           ++hint_count;
         }
@@ -137,9 +137,9 @@ extern "C" void dr14_mldsa65_sign_w1_loop(
     }
     if (reject || hint_count > 55) continue;
 
-    // Accepted! Store c_tilde
+    // Accepted! Store c_tilde (48 B)
     DR11_DISABLE_UNROLL
-    for (uint32_t i = 0; i < 32; ++i) out_token[4 + i] = c_tilde[i];
+    for (uint32_t i = 0; i < 48; ++i) out_token[4 + i] = c_tilde[i];
 
     break;
   }

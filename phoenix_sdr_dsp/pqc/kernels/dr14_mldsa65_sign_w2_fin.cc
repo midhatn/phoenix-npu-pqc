@@ -7,34 +7,34 @@ using namespace phoenix_sdr_dsp::pqc::dr12;
 using namespace phoenix_sdr_dsp::pqc::dr14;
 
 extern "C" void dr14_mldsa65_sign_w2_fin(
-    const uint8_t in_token[12836],
+    const uint8_t in_token[12852],
     uint8_t result[3336]) {
 
   clear_bytes(result, 3336);
 
   const uint32_t request_id = load_le32(in_token + 0);
   const uint8_t *c_tilde = in_token + 4;
-  const int32_t *z_plain = reinterpret_cast<const int32_t *>(in_token + 36);
-  const int32_t *h_plain = reinterpret_cast<const int32_t *>(in_token + 5156);
+  const int32_t *z_plain = reinterpret_cast<const int32_t *>(in_token + 52);
+  const uint8_t *h_plain = in_token + 5172;
 
   uint8_t *sig = result + 20;
 
-  // 1. Pack c_tilde (32 B)
+  // 1. Pack c_tilde (48 B)
   DR11_DISABLE_UNROLL
-  for (uint32_t i = 0; i < 32; ++i) sig[0 + i] = c_tilde[i];
+  for (uint32_t i = 0; i < 48; ++i) sig[0 + i] = c_tilde[i];
 
   // 2. Pack z (5 * 640 = 3200 B)
   for (uint32_t j = 0; j < 5; ++j) {
-    encode_z_poly65(z_plain + j * 256, sig + 32 + j * 640);
+    encode_z_poly65(z_plain + j * 256, sig + 48 + j * 640);
   }
 
-  // 3. Pack hints (77 B)
-  int32_t h_arr[6][256];
+  // 3. Pack hints (61 B)
+  uint8_t h_arr[6][256];
   for (uint32_t i = 0; i < 6; ++i) {
     DR11_DISABLE_UNROLL
     for (uint32_t c = 0; c < 256; ++c) h_arr[i][c] = h_plain[i * 256 + c];
   }
-  encode_hints65(h_arr, sig + 3232);
+  encode_hints65(h_arr, sig + 3248);
 
   // 4. Header + CRC32
   store_le32(result + 0, 0x4434524Du); // b"MR4D"

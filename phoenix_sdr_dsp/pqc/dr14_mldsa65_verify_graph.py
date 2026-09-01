@@ -19,7 +19,7 @@ KERNEL_REL_PATH = "phoenix_sdr_dsp/pqc/kernels/dr14_mldsa65_verify_w2_fin.cc"
 REQ_BYTES = 5376        # pk(1952) + mu(64) + sig(3309) + pad(51)
 DESCRIPTOR_BYTES = 16
 TOKEN0_BYTES = 14000    # w0 output
-TOKEN1_BYTES = 72       # w1 output
+TOKEN1_BYTES = 104      # w1 output
 RESULT_BYTES = 64       # Header(20) + verdict(1) + pad(39) + CRC32(4)
 
 _CACHED_PROGRAM = None
@@ -210,7 +210,7 @@ def run_mldsa65_verify(
     desc_buf[4] = 0x04 # ML-DSA
     desc_buf[5] = 0x03 # Verify
     desc_buf[6] = 0x0E # DR14
-    desc_buf[7] = 1
+    desc_buf[7] = 1 # Ingested mu is 64 bytes
     desc_buf[8:12] = request_id.to_bytes(4, "little")
 
     req_np = np.frombuffer(req_buf, dtype=np.uint8).copy()
