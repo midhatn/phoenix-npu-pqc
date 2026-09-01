@@ -8,7 +8,7 @@ using namespace phoenix_sdr_dsp::pqc::dr13;
 using namespace phoenix_sdr_dsp::pqc::dr14;
 
 extern "C" void dr14_mldsa65_verify_w2_fin(
-    const uint8_t in_token[72],
+    const uint8_t in_token[104],
     uint8_t result[64]) {
 
   clear_bytes(result, 64);

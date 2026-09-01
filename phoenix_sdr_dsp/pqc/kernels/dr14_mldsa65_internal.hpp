@@ -165,9 +165,9 @@ __attribute__((noinline)) static bool decode_z_poly65_and_check(
   return true;
 }
 
-// 9. SampleInBall for ML-DSA-65 (tau = 49)
+// 9. SampleInBall for ML-DSA-65 (tau = 49, c_tilde = 48 bytes)
 __attribute__((noinline)) static void sample_in_ball65(
-    const uint8_t c_tilde[32], int32_t c_poly[256]) {
+    const uint8_t c_tilde[48], int32_t c_poly[256]) {
 
   clear_bytes(c_poly, 256 * sizeof(int32_t));
 
@@ -175,8 +175,8 @@ __attribute__((noinline)) static void sample_in_ball65(
   clear_bytes(state, sizeof(state));
 
   DR11_DISABLE_UNROLL
-  for (uint32_t i = 0; i < 32; ++i) state[i] = c_tilde[i];
-  state[32] ^= 0x1F;
+  for (uint32_t i = 0; i < 48; ++i) state[i] = c_tilde[i];
+  state[48] ^= 0x1F;
   state[135] ^= 0x80;
   phoenix_sdr_dsp::pqc::dr1::keccak_f1600(state);
 
@@ -227,37 +227,45 @@ __attribute__((noinline)) static void decode_s_poly_eta4(const uint8_t in[128], 
   }
 }
 
-// 12. encode_hints for ML-DSA-65 (77 bytes: 71 hints capacity + 6 endpoints)
-static inline void encode_hints65(const int32_t h[6][256], uint8_t out[77]) {
-  clear_bytes(out, 77);
-  uint32_t k = 0;
+// 12. encode_hints for ML-DSA-65 (61 bytes: 55 hints capacity + 6 endpoints)
+static inline void encode_hints65(const uint8_t h[6][256], uint8_t out[61]) {
+  clear_bytes(out, 61);
+  uint32_t pos = 0;
   for (uint32_t i = 0; i < 6; ++i) {
     for (uint32_t j = 0; j < 256; ++j) {
-      if (h[i][j] != 0) {
-        out[k++] = static_cast<uint8_t>(j);
+      if (h[i][j] != 0 && pos < 55) {
+        out[pos++] = static_cast<uint8_t>(j);
       }
     }
-    out[71 + i] = static_cast<uint8_t>(k);
+    out[55 + i] = static_cast<uint8_t>(pos);
   }
 }
 
-// 13. decode_hints for ML-DSA-65 (77 bytes: 71 hints capacity + 6 endpoints)
+// 13. decode_hints for ML-DSA-65 (61 bytes: 55 hints capacity + 6 endpoints)
 __attribute__((noinline)) static bool decode_hints65_and_check(
-    const uint8_t in[77], uint8_t h[6][256]) {
+    const uint8_t in[61], uint8_t h[6][256]) {
 
   clear_bytes(h, 6 * 256);
 
   uint32_t k = 0;
   for (uint32_t i = 0; i < 6; ++i) {
-    const uint32_t end = in[71 + i];
+    const uint32_t end = in[55 + i];
     if (end < k || end > 55) return false;
+    uint32_t prev = 0;
     for (uint32_t j = k; j < end; ++j) {
       const uint32_t idx = in[j];
+      if (j > k && idx <= prev) {
+        return false;
+      }
       h[i][idx] = 1;
+      prev = idx;
     }
     k = end;
   }
-  return in[71 + 5] <= 55;
+  for (uint32_t j = k; j < 55; ++j) {
+    if (in[j] != 0) return false;
+  }
+  return in[55 + 5] <= 55;
 }
 
 } // namespace phoenix_sdr_dsp::pqc::dr14
