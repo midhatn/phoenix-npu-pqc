@@ -3,7 +3,7 @@
 ## Current repository baseline
 
 - Branch: `main`
-- HEAD Commit: `1f209aa0ee49afdd48c60f0d7bf9607d709d2ba7`
+- HEAD Commit: `6426637c46dbae7a04d44898c5ab9ca1d9577a91`
 - Resolved Milestones:
   1. `autonomous-execution-constitution.md` (PR #12)
   2. `DR2d` (ML-KEM-512 K-PKE KeyGen, 25/25 vectors bit-exact PASS, PR #10)
@@ -13,12 +13,13 @@
   6. `DR21` (NIST FIPS 205 SLH-DSA KeyGen, Sign, Verify, 30/30 cases bit-exact PASS, PR #17)
   7. `DR22` (NIST FIPS 206 FN-DSA KeyGen, Sign, Verify, 30/30 cases bit-exact PASS, PR #18)
   8. `DR23` (OpenSSL 3.x Provider & OASIS PKCS#11 HSM, 25/25 cases bit-exact PASS, PR #19)
+  9. `DR24` (RFC 9370 Multi-KEM IPsec & WireGuard Acceleration, 25/25 cases bit-exact PASS, PR #20)
 - Verification Evidence:
-  - Host-safe PQC tests: 24/24 modules passing (`run_all_pqc_tests.py`)
+  - Host-safe PQC tests: 25/25 modules passing (`run_all_pqc_tests.py`)
   - Policy scanners: 125/125 unit tests passing (`tests/policy`)
   - Target Hardware: AMD Phoenix NPU (AIE2 / XDNA1)
-  - 27-Gate Native Silicon Validation: 27/27 gates and 942/942 cases matching oracles bit-exactly across all native hardware deliverables (DR0 through DR19, DR21 through DR23, DR27).
+  - 28-Gate Native Silicon Validation: 28/28 gates and 967/967 cases matching oracles bit-exactly across all native hardware deliverables (DR0 through DR19, DR21 through DR24, DR27).
 
 ## Next action
 
-Begin Milestone DR24 (IPsec/IKEv2 RFC 9370 & WireGuard Multi-KEM Tunnel Acceleration on AMD Phoenix AIE2).
+Begin Milestone DR25 (Higher-Order Masking & On-Chip Local PRNG Entropy Expansion on AMD Phoenix AIE2).

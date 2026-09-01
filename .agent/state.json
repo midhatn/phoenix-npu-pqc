@@ -1,9 +1,9 @@
 {
   "schema_version": 1,
-  "repository_commit": "1f209aa0ee49afdd48c60f0d7bf9607d709d2ba7",
-  "current_dr": "DR24",
+  "repository_commit": "6426637c46dbae7a04d44898c5ab9ca1d9577a91",
+  "current_dr": "DR25",
   "current_phase": "milestone_execution",
-  "last_verified_commit": "1f209aa0ee49afdd48c60f0d7bf9607d709d2ba7",
+  "last_verified_commit": "6426637c46dbae7a04d44898c5ab9ca1d9577a91",
   "hardware_available": true,
   "drs": {
     "DR0": {"functional_status": "BIT_EXACT_MATCHING", "security_status": "UNREVIEWED", "evidence_class": "BIT_EXACT_PHYSICAL_SILICON", "attempts": 1, "blockers": [], "next_action": "Maintain framed silicon validation."},
@@ -33,7 +33,7 @@
     "DR21": {"functional_status": "BIT_EXACT_MATCHING", "security_status": "UNREVIEWED", "evidence_class": "BIT_EXACT_PHYSICAL_SILICON", "attempts": 1, "blockers": [], "next_action": "Maintain framed silicon validation."},
     "DR22": {"functional_status": "BIT_EXACT_MATCHING", "security_status": "UNREVIEWED", "evidence_class": "BIT_EXACT_PHYSICAL_SILICON", "attempts": 1, "blockers": [], "next_action": "Maintain framed silicon validation."},
     "DR23": {"functional_status": "BIT_EXACT_MATCHING", "security_status": "UNREVIEWED", "evidence_class": "BIT_EXACT_PHYSICAL_SILICON", "attempts": 1, "blockers": [], "next_action": "Maintain framed silicon validation."},
-    "DR24": {"functional_status": "PLANNED", "security_status": "UNREVIEWED", "evidence_class": "NONE", "attempts": 0, "blockers": [], "next_action": "Verify protocol scope and execution boundaries."},
+    "DR24": {"functional_status": "BIT_EXACT_MATCHING", "security_status": "UNREVIEWED", "evidence_class": "BIT_EXACT_PHYSICAL_SILICON", "attempts": 1, "blockers": [], "next_action": "Maintain framed silicon validation."},
     "DR25": {"functional_status": "PLANNED", "security_status": "UNREVIEWED", "evidence_class": "NONE", "attempts": 0, "blockers": [], "next_action": "Define masking model and randomness assumptions."},
     "DR26": {"functional_status": "PLANNED", "security_status": "UNREVIEWED", "evidence_class": "NONE", "attempts": 0, "blockers": [], "next_action": "Inventory target-specific toolchain support."},
     "DR27": {"functional_status": "BIT_EXACT_MATCHING", "security_status": "UNREVIEWED", "evidence_class": "BIT_EXACT_PHYSICAL_SILICON", "attempts": 1, "blockers": [], "next_action": "Maintain framed silicon validation."},
