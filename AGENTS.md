@@ -31,7 +31,7 @@ gate counts or passing banners.
 
 ## Mandatory kernel integrity policy
 
-All agents must strictly obey [.agents/rules/kernel-integrity-policy.md](.agents/rules/kernel-integrity-policy.md) and [.agents/rules/zero-speculation-policy.md](.agents/rules/zero-speculation-policy.md). Implementations must never specialize to test vectors, embed expected outputs, include fallback paths, or retain unproven modifications.
+All agents must strictly obey [.agents/rules/kernel-integrity-policy.md](.agents/rules/kernel-integrity-policy.md), [.agents/rules/zero-speculation-policy.md](.agents/rules/zero-speculation-policy.md), and [.agents/rules/autonomous-execution-constitution.md](.agents/rules/autonomous-execution-constitution.md). Implementations must never specialize to test vectors, embed expected outputs, include fallback paths, or retain unproven modifications.
 
 ## Execution labels
 
