@@ -206,7 +206,7 @@ def run_mldsa87_verify(
     desc_buf[4] = 0x04 # ML-DSA
     desc_buf[5] = 0x03 # Verify
     desc_buf[6] = 0x0F # DR15
-    desc_buf[7] = 1 # mu is 64 bytes
+    desc_buf[7] = 1 if external_mu else 0
     desc_buf[8:12] = request_id.to_bytes(4, "little")
 
     req_np = np.frombuffer(req_buf, dtype=np.uint8).copy()

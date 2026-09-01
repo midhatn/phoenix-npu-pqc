@@ -18,8 +18,8 @@ KERNEL_REL_PATH = "phoenix_sdr_dsp/pqc/kernels/dr15_mldsa87_sign_w2_fin.cc"
 # Sizes
 REQ_BYTES = 4960          # sk(4896) + mu(64)
 DESCRIPTOR_BYTES = 16
-TOKEN0_BYTES = 8000
-TOKEN1_BYTES = 14500
+TOKEN0_BYTES = 11500
+TOKEN1_BYTES = 9300
 RESULT_BYTES = 4656       # Header(20) + sig(4627) + pad + CRC32(4)
 
 _CACHED_PROGRAM = None
@@ -137,9 +137,9 @@ def _build_dr15_sign_program():
             of_o.release(1)
             of_i.release(1)
 
-        w0 = Worker(worker0_body, fn_args=[of_req.cons(), of_desc.cons(), of_t0.prod(), w0_fn], stack_size=0x4000)
-        w1 = Worker(worker_step, fn_args=[of_t0.cons(), of_t1.prod(), w1_fn], stack_size=0x4000)
-        w2 = Worker(worker_step, fn_args=[of_t1.cons(), of_res.prod(), w2_fn], stack_size=0x4000)
+        w0 = Worker(worker0_body, fn_args=[of_req.cons(), of_desc.cons(), of_t0.prod(), w0_fn], stack_size=0x2000)
+        w1 = Worker(worker_step, fn_args=[of_t0.cons(), of_t1.prod(), w1_fn], stack_size=0x3800)
+        w2 = Worker(worker_step, fn_args=[of_t1.cons(), of_res.prod(), w2_fn], stack_size=0x2000)
 
         def sequence(r_in, d_in, res_out, of_rp, of_dp, of_rc):
             of_rp.fill(r_in)
@@ -148,7 +148,7 @@ def _build_dr15_sign_program():
 
         runtime = Runtime(
             sequence,
-            [req_ty, descriptor_ty, result_ty, of_req.prod(), of_desc.prod(), of_res.cons()],
+            [req_ty, descriptor_ty, result_ty, of_rp_prod := of_req.prod(), of_dp_prod := of_desc.prod(), of_res_cons := of_res.cons()],
         )
 
         return Program(
@@ -204,7 +204,7 @@ def run_mldsa87_sign(
     desc_buf[4] = 0x04 # ML-DSA
     desc_buf[5] = 0x02 # Sign
     desc_buf[6] = 0x0F # DR15
-    desc_buf[7] = 1 # mu is 64 bytes
+    desc_buf[7] = 1 # mu is provided at offset 4896
     desc_buf[8:12] = request_id.to_bytes(4, "little")
 
     req_np = np.frombuffer(req_buf, dtype=np.uint8).copy()
