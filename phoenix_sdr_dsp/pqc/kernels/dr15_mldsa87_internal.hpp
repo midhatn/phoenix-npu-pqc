@@ -27,62 +27,32 @@ constexpr int32_t kAlpha87 = 523776;   // 2 * gamma2
 constexpr int32_t kOmega87 = 75;
 constexpr int32_t kM87 = 16;           // (q - 1) / alpha = 16
 
+__attribute__((noinline)) static void clear_mem(void *dest, uint32_t bytes) {
+  volatile uint8_t *out = static_cast<volatile uint8_t *>(dest);
+  DR11_DISABLE_UNROLL
+  for (uint32_t i = 0; i < bytes; ++i) out[i] = 0;
+}
+
 // 1. Sample Mask Polynomial y for ML-DSA-87 (20 bits per coeff -> 640 bytes)
 __attribute__((noinline)) static void sample_mask_poly_87(
     const uint8_t rho_pp[64],
     uint16_t idx,
     int32_t y[256]) {
-
-  alignas(8) uint8_t state[200];
-  clear_bytes(state, sizeof(state));
-
-  DR11_DISABLE_UNROLL
-  for (uint32_t i = 0; i < 64; ++i) state[i] = rho_pp[i];
-  state[64] = static_cast<uint8_t>(idx & 0xFF);
-  state[65] = static_cast<uint8_t>((idx >> 8) & 0xFF);
-  state[66] ^= 0x1F;
-  state[135] ^= 0x80;
-  phoenix_sdr_dsp::pqc::dr1::keccak_f1600(state);
-
-  uint8_t stream[640];
-  uint32_t stream_pos = 0;
-
-  while (stream_pos + 136 <= 640) {
-    DR11_DISABLE_UNROLL
-    for (uint32_t i = 0; i < 136; ++i) stream[stream_pos + i] = state[i];
-    phoenix_sdr_dsp::pqc::dr1::keccak_f1600(state);
-    stream_pos += 136;
-  }
-  const uint32_t rem = 640 - stream_pos;
-  DR11_DISABLE_UNROLL
-  for (uint32_t i = 0; i < rem; ++i) stream[stream_pos + i] = state[i];
-  clear_bytes(state, sizeof(state));
-
-  DR11_DISABLE_UNROLL
-  for (uint32_t i = 0; i < 128; ++i) {
-    const uint8_t *b = stream + i * 5;
-    const uint32_t b0 = b[0], b1 = b[1], b2 = b[2], b3 = b[3], b4 = b[4];
-
-    const uint32_t v0 = b0 | (b1 << 8) | ((b2 & 0x0F) << 16);
-    const uint32_t v1 = (b2 >> 4) | (b3 << 4) | (b4 << 12);
-
-    y[i * 2 + 0] = canonicalize(kGamma1_87 - static_cast<int32_t>(v0));
-    y[i * 2 + 1] = canonicalize(kGamma1_87 - static_cast<int32_t>(v1));
-  }
+  sample_mask_poly_65(rho_pp, idx, y);
 }
 
-// 2. SampleInBall for ML-DSA-87 (tau = 60)
+// 2. SampleInBall for ML-DSA-87 (tau = 60, c_tilde = 64 bytes)
 __attribute__((noinline)) static void sample_in_ball87(
-    const uint8_t c_tilde[32], int32_t c_poly[256]) {
+    const uint8_t c_tilde[64], int32_t c_poly[256]) {
 
-  clear_bytes(c_poly, 256 * sizeof(int32_t));
+  clear_mem(c_poly, 256 * sizeof(int32_t));
 
   alignas(8) uint8_t state[200];
-  clear_bytes(state, sizeof(state));
+  clear_mem(state, sizeof(state));
 
   DR11_DISABLE_UNROLL
-  for (uint32_t i = 0; i < 32; ++i) state[i] = c_tilde[i];
-  state[32] ^= 0x1F;
+  for (uint32_t i = 0; i < 64; ++i) state[i] = c_tilde[i];
+  state[64] ^= 0x1F;
   state[135] ^= 0x80;
   phoenix_sdr_dsp::pqc::dr1::keccak_f1600(state);
 
@@ -93,6 +63,7 @@ __attribute__((noinline)) static void sample_in_ball87(
   }
 
   uint32_t state_pos = 8;
+  DR11_DISABLE_UNROLL
   for (uint32_t i = 256 - kTau87; i < 256; ++i) {
     uint32_t j;
     while (true) {
@@ -140,11 +111,17 @@ __attribute__((noinline)) static bool decode_hints87_and_check(
   for (uint32_t i = 0; i < 8; ++i) {
     const uint32_t end = in[75 + i];
     if (end < k || end > 75) return false;
+    uint32_t prev = 0;
     for (uint32_t j = k; j < end; ++j) {
       const uint32_t idx = in[j];
+      if (j > k && idx <= prev) return false;
       h[i][idx] = 1;
+      prev = idx;
     }
     k = end;
+  }
+  for (uint32_t j = k; j < 75; ++j) {
+    if (in[j] != 0) return false;
   }
   return in[75 + 7] <= 75;
 }

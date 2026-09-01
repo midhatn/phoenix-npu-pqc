@@ -142,7 +142,7 @@
       "id": "FIX-DR15-FUNCTIONAL-MISMATCH",
       "dr": "DR15",
       "title": "Debug and fix observed functional mismatches in DR15 ML-DSA-87 Sign (30 cases) and Verify (6 cases)",
-      "status": "READY",
+      "status": "COMPLETED",
       "depends_on": ["GENERALIZE-RUNNERS"],
       "acceptance_command": "python -m unittest -v tests/pqc_device_resident/test_dr15_mldsa87.py"
     }

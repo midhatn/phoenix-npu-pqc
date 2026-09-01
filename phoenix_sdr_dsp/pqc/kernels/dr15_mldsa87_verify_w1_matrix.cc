@@ -20,11 +20,11 @@ extern "C" void dr15_mldsa87_verify_w1_matrix(
   const uint8_t *rho = in_token + 4;
   const uint8_t *mu = in_token + 36;
   const uint8_t *c_tilde = in_token + 100;
-  const int32_t *z_hat = reinterpret_cast<const int32_t *>(in_token + 132);
-  const uint8_t *h_unpacked = in_token + 7300;
-  const int32_t *t1_hat = reinterpret_cast<const int32_t *>(in_token + 9348);
-  const int32_t *c_hat = reinterpret_cast<const int32_t *>(in_token + 17540);
-  const bool prev_valid = (in_token[18564] != 0);
+  const int32_t *z_hat = reinterpret_cast<const int32_t *>(in_token + 164);
+  const uint8_t *h_unpacked = in_token + 7332;
+  const int32_t *t1_hat = reinterpret_cast<const int32_t *>(in_token + 9380);
+  const int32_t *c_hat = reinterpret_cast<const int32_t *>(in_token + 17572);
+  const bool prev_valid = (in_token[18596] != 0);
 
   int32_t acc[256];
   int32_t a_entry[256];
@@ -61,18 +61,18 @@ extern "C" void dr15_mldsa87_verify_w1_matrix(
     encode_w1_poly65(w1_row, w1_bytes + row * 128);
   }
 
-  // 2. Challenge hash c_tilde_prime = H(mu || w1, 32)
+  // 2. Challenge hash c_tilde_prime = H(mu || w1, 64)
   uint8_t mu_w1[1088];
   for (uint32_t i = 0; i < 64; ++i) mu_w1[i] = mu[i];
   for (uint32_t i = 0; i < 1024; ++i) mu_w1[64 + i] = w1_bytes[i];
 
-  uint8_t c_tilde_prime[32];
-  keccak_sponge(136, mu_w1, 1088, 0x1F, c_tilde_prime, 32);
+  uint8_t c_tilde_prime[64];
+  keccak_sponge(136, mu_w1, 1088, 0x1F, c_tilde_prime, 64);
 
-  // 3. Constant-time compare c_tilde_prime == c_tilde
+  // 3. Constant-time compare c_tilde_prime == c_tilde (64 bytes)
   uint32_t diff = 0;
   DR11_DISABLE_UNROLL
-  for (uint32_t i = 0; i < 32; ++i) {
+  for (uint32_t i = 0; i < 64; ++i) {
     diff |= (c_tilde_prime[i] ^ c_tilde[i]);
   }
 
