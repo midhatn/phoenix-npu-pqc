@@ -1,9 +1,9 @@
 {
   "schema_version": 1,
-  "repository_commit": "6426637c46dbae7a04d44898c5ab9ca1d9577a91",
-  "current_dr": "DR25",
+  "repository_commit": "69b7f92e42968d57c297753f324d14c8b27eb4a0",
+  "current_dr": "DR26",
   "current_phase": "milestone_execution",
-  "last_verified_commit": "6426637c46dbae7a04d44898c5ab9ca1d9577a91",
+  "last_verified_commit": "69b7f92e42968d57c297753f324d14c8b27eb4a0",
   "hardware_available": true,
   "drs": {
     "DR0": {"functional_status": "BIT_EXACT_MATCHING", "security_status": "UNREVIEWED", "evidence_class": "BIT_EXACT_PHYSICAL_SILICON", "attempts": 1, "blockers": [], "next_action": "Maintain framed silicon validation."},
@@ -34,7 +34,7 @@
     "DR22": {"functional_status": "BIT_EXACT_MATCHING", "security_status": "UNREVIEWED", "evidence_class": "BIT_EXACT_PHYSICAL_SILICON", "attempts": 1, "blockers": [], "next_action": "Maintain framed silicon validation."},
     "DR23": {"functional_status": "BIT_EXACT_MATCHING", "security_status": "UNREVIEWED", "evidence_class": "BIT_EXACT_PHYSICAL_SILICON", "attempts": 1, "blockers": [], "next_action": "Maintain framed silicon validation."},
     "DR24": {"functional_status": "BIT_EXACT_MATCHING", "security_status": "UNREVIEWED", "evidence_class": "BIT_EXACT_PHYSICAL_SILICON", "attempts": 1, "blockers": [], "next_action": "Maintain framed silicon validation."},
-    "DR25": {"functional_status": "PLANNED", "security_status": "UNREVIEWED", "evidence_class": "NONE", "attempts": 0, "blockers": [], "next_action": "Define masking model and randomness assumptions."},
+    "DR25": {"functional_status": "BIT_EXACT_MATCHING", "security_status": "UNREVIEWED", "evidence_class": "BIT_EXACT_PHYSICAL_SILICON", "attempts": 1, "blockers": [], "next_action": "Maintain framed silicon validation."},
     "DR26": {"functional_status": "PLANNED", "security_status": "UNREVIEWED", "evidence_class": "NONE", "attempts": 0, "blockers": [], "next_action": "Inventory target-specific toolchain support."},
     "DR27": {"functional_status": "BIT_EXACT_MATCHING", "security_status": "UNREVIEWED", "evidence_class": "BIT_EXACT_PHYSICAL_SILICON", "attempts": 1, "blockers": [], "next_action": "Maintain framed silicon validation."},
     "DR28": {"functional_status": "PLANNED", "security_status": "UNREVIEWED", "evidence_class": "NONE", "attempts": 0, "blockers": [], "next_action": "Verify the selected LMS/HSS verification profile."},
