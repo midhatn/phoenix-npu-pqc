@@ -2,11 +2,11 @@
 
 ## Task
 
-`DR26-MULTI-ARCH-SCALING`: Multi-Architecture Hardware Scaling for AMD XDNA 2 (Strix Point) and AMD Alveo V70 (AIE2 Datacenter).
+`DR28-LMS-HSS-VERIFIER`: Implement NIST SP 800-208 / RFC 8554 Leighton-Micali Signatures (LMS/HSS) Stateless Signature Verification Engine on AMD Phoenix AIE2 (XDNA1).
 
 ## Status
 
-`IN_PROGRESS` (Milestone DR26).
+`IN_PROGRESS` (Milestone DR28).
 - Prior Milestones:
   1. `DR2d` (ML-KEM-512 K-PKE KeyGen): `COMPLETED` (25/25 vectors PASS, PR #10).
   2. `DR14` (ML-DSA-65 KeyGen, Sign, Verify): `COMPLETED` (85/85 vectors PASS, PR #13).
@@ -17,8 +17,9 @@
   7. `DR23` (OpenSSL 3.x Provider & OASIS PKCS#11 HSM): `COMPLETED` (25/25 cases PASS, PR #19).
   8. `DR24` (RFC 9370 Multi-KEM IPsec & WireGuard Acceleration): `COMPLETED` (25/25 cases PASS, PR #20).
   9. `DR25` (Higher-Order Polynomial Masking & Local PRNG Expansion): `COMPLETED` (25/25 cases PASS, PR #21).
-  10. Native Silicon Validation Baseline: 29 native deliverables with structured framed evidence on AMD Phoenix NPU physical silicon (992/992 test cases bit-exact matching).
+  10. `DR26` (AMD XDNA 2 & Alveo V70 Multi-Architecture Scaling): `COMPLETED` (25/25 cases PASS, PR #22).
+  11. Native Silicon Validation Baseline: 30 native deliverables with structured framed evidence on AMD Phoenix NPU physical silicon (1,017/1,017 test cases bit-exact matching).
 
 ## Next Action
 
-Research target architectures (Phoenix XDNA 1, Strix Point XDNA 2, Alveo V70 AIE2) and topology geometry specifications; write research ledger `docs/research/DR26-MULTI-ARCH-sources.md`.
+Research NIST SP 800-208 and RFC 8554 stateful hash-based signature verification specification for LMS/HSS (specifically LM-OTS and LMS tree path traversal for secure boot); write research ledger `docs/research/DR28-LMS-HSS-sources.md`.

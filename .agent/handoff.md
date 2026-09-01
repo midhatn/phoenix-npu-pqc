@@ -3,7 +3,7 @@
 ## Current repository baseline
 
 - Branch: `main`
-- HEAD Commit: `69b7f92e42968d57c297753f324d14c8b27eb4a0`
+- HEAD Commit: `28679687e4b548dc886fa5d54f2acf4dac373144`
 - Resolved Milestones:
   1. `autonomous-execution-constitution.md` (PR #12)
   2. `DR2d` (ML-KEM-512 K-PKE KeyGen, 25/25 vectors bit-exact PASS, PR #10)
@@ -15,12 +15,13 @@
   8. `DR23` (OpenSSL 3.x Provider & OASIS PKCS#11 HSM, 25/25 cases bit-exact PASS, PR #19)
   9. `DR24` (RFC 9370 Multi-KEM IPsec & WireGuard Acceleration, 25/25 cases bit-exact PASS, PR #20)
   10. `DR25` (Higher-Order Polynomial Masking & Local PRNG Expansion, 25/25 cases bit-exact PASS, PR #21)
+  11. `DR26` (AMD XDNA 2 & Alveo V70 Multi-Architecture Scaling, 25/25 cases bit-exact PASS, PR #22)
 - Verification Evidence:
-  - Host-safe PQC tests: 26/26 modules passing (`run_all_pqc_tests.py`)
+  - Host-safe PQC tests: 27/27 modules passing (`run_all_pqc_tests.py`)
   - Policy scanners: 125/125 unit tests passing (`tests/policy`)
   - Target Hardware: AMD Phoenix NPU (AIE2 / XDNA1)
-  - 29-Gate Native Silicon Validation: 29/29 gates and 992/992 cases matching oracles bit-exactly across all native hardware deliverables (DR0 through DR19, DR21 through DR25, DR27).
+  - 30-Gate Native Silicon Validation: 30/30 gates and 1,017/1,017 cases matching oracles bit-exactly across all native hardware deliverables (DR0 through DR19, DR21 through DR27).
 
 ## Next action
 
-Begin Milestone DR26 (AMD XDNA 2 & AMD Alveo V70 Multi-Architecture Scaling).
+Begin Milestone DR28 (NIST SP 800-208 / RFC 8554 LMS Stateless Verification Engine on AMD Phoenix AIE2).
