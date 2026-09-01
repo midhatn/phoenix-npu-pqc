@@ -4,6 +4,7 @@ Milestone DR18: NIST SP 800-56C Dual-Key Combiner Graph on AMD Phoenix AIE2.
 100% On-Device Extraction-then-Expansion inside Tile (3,2).
 """
 
+import hashlib
 from pathlib import Path
 from typing import Any, Tuple
 import numpy as np
@@ -12,11 +13,22 @@ import uuid
 from . import dr18_dual_key_combiner_abi as abi
 
 BACKEND_LABEL = "dr18-dual-key-combiner:silicon"
+KERNEL_REL_PATH = "phoenix_sdr_dsp/pqc/dr18_dual_key_combiner_graph.py"
 _PROGRAM: Any | None = None
 
 REQ_BYTES = 256
 DESCRIPTOR_BYTES = 64
 RESULT_BYTES = 128
+
+def get_kernel_artifact_info(repo_root: Path | None = None) -> dict[str, Any]:
+    root = repo_root or Path(__file__).resolve().parents[2]
+    kernel_path = root / KERNEL_REL_PATH
+    data = kernel_path.read_bytes()
+    return {
+        "path": KERNEL_REL_PATH,
+        "size_bytes": len(data),
+        "sha256": hashlib.sha256(data).hexdigest().lower(),
+    }
 
 class NativeBackendUnavailable(RuntimeError):
     """The native IRON/XRT DR18 backend is unavailable."""

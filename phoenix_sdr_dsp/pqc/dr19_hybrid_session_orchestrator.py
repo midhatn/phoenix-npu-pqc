@@ -4,6 +4,7 @@ Milestone DR19: Full-Duplex Hybrid QKD-PQC Session Orchestrator Graph.
 100% On-Device Execution across AIE2 tile matrix on AMD Phoenix NPU.
 """
 
+import hashlib
 import time
 import uuid
 import numpy as np
@@ -15,12 +16,23 @@ from . import dr17_mldsa_qkd_auth_abi as dr17_abi
 from . import dr18_dual_key_combiner_abi as dr18_abi
 
 BACKEND_LABEL = "dr19-hybrid-session:silicon"
+KERNEL_REL_PATH = "phoenix_sdr_dsp/pqc/dr19_hybrid_session_orchestrator.py"
 _PROGRAM: Any | None = None
 
 REQ_BYTES = 256
 DESCRIPTOR_BYTES = 64
 RESULT_BYTES = 128
 MAGIC_DESC_DR19 = b"\x01\x71\x52\x13"
+
+def get_kernel_artifact_info(repo_root: Path | None = None) -> dict[str, Any]:
+    root = repo_root or Path(__file__).resolve().parents[2]
+    kernel_path = root / KERNEL_REL_PATH
+    data = kernel_path.read_bytes()
+    return {
+        "path": KERNEL_REL_PATH,
+        "size_bytes": len(data),
+        "sha256": hashlib.sha256(data).hexdigest().lower(),
+    }
 
 class NativeBackendUnavailable(RuntimeError):
     """The native IRON/XRT DR19 backend is unavailable."""
