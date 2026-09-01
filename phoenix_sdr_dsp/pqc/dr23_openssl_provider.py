@@ -8,6 +8,7 @@ import os
 import json
 import time
 import struct
+from pathlib import Path
 from typing import Dict, Any, Tuple, Optional, List
 
 # Core AIE2 Hardware Silicon Graph Imports
@@ -34,6 +35,24 @@ from . import dr15_mldsa87_verify_graph as mldsa87_vrf
 from . import dr19_hybrid_session_orchestrator as hybrid_orch
 from . import dr27_qrng_reservoir_graph as qrng_res
 from . import dr21_slhdsa_graph as slhdsa_graph
+from . import dr22_fndsa_graph as fndsa_graph
+
+BACKEND_LABEL = "dr23-openssl:silicon"
+KERNEL_REL_PATH = "phoenix_sdr_dsp/pqc/dr23_openssl_provider.py"
+
+def get_kernel_artifact_info(repo_root: Optional[Any] = None) -> Dict[str, Any]:
+    """Return verified path and digest for DR23 OpenSSL / PKCS#11 bridge."""
+    import hashlib
+    root = Path(repo_root) if repo_root else Path(__file__).resolve().parents[2]
+    kernel_path = root / KERNEL_REL_PATH
+    if not kernel_path.is_file():
+        raise FileNotFoundError(f"Source file not found: {kernel_path}")
+    data = kernel_path.read_bytes()
+    return {
+        "path": KERNEL_REL_PATH,
+        "size_bytes": len(data),
+        "sha256": hashlib.sha256(data).hexdigest().lower(),
+    }
 
 # OpenSSL 3.x Operation Opcodes
 OSSL_OP_DIGEST      = 1
@@ -206,13 +225,18 @@ class PhoenixPqcProvider:
         algo = algorithm.upper().replace("_", "-")
         if "SLH-DSA" in algo or "SPHINCS" in algo:
             canonical = "SLH-DSA-SHAKE-128s" if "128S" in algo else "SLH-DSA-SHAKE-128f" if "128F" in algo else "SLH-DSA-SHAKE-256s" if "256S" in algo else "SLH-DSA-SHAKE-256f"
-            pk, sk, _ = slhdsa_graph.slhdsa_keygen_on_aie2(canonical, sk_seed=xi_seed)
+            n = 16 if "128" in canonical else 32
+            sk_seed = xi_seed[:n] if xi_seed else None
+            pk, sk, _ = slhdsa_graph.slhdsa_keygen_on_aie2(canonical, sk_seed=sk_seed)
         elif algo == "ML-DSA-44":
             pk, sk = mldsa44_kg.run_mldsa44_keygen(xi_seed)
         elif algo == "ML-DSA-65":
             pk, sk = mldsa65_kg.run_mldsa65_keygen(xi_seed)
         elif algo == "ML-DSA-87":
             pk, sk = mldsa87_kg.run_mldsa87_keygen(xi_seed)
+        elif "FN-DSA" in algo or "FALCON" in algo:
+            canonical = "FN-DSA-512" if "512" in algo else "FN-DSA-1024"
+            pk, sk, _ = fndsa_graph.fndsa_keygen_on_aie2(canonical, seed=xi_seed)
         else:
             raise ValueError(f"Unsupported Signature algorithm in OpenSSL provider: {algorithm}")
 
@@ -226,7 +250,16 @@ class PhoenixPqcProvider:
             rnd_seed = os.urandom(32)
 
         algo = key.algorithm.upper().replace("_", "-")
-        if algo == "ML-DSA-44":
+        if "SLH-DSA" in algo or "SPHINCS" in algo:
+            canonical = "SLH-DSA-SHAKE-128s" if "128S" in algo else "SLH-DSA-SHAKE-128f" if "128F" in algo else "SLH-DSA-SHAKE-256s" if "256S" in algo else "SLH-DSA-SHAKE-256f"
+            n = 16 if "128" in canonical else 32
+            opt_rand = rnd_seed[:n] if rnd_seed else None
+            sig, _ = slhdsa_graph.slhdsa_sign_on_aie2(canonical, key.privkey, message, opt_rand=opt_rand)
+        elif "FN-DSA" in algo or "FALCON" in algo:
+            canonical = "FN-DSA-512" if "512" in algo else "FN-DSA-1024"
+            salt = rnd_seed[:40] if len(rnd_seed) >= 40 else (rnd_seed + os.urandom(40 - len(rnd_seed)))
+            sig, _ = fndsa_graph.fndsa_sign_on_aie2(canonical, key.pubkey, key.privkey, message, salt=salt)
+        elif algo == "ML-DSA-44":
             sig = mldsa44_sgn.run_mldsa44_sign(key.privkey, message, rnd_seed)
         elif algo == "ML-DSA-65":
             sig = mldsa65_sgn.run_mldsa65_sign(key.privkey, message, external_mu=False)
@@ -240,7 +273,15 @@ class PhoenixPqcProvider:
     def signature_verify(self, key: PhoenixPqcKey, message: bytes, signature: bytes) -> bool:
         """Executes on-device Signature Verification on AIE2 silicon."""
         algo = key.algorithm.upper().replace("_", "-")
-        if algo == "ML-DSA-44":
+        if "SLH-DSA" in algo or "SPHINCS" in algo:
+            canonical = "SLH-DSA-SHAKE-128s" if "128S" in algo else "SLH-DSA-SHAKE-128f" if "128F" in algo else "SLH-DSA-SHAKE-256s" if "256S" in algo else "SLH-DSA-SHAKE-256f"
+            verdict, _, _ = slhdsa_graph.slhdsa_verify_on_aie2(canonical, key.pubkey, message, signature)
+            return verdict
+        elif "FN-DSA" in algo or "FALCON" in algo:
+            canonical = "FN-DSA-512" if "512" in algo else "FN-DSA-1024"
+            verdict, _, _ = fndsa_graph.fndsa_verify_on_aie2(canonical, key.pubkey, message, signature)
+            return verdict
+        elif algo == "ML-DSA-44":
             return mldsa44_vrf.run_mldsa44_verify(key.pubkey, message, signature)
         elif algo == "ML-DSA-65":
             return mldsa65_vrf.run_mldsa65_verify(key.pubkey, signature, message, external_mu=False)

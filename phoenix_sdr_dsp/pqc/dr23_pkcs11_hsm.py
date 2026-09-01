@@ -216,7 +216,11 @@ class PhoenixPkcs11Hsm:
         if not token.logged_in:
             return CKR_USER_NOT_LOGGED_IN, 0, 0
 
-        algo = algorithm.upper().replace("_", "-")
+        if isinstance(algorithm, dict):
+            algo_name = algorithm.get("param", algorithm.get("algorithm", algorithm.get("name", "ML-DSA-44")))
+        else:
+            algo_name = str(algorithm)
+        algo = algo_name.upper().replace("_", "-")
         if mechanism in (CKM_ML_KEM_KEY_PAIR_GEN, CKM_HYBRID_QKD_ML_KEM):
             key = self.provider.kem_keygen(algo)
         elif mechanism == CKM_ML_DSA_KEY_PAIR_GEN:
