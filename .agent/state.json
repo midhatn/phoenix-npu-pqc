@@ -1,9 +1,9 @@
 {
   "schema_version": 1,
-  "repository_commit": "28679687e4b548dc886fa5d54f2acf4dac373144",
-  "current_dr": "DR28",
+  "repository_commit": "a0aaea487a70c9751edba73bfa57f3c0305e73ff",
+  "current_dr": "DR29",
   "current_phase": "milestone_execution",
-  "last_verified_commit": "28679687e4b548dc886fa5d54f2acf4dac373144",
+  "last_verified_commit": "a0aaea487a70c9751edba73bfa57f3c0305e73ff",
   "hardware_available": true,
   "drs": {
     "DR0": {"functional_status": "BIT_EXACT_MATCHING", "security_status": "UNREVIEWED", "evidence_class": "BIT_EXACT_PHYSICAL_SILICON", "attempts": 1, "blockers": [], "next_action": "Maintain framed silicon validation."},
@@ -37,7 +37,7 @@
     "DR25": {"functional_status": "BIT_EXACT_MATCHING", "security_status": "UNREVIEWED", "evidence_class": "BIT_EXACT_PHYSICAL_SILICON", "attempts": 1, "blockers": [], "next_action": "Maintain framed silicon validation."},
     "DR26": {"functional_status": "BIT_EXACT_MATCHING", "security_status": "UNREVIEWED", "evidence_class": "BIT_EXACT_PHYSICAL_SILICON", "attempts": 1, "blockers": [], "next_action": "Maintain framed silicon validation."},
     "DR27": {"functional_status": "BIT_EXACT_MATCHING", "security_status": "UNREVIEWED", "evidence_class": "BIT_EXACT_PHYSICAL_SILICON", "attempts": 1, "blockers": [], "next_action": "Maintain framed silicon validation."},
-    "DR28": {"functional_status": "PLANNED", "security_status": "UNREVIEWED", "evidence_class": "NONE", "attempts": 0, "blockers": [], "next_action": "Verify the selected LMS/HSS verification profile."},
+    "DR28": {"functional_status": "BIT_EXACT_MATCHING", "security_status": "UNREVIEWED", "evidence_class": "BIT_EXACT_PHYSICAL_SILICON", "attempts": 1, "blockers": [], "next_action": "Maintain framed silicon validation."},
     "DR29": {"functional_status": "PLANNED", "security_status": "UNREVIEWED", "evidence_class": "NONE", "attempts": 0, "blockers": [], "next_action": "Measure existing high-category resource use."},
     "DR30": {"functional_status": "PLANNED", "security_status": "UNREVIEWED", "evidence_class": "NONE", "attempts": 0, "blockers": [], "next_action": "Verify 3GPP compatibility before design."},
     "DR31": {"functional_status": "PLANNED", "security_status": "UNREVIEWED", "evidence_class": "NONE", "attempts": 0, "blockers": [], "next_action": "Separate host parsing from NPU verification."},
