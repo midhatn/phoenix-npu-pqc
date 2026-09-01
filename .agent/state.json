@@ -1,9 +1,9 @@
 {
   "schema_version": 1,
-  "repository_commit": "0c4512beba85ac57b90cbb562683e54d0688e86e",
-  "current_dr": "DR23",
+  "repository_commit": "1f209aa0ee49afdd48c60f0d7bf9607d709d2ba7",
+  "current_dr": "DR24",
   "current_phase": "milestone_execution",
-  "last_verified_commit": "0c4512beba85ac57b90cbb562683e54d0688e86e",
+  "last_verified_commit": "1f209aa0ee49afdd48c60f0d7bf9607d709d2ba7",
   "hardware_available": true,
   "drs": {
     "DR0": {"functional_status": "BIT_EXACT_MATCHING", "security_status": "UNREVIEWED", "evidence_class": "BIT_EXACT_PHYSICAL_SILICON", "attempts": 1, "blockers": [], "next_action": "Maintain framed silicon validation."},
@@ -32,7 +32,7 @@
     "DR20": {"functional_status": "SPECIFICATION_BLOCKED", "security_status": "UNREVIEWED", "evidence_class": "NONE", "attempts": 0, "blockers": ["No authoritative DR20 scope supplied."], "next_action": "Obtain an authoritative scope from the repository owner."},
     "DR21": {"functional_status": "BIT_EXACT_MATCHING", "security_status": "UNREVIEWED", "evidence_class": "BIT_EXACT_PHYSICAL_SILICON", "attempts": 1, "blockers": [], "next_action": "Maintain framed silicon validation."},
     "DR22": {"functional_status": "BIT_EXACT_MATCHING", "security_status": "UNREVIEWED", "evidence_class": "BIT_EXACT_PHYSICAL_SILICON", "attempts": 1, "blockers": [], "next_action": "Maintain framed silicon validation."},
-    "DR23": {"functional_status": "HOST_INTEGRATION", "security_status": "UNREVIEWED", "evidence_class": "HOST_RUNTIME", "attempts": 0, "blockers": [], "next_action": "Define host ABI and NPU cryptographic boundary."},
+    "DR23": {"functional_status": "BIT_EXACT_MATCHING", "security_status": "UNREVIEWED", "evidence_class": "BIT_EXACT_PHYSICAL_SILICON", "attempts": 1, "blockers": [], "next_action": "Maintain framed silicon validation."},
     "DR24": {"functional_status": "PLANNED", "security_status": "UNREVIEWED", "evidence_class": "NONE", "attempts": 0, "blockers": [], "next_action": "Verify protocol scope and execution boundaries."},
     "DR25": {"functional_status": "PLANNED", "security_status": "UNREVIEWED", "evidence_class": "NONE", "attempts": 0, "blockers": [], "next_action": "Define masking model and randomness assumptions."},
     "DR26": {"functional_status": "PLANNED", "security_status": "UNREVIEWED", "evidence_class": "NONE", "attempts": 0, "blockers": [], "next_action": "Inventory target-specific toolchain support."},
