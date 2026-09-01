@@ -3,6 +3,7 @@
 QRNG-OPENAPI Ingress & Token-Bucket Entropy Reservoir Graph.
 Manages entropy buffer ingress and drainage on AIE2 tile memory.
 """
+import hashlib
 from pathlib import Path
 from typing import Any, Tuple, Dict, Optional
 import numpy as np
@@ -10,11 +11,22 @@ import numpy as np
 from . import dr27_qrng_openapi_abi as abi
 
 BACKEND_LABEL = "dr27-qrng-reservoir:silicon"
+KERNEL_REL_PATH = "phoenix_sdr_dsp/pqc/dr27_qrng_reservoir_graph.py"
 _PROGRAM: Any | None = None
 
 REQ_BYTES = abi.REQ_BYTES
 DESCRIPTOR_BYTES = abi.DESCRIPTOR_BYTES
 RESULT_BYTES = abi.RESULT_BYTES
+
+def get_kernel_artifact_info(repo_root: Path | None = None) -> dict[str, Any]:
+    root = repo_root or Path(__file__).resolve().parents[2]
+    kernel_path = root / KERNEL_REL_PATH
+    data = kernel_path.read_bytes()
+    return {
+        "path": KERNEL_REL_PATH,
+        "size_bytes": len(data),
+        "sha256": hashlib.sha256(data).hexdigest().lower(),
+    }
 
 class NativeBackendUnavailable(RuntimeError):
     """The native IRON/XRT DR27 backend is unavailable or failed closed."""
