@@ -291,7 +291,7 @@ For air-gapped customer acceptance and verification of core PQC primitives (FIPS
 powershell -ExecutionPolicy Bypass -File .\customer_demo\run_customer_npu_pqc_demo.ps1 -Offline -StrictNpu
 ```
 
-See [`customer_demo/OFFLINE_RUNBOOK.md`](customer_demo/OFFLINE_RUNBOOK.md) and [`customer_demo/GO_NO_GO.md`](customer_demo/GO_NO_GO.md) for full audit criteria and quarantine disclosures.
+See [`customer_demo/OFFLINE_RUNBOOK.md`](customer_demo/OFFLINE_RUNBOOK.md), [`customer_demo/GO_NO_GO.md`](customer_demo/GO_NO_GO.md), and [`customer_demo/CUSTOMER_QUARANTINED_DELIVERABLES.md`](customer_demo/CUSTOMER_QUARANTINED_DELIVERABLES.md) for full audit criteria, quarantine disclosures, and technical remediation roadmap.
 
 ---
 
