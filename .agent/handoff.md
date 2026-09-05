@@ -3,7 +3,7 @@
 ## Current repository baseline
 
 - Branch: `main`
-- HEAD Commit: `6558b45042788168dcee562de9767c76f543957a`
+- HEAD Commit: `b1ff80511de811d5bbb366d51872ad9a57c48be1`
 - Resolved Milestones:
   1. `autonomous-execution-constitution.md` (PR #12)
   2. `DR2d` (ML-KEM-512 K-PKE KeyGen, 25/25 vectors bit-exact PASS, PR #10)
@@ -21,12 +21,13 @@
   14. `DR30` (3GPP TS 33.501 5G/6G Core Network SUCI Co-Processor, 25/25 cases bit-exact PASS, PR #25)
   15. `DR31` (X.509 Post-Quantum Certificates & Hybrid CMS Co-Processor, 25/25 cases bit-exact PASS, PR #26)
   16. `DR32` (Post-Quantum X.509 PKI & TLS 1.3 Formatter Audit & Host Utility, PR #27)
+  17. `DR33` (Physical Side-Channel Power/EM Trace Acquisition & TVLA Framework, 25/25 cases bit-exact PASS, PR #28)
 - Verification Evidence:
-  - Host-safe PQC tests: 32/32 modules passing (`run_all_pqc_tests.py`)
+  - Host-safe PQC tests: 33/33 modules passing (`run_all_pqc_tests.py`)
   - Policy scanners: 125/125 unit tests passing (`tests/policy`)
   - Target Hardware: AMD Phoenix NPU (AIE2 / XDNA1)
-  - 34-Gate Native Silicon Validation: 34/34 gates and 1,117/1,117 cases matching oracles bit-exactly across all native hardware deliverables (DR0 through DR19, DR21 through DR31).
+  - 35-Gate Native Silicon Validation: 35/35 gates and 1,142/1,142 cases matching oracles bit-exactly across all native hardware deliverables (DR0 through DR19, DR21 through DR31, DR33).
 
 ## Next action
 
-Begin Milestone DR33 (Research physical trace acquisition, ISO/IEC 17825 / NIST SP 800-140F TVLA leakage assessment, and implement Phoenix AIE2 power/EM trace framework).
+Begin Milestone DR34 (Hardware Root of Trust, TCG DICE / TPM Attestation & NPU Enclave Security Boundaries on Phoenix AIE2).

@@ -1,9 +1,9 @@
 {
   "schema_version": 1,
-  "repository_commit": "6558b45042788168dcee562de9767c76f543957a",
-  "current_dr": "DR33",
+  "repository_commit": "b1ff80511de811d5bbb366d51872ad9a57c48be1",
+  "current_dr": "DR34",
   "current_phase": "milestone_execution",
-  "last_verified_commit": "6558b45042788168dcee562de9767c76f543957a",
+  "last_verified_commit": "b1ff80511de811d5bbb366d51872ad9a57c48be1",
   "hardware_available": true,
   "drs": {
     "DR0": {"functional_status": "BIT_EXACT_MATCHING", "security_status": "UNREVIEWED", "evidence_class": "BIT_EXACT_PHYSICAL_SILICON", "attempts": 1, "blockers": [], "next_action": "Maintain framed silicon validation."},
@@ -42,7 +42,7 @@
     "DR30": {"functional_status": "BIT_EXACT_MATCHING", "security_status": "UNREVIEWED", "evidence_class": "BIT_EXACT_PHYSICAL_SILICON", "attempts": 1, "blockers": [], "next_action": "Maintain framed silicon validation."},
     "DR31": {"functional_status": "BIT_EXACT_MATCHING", "security_status": "UNREVIEWED", "evidence_class": "BIT_EXACT_PHYSICAL_SILICON", "attempts": 1, "blockers": [], "next_action": "Maintain framed silicon validation."},
     "DR32": {"functional_status": "HOST_UTILITY", "security_status": "UNREVIEWED", "evidence_class": "HOST_FORMATTER", "attempts": 1, "blockers": [], "next_action": "Maintain host formatting utility and contract tests."},
-    "DR33": {"functional_status": "PLANNED", "security_status": "UNREVIEWED", "evidence_class": "NONE", "attempts": 0, "blockers": [], "next_action": "Define physical trace acquisition requirements."},
+    "DR33": {"functional_status": "BIT_EXACT_MATCHING", "security_status": "UNREVIEWED", "evidence_class": "BIT_EXACT_PHYSICAL_SILICON", "attempts": 1, "blockers": [], "next_action": "Maintain framed silicon validation."},
     "DR34": {"functional_status": "PLANNED", "security_status": "UNREVIEWED", "evidence_class": "NONE", "attempts": 0, "blockers": [], "next_action": "Define DICE/TPM/NPU trust boundaries."},
     "DR35": {"functional_status": "PLANNED_TOOLING", "security_status": "NOT_APPLICABLE", "evidence_class": "HOST_RUNTIME", "attempts": 0, "blockers": [], "next_action": "Define truthful telemetry sources."},
     "DR36": {"functional_status": "PLANNED_VERIFICATION", "security_status": "UNREVIEWED", "evidence_class": "FORMAL", "attempts": 0, "blockers": [], "next_action": "Define model scope and assumptions."},

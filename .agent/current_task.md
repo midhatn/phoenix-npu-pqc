@@ -2,11 +2,11 @@
 
 ## Task
 
-`DR33-SIDE-CHANNEL-TVLA`: Implement and validate Milestone DR33 (Physical Side-Channel Power/EM Trace Acquisition & TVLA Leakage Evaluation Framework for Phoenix AIE2).
+`DR34-DICE-TPM-ATTESTATION`: Implement and validate Milestone DR34 (Hardware Root of Trust, TCG DICE / TPM Attestation & NPU Enclave Security Boundaries).
 
 ## Status
 
-`IN_PROGRESS` (Milestone DR33).
+`IN_PROGRESS` (Milestone DR34).
 - Prior Milestones:
   1. `DR2d` (ML-KEM-512 K-PKE KeyGen): `COMPLETED` (25/25 vectors PASS, PR #10).
   2. `DR14` (ML-DSA-65 KeyGen, Sign, Verify): `COMPLETED` (85/85 vectors PASS, PR #13).
@@ -23,10 +23,12 @@
   13. `DR30` (3GPP TS 33.501 5G/6G Core Network SUCI Co-Processor): `COMPLETED` (25/25 cases PASS, PR #25).
   14. `DR31` (X.509 Post-Quantum Certificates & Hybrid CMS Co-Processor): `COMPLETED` (25/25 cases PASS, PR #26).
   15. `DR32` (Post-Quantum X.509 PKI & TLS 1.3 Formatter Audit & Host Utility): `COMPLETED` (PR #27).
-  16. Native Silicon Validation Baseline: 34 native deliverables with structured framed evidence on AMD Phoenix NPU physical silicon (1,117/1,117 test cases bit-exact matching).
+  16. `DR33` (Physical Side-Channel Power/EM Trace Acquisition & TVLA Framework): `COMPLETED` (25/25 cases PASS, PR #28).
+  17. Native Silicon Validation Baseline: 35 native deliverables with structured framed evidence on AMD Phoenix NPU physical silicon (1,142/1,142 test cases bit-exact matching).
 
 ## Next Action
 
-Research physical trace acquisition, test vector leakage assessment (ISO/IEC 17825 / NIST SP 800-140F TVLA), and design DR33 trace acquisition & evaluation architecture.
+Research TCG DICE Architecture (Device Identifier Composition Engine), TPM 2.0 / PQC attestation models, and design DR34 on-chip attestation measurement & quote verification engine.
+
 
 
