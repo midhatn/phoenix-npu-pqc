@@ -35,4 +35,4 @@
 
 ## Next action
 
-Begin Milestone DR39 (dudect Side-Channel Timing & TVLA Constant-Time Diagnostic Engine on AMD Phoenix NPU).
+Begin Milestone DR39 (dudect Side-Channel Timing & TVLA Timing Leakage Diagnostic Engine on AMD Phoenix NPU).

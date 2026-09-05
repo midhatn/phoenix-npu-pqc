@@ -2,7 +2,7 @@
 
 ## Task
 
-`DR39-DUDECT-TVLA-DIAGNOSTIC`: Implement and validate Milestone DR39 (dudect Side-Channel Timing & TVLA Constant-Time Diagnostic Engine on AMD Phoenix NPU).
+`DR39-DUDECT-TVLA-DIAGNOSTIC`: Implement and validate Milestone DR39 (dudect Side-Channel Timing & TVLA Timing Leakage Diagnostic Engine on AMD Phoenix NPU).
 
 ## Status
 
@@ -33,7 +33,7 @@
 
 ## Next Action
 
-Begin Milestone DR39: Define dudect constant-time leakage detection, Welch's t-test statistical engine, and execution boundaries on AMD Phoenix NPU.
+Begin Milestone DR39: Define dudect timing leakage detection, Welch's t-test statistical engine, and execution boundaries on AMD Phoenix NPU.
 
 
 
