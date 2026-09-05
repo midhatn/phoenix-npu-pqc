@@ -2,11 +2,11 @@
 
 ## Task
 
-DR40-BENCHMARK-BATTERY: Implement and validate Milestone DR40 (Reproducible High-Throughput Hardware Benchmark Protocol & Profiling Battery for AIE2 on AMD Phoenix NPU).
+DR41-QKMS-INTEGRATION: Implement and validate Milestone DR41 (Quantum Key Management System - Q-KMS - Integration & Hybrid Key Lifecycle Engine on AMD Phoenix NPU).
 
 ## Status
 
-IN_PROGRESS (Milestone DR40).
+IN_PROGRESS (Milestone DR41).
 - Prior Milestones:
   1. DR2d (ML-KEM-512 K-PKE KeyGen): COMPLETED (25/25 vectors PASS, PR #10).
   2. DR14 (ML-DSA-65 KeyGen, Sign, Verify): COMPLETED (85/85 vectors PASS, PR #13).
@@ -30,8 +30,9 @@ IN_PROGRESS (Milestone DR40).
   20. DR37 (Dual-Scheme Hybrid Classical / Quantum-Safe KEM Engine): COMPLETED (25/25 cases PASS, PR #32).
   21. DR38 (NIST SP 800-22 Randomness Statistical Battery & BSI AIS 31 Hardware Diagnostic): COMPLETED (25/25 cases PASS, PR #33).
   22. DR39 (dudect Side-Channel Timing & TVLA Diagnostic Engine): COMPLETED (25/25 cases PASS, PR #34).
-  23. Native Silicon Validation Baseline: 39 native deliverables with structured framed evidence on AMD Phoenix NPU physical silicon (1,242/1,242 test cases bit-exact matching).
+  23. DR40 (Reproducible High-Throughput Hardware Benchmark Protocol & Profiling Battery): COMPLETED (25/25 cases PASS, PR #35).
+  24. Native Silicon Validation Baseline: 40 native deliverables with structured framed evidence on AMD Phoenix NPU physical silicon (1,267/1,267 test cases bit-exact matching).
 
 ## Next Action
 
-Begin Milestone DR40: Define reproducible high-throughput benchmark protocol, cycle/latency instrumentation, and profiling harness for AIE2 on AMD Phoenix NPU.
+Begin Milestone DR41: Define Q-KMS host/network/NPU boundaries, secure key lifecycle interface, and hybrid key policy validation engine on AMD Phoenix NPU.

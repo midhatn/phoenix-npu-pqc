@@ -1,9 +1,9 @@
 {
   "schema_version": 1,
-  "repository_commit": "d9be7651054d61ccd20613df9f8e1cfc5d47076a",
-  "current_dr": "DR40",
+  "repository_commit": "24366823c72c2eedc26184e33ffa7b0a40637a74",
+  "current_dr": "DR41",
   "current_phase": "milestone_execution",
-  "last_verified_commit": "d9be7651054d61ccd20613df9f8e1cfc5d47076a",
+  "last_verified_commit": "24366823c72c2eedc26184e33ffa7b0a40637a74",
   "hardware_available": true,
   "drs": {
     "DR0": {
@@ -353,12 +353,12 @@
       "next_action": "Maintain framed silicon validation."
     },
     "DR40": {
-      "functional_status": "PLANNED_BENCHMARK",
+      "functional_status": "BIT_EXACT_MATCHING",
       "security_status": "NOT_APPLICABLE",
-      "evidence_class": "HOST_RUNTIME",
-      "attempts": 0,
+      "evidence_class": "BIT_EXACT_PHYSICAL_SILICON",
+      "attempts": 1,
       "blockers": [],
-      "next_action": "Define reproducible benchmark protocol and profiling battery."
+      "next_action": "Maintain framed silicon validation."
     },
     "DR41": {
       "functional_status": "PLANNED_INTEGRATION",
@@ -366,7 +366,7 @@
       "evidence_class": "HOST_RUNTIME",
       "attempts": 0,
       "blockers": [],
-      "next_action": "Define Q-KMS host/network/NPU boundaries."
+      "next_action": "Define Q-KMS host/network/NPU boundaries and key lifecycle interface."
     },
     "DR42": {
       "functional_status": "PLANNED",
