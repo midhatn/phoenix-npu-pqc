@@ -2,11 +2,11 @@
 
 ## Task
 
-`DR29-CNSA-2.0-LEVEL-5-DISTRIBUTED-MEMORY`: Implement NSA CNSA 2.0 Category 5 Multi-Tile Distributed Memory Engine for ML-KEM-1024 and ML-DSA-87 on AMD Phoenix AIE2 (XDNA1).
+`DR30-3GPP-5G6G-SUCI-COPROCESSOR`: Implement 3GPP TS 33.501 5G/6G Core Network Subscription Concealed Identifier (SUCI) Co-Processor on AMD Phoenix AIE2 (XDNA1).
 
 ## Status
 
-`IN_PROGRESS` (Milestone DR29).
+`IN_PROGRESS` (Milestone DR30).
 - Prior Milestones:
   1. `DR2d` (ML-KEM-512 K-PKE KeyGen): `COMPLETED` (25/25 vectors PASS, PR #10).
   2. `DR14` (ML-DSA-65 KeyGen, Sign, Verify): `COMPLETED` (85/85 vectors PASS, PR #13).
@@ -19,8 +19,9 @@
   9. `DR25` (Higher-Order Polynomial Masking & Local PRNG Expansion): `COMPLETED` (25/25 cases PASS, PR #21).
   10. `DR26` (AMD XDNA 2 & Alveo V70 Multi-Architecture Scaling): `COMPLETED` (25/25 cases PASS, PR #22).
   11. `DR28` (NIST SP 800-208 / RFC 8554 LMS Stateless Verification Engine): `COMPLETED` (25/25 cases PASS, PR #23).
-  12. Native Silicon Validation Baseline: 31 native deliverables with structured framed evidence on AMD Phoenix NPU physical silicon (1,042/1,042 test cases bit-exact matching).
+  12. `DR29` (NSA CNSA 2.0 Level 5 Multi-Tile Distributed Memory Engine): `COMPLETED` (25/25 cases PASS, PR #24).
+  13. Native Silicon Validation Baseline: 32 native deliverables with structured framed evidence on AMD Phoenix NPU physical silicon (1,067/1,067 test cases bit-exact matching).
 
 ## Next Action
 
-Research NSA Commercial National Security Algorithm Suite 2.0 (CNSA 2.0) Level 5 parameters (ML-KEM-1024 matrix $k=4$, ML-DSA-87 matrix $k=8, l=7 \implies 56$ polynomials) and 4-tile distributed memory partitioning; write research ledger `docs/research/DR29-CNSA-LEVEL5-sources.md`.
+Research 3GPP TS 33.501 (Release 18/19) SUCI profile standards using ML-KEM-768/1024 for 5G/6G Core Network subscriber de-concealment; write research ledger `docs/research/DR30-3GPP-SUCI-sources.md`.
