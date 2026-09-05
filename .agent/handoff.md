@@ -3,7 +3,7 @@
 ## Current repository baseline
 
 - Branch: `main`
-- HEAD Commit: `f528f7df221e0fccd15b01ffbeb61d70c0e84821`
+- HEAD Commit: `2293c2a292936d6f4e36ad272d2194136a539076`
 - Resolved Milestones:
   1. `autonomous-execution-constitution.md` (PR #12)
   2. `DR2d` (ML-KEM-512 K-PKE KeyGen, 25/25 vectors bit-exact PASS, PR #10)
@@ -24,12 +24,13 @@
   17. `DR33` (Physical Side-Channel Power/EM Trace Acquisition & TVLA Framework, 25/25 cases bit-exact PASS, PR #28)
   18. `DR34` (Hardware Root of Trust, TCG DICE / TPM Attestation & Enclave Security Boundaries, 25/25 cases bit-exact PASS, PR #29)
   19. `DR35` (Truthful Physical Power, Energy & Hardware Telemetry Harvester, PR #30)
+  20. `DR36` (Formal Verification & SMT Proof Models for AIE2 Cryptographic Pipelines, PR #31)
 - Verification Evidence:
-  - Host-safe PQC tests: 35/35 modules passing (`run_all_pqc_tests.py`)
+  - Host-safe PQC tests: 36/36 modules passing (`run_all_pqc_tests.py`)
   - Policy scanners: 125/125 unit tests passing (`tests/policy`)
   - Target Hardware: AMD Phoenix NPU (AIE2 / XDNA1)
   - 36-Gate Native Silicon Validation: 36/36 gates and 1,167/1,167 cases matching oracles bit-exactly across all native hardware deliverables (DR0 through DR19, DR21 through DR31, DR33, DR34).
 
 ## Next action
 
-Begin Milestone DR36 (Formal Verification & SMT Proof Models for AIE2 Cryptographic Pipelines).
+Begin Milestone DR37 (Hybrid Classical/Quantum-Safe KEM Engine: X25519 + ML-KEM-768 Combiner on AMD Phoenix AIE2).

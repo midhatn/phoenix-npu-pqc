@@ -2,11 +2,11 @@
 
 ## Task
 
-`DR36-FORMAL-VERIFICATION`: Implement and validate Milestone DR36 (Formal Verification & SMT Proof Models for AIE2 Cryptographic Pipelines).
+`DR37-HYBRID-KEM`: Implement and validate Milestone DR37 (Hybrid Classical/Quantum-Safe KEM Engine: X25519 + ML-KEM-768 Combiner on AMD Phoenix AIE2).
 
 ## Status
 
-`IN_PROGRESS` (Milestone DR36).
+`IN_PROGRESS` (Milestone DR37).
 - Prior Milestones:
   1. `DR2d` (ML-KEM-512 K-PKE KeyGen): `COMPLETED` (25/25 vectors PASS, PR #10).
   2. `DR14` (ML-DSA-65 KeyGen, Sign, Verify): `COMPLETED` (85/85 vectors PASS, PR #13).
@@ -26,11 +26,12 @@
   16. `DR33` (Physical Side-Channel Power/EM Trace Acquisition & TVLA Framework): `COMPLETED` (25/25 cases PASS, PR #28).
   17. `DR34` (Hardware Root of Trust, TCG DICE / TPM Attestation & Enclave Security Boundaries): `COMPLETED` (25/25 cases PASS, PR #29).
   18. `DR35` (Truthful Physical Power, Energy & Hardware Telemetry Harvester): `COMPLETED` (PR #30).
-  19. Native Silicon Validation Baseline: 36 native deliverables with structured framed evidence on AMD Phoenix NPU physical silicon (1,167/1,167 test cases bit-exact matching).
+  19. `DR36` (Formal Verification & SMT Proof Models for AIE2 Cryptographic Pipelines): `COMPLETED` (PR #31).
+  20. Native Silicon Validation Baseline: 36 native deliverables with structured framed evidence on AMD Phoenix NPU physical silicon (1,167/1,167 test cases bit-exact matching).
 
 ## Next Action
 
-Define formal model scope, bounded arithmetic invariants, and SMT verification properties for AIE2 cryptographic pipelines.
+Define X25519 and ML-KEM-768 execution boundaries, normative hybrid KDF combiner specification (RFC 9180 / NIST SP 800-56C / X25519Kyber768 draft), and research citations.
 
 
 
