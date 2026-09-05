@@ -3,7 +3,7 @@
 ## Current repository baseline
 
 - Branch: `main`
-- HEAD Commit: `d46609736e7a5605e1c8f700a47e908d065c2459`
+- HEAD Commit: `6558b45042788168dcee562de9767c76f543957a`
 - Resolved Milestones:
   1. `autonomous-execution-constitution.md` (PR #12)
   2. `DR2d` (ML-KEM-512 K-PKE KeyGen, 25/25 vectors bit-exact PASS, PR #10)
@@ -20,12 +20,13 @@
   13. `DR29` (NSA CNSA 2.0 Level 5 Multi-Tile Distributed Memory Engine, 25/25 cases bit-exact PASS, PR #24)
   14. `DR30` (3GPP TS 33.501 5G/6G Core Network SUCI Co-Processor, 25/25 cases bit-exact PASS, PR #25)
   15. `DR31` (X.509 Post-Quantum Certificates & Hybrid CMS Co-Processor, 25/25 cases bit-exact PASS, PR #26)
+  16. `DR32` (Post-Quantum X.509 PKI & TLS 1.3 Formatter Audit & Host Utility, PR #27)
 - Verification Evidence:
-  - Host-safe PQC tests: 31/31 modules passing (`run_all_pqc_tests.py`)
+  - Host-safe PQC tests: 32/32 modules passing (`run_all_pqc_tests.py`)
   - Policy scanners: 125/125 unit tests passing (`tests/policy`)
   - Target Hardware: AMD Phoenix NPU (AIE2 / XDNA1)
   - 34-Gate Native Silicon Validation: 34/34 gates and 1,117/1,117 cases matching oracles bit-exactly across all native hardware deliverables (DR0 through DR19, DR21 through DR31).
 
 ## Next action
 
-Begin Milestone DR32 (Audit and reclassify Post-Quantum X.509 PKI & TLS 1.3 Handshake Formatting Utility with strict [HOST FORMATTER] execution labeling).
+Begin Milestone DR33 (Research physical trace acquisition, ISO/IEC 17825 / NIST SP 800-140F TVLA leakage assessment, and implement Phoenix AIE2 power/EM trace framework).

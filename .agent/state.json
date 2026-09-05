@@ -1,9 +1,9 @@
 {
   "schema_version": 1,
-  "repository_commit": "d46609736e7a5605e1c8f700a47e908d065c2459",
-  "current_dr": "DR32",
+  "repository_commit": "6558b45042788168dcee562de9767c76f543957a",
+  "current_dr": "DR33",
   "current_phase": "milestone_execution",
-  "last_verified_commit": "d46609736e7a5605e1c8f700a47e908d065c2459",
+  "last_verified_commit": "6558b45042788168dcee562de9767c76f543957a",
   "hardware_available": true,
   "drs": {
     "DR0": {"functional_status": "BIT_EXACT_MATCHING", "security_status": "UNREVIEWED", "evidence_class": "BIT_EXACT_PHYSICAL_SILICON", "attempts": 1, "blockers": [], "next_action": "Maintain framed silicon validation."},
@@ -41,7 +41,7 @@
     "DR29": {"functional_status": "BIT_EXACT_MATCHING", "security_status": "UNREVIEWED", "evidence_class": "BIT_EXACT_PHYSICAL_SILICON", "attempts": 1, "blockers": [], "next_action": "Maintain framed silicon validation."},
     "DR30": {"functional_status": "BIT_EXACT_MATCHING", "security_status": "UNREVIEWED", "evidence_class": "BIT_EXACT_PHYSICAL_SILICON", "attempts": 1, "blockers": [], "next_action": "Maintain framed silicon validation."},
     "DR31": {"functional_status": "BIT_EXACT_MATCHING", "security_status": "UNREVIEWED", "evidence_class": "BIT_EXACT_PHYSICAL_SILICON", "attempts": 1, "blockers": [], "next_action": "Maintain framed silicon validation."},
-    "DR32": {"functional_status": "HOST_UTILITY", "security_status": "UNREVIEWED", "evidence_class": "HOST_FORMATTER", "attempts": 0, "blockers": [], "next_action": "Keep formatting utility host-labeled."},
+    "DR32": {"functional_status": "HOST_UTILITY", "security_status": "UNREVIEWED", "evidence_class": "HOST_FORMATTER", "attempts": 1, "blockers": [], "next_action": "Maintain host formatting utility and contract tests."},
     "DR33": {"functional_status": "PLANNED", "security_status": "UNREVIEWED", "evidence_class": "NONE", "attempts": 0, "blockers": [], "next_action": "Define physical trace acquisition requirements."},
     "DR34": {"functional_status": "PLANNED", "security_status": "UNREVIEWED", "evidence_class": "NONE", "attempts": 0, "blockers": [], "next_action": "Define DICE/TPM/NPU trust boundaries."},
     "DR35": {"functional_status": "PLANNED_TOOLING", "security_status": "NOT_APPLICABLE", "evidence_class": "HOST_RUNTIME", "attempts": 0, "blockers": [], "next_action": "Define truthful telemetry sources."},

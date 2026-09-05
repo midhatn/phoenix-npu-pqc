@@ -2,11 +2,11 @@
 
 ## Task
 
-`DR32-X509-PKI-TLS-FORMATTER`: Audit and reclassify DR32 Post-Quantum X.509 PKI & TLS 1.3 Handshake Formatting Utility with strict `[HOST FORMATTER]` execution labeling.
+`DR33-SIDE-CHANNEL-TVLA`: Implement and validate Milestone DR33 (Physical Side-Channel Power/EM Trace Acquisition & TVLA Leakage Evaluation Framework for Phoenix AIE2).
 
 ## Status
 
-`IN_PROGRESS` (Milestone DR32).
+`IN_PROGRESS` (Milestone DR33).
 - Prior Milestones:
   1. `DR2d` (ML-KEM-512 K-PKE KeyGen): `COMPLETED` (25/25 vectors PASS, PR #10).
   2. `DR14` (ML-DSA-65 KeyGen, Sign, Verify): `COMPLETED` (85/85 vectors PASS, PR #13).
@@ -22,9 +22,11 @@
   12. `DR29` (NSA CNSA 2.0 Level 5 Multi-Tile Distributed Memory Engine): `COMPLETED` (25/25 cases PASS, PR #24).
   13. `DR30` (3GPP TS 33.501 5G/6G Core Network SUCI Co-Processor): `COMPLETED` (25/25 cases PASS, PR #25).
   14. `DR31` (X.509 Post-Quantum Certificates & Hybrid CMS Co-Processor): `COMPLETED` (25/25 cases PASS, PR #26).
-  15. Native Silicon Validation Baseline: 34 native deliverables with structured framed evidence on AMD Phoenix NPU physical silicon (1,117/1,117 test cases bit-exact matching).
+  15. `DR32` (Post-Quantum X.509 PKI & TLS 1.3 Formatter Audit & Host Utility): `COMPLETED` (PR #27).
+  16. Native Silicon Validation Baseline: 34 native deliverables with structured framed evidence on AMD Phoenix NPU physical silicon (1,117/1,117 test cases bit-exact matching).
 
 ## Next Action
 
-Audit `phoenix_sdr_dsp/pqc/dr32_pki_tls_abi.py` and enforce strict host utility labels; create contract test `tests/test_pqc_dr32_contract.py`.
+Research physical trace acquisition, test vector leakage assessment (ISO/IEC 17825 / NIST SP 800-140F TVLA), and design DR33 trace acquisition & evaluation architecture.
+
 
