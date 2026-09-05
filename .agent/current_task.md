@@ -2,12 +2,13 @@
 
 ## Task
 
-DR42-COMPOSITE-ORCHESTRATION: Implement and validate Milestone DR42 (Advanced Post-Quantum Orchestration & Comprehensive Hybrid Cryptographic System Pipeline on AMD Phoenix NPU).
+ROADMAP_COMPLETION: Verification, regression defense, and completion of the authorized PQC and QKD engineering roadmap (DR0 through DR42 inclusive, DR43 excluded) on AMD Phoenix NPU.
 
 ## Status
 
-IN_PROGRESS (Milestone DR42).
-- Prior Milestones:
+COMPLETED (Milestones DR0 through DR42 inclusive).
+- Authorized Scope: DR0 through DR42 inclusive. (DR43 is explicitly excluded by constitutional mandate).
+- Milestones Summary:
   1. DR2d (ML-KEM-512 K-PKE KeyGen): COMPLETED (25/25 vectors PASS, PR #10).
   2. DR14 (ML-DSA-65 KeyGen, Sign, Verify): COMPLETED (85/85 vectors PASS, PR #13).
   3. DR15 (ML-DSA-87 KeyGen, Sign, Verify): COMPLETED (85/85 vectors PASS, PR #15).
@@ -32,8 +33,9 @@ IN_PROGRESS (Milestone DR42).
   22. DR39 (dudect Side-Channel Timing & TVLA Diagnostic Engine): COMPLETED (25/25 cases PASS, PR #34).
   23. DR40 (Reproducible High-Throughput Hardware Benchmark Protocol & Profiling Battery): COMPLETED (25/25 cases PASS, PR #35).
   24. DR41 (Quantum Key Management System - Q-KMS - Integration & Hybrid Key Lifecycle Engine): COMPLETED (25/25 cases PASS, PR #36).
-  25. Native Silicon Validation Baseline: 41 native deliverables with structured framed evidence on AMD Phoenix NPU physical silicon (1,292/1,292 test cases bit-exact matching).
+  25. DR42 (ANSSI Composite & Dual-Signature Sovereign Standard Engine): COMPLETED (25/25 cases PASS, PR #37).
+  26. Native Silicon Validation Baseline: 42 native deliverables with structured framed evidence on AMD Phoenix NPU physical silicon (1,317/1,317 test cases bit-exact matching).
 
 ## Next Action
 
-Begin Milestone DR42: Define end-to-end composite post-quantum orchestration and hybrid cryptographic system pipeline on AMD Phoenix NPU.
+Maintain repository integrity, framed silicon test regression baseline, and zero-speculation governance.

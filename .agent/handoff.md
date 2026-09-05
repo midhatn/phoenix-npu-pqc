@@ -2,16 +2,16 @@
 
 ## Current State
 
-- Active Milestone: DR42 (Advanced Post-Quantum Orchestration & Comprehensive Hybrid Cryptographic System Pipeline)
-- State: IN_PROGRESS
+- Active Milestone: DR42 (ANSSI Composite & Dual-Signature Sovereign Standard Engine) - COMPLETED.
+- Roadmap Scope: DR0 through DR42 inclusive (DR43 is explicitly excluded by constitutional mandate). ALL AUTHORIZED MILESTONES COMPLETED.
 - Branch: main
-- Last Merged Deliverable: DR41 (PR #36, commit 4b50e7fbcbc76a98cfbc5897b72e3b3dac107593)
+- Last Merged Deliverable: DR42 (PR #37, commit 3a009c6e91ba8648e9a1d1807a127eba2d56f71e)
 - Verification Evidence:
-  - Host-safe PQC tests: 41/41 modules passing (`run_all_pqc_tests.py`)
-  - Policy scanners: 125/125 unit tests passing (`tests/policy`)
-  - Target Hardware: AMD Phoenix NPU (AIE2 / XDNA1)
-  - 41-Gate Native Silicon Validation: 41/41 gates and 1,292/1,292 cases matching oracles bit-exactly across all native hardware deliverables (DR0 through DR19, DR21 through DR31, DR33, DR34, DR37, DR38, DR39, DR40, DR41).
+  - Host-safe PQC tests: 42/42 modules passing (`run_all_pqc_tests.py`)
+  - Policy scanners: 125/125 unit tests passing (`tests/policy`), 0 blocking errors across all 618 files (`tools/verify_agent_change.py --all`)
+  - Target Hardware: AMD Phoenix NPU (AIE2 / XDNA1, PCI ID 1502, BDF 0066:00:01.1, PnP Status OK)
+  - 42-Gate Native Silicon Validation: 42/42 gates and 1,317/1,317 cases matching oracles bit-exactly across all native hardware deliverables (DR0 through DR19, DR21 through DR31, DR33, DR34, DR37, DR38, DR39, DR40, DR41, DR42).
 
 ## Next action
 
-Begin Milestone DR42: Define end-to-end composite post-quantum orchestration and hybrid cryptographic system pipeline on AMD Phoenix NPU.
+Maintain repository integrity, framed silicon test regression baseline, and zero-speculation governance.
