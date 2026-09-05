@@ -91,22 +91,20 @@ Write-Host " Using Python : $PythonExe ($pyVersion)"
 
 # 4. Clone repository
 Write-Host "`n>>> [1/4] Cloning remote repository..." -ForegroundColor Yellow
-$gitCloneArgs = @("clone", "--quiet", $RepoUrl, $Destination)
-$cloneProc = Start-Process -FilePath "git" -ArgumentList $gitCloneArgs -Wait -PassThru -NoNewWindow
-if ($cloneProc.ExitCode -ne 0) {
-    Write-Error "git clone failed with exit code $($cloneProc.ExitCode)"
-    exit $cloneProc.ExitCode
+& git clone --quiet $RepoUrl $Destination
+if ($LASTEXITCODE -ne 0) {
+    Write-Error "git clone failed with exit code $LASTEXITCODE"
+    exit $LASTEXITCODE
 }
 
 # 5. Checkout requested ref
 Write-Host ">>> [2/4] Checking out ref: $Ref..." -ForegroundColor Yellow
 Push-Location -LiteralPath $Destination
 try {
-    $gitCheckoutArgs = @("checkout", $Ref)
-    $checkoutProc = Start-Process -FilePath "git" -ArgumentList $gitCheckoutArgs -Wait -PassThru -NoNewWindow
-    if ($checkoutProc.ExitCode -ne 0) {
-        Write-Error "git checkout '$Ref' failed with exit code $($checkoutProc.ExitCode)"
-        exit $checkoutProc.ExitCode
+    & git checkout $Ref
+    if ($LASTEXITCODE -ne 0) {
+        Write-Error "git checkout '$Ref' failed with exit code $LASTEXITCODE"
+        exit $LASTEXITCODE
     }
 
     $actualCommit = (& git rev-parse HEAD).Trim()
@@ -134,21 +132,22 @@ try {
         Write-Host "`n>>> [3/4] Running Host Preflight Contract Tests (run_all_pqc_tests.py)..." -ForegroundColor Yellow
         $hostStartTime = Get-Date
         
-        $hostProc = Start-Process -FilePath $PythonExe -ArgumentList @("run_all_pqc_tests.py") -Wait -PassThru -NoNewWindow
+        & $PythonExe run_all_pqc_tests.py
+        $hostExitCode = $LASTEXITCODE
         $hostDuration = ((Get-Date) - $hostStartTime).TotalSeconds
 
         $results.host_preflight = @{
-            exit_code = $hostProc.ExitCode
+            exit_code = $hostExitCode
             duration_seconds = [math]::Round($hostDuration, 2)
-            status = if ($hostProc.ExitCode -eq 0) { "PASS" } else { "FAIL" }
+            status = if ($hostExitCode -eq 0) { "PASS" } else { "FAIL" }
         }
 
-        if ($hostProc.ExitCode -ne 0) {
-            Write-Host " Host preflight tests FAILED (exit code $($hostProc.ExitCode))" -ForegroundColor Red
+        if ($hostExitCode -ne 0) {
+            Write-Host " Host preflight tests FAILED (exit code $hostExitCode)" -ForegroundColor Red
             $results.overall_status = "FAIL"
             $jsonOut = $results | ConvertTo-Json -Depth 4
             Set-Content -Path (Join-Path $Destination "validation_report.json") -Value $jsonOut -Encoding utf8
-            exit $hostProc.ExitCode
+            exit $hostExitCode
         } else {
             Write-Host " Host preflight tests PASSED ($([math]::Round($hostDuration, 2))s)" -ForegroundColor Green
         }
@@ -159,21 +158,22 @@ try {
         Write-Host "`n>>> [4/4] Running Canonical Physical Silicon Suite (run_all_silicon_tests.py)..." -ForegroundColor Yellow
         $hwStartTime = Get-Date
 
-        $hwProc = Start-Process -FilePath $PythonExe -ArgumentList @("run_all_silicon_tests.py") -Wait -PassThru -NoNewWindow
+        & $PythonExe run_all_silicon_tests.py
+        $hwExitCode = $LASTEXITCODE
         $hwDuration = ((Get-Date) - $hwStartTime).TotalSeconds
 
         $results.hardware_silicon = @{
-            exit_code = $hwProc.ExitCode
+            exit_code = $hwExitCode
             duration_seconds = [math]::Round($hwDuration, 2)
-            status = if ($hwProc.ExitCode -eq 0) { "PASS" } else { "FAIL" }
+            status = if ($hwExitCode -eq 0) { "PASS" } else { "FAIL" }
         }
 
-        if ($hwProc.ExitCode -ne 0) {
-            Write-Host " Hardware silicon tests FAILED (exit code $($hwProc.ExitCode))" -ForegroundColor Red
+        if ($hwExitCode -ne 0) {
+            Write-Host " Hardware silicon tests FAILED (exit code $hwExitCode)" -ForegroundColor Red
             $results.overall_status = "FAIL"
             $jsonOut = $results | ConvertTo-Json -Depth 4
             Set-Content -Path (Join-Path $Destination "validation_report.json") -Value $jsonOut -Encoding utf8
-            exit $hwProc.ExitCode
+            exit $hwExitCode
         } else {
             Write-Host " Hardware silicon tests PASSED ($([math]::Round($hwDuration, 2))s)" -ForegroundColor Green
         }
