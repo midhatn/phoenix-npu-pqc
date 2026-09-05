@@ -1,9 +1,9 @@
 {
   "schema_version": 1,
-  "repository_commit": "5cda3795fae0b9a8fd924ea15cc80e37c022483e",
-  "current_dr": "DR35",
+  "repository_commit": "f528f7df221e0fccd15b01ffbeb61d70c0e84821",
+  "current_dr": "DR36",
   "current_phase": "milestone_execution",
-  "last_verified_commit": "5cda3795fae0b9a8fd924ea15cc80e37c022483e",
+  "last_verified_commit": "f528f7df221e0fccd15b01ffbeb61d70c0e84821",
   "hardware_available": true,
   "drs": {
     "DR0": {"functional_status": "BIT_EXACT_MATCHING", "security_status": "UNREVIEWED", "evidence_class": "BIT_EXACT_PHYSICAL_SILICON", "attempts": 1, "blockers": [], "next_action": "Maintain framed silicon validation."},
@@ -44,7 +44,7 @@
     "DR32": {"functional_status": "HOST_UTILITY", "security_status": "UNREVIEWED", "evidence_class": "HOST_FORMATTER", "attempts": 1, "blockers": [], "next_action": "Maintain host formatting utility and contract tests."},
     "DR33": {"functional_status": "BIT_EXACT_MATCHING", "security_status": "UNREVIEWED", "evidence_class": "BIT_EXACT_PHYSICAL_SILICON", "attempts": 1, "blockers": [], "next_action": "Maintain framed silicon validation."},
     "DR34": {"functional_status": "BIT_EXACT_MATCHING", "security_status": "UNREVIEWED", "evidence_class": "BIT_EXACT_PHYSICAL_SILICON", "attempts": 1, "blockers": [], "next_action": "Maintain framed silicon validation."},
-    "DR35": {"functional_status": "PLANNED_TOOLING", "security_status": "NOT_APPLICABLE", "evidence_class": "HOST_RUNTIME", "attempts": 0, "blockers": [], "next_action": "Define truthful telemetry sources."},
+    "DR35": {"functional_status": "HOST_TOOLING", "security_status": "NOT_APPLICABLE", "evidence_class": "HOST_RUNTIME", "attempts": 1, "blockers": [], "next_action": "Maintain truthful telemetry harvester and host contract tests."},
     "DR36": {"functional_status": "PLANNED_VERIFICATION", "security_status": "UNREVIEWED", "evidence_class": "FORMAL", "attempts": 0, "blockers": [], "next_action": "Define model scope and assumptions."},
     "DR37": {"functional_status": "PLANNED", "security_status": "UNREVIEWED", "evidence_class": "NONE", "attempts": 0, "blockers": [], "next_action": "Define X25519 and ML-KEM execution boundaries."},
     "DR38": {"functional_status": "PLANNED_DIAGNOSTIC", "security_status": "UNREVIEWED", "evidence_class": "HOST_RUNTIME", "attempts": 0, "blockers": [], "next_action": "Verify statistical battery applicability."},

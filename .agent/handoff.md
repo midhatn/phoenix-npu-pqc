@@ -3,7 +3,7 @@
 ## Current repository baseline
 
 - Branch: `main`
-- HEAD Commit: `5cda3795fae0b9a8fd924ea15cc80e37c022483e`
+- HEAD Commit: `f528f7df221e0fccd15b01ffbeb61d70c0e84821`
 - Resolved Milestones:
   1. `autonomous-execution-constitution.md` (PR #12)
   2. `DR2d` (ML-KEM-512 K-PKE KeyGen, 25/25 vectors bit-exact PASS, PR #10)
@@ -23,12 +23,13 @@
   16. `DR32` (Post-Quantum X.509 PKI & TLS 1.3 Formatter Audit & Host Utility, PR #27)
   17. `DR33` (Physical Side-Channel Power/EM Trace Acquisition & TVLA Framework, 25/25 cases bit-exact PASS, PR #28)
   18. `DR34` (Hardware Root of Trust, TCG DICE / TPM Attestation & Enclave Security Boundaries, 25/25 cases bit-exact PASS, PR #29)
+  19. `DR35` (Truthful Physical Power, Energy & Hardware Telemetry Harvester, PR #30)
 - Verification Evidence:
-  - Host-safe PQC tests: 34/34 modules passing (`run_all_pqc_tests.py`)
+  - Host-safe PQC tests: 35/35 modules passing (`run_all_pqc_tests.py`)
   - Policy scanners: 125/125 unit tests passing (`tests/policy`)
   - Target Hardware: AMD Phoenix NPU (AIE2 / XDNA1)
   - 36-Gate Native Silicon Validation: 36/36 gates and 1,167/1,167 cases matching oracles bit-exactly across all native hardware deliverables (DR0 through DR19, DR21 through DR31, DR33, DR34).
 
 ## Next action
 
-Begin Milestone DR35 (Truthful Physical Power, Energy & Hardware Telemetry Harvester on AMD Phoenix AIE2).
+Begin Milestone DR36 (Formal Verification & SMT Proof Models for AIE2 Cryptographic Pipelines).

@@ -2,11 +2,11 @@
 
 ## Task
 
-`DR35-TRUTHFUL-TELEMETRY`: Implement and validate Milestone DR35 (Truthful Physical Power, Energy & Hardware Telemetry Harvester on AMD Phoenix AIE2).
+`DR36-FORMAL-VERIFICATION`: Implement and validate Milestone DR36 (Formal Verification & SMT Proof Models for AIE2 Cryptographic Pipelines).
 
 ## Status
 
-`IN_PROGRESS` (Milestone DR35).
+`IN_PROGRESS` (Milestone DR36).
 - Prior Milestones:
   1. `DR2d` (ML-KEM-512 K-PKE KeyGen): `COMPLETED` (25/25 vectors PASS, PR #10).
   2. `DR14` (ML-DSA-65 KeyGen, Sign, Verify): `COMPLETED` (85/85 vectors PASS, PR #13).
@@ -25,11 +25,12 @@
   15. `DR32` (Post-Quantum X.509 PKI & TLS 1.3 Formatter Audit & Host Utility): `COMPLETED` (PR #27).
   16. `DR33` (Physical Side-Channel Power/EM Trace Acquisition & TVLA Framework): `COMPLETED` (25/25 cases PASS, PR #28).
   17. `DR34` (Hardware Root of Trust, TCG DICE / TPM Attestation & Enclave Security Boundaries): `COMPLETED` (25/25 cases PASS, PR #29).
-  18. Native Silicon Validation Baseline: 36 native deliverables with structured framed evidence on AMD Phoenix NPU physical silicon (1,167/1,167 test cases bit-exact matching).
+  18. `DR35` (Truthful Physical Power, Energy & Hardware Telemetry Harvester): `COMPLETED` (PR #30).
+  19. Native Silicon Validation Baseline: 36 native deliverables with structured framed evidence on AMD Phoenix NPU physical silicon (1,167/1,167 test cases bit-exact matching).
 
 ## Next Action
 
-Research truthful telemetry sources (XRT device telemetry, pyxrt device properties, Windows power telemetry, Intel/AMD energy counters), and design DR35 telemetry harvester architecture.
+Define formal model scope, bounded arithmetic invariants, and SMT verification properties for AIE2 cryptographic pipelines.
 
 
 

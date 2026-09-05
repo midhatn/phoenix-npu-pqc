@@ -46,5 +46,6 @@
 {"timestamp": "2026-09-05T14:49:40Z", "command": "gh pr merge 27 --squash", "exit_code": 0, "result": "DR32 audited and reclassified as [HOST FORMATTER] / [HOST UTILITY]; tests/test_pqc_dr32_contract.py passes; PR #27 merged into main at 6558b45."}
 {"timestamp": "2026-09-05T14:56:06Z", "command": "gh pr merge 28 --squash", "exit_code": 0, "result": "25/25 cases bit-exact PASS on AMD Phoenix NPU physical silicon (dr33-tvla-trigger:silicon); PR #28 merged into main at b1ff805."}
 {"timestamp": "2026-09-05T15:00:52Z", "command": "gh pr merge 29 --squash", "exit_code": 0, "result": "25/25 cases bit-exact PASS on AMD Phoenix NPU physical silicon (dr34-dice-tpm:silicon); PR #29 merged into main at 5cda379."}
+{"timestamp": "2026-09-05T15:10:35Z", "command": "gh pr merge 30 --squash", "exit_code": 0, "result": "Milestone DR35 Physical Power, Energy & Truthful Hardware Telemetry Harvester implemented and verified with 5/5 contract tests PASS, 0 fake sensors, and 35/35 host-safe modules PASS; PR #30 merged into main at f528f7d."}
 
 
