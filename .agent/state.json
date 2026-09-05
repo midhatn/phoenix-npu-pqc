@@ -1,9 +1,9 @@
 {
   "schema_version": 1,
-  "repository_commit": "2293c2a292936d6f4e36ad272d2194136a539076",
-  "current_dr": "DR37",
+  "repository_commit": "9e368b5566a61535b26a2fe90e219b6e8984586c",
+  "current_dr": "DR38",
   "current_phase": "milestone_execution",
-  "last_verified_commit": "2293c2a292936d6f4e36ad272d2194136a539076",
+  "last_verified_commit": "9e368b5566a61535b26a2fe90e219b6e8984586c",
   "hardware_available": true,
   "drs": {
     "DR0": {"functional_status": "BIT_EXACT_MATCHING", "security_status": "UNREVIEWED", "evidence_class": "BIT_EXACT_PHYSICAL_SILICON", "attempts": 1, "blockers": [], "next_action": "Maintain framed silicon validation."},
@@ -46,8 +46,8 @@
     "DR34": {"functional_status": "BIT_EXACT_MATCHING", "security_status": "UNREVIEWED", "evidence_class": "BIT_EXACT_PHYSICAL_SILICON", "attempts": 1, "blockers": [], "next_action": "Maintain framed silicon validation."},
     "DR35": {"functional_status": "HOST_TOOLING", "security_status": "NOT_APPLICABLE", "evidence_class": "HOST_RUNTIME", "attempts": 1, "blockers": [], "next_action": "Maintain truthful telemetry harvester and host contract tests."},
     "DR36": {"functional_status": "FORMALLY_VERIFIED", "security_status": "PROVEN", "evidence_class": "FORMAL", "attempts": 1, "blockers": [], "next_action": "Maintain formal proof models and contract tests."},
-    "DR37": {"functional_status": "PLANNED", "security_status": "UNREVIEWED", "evidence_class": "NONE", "attempts": 0, "blockers": [], "next_action": "Define X25519 and ML-KEM execution boundaries."},
-    "DR38": {"functional_status": "PLANNED_DIAGNOSTIC", "security_status": "UNREVIEWED", "evidence_class": "HOST_RUNTIME", "attempts": 0, "blockers": [], "next_action": "Verify statistical battery applicability."},
+    "DR37": {"functional_status": "BIT_EXACT_MATCHING", "security_status": "UNREVIEWED", "evidence_class": "BIT_EXACT_PHYSICAL_SILICON", "attempts": 1, "blockers": [], "next_action": "Maintain framed silicon validation."},
+    "DR38": {"functional_status": "PLANNED_DIAGNOSTIC", "security_status": "UNREVIEWED", "evidence_class": "HOST_RUNTIME", "attempts": 0, "blockers": [], "next_action": "Implement NIST SP 800-22 statistical randomness test battery on DR27 QRNG reservoir output."},
     "DR39": {"functional_status": "PLANNED_DIAGNOSTIC", "security_status": "UNREVIEWED", "evidence_class": "HOST_RUNTIME", "attempts": 0, "blockers": [], "next_action": "Define AIE2 timing measurement methodology."},
     "DR40": {"functional_status": "PLANNED_BENCHMARK", "security_status": "NOT_APPLICABLE", "evidence_class": "HOST_RUNTIME", "attempts": 0, "blockers": [], "next_action": "Define reproducible benchmark protocol."},
     "DR41": {"functional_status": "PLANNED_INTEGRATION", "security_status": "UNREVIEWED", "evidence_class": "HOST_RUNTIME", "attempts": 0, "blockers": [], "next_action": "Define Q-KMS host/network/NPU boundaries."},

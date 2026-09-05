@@ -48,5 +48,6 @@
 {"timestamp": "2026-09-05T15:00:52Z", "command": "gh pr merge 29 --squash", "exit_code": 0, "result": "25/25 cases bit-exact PASS on AMD Phoenix NPU physical silicon (dr34-dice-tpm:silicon); PR #29 merged into main at 5cda379."}
 {"timestamp": "2026-09-05T15:10:35Z", "command": "gh pr merge 30 --squash", "exit_code": 0, "result": "Milestone DR35 Physical Power, Energy & Truthful Hardware Telemetry Harvester implemented and verified with 5/5 contract tests PASS, 0 fake sensors, and 35/35 host-safe modules PASS; PR #30 merged into main at f528f7d."}
 {"timestamp": "2026-09-05T15:17:08Z", "command": "gh pr merge 31 --squash", "exit_code": 0, "result": "Milestone DR36 Formal Verification & SMT Proof Models for AIE2 Cryptographic Pipelines implemented and verified with 8/8 contract tests PASS, 5/5 formal theorems proven, and 36/36 host-safe modules PASS; PR #31 merged into main at 2293c2a."}
+{"timestamp": "2026-09-05T15:27:18Z", "command": "gh pr merge 32 --squash", "exit_code": 0, "result": "Milestone DR37 Dual-Scheme Hybrid Classical / Quantum-Safe KEM Engine implemented and verified with 9/9 contract tests PASS, 37/37 host-safe modules PASS, and 25/25 cases bit-exact PASS on AMD Phoenix NPU physical silicon (dr37-hybrid-kem:silicon); PR #32 merged into main at 9e368b5."}
 
 

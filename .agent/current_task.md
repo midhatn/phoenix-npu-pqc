@@ -2,11 +2,11 @@
 
 ## Task
 
-`DR37-HYBRID-KEM`: Implement and validate Milestone DR37 (Hybrid Classical/Quantum-Safe KEM Engine: X25519 + ML-KEM-768 Combiner on AMD Phoenix AIE2).
+`DR38-RANDOMNESS-BATTERY`: Implement and validate Milestone DR38 (NIST SP 800-22 Randomness Statistical Test Battery on AMD Phoenix NPU).
 
 ## Status
 
-`IN_PROGRESS` (Milestone DR37).
+`IN_PROGRESS` (Milestone DR38).
 - Prior Milestones:
   1. `DR2d` (ML-KEM-512 K-PKE KeyGen): `COMPLETED` (25/25 vectors PASS, PR #10).
   2. `DR14` (ML-DSA-65 KeyGen, Sign, Verify): `COMPLETED` (85/85 vectors PASS, PR #13).
@@ -27,11 +27,12 @@
   17. `DR34` (Hardware Root of Trust, TCG DICE / TPM Attestation & Enclave Security Boundaries): `COMPLETED` (25/25 cases PASS, PR #29).
   18. `DR35` (Truthful Physical Power, Energy & Hardware Telemetry Harvester): `COMPLETED` (PR #30).
   19. `DR36` (Formal Verification & SMT Proof Models for AIE2 Cryptographic Pipelines): `COMPLETED` (PR #31).
-  20. Native Silicon Validation Baseline: 36 native deliverables with structured framed evidence on AMD Phoenix NPU physical silicon (1,167/1,167 test cases bit-exact matching).
+  20. `DR37` (Dual-Scheme Hybrid Classical / Quantum-Safe KEM Engine): `COMPLETED` (25/25 cases PASS, PR #32).
+  21. Native Silicon Validation Baseline: 37 native deliverables with structured framed evidence on AMD Phoenix NPU physical silicon (1,192/1,192 test cases bit-exact matching).
 
 ## Next Action
 
-Define X25519 and ML-KEM-768 execution boundaries, normative hybrid KDF combiner specification (RFC 9180 / NIST SP 800-56C / X25519Kyber768 draft), and research citations.
+Begin Milestone DR38: Formulate NIST SP 800-22 statistical test suite execution boundaries and harness for DR27 QRNG reservoir data.
 
 
 
