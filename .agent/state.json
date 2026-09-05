@@ -1,9 +1,9 @@
 {
   "schema_version": 1,
-  "repository_commit": "24366823c72c2eedc26184e33ffa7b0a40637a74",
-  "current_dr": "DR41",
+  "repository_commit": "4b50e7fbcbc76a98cfbc5897b72e3b3dac107593",
+  "current_dr": "DR42",
   "current_phase": "milestone_execution",
-  "last_verified_commit": "24366823c72c2eedc26184e33ffa7b0a40637a74",
+  "last_verified_commit": "4b50e7fbcbc76a98cfbc5897b72e3b3dac107593",
   "hardware_available": true,
   "drs": {
     "DR0": {
@@ -361,20 +361,20 @@
       "next_action": "Maintain framed silicon validation."
     },
     "DR41": {
+      "functional_status": "BIT_EXACT_MATCHING",
+      "security_status": "UNREVIEWED",
+      "evidence_class": "BIT_EXACT_PHYSICAL_SILICON",
+      "attempts": 1,
+      "blockers": [],
+      "next_action": "Maintain framed silicon validation."
+    },
+    "DR42": {
       "functional_status": "PLANNED_INTEGRATION",
       "security_status": "UNREVIEWED",
       "evidence_class": "HOST_RUNTIME",
       "attempts": 0,
       "blockers": [],
-      "next_action": "Define Q-KMS host/network/NPU boundaries and key lifecycle interface."
-    },
-    "DR42": {
-      "functional_status": "PLANNED",
-      "security_status": "UNREVIEWED",
-      "evidence_class": "NONE",
-      "attempts": 0,
-      "blockers": [],
-      "next_action": "Verify the current composite-signature profile."
+      "next_action": "Define DR42 end-to-end PQC/QKD orchestration and composite pipeline on AIE2."
     },
     "DR43": {
       "functional_status": "PLANNED",
