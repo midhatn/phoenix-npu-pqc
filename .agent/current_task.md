@@ -2,11 +2,11 @@
 
 ## Task
 
-`DR34-DICE-TPM-ATTESTATION`: Implement and validate Milestone DR34 (Hardware Root of Trust, TCG DICE / TPM Attestation & NPU Enclave Security Boundaries).
+`DR35-TRUTHFUL-TELEMETRY`: Implement and validate Milestone DR35 (Truthful Physical Power, Energy & Hardware Telemetry Harvester on AMD Phoenix AIE2).
 
 ## Status
 
-`IN_PROGRESS` (Milestone DR34).
+`IN_PROGRESS` (Milestone DR35).
 - Prior Milestones:
   1. `DR2d` (ML-KEM-512 K-PKE KeyGen): `COMPLETED` (25/25 vectors PASS, PR #10).
   2. `DR14` (ML-DSA-65 KeyGen, Sign, Verify): `COMPLETED` (85/85 vectors PASS, PR #13).
@@ -24,11 +24,13 @@
   14. `DR31` (X.509 Post-Quantum Certificates & Hybrid CMS Co-Processor): `COMPLETED` (25/25 cases PASS, PR #26).
   15. `DR32` (Post-Quantum X.509 PKI & TLS 1.3 Formatter Audit & Host Utility): `COMPLETED` (PR #27).
   16. `DR33` (Physical Side-Channel Power/EM Trace Acquisition & TVLA Framework): `COMPLETED` (25/25 cases PASS, PR #28).
-  17. Native Silicon Validation Baseline: 35 native deliverables with structured framed evidence on AMD Phoenix NPU physical silicon (1,142/1,142 test cases bit-exact matching).
+  17. `DR34` (Hardware Root of Trust, TCG DICE / TPM Attestation & Enclave Security Boundaries): `COMPLETED` (25/25 cases PASS, PR #29).
+  18. Native Silicon Validation Baseline: 36 native deliverables with structured framed evidence on AMD Phoenix NPU physical silicon (1,167/1,167 test cases bit-exact matching).
 
 ## Next Action
 
-Research TCG DICE Architecture (Device Identifier Composition Engine), TPM 2.0 / PQC attestation models, and design DR34 on-chip attestation measurement & quote verification engine.
+Research truthful telemetry sources (XRT device telemetry, pyxrt device properties, Windows power telemetry, Intel/AMD energy counters), and design DR35 telemetry harvester architecture.
+
 
 
 
