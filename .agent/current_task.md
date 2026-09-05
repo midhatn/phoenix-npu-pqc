@@ -2,11 +2,11 @@
 
 ## Task
 
-`DR38-RANDOMNESS-BATTERY`: Implement and validate Milestone DR38 (NIST SP 800-22 Randomness Statistical Test Battery on AMD Phoenix NPU).
+`DR39-DUDECT-TVLA-DIAGNOSTIC`: Implement and validate Milestone DR39 (dudect Side-Channel Timing & TVLA Constant-Time Diagnostic Engine on AMD Phoenix NPU).
 
 ## Status
 
-`IN_PROGRESS` (Milestone DR38).
+`IN_PROGRESS` (Milestone DR39).
 - Prior Milestones:
   1. `DR2d` (ML-KEM-512 K-PKE KeyGen): `COMPLETED` (25/25 vectors PASS, PR #10).
   2. `DR14` (ML-DSA-65 KeyGen, Sign, Verify): `COMPLETED` (85/85 vectors PASS, PR #13).
@@ -28,11 +28,13 @@
   18. `DR35` (Truthful Physical Power, Energy & Hardware Telemetry Harvester): `COMPLETED` (PR #30).
   19. `DR36` (Formal Verification & SMT Proof Models for AIE2 Cryptographic Pipelines): `COMPLETED` (PR #31).
   20. `DR37` (Dual-Scheme Hybrid Classical / Quantum-Safe KEM Engine): `COMPLETED` (25/25 cases PASS, PR #32).
-  21. Native Silicon Validation Baseline: 37 native deliverables with structured framed evidence on AMD Phoenix NPU physical silicon (1,192/1,192 test cases bit-exact matching).
+  21. `DR38` (NIST SP 800-22 Randomness Statistical Battery & BSI AIS 31 Hardware Diagnostic): `COMPLETED` (25/25 cases PASS, PR #33).
+  22. Native Silicon Validation Baseline: 38 native deliverables with structured framed evidence on AMD Phoenix NPU physical silicon (1,217/1,217 test cases bit-exact matching).
 
 ## Next Action
 
-Begin Milestone DR38: Formulate NIST SP 800-22 statistical test suite execution boundaries and harness for DR27 QRNG reservoir data.
+Begin Milestone DR39: Define dudect constant-time leakage detection, Welch's t-test statistical engine, and execution boundaries on AMD Phoenix NPU.
+
 
 
 

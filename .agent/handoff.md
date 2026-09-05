@@ -3,7 +3,7 @@
 ## Current repository baseline
 
 - Branch: `main`
-- HEAD Commit: `9e368b5566a61535b26a2fe90e219b6e8984586c`
+- HEAD Commit: `d35aa67f46cd6adbe99d6b214c5b9aa2087c6716`
 - Resolved Milestones:
   1. `autonomous-execution-constitution.md` (PR #12)
   2. `DR2d` (ML-KEM-512 K-PKE KeyGen, 25/25 vectors bit-exact PASS, PR #10)
@@ -26,12 +26,13 @@
   19. `DR35` (Truthful Physical Power, Energy & Hardware Telemetry Harvester, PR #30)
   20. `DR36` (Formal Verification & SMT Proof Models for AIE2 Cryptographic Pipelines, PR #31)
   21. `DR37` (Dual-Scheme Hybrid Classical / Quantum-Safe KEM Engine, 25/25 cases bit-exact PASS, PR #32)
+  22. `DR38` (NIST SP 800-22 Randomness Statistical Battery & BSI AIS 31 Hardware Diagnostic, 25/25 cases bit-exact PASS, PR #33)
 - Verification Evidence:
-  - Host-safe PQC tests: 37/37 modules passing (`run_all_pqc_tests.py`)
+  - Host-safe PQC tests: 38/38 modules passing (`run_all_pqc_tests.py`)
   - Policy scanners: 125/125 unit tests passing (`tests/policy`)
   - Target Hardware: AMD Phoenix NPU (AIE2 / XDNA1)
-  - 37-Gate Native Silicon Validation: 37/37 gates and 1,192/1,192 cases matching oracles bit-exactly across all native hardware deliverables (DR0 through DR19, DR21 through DR31, DR33, DR34, DR37).
+  - 38-Gate Native Silicon Validation: 38/38 gates and 1,217/1,217 cases matching oracles bit-exactly across all native hardware deliverables (DR0 through DR19, DR21 through DR31, DR33, DR34, DR37, DR38).
 
 ## Next action
 
-Begin Milestone DR38 (NIST SP 800-22 Randomness Statistical Test Battery on AMD Phoenix NPU).
+Begin Milestone DR39 (dudect Side-Channel Timing & TVLA Constant-Time Diagnostic Engine on AMD Phoenix NPU).
