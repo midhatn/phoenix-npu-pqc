@@ -1,8 +1,13 @@
 # Release Notes — Phoenix NPU PQC & QKD Suite (v1.1.0)
 
+> [!NOTE]
+> <!-- [CLAIM-PROVENANCE: status=HISTORICAL; source=v1.1.0_historical_release; classification=SELF_REPORTED_UNVERIFIED] -->
+> [HISTORICAL CLAIM - UNVERIFIED / PENDING PHYSICAL DISPATCH CORROBORATION]
+> The historical release notes below reflect pre-refactor self-reported test results. Active evaluation is subject to the zero-speculation policy.
+
 ## Overview
 
-We announce the formal release of **Phoenix NPU PQC & QKD v1.1.0**, establishing the world's first 100% device-resident hardware acceleration engine combining finalized NIST Post-Quantum Cryptography standards (FIPS 202, FIPS 203, FIPS 204) with Quantum Key Distribution (ETSI GS QKD 014) on the AMD Phoenix NPU (AIE2 / XDNA1 Architecture).
+We announce the release of **Phoenix NPU PQC & QKD v1.1.0**, establishing a 100% device-resident hardware acceleration engine combining finalized NIST Post-Quantum Cryptography standards (FIPS 202, FIPS 203, FIPS 204) with Quantum Key Distribution (ETSI GS QKD 014) on the AMD Phoenix NPU (AIE2 / XDNA1 Architecture).
 
 ---
 
@@ -13,7 +18,7 @@ We announce the formal release of **Phoenix NPU PQC & QKD v1.1.0**, establishing
 * **Milestone DR17 (Gate 20)**: Asymmetric control plane authentication via NIST FIPS 204 (ML-DSA-44/65/87) to solve QKD's pre-shared key dilemma.
 * **Milestone DR18 (Gate 21)**: NIST SP 800-56C Rev. 2 / NIST SP 800-227 on-chip two-step dual-key combiner fusing $K_{\text{QKD}}$ and $K_{\text{PQC}}$ inside AIE2 Keccak tile (3,2).
 * **Milestone DR19 (Gate 22)**: Full-duplex session handshake orchestrator with DR10 hardware zeroization memory scrub on session termination.
-* **Milestone DR20 (Gate 23)**: Complete 23-gate regression suite executing on physical AMD Phoenix silicon with 839 / 839 test cases passing.
+* **Master Gate Suite**: Tracked 24 registered gates (857 test cases) matching declared reference oracles bit-exactly, labeled `SELF_REPORTED_UNVERIFIED` pending physical dispatch trace corroboration.
 
 ### 2. Native C++ Peano LLVM-AIE Kernels
 * Eliminated all host Python cryptographic delegations.

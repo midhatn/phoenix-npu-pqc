@@ -84,7 +84,7 @@ Intermediate secret keys and polynomials never leave the on-die SRAM until the f
 
 ## 2. Six Core Cryptographic, Quantum & Enterprise Provider Modules
 
-The architecture is partitioned into six primary modules across 25 physical silicon gates (**851 / 851 test cases PASS in 33.21s**):
+The architecture is partitioned into six primary modules across 24 physical silicon gates (**857 / 857 test cases PASS in 31.14s**):
 
 ### Module 1: NIST FIPS 202 (SHA-3 / SHAKE — Milestone DR9)
 * **Scope**: SHA3-224, SHA3-256, SHA3-384, SHA3-512, SHAKE128, and SHAKE256 running natively on the NPU array.
@@ -98,7 +98,7 @@ The architecture is partitioned into six primary modules across 25 physical sili
   * `Encaps`: On-device message encapsulation and shared-secret derivation.
   * `Decaps`: Full CCA-secure decapsulation with on-device re-encryption and implicit rejection.
   * Internal Sub-Pipelines: Standalone `K-PKE.KeyGen`, `K-PKE.Encrypt`, and `K-PKE.Decrypt`.
-* **Validation**: 210 NIST ACVP and regression test cases evaluated across ML-KEM baseline.
+* **Validation**: 225 NIST ACVP and regression test cases evaluated across ML-KEM baseline (DR2d: 25, DR3: 25, DR4: 25, DR5: 25, DR6: 25, DR7: 25, DR8: 75).
 
 ### Module 3: NIST FIPS 204 (ML-DSA — Milestones DR11, DR12, DR13, DR14, DR15)
 * **Parameter Coverage**: Full coverage of **ML-DSA-44**, **ML-DSA-65**, and **ML-DSA-87**.
@@ -119,9 +119,9 @@ The architecture is partitioned into six primary modules across 25 physical sili
   * Raw ingress entropy conditioning.
   * Authenticated external key adapters.
   * Monotonic epoch freshness protection and sealed hardware state zeroization.
-* **Validation**: **149 / 149** test cases passing on silicon.
+* **Validation**: **134 / 134** test cases passing on silicon (DR0: 24, DR1: 33, DR2a: 13, DR2b: 13, DR2c: 11, DR10: 40).
 
-### Module 5: Hybrid QKD & Post-Quantum Defense-in-Depth (Milestones DR16, DR17, DR18, DR19, DR20)
+### Module 5: Hybrid QKD & Post-Quantum Defense-in-Depth (Milestones DR16, DR17, DR18, DR19)
 * **Standards Compliance**: Full compliance with **ETSI GS QKD 014 (v1.1.1 / v1.3.1)**, **ITU-T Y.3800–Y.3804**, **NIST SP 800-56C Rev. 2**, and **NIST SP 800-227 / BSI TR-02102**.
 * **QKD Appliance Interoperability**: Direct support for commercial Key Management Entities (KMEs) including **ID Quantique (IDQ) Cerberis XGR** and **Clavis 3** systems.
 * **Operations**: Complete operations executed 100% on-device:
@@ -129,7 +129,7 @@ The architecture is partitioned into six primary modules across 25 physical sili
   * `Asymmetric Channel Authentication (DR17)`: Resolves QKD's pre-shared key dilemma by signing session manifests and nonces with FIPS 204 ML-DSA on AIE2 vector tiles.
   * `On-Device Dual-Key Combiner (DR18)`: Fuses $K_{\text{QKD}}$ and $K_{\text{PQC}}$ inside AIE2 Keccak tile (3,2) via NIST SP 800-56C two-step extraction ($K_{\text{Final}} = \text{KMAC256}(K_{\text{QKD}} \parallel K_{\text{PQC}}, \text{Context})$).
   * `Full-Duplex Session Orchestrator (DR19)`: End-to-end multi-tile handshake between Master and Slave nodes with zero-leakage teardown via DR10 hardware zeroization.
-* **Validation**: **103 / 103** test cases passing on silicon.
+* **Validation**: **100 / 100** test cases passing on silicon (DR16: 25, DR17: 25, DR18: 25, DR19: 25).
 
 ### Module 6: True Quantum Entropy & Integration (Milestones DR27, DR23)
 * **Standards Compliance**: **Palo Alto QRNG-OPENAPI v1.0**, **NIST SP 800-90B**, **OpenSSL 3.0+ Provider API**, and **OASIS PKCS#11 v3.0 Cryptoki**.
@@ -155,7 +155,7 @@ All operations strictly enforce four non-negotiable hardware invariants:
 
 > [!NOTE]
 > [HISTORICAL CLAIM - UNVERIFIED / PENDING PHYSICAL DISPATCH CORROBORATION]
-> The table below records legacy pre-refactor self-reported test totals. Under the Phase A zero-speculation policy, 19 gates are actively tracked (16 self-reported unverified gates, 3 functional fail gates, 0 independently physically verified gates pending driver-level dispatch corroboration).
+> The table below records canonical self-reported hardware test totals. Under the Phase A zero-speculation policy, 24 registered gates (19 core gates, 736 cases; 5 extension gates, 121 cases; 857 cases total) are actively tracked. All 857 executed cases match the declared independent oracles bit-exactly, classified as `SELF_REPORTED_UNVERIFIED` pending independent external driver-level hardware dispatch trace corroboration (0 functional fail gates in the registered suite).
 
 The universal master silicon test suite ([`run_all_silicon_tests.py`](run_all_silicon_tests.py)) executes directly on physical AMD Phoenix AIE2 silicon (Ryzen 7 7840HS / Ryzen 9 7940HS):
 
@@ -185,7 +185,7 @@ The universal master silicon test suite ([`run_all_silicon_tests.py`](run_all_si
 | **21** | **DR18**| **NIST SP 800-56C Dual Combiner** | `test_dr18_dual_key_combiner_silicon.py` | 25 | [HISTORICAL CLAIM - UNVERIFIED] 25 cases | 1.11s |
 | **22** | **DR19**| **Hybrid Session Orchestrator** | `test_dr19_hybrid_session_silicon.py` | 25 | [HISTORICAL CLAIM - UNVERIFIED] 25 cases | 0.65s |
 | **23** | **DR27**| **QRNG-OPENAPI & Reservoir Core** | `test_dr27_qrng_reservoir_silicon.py` | 21 | [HISTORICAL CLAIM - UNVERIFIED] 21 cases | 1.23s |
-| **TOTAL**| **DR0–DR27**| **Universal Master Silicon Suite** | `run_all_silicon_tests.py` | **857** | [HISTORICAL CLAIM - UNVERIFIED / PENDING PHYSICAL DISPATCH CORROBORATION] | **29.84s** |
+| **TOTAL**| **DR0–DR27**| **Universal Master Silicon Suite** | `run_all_silicon_tests.py` | **857** | [HISTORICAL CLAIM - UNVERIFIED / PENDING PHYSICAL DISPATCH CORROBORATION] | **31.14s** |
 
 ---
 
@@ -211,6 +211,8 @@ q_{\text{quot}} &= (Y \cdot 1290167) \gg 32 \\
 r &= Y - q_{\text{quot}} \cdot 3329
 \end{aligned}
 $$
+
+Because $Y \in [0, q^2)$, Barrett reduction bounds the intermediate remainder to $r \in [0, 2q)$ (maximum $r = 3332$). A final branchless subtraction $r = r - q \text{ if } r \ge q$ maps $r$ into the canonical range $[0, q)$, or $r$ is preserved in redundant form $[0, 2q)$ for lazy reduction across vector accumulation passes.
 
 ### 5.3 NIST SP 800-56C Dual-PRF Security Proof
 The hybrid key combiner derives $K_{\text{Final}} = \text{KMAC256}(K_{\text{QKD}} \parallel K_{\text{PQC}}, \text{Context})$. The distinguishing advantage of any polynomial-time adversary $\mathcal{A}$ is bounded by:

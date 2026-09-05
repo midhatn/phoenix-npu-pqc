@@ -3,7 +3,7 @@
 > [!NOTE]
 > <!-- [CLAIM-PROVENANCE: status=HISTORICAL; source=pqc_final_silicon_report; classification=SELF_REPORTED_UNVERIFIED] -->
 > [HISTORICAL CLAIM - UNVERIFIED / PENDING PHYSICAL DISPATCH CORROBORATION]
-> This historical document reflects pre-refactor self-reported metrics. Under current Phase A zero-speculation policy, 19 gates are actively tracked (16 self-reported unverified gates, 3 functional fail gates, 0 independently physically verified gates pending driver-level hardware dispatch trace corroboration).
+> This historical document reflects self-reported baseline metrics across 19 core gates (736 cases total). All 736 executed cases match declared independent oracles bit-exactly, classified as `SELF_REPORTED_UNVERIFIED` pending independent driver-level hardware dispatch trace corroboration (0 functional fail gates in the baseline suite).
 
 **Date**: August 29, 2026
 **Project**: Device-Resident Post-Quantum Cryptography on AMD Phoenix NPU
@@ -25,8 +25,7 @@ This research establishes device-resident hardware implementations of the finali
 2. **NIST FIPS 203 (ML-KEM / Kyber)**:
    - Security Categories 1, 3, 5: **ML-KEM-512, ML-KEM-768, ML-KEM-1024**
    - Full KeyGen, Encaps, and Decaps operations with implicit rejection.
-
-   - Historical Scope: 200 test cases evaluated (DR2d, DR3, DR4, DR5, DR6, DR7, DR8).
+   - Historical Scope: 225 test cases evaluated (DR2d: 25, DR3: 25, DR4: 25, DR5: 25, DR6: 25, DR7: 25, DR8: 75).
 
 3. **NIST FIPS 204 (ML-DSA / Dilithium)**:
    - Security Categories 2, 3, 5: **ML-DSA-44, ML-DSA-65, ML-DSA-87**
@@ -35,7 +34,7 @@ This research establishes device-resident hardware implementations of the finali
 
 4. **Hardware Lifecycle & Key Source Architecture**:
    - M33 Vector Ring Product, ExpandA, SampleNTT, CBD3/NTT noise, Sealed Sessions & CRC32.
-   - Historical Scope: 159 test cases evaluated (DR0, DR1, DR2a, DR2b, DR2c, DR10).
+   - Historical Scope: 134 test cases evaluated (DR0: 24, DR1: 33, DR2a: 13, DR2b: 13, DR2c: 11, DR10: 40).
 
 ---
 
@@ -62,7 +61,7 @@ This research establishes device-resident hardware implementations of the finali
 | **16** | DR13 | NIST FIPS 204 ML-DSA-44 Verify | `test_dr13_mldsa44_verify_silicon.py` | 30 | 30 cases tracked | 0.96s |
 | **17** | DR14 | NIST FIPS 204 ML-DSA-65 (Full Suite)| `test_dr14_mldsa65_silicon.py` | 85 | 85 cases tracked | 4.40s |
 | **18** | DR15 | NIST FIPS 204 ML-DSA-87 (Full Suite)| `test_dr15_mldsa87_silicon.py` | 85 | 85 cases tracked | 3.13s |
-| **TOTAL**| **DR0-15** | **Comprehensive NIST PQC Engine** | `test_all_silicon_gates.py` | **736** | **736 cases tracked** | **23.82s** |
+| **TOTAL**| **DR0-15** | **Comprehensive NIST PQC Engine** | `run_all_silicon_tests.py` | **736** | **736 cases tracked** | **23.82s** |
 
 ---
 

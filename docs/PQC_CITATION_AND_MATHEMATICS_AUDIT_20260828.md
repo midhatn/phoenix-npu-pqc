@@ -58,13 +58,13 @@ $$
   * *Citation*: Gentleman, W. M., & Sande, G. (1966). *Fast Fourier Transforms—for fun and profit*. *AFIPS '66*, pp. 563–578. [DOI: 10.1145/1464291.1464352](https://doi.org/10.1145/1464291.1464352).
 
 ### 3.3 Montgomery Modular Arithmetic
-All modular arithmetic on AIE2 uses Montgomery reduction ($R = 2^{32} \pmod q$):
+All modular arithmetic on AIE2 uses Montgomery reduction ($R = 2^{32} \pmod q$ for 32-bit operations, $R = 2^{16} \pmod q$ for 16-bit operations):
 
 $$
-\text{MontReduce}(T) = (T + (T \cdot q^{-1} \bmod R) \cdot q) / R
+\text{MontReduce}(T) = (T - (T \cdot q^{-1} \bmod R) \cdot q) / R
 $$
 
-where $q^{-1} = 62209 \pmod{2^{32}}$ for ML-KEM and $q^{-1} = 58728449 \pmod{2^{32}}$ for ML-DSA.
+where $q^{-1} \equiv 62209 \pmod{2^{16}}$ for 16-bit ML-KEM arithmetic ($q^{-1} \equiv 1806234369 \pmod{2^{32}}$ for 32-bit representation) and $q^{-1} \equiv 58728449 \pmod{2^{32}}$ for ML-DSA ($q \cdot q^{-1} \equiv 1 \pmod R$).
 * *Citation*: Montgomery, P. L. (1985). *Modular multiplication without trial division*. *Mathematics of Computation*, 44(170), 519–521. [DOI: 10.1090/S0025-5718-1985-0777282-X](https://doi.org/10.1090/S0025-5718-1985-0777282-X).
 
 ### 3.4 Barrett Compression & Polynomial Reductions
@@ -101,7 +101,7 @@ $$
 > Legacy test totals below represent pre-refactor self-reported metrics. Under current Phase A zero-speculation policy, all 19 active gates are tracked with 0 independently physically verified gates pending driver-level dispatch trace corroboration.
 
 1. **NIST FIPS 202 (DR9)**: 122 test cases (SHA3-224/256/384/512, SHAKE128/256) tracked.
-2. **NIST FIPS 203 (DR2–DR8)**: 200 test cases (ML-KEM-512, 768, 1024 KeyGen/Encaps/Decaps) tracked.
+2. **NIST FIPS 203 (DR2d, DR3–DR8)**: 225 test cases (ML-KEM-512, 768, 1024 KeyGen/Encaps/Decaps) tracked.
 3. **NIST FIPS 204 (DR11–DR15)**: 255 test cases (ML-DSA-44, 65, 87 KeyGen/Sign/Verify) tracked.
-4. **Hardware Primitives & Lifecycle (DR0–DR1, DR10)**: 159 test cases tracked.
-5. **Universal Silicon Total**: 736 test cases tracked across legacy gate set.
+4. **Hardware Primitives & Lifecycle (DR0–DR2c, DR10)**: 134 test cases tracked.
+5. **Universal Silicon Total**: 736 test cases tracked across legacy core gate set (122 + 225 + 255 + 134 = 736).
