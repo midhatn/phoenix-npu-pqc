@@ -7,11 +7,11 @@
 ![Architecture: XDNA1 AIE2 ML](https://img.shields.io/badge/Architecture-XDNA1%20AIE2%20(512--bit%20SIMD)-red)
 ![Research: PQC & QKD Defense-in-Depth](https://img.shields.io/badge/Research-PQC%20%26%20QKD%20Defense--in--Depth-8a2be2)
 ![Standards: FIPS 202 / 203 / 204 · ETSI 014 · QRNG · SP 800-56C](https://img.shields.io/badge/Standards-FIPS%20202%2F203%2F204%20%C2%B7%20ETSI%20014%20%C2%B7%20QRNG-005ea8)
-![Status: 24 Hardware Silicon Gates Verified](https://img.shields.io/badge/Status-24%20Hardware%20Gates%20PASS-brightgreen)
+![Status: DR0–DR42 Evaluated](https://img.shields.io/badge/Status-DR0--DR42%20Evaluated-blue)
 
 **Hardware realization of finalized NIST Post-Quantum Cryptography standards (FIPS 202, FIPS 203, FIPS 204) and ETSI GS QKD 014 Quantum Key Distribution on the AMD Phoenix NPU (AIE2 / XDNA1 Architecture).**
 
-[Full Silicon Architecture Whitepaper (v2)](docs/phoenix_npu_xdna1_architecture_v2.md) · [PQC & QKD Hardware Roadmap](docs/PQC_AND_QKD_ROADMAP.md) · [Forensic Audit Report](docs/FORENSIC_AUDIT_REPORT.md) · [Interactive Frontend](https://github.com/midhatn/phoenix-npu-pqc-frontend)
+[Full Silicon Architecture Whitepaper (v2)](docs/phoenix_npu_xdna1_architecture_v2.md) · [PQC & QKD Hardware Roadmap](docs/PQC_AND_QKD_ROADMAP.md) · [Clean-Clone Validation Report](docs/validation/CLEAN_CLONE_VALIDATION.md) · [Forensic Audit Report](docs/FORENSIC_AUDIT_REPORT.md) · [Interactive Frontend](https://github.com/midhatn/phoenix-npu-pqc-frontend)
 
 </div>
 
@@ -223,33 +223,107 @@ $$
 
 ## 6. Quick Start: Clone & Run (CLI & Web UI)
 
-Any developer or researcher can clone and reproduce the entire 100% on-device PQC & QKD verification suite via the **CLI Test Runner** or the **Interactive Web Dashboard**:
-
-### 6.1 Prerequisites
-* **Target APU (for hardware mode)**: AMD Phoenix / Hawk Point APU (Ryzen 7 7840HS, 7940HS, 8845HS, 8945HS) with AMD XDNA1 NPU.
-* **Driver**: AMD NPU Compute Accelerator driver (`VEN_1022 DEV_1502`).
-* **Python Environment**: Python with MLIR-AIE (IRON) / XRT runtime.
-* **Node.js (for Web UI)**: Version 18.0+ (Node 20+ or 24+ recommended).
+Any researcher or developer can inspect, reproduce, and validate the PQC and QKD implementations across two distinct operational modes: **Host-Only Preflight Mode** (evaluates all mathematical contracts and formatters without hardware requirements) and **Physical Silicon Mode** (compiles AIE2 kernels and dispatches zero-copy DMA to the AMD Phoenix NPU).
 
 ---
 
-### 6.2 Option A: Automated CLI Master Silicon Suite (24 Gates Verified)
+### 6.1 Operational Boundaries: Host vs. Hardware
+
+| Operational Mode | Target Hardware Requirements | Driver / Runtime Stack | Primary Entry Point | Execution Characteristics |
+| :--- | :--- | :--- | :--- | :--- |
+| **Host-Only Preflight** | Any standard PC (Windows, Linux, macOS) | CPython 3.10–3.13 (no specialized drivers needed) | `python run_all_pqc_tests.py` | Validates 42 contract modules, mathematical transliteration, ring reductions, and serialization on host CPU (~20s). |
+| **Physical Hardware** | AMD Phoenix / Hawk Point APU (Ryzen 7 7840HS, 7940HS) | AMD IPU Driver (`VEN_1022 DEV_1502`), XRT 2.21, MLIR-AIE (IRON) v1.4.1 | `python run_all_silicon_tests.py` | Compiles AIE2 microcode, allocates non-pageable memory buffers, and dispatches directly to on-die tile SRAM. |
+| **Offline Customer Demo** | Target Phoenix laptop in air-gapped configuration | Pre-provisioned local runtime (zero network access) | `customer_demo/run_customer_npu_pqc_demo.ps1` | Validates core primitive gates under strict NPU constraints with fail-closed evidence generation. |
+
+---
+
+### 6.2 Prerequisites & Tested Environment
+
+* **Host-Only Validation**:
+  * **Operating System**: Windows 10/11, Ubuntu 22.04+, or macOS 13+.
+  * **Python**: CPython 3.10 to 3.13 (verified on 3.13.15 x64).
+* **Physical Hardware Validation**:
+  * **Silicon**: AMD Ryzen 7 7840HS / Ryzen 9 7940HS / 8845HS / 8945HS with AMD XDNA1 NPU1.
+  * **Operating System**: Windows 11 Pro 64-bit (22H2+ / build floor 22621, verified on build 26200).
+  * **NPU Driver**: AMD NPU Compute Accelerator driver version `32.0.20102.3930` or newer.
+  * **Native Build Tools**: Visual Studio 2022 Build Tools (MSVC v143, Clang/LLVM C++ tools, Windows 11 SDK).
+  * **Toolchain Archive**: XRT Windows SDK release 2.21.75 (runtime version 2.21.0), MLIR-AIE wheel v1.4.1.
+
+---
+
+### 6.3 Shortest Verified Path: Host Preflight (Zero Hardware Required)
+
+The fastest path to verify the mathematical models, ring arithmetic, and contract interfaces requires no NPU hardware or driver installations:
 
 ```powershell
-# 1. Clone the core repository
+# 1. Clone repository
 git clone https://github.com/midhatn/phoenix-npu-pqc.git
 cd phoenix-npu-pqc
 
-# 2. Bootstrap & verify environment
-py .\install
-
-# 3. Run the Master Silicon Certification Suite
-python run_all_silicon_tests.py
+# 2. Run host preflight suite across all 42 modules (~20 seconds)
+python run_all_pqc_tests.py
 ```
 
 ---
 
-### 6.3 Option B: Interactive Web Dashboard & Real-Time Silicon Runner
+### 6.4 Physical Silicon Validation (AMD Phoenix NPU)
+
+On an AMD Phoenix laptop, complete native toolchain provisioning and hardware validation can be executed via the automated launcher:
+
+```powershell
+# 1. Provision native Windows toolchain and compile environment
+py .\install
+
+# 2. Execute the canonical physical silicon regression suite
+python run_all_silicon_tests.py
+```
+
+The native installer (`py .\install`) verifies prerequisites, downloads pinned XRT/MLIR-AIE components with SHA-256 verification, provisions the `ironenv` virtual environment, and executes the physical test suite under the Windows watchdog supervisor.
+
+---
+
+### 6.5 Offline Customer Demonstration Suite
+
+For air-gapped customer acceptance and verification of core PQC primitives (FIPS 202, FIPS 203, FIPS 204, ETSI QKD 014):
+
+```powershell
+# Run the strict-NPU customer verification orchestrator
+powershell -ExecutionPolicy Bypass -File .\customer_demo\run_customer_npu_pqc_demo.ps1 -Offline -StrictNpu
+```
+
+See [`customer_demo/OFFLINE_RUNBOOK.md`](customer_demo/OFFLINE_RUNBOOK.md) and [`customer_demo/GO_NO_GO.md`](customer_demo/GO_NO_GO.md) for full audit criteria and quarantine disclosures.
+
+---
+
+### 6.6 Automated Clean-Clone Validation
+
+To verify the onboarding experience from a freshly cloned remote repository in an isolated directory:
+
+```powershell
+# Host-only fresh-clone validation
+powershell -ExecutionPolicy Bypass -File .\tools\validate_fresh_clone.ps1 -Destination "C:\Projects\clean_test_clone" -HostOnly
+
+# Full hardware silicon fresh-clone validation
+powershell -ExecutionPolicy Bypass -File .\tools\validate_fresh_clone.ps1 -Destination "C:\Projects\clean_test_clone" -Hardware
+```
+
+The validation tool enforces fail-closed execution, rejects existing non-empty directories, clones remotely, redacts sensitive paths, and outputs `validation_report.json`. For verified results, see the [Clean-Clone Validation Report](docs/validation/CLEAN_CLONE_VALIDATION.md).
+
+---
+
+### 6.7 Troubleshooting Common Issues
+
+| Symptom / Error | Root Cause | Remediation |
+| :--- | :--- | :--- |
+| `FileNotFoundError: xrt-smi.exe` | AMD NPU driver not installed or wrong device model. | Install the official AMD IPU driver package for Phoenix silicon (`VEN_1022 DEV_1502`). |
+| `Execution of scripts is disabled` | PowerShell execution policy restriction. | Launch PowerShell with `-ExecutionPolicy Bypass` or set `Set-ExecutionPolicy -Scope Process Bypass`. |
+| `Unsupported Python version` | Python 3.14+ used; wheel requires 3.13. | Install CPython 3.13 x64 (`winget install Python.Python.3.13`). |
+| `Destination directory already exists` | Validation destination is not empty. | Provide a new disposable folder path for `tools/validate_fresh_clone.ps1`. |
+| `AIE compilation failure / clang error` | Visual Studio C++ build tools or LLVM missing. | Ensure Visual Studio 2022 C++ x86/x64 tools and Clang components are installed. |
+
+---
+
+### 6.8 Interactive Web Dashboard & Real-Time Silicon Runner
 
 For an interactive web playground with real-time hardware execution, tamper injection tests, 16-tile AIE2 layout visualizer, and SSE streaming runner:
 
