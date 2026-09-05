@@ -16,6 +16,86 @@
       "status": "OPEN",
       "summary": "No authoritative DR20 scope was supplied.",
       "next_action": "Repository owner must define DR20 or explicitly reserve the identifier."
+    },
+    {
+      "id": "DR21-HYPERTREE-FORGERY",
+      "dr": "DR21",
+      "category": "cryptographic_defect",
+      "status": "OPEN",
+      "summary": "SLH-DSA hypertree signature verification checks a sham hash tail over public keys and arbitrary FORS bytes, permitting public-only forgeries without secret key.",
+      "next_action": "Re-implement complete FIPS 205 WOTS+ and hypertree leaf verification logic."
+    },
+    {
+      "id": "DR22-SECRET-FREE-SIGNING",
+      "dr": "DR22",
+      "category": "cryptographic_defect",
+      "status": "OPEN",
+      "summary": "FN-DSA signing does not read the secret key and generates s2 from public salt, pk, and msg; fixed 512-element arrays overflow stack on n=1024.",
+      "next_action": "Re-implement genuine Falcon/FN-DSA tree-based signing and parameter-safe polynomial arrays."
+    },
+    {
+      "id": "DR30-HOST-SHARED-SECRET",
+      "dr": "DR30",
+      "category": "cryptographic_defect",
+      "status": "OPEN",
+      "summary": "3GPP SUCI decapsulation takes a precomputed shared secret from the host rather than performing device-resident ML-KEM decapsulation.",
+      "next_action": "Integrate device-resident ML-KEM decapsulation into the 3GPP SUCI kernel."
+    },
+    {
+      "id": "DR31-PARITY-CHECK-AND-PUBLIC-CEK",
+      "dr": "DR31",
+      "category": "cryptographic_defect",
+      "status": "OPEN",
+      "summary": "X.509 CMS signature verify is a 1-bit parity check; CEK unwrapping derives key from public ciphertext via constant XOR without recipient private key.",
+      "next_action": "Re-implement genuine post-quantum certificate verification and private-key-bound CEK unwrap."
+    },
+    {
+      "id": "DR34-SENTINEL-BYTE-CHECK",
+      "dr": "DR34",
+      "category": "cryptographic_defect",
+      "status": "OPEN",
+      "summary": "DICE/TPM quote signature acceptance checks only that signature byte 0 != 0xFF, accepting arbitrary byte arrays as valid quotes.",
+      "next_action": "Implement genuine ML-DSA or ECC signature verification for DICE attestation quotes."
+    },
+    {
+      "id": "DR36-STRIDED-FORMAL-DEFECT",
+      "dr": "DR36",
+      "category": "verification_defect",
+      "status": "OPEN",
+      "summary": "Formal verification checks a finite strided sample in Python and claims universal 100% formal SMT proof, missing unsampled input faults.",
+      "next_action": "Replace strided Python simulation with exhaustive Z3/CVC5 bit-vector symbolic constraints."
+    },
+    {
+      "id": "DR38-ENTROPY-PREDICATE",
+      "dr": "DR38",
+      "category": "cryptographic_defect",
+      "status": "OPEN",
+      "summary": "Randomness battery predicate max_byte_freq <= sample_len/64 is claimed to guarantee >= 7.95 bits/byte, but 64 equally frequent symbols satisfy it with H=6.0 bits/byte.",
+      "next_action": "Implement mathematically sound NIST SP 800-90B min-entropy estimators."
+    },
+    {
+      "id": "DR39-HARDCODED-TIMING",
+      "dr": "DR39",
+      "category": "side_channel_defect",
+      "status": "OPEN",
+      "summary": "dudect service feeds hardcoded constants 48/48 into Welford accumulators rather than measuring execution cycle counts on physical AIE2 hardware timers.",
+      "next_action": "Instrument AIE2 tile hardware performance counters to capture genuine execution cycle deltas."
+    },
+    {
+      "id": "DR41-EPHEMERAL-VAULT",
+      "dr": "DR41",
+      "category": "security_boundary_defect",
+      "status": "OPEN",
+      "summary": "Q-KMS service receives the entire vault from host memory on each dispatch; no persistent, tamper-resistant on-tile vault exists across dispatches.",
+      "next_action": "Enforce sealed on-tile key residency and hardware-protected key lifecycle storage."
+    },
+    {
+      "id": "DR42-PARITY-SIGNATURE-CHECK",
+      "dr": "DR42",
+      "category": "cryptographic_defect",
+      "status": "OPEN",
+      "summary": "ANSSI composite signature verify kernel computes a trivial (check & 0x01) == 0 low-bit parity check instead of executing actual Ed25519/ECDSA and ML-DSA verification.",
+      "next_action": "Implement genuine dual-signature verification combining on-tile Ed25519/ECDSA and ML-DSA-44/65/87."
     }
   ]
 }
