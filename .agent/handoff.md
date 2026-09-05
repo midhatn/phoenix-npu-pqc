@@ -3,7 +3,7 @@
 ## Current repository baseline
 
 - Branch: `main`
-- HEAD Commit: `8075413492477e28300aa0add15b4c8f16eaf437`
+- HEAD Commit: `d46609736e7a5605e1c8f700a47e908d065c2459`
 - Resolved Milestones:
   1. `autonomous-execution-constitution.md` (PR #12)
   2. `DR2d` (ML-KEM-512 K-PKE KeyGen, 25/25 vectors bit-exact PASS, PR #10)
@@ -19,12 +19,13 @@
   12. `DR28` (NIST SP 800-208 / RFC 8554 LMS Stateless Verification Engine, 25/25 cases bit-exact PASS, PR #23)
   13. `DR29` (NSA CNSA 2.0 Level 5 Multi-Tile Distributed Memory Engine, 25/25 cases bit-exact PASS, PR #24)
   14. `DR30` (3GPP TS 33.501 5G/6G Core Network SUCI Co-Processor, 25/25 cases bit-exact PASS, PR #25)
+  15. `DR31` (X.509 Post-Quantum Certificates & Hybrid CMS Co-Processor, 25/25 cases bit-exact PASS, PR #26)
 - Verification Evidence:
-  - Host-safe PQC tests: 30/30 modules passing (`run_all_pqc_tests.py`)
+  - Host-safe PQC tests: 31/31 modules passing (`run_all_pqc_tests.py`)
   - Policy scanners: 125/125 unit tests passing (`tests/policy`)
   - Target Hardware: AMD Phoenix NPU (AIE2 / XDNA1)
-  - 33-Gate Native Silicon Validation: 33/33 gates and 1,092/1,092 cases matching oracles bit-exactly across all native hardware deliverables (DR0 through DR19, DR21 through DR30).
+  - 34-Gate Native Silicon Validation: 34/34 gates and 1,117/1,117 cases matching oracles bit-exactly across all native hardware deliverables (DR0 through DR19, DR21 through DR31).
 
 ## Next action
 
-Begin Milestone DR31 (NIST SP 800-208 / RFC 5280 / RFC 5652 X.509 Post-Quantum Certificates & Hybrid CMS Parser on AMD Phoenix AIE2).
+Begin Milestone DR32 (Audit and reclassify Post-Quantum X.509 PKI & TLS 1.3 Handshake Formatting Utility with strict [HOST FORMATTER] execution labeling).
