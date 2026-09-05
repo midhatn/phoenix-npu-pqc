@@ -1,57 +1,388 @@
 {
   "schema_version": 1,
-  "repository_commit": "d35aa67f46cd6adbe99d6b214c5b9aa2087c6716",
-  "current_dr": "DR39",
+  "repository_commit": "d9be7651054d61ccd20613df9f8e1cfc5d47076a",
+  "current_dr": "DR40",
   "current_phase": "milestone_execution",
-  "last_verified_commit": "d35aa67f46cd6adbe99d6b214c5b9aa2087c6716",
+  "last_verified_commit": "d9be7651054d61ccd20613df9f8e1cfc5d47076a",
   "hardware_available": true,
   "drs": {
-    "DR0": {"functional_status": "BIT_EXACT_MATCHING", "security_status": "UNREVIEWED", "evidence_class": "BIT_EXACT_PHYSICAL_SILICON", "attempts": 1, "blockers": [], "next_action": "Maintain framed silicon validation."},
-    "DR1": {"functional_status": "BIT_EXACT_MATCHING", "security_status": "UNREVIEWED", "evidence_class": "BIT_EXACT_PHYSICAL_SILICON", "attempts": 1, "blockers": [], "next_action": "Maintain framed silicon validation."},
-    "DR2a": {"functional_status": "BIT_EXACT_MATCHING", "security_status": "UNREVIEWED", "evidence_class": "BIT_EXACT_PHYSICAL_SILICON", "attempts": 1, "blockers": [], "next_action": "Maintain framed silicon validation."},
-    "DR2b": {"functional_status": "BIT_EXACT_MATCHING", "security_status": "UNREVIEWED", "evidence_class": "BIT_EXACT_PHYSICAL_SILICON", "attempts": 1, "blockers": [], "next_action": "Maintain framed silicon validation."},
-    "DR2c": {"functional_status": "BIT_EXACT_MATCHING", "security_status": "UNREVIEWED", "evidence_class": "BIT_EXACT_PHYSICAL_SILICON", "attempts": 1, "blockers": [], "next_action": "Maintain framed silicon validation."},
-    "DR2d": {"functional_status": "BIT_EXACT_MATCHING", "security_status": "UNREVIEWED", "evidence_class": "BIT_EXACT_PHYSICAL_SILICON", "attempts": 1, "blockers": [], "next_action": "Maintain protected evidence archive."},
-    "DR3": {"functional_status": "BIT_EXACT_MATCHING", "security_status": "UNREVIEWED", "evidence_class": "BIT_EXACT_PHYSICAL_SILICON", "attempts": 1, "blockers": [], "next_action": "Maintain framed silicon validation."},
-    "DR4": {"functional_status": "BIT_EXACT_MATCHING", "security_status": "UNREVIEWED", "evidence_class": "BIT_EXACT_PHYSICAL_SILICON", "attempts": 1, "blockers": [], "next_action": "Maintain framed silicon validation."},
-    "DR5": {"functional_status": "BIT_EXACT_MATCHING", "security_status": "UNREVIEWED", "evidence_class": "BIT_EXACT_PHYSICAL_SILICON", "attempts": 1, "blockers": [], "next_action": "Maintain framed silicon validation."},
-    "DR6": {"functional_status": "BIT_EXACT_MATCHING", "security_status": "UNREVIEWED", "evidence_class": "BIT_EXACT_PHYSICAL_SILICON", "attempts": 1, "blockers": [], "next_action": "Maintain framed silicon validation."},
-    "DR7": {"functional_status": "BIT_EXACT_MATCHING", "security_status": "UNREVIEWED", "evidence_class": "BIT_EXACT_PHYSICAL_SILICON", "attempts": 1, "blockers": [], "next_action": "Maintain framed silicon validation."},
-    "DR8": {"functional_status": "BIT_EXACT_MATCHING", "security_status": "UNREVIEWED", "evidence_class": "BIT_EXACT_PHYSICAL_SILICON", "attempts": 1, "blockers": [], "next_action": "Maintain framed silicon validation."},
-    "DR9": {"functional_status": "BIT_EXACT_MATCHING", "security_status": "UNREVIEWED", "evidence_class": "BIT_EXACT_PHYSICAL_SILICON", "attempts": 1, "blockers": [], "next_action": "Maintain framed silicon validation."},
-    "DR10": {"functional_status": "BIT_EXACT_MATCHING", "security_status": "UNREVIEWED", "evidence_class": "BIT_EXACT_PHYSICAL_SILICON", "attempts": 1, "blockers": [], "next_action": "Maintain framed silicon validation."},
-    "DR11": {"functional_status": "BIT_EXACT_MATCHING", "security_status": "UNREVIEWED", "evidence_class": "BIT_EXACT_PHYSICAL_SILICON", "attempts": 1, "blockers": [], "next_action": "Maintain framed silicon validation."},
-    "DR12": {"functional_status": "BIT_EXACT_MATCHING", "security_status": "UNREVIEWED", "evidence_class": "BIT_EXACT_PHYSICAL_SILICON", "attempts": 1, "blockers": [], "next_action": "Maintain framed silicon validation."},
-    "DR13": {"functional_status": "BIT_EXACT_MATCHING", "security_status": "UNREVIEWED", "evidence_class": "BIT_EXACT_PHYSICAL_SILICON", "attempts": 1, "blockers": [], "next_action": "Maintain framed silicon validation."},
-    "DR14": {"functional_status": "BIT_EXACT_MATCHING", "security_status": "UNREVIEWED", "evidence_class": "BIT_EXACT_PHYSICAL_SILICON", "attempts": 1, "blockers": [], "next_action": "Maintain framed silicon validation."},
-    "DR15": {"functional_status": "BIT_EXACT_MATCHING", "security_status": "UNREVIEWED", "evidence_class": "BIT_EXACT_PHYSICAL_SILICON", "attempts": 1, "blockers": [], "next_action": "Maintain framed silicon validation."},
-    "DR16": {"functional_status": "BIT_EXACT_MATCHING", "security_status": "UNREVIEWED", "evidence_class": "BIT_EXACT_PHYSICAL_SILICON", "attempts": 1, "blockers": [], "next_action": "Maintain framed silicon validation."},
-    "DR17": {"functional_status": "BIT_EXACT_MATCHING", "security_status": "UNREVIEWED", "evidence_class": "BIT_EXACT_PHYSICAL_SILICON", "attempts": 1, "blockers": [], "next_action": "Maintain framed silicon validation."},
-    "DR18": {"functional_status": "BIT_EXACT_MATCHING", "security_status": "UNREVIEWED", "evidence_class": "BIT_EXACT_PHYSICAL_SILICON", "attempts": 1, "blockers": [], "next_action": "Maintain framed silicon validation."},
-    "DR19": {"functional_status": "BIT_EXACT_MATCHING", "security_status": "UNREVIEWED", "evidence_class": "BIT_EXACT_PHYSICAL_SILICON", "attempts": 1, "blockers": [], "next_action": "Maintain framed silicon validation."},
-    "DR20": {"functional_status": "SPECIFICATION_BLOCKED", "security_status": "UNREVIEWED", "evidence_class": "NONE", "attempts": 0, "blockers": ["No authoritative DR20 scope supplied."], "next_action": "Obtain an authoritative scope from the repository owner."},
-    "DR21": {"functional_status": "BIT_EXACT_MATCHING", "security_status": "UNREVIEWED", "evidence_class": "BIT_EXACT_PHYSICAL_SILICON", "attempts": 1, "blockers": [], "next_action": "Maintain framed silicon validation."},
-    "DR22": {"functional_status": "BIT_EXACT_MATCHING", "security_status": "UNREVIEWED", "evidence_class": "BIT_EXACT_PHYSICAL_SILICON", "attempts": 1, "blockers": [], "next_action": "Maintain framed silicon validation."},
-    "DR23": {"functional_status": "BIT_EXACT_MATCHING", "security_status": "UNREVIEWED", "evidence_class": "BIT_EXACT_PHYSICAL_SILICON", "attempts": 1, "blockers": [], "next_action": "Maintain framed silicon validation."},
-    "DR24": {"functional_status": "BIT_EXACT_MATCHING", "security_status": "UNREVIEWED", "evidence_class": "BIT_EXACT_PHYSICAL_SILICON", "attempts": 1, "blockers": [], "next_action": "Maintain framed silicon validation."},
-    "DR25": {"functional_status": "BIT_EXACT_MATCHING", "security_status": "UNREVIEWED", "evidence_class": "BIT_EXACT_PHYSICAL_SILICON", "attempts": 1, "blockers": [], "next_action": "Maintain framed silicon validation."},
-    "DR26": {"functional_status": "BIT_EXACT_MATCHING", "security_status": "UNREVIEWED", "evidence_class": "BIT_EXACT_PHYSICAL_SILICON", "attempts": 1, "blockers": [], "next_action": "Maintain framed silicon validation."},
-    "DR27": {"functional_status": "BIT_EXACT_MATCHING", "security_status": "UNREVIEWED", "evidence_class": "BIT_EXACT_PHYSICAL_SILICON", "attempts": 1, "blockers": [], "next_action": "Maintain framed silicon validation."},
-    "DR28": {"functional_status": "BIT_EXACT_MATCHING", "security_status": "UNREVIEWED", "evidence_class": "BIT_EXACT_PHYSICAL_SILICON", "attempts": 1, "blockers": [], "next_action": "Maintain framed silicon validation."},
-    "DR29": {"functional_status": "BIT_EXACT_MATCHING", "security_status": "UNREVIEWED", "evidence_class": "BIT_EXACT_PHYSICAL_SILICON", "attempts": 1, "blockers": [], "next_action": "Maintain framed silicon validation."},
-    "DR30": {"functional_status": "BIT_EXACT_MATCHING", "security_status": "UNREVIEWED", "evidence_class": "BIT_EXACT_PHYSICAL_SILICON", "attempts": 1, "blockers": [], "next_action": "Maintain framed silicon validation."},
-    "DR31": {"functional_status": "BIT_EXACT_MATCHING", "security_status": "UNREVIEWED", "evidence_class": "BIT_EXACT_PHYSICAL_SILICON", "attempts": 1, "blockers": [], "next_action": "Maintain framed silicon validation."},
-    "DR32": {"functional_status": "HOST_UTILITY", "security_status": "UNREVIEWED", "evidence_class": "HOST_FORMATTER", "attempts": 1, "blockers": [], "next_action": "Maintain host formatting utility and contract tests."},
-    "DR33": {"functional_status": "BIT_EXACT_MATCHING", "security_status": "UNREVIEWED", "evidence_class": "BIT_EXACT_PHYSICAL_SILICON", "attempts": 1, "blockers": [], "next_action": "Maintain framed silicon validation."},
-    "DR34": {"functional_status": "BIT_EXACT_MATCHING", "security_status": "UNREVIEWED", "evidence_class": "BIT_EXACT_PHYSICAL_SILICON", "attempts": 1, "blockers": [], "next_action": "Maintain framed silicon validation."},
-    "DR35": {"functional_status": "HOST_TOOLING", "security_status": "NOT_APPLICABLE", "evidence_class": "HOST_RUNTIME", "attempts": 1, "blockers": [], "next_action": "Maintain truthful telemetry harvester and host contract tests."},
-    "DR36": {"functional_status": "FORMALLY_VERIFIED", "security_status": "PROVEN", "evidence_class": "FORMAL", "attempts": 1, "blockers": [], "next_action": "Maintain formal proof models and contract tests."},
-    "DR37": {"functional_status": "BIT_EXACT_MATCHING", "security_status": "UNREVIEWED", "evidence_class": "BIT_EXACT_PHYSICAL_SILICON", "attempts": 1, "blockers": [], "next_action": "Maintain framed silicon validation."},
-    "DR38": {"functional_status": "BIT_EXACT_MATCHING", "security_status": "UNREVIEWED", "evidence_class": "BIT_EXACT_PHYSICAL_SILICON", "attempts": 1, "blockers": [], "next_action": "Maintain framed silicon validation."},
-    "DR39": {"functional_status": "PLANNED_DIAGNOSTIC", "security_status": "UNREVIEWED", "evidence_class": "HOST_RUNTIME", "attempts": 0, "blockers": [], "next_action": "Define dudect constant-time side-channel timing and Welch's t-test diagnostic on AIE2."},
-    "DR40": {"functional_status": "PLANNED_BENCHMARK", "security_status": "NOT_APPLICABLE", "evidence_class": "HOST_RUNTIME", "attempts": 0, "blockers": [], "next_action": "Define reproducible benchmark protocol."},
-    "DR41": {"functional_status": "PLANNED_INTEGRATION", "security_status": "UNREVIEWED", "evidence_class": "HOST_RUNTIME", "attempts": 0, "blockers": [], "next_action": "Define Q-KMS host/network/NPU boundaries."},
-    "DR42": {"functional_status": "PLANNED", "security_status": "UNREVIEWED", "evidence_class": "NONE", "attempts": 0, "blockers": [], "next_action": "Verify the current composite-signature profile."},
-    "DR43": {"functional_status": "PLANNED", "security_status": "UNREVIEWED", "evidence_class": "NONE", "attempts": 0, "blockers": [], "next_action": "Verify RCT/APT parameters and input assumptions."}
+    "DR0": {
+      "functional_status": "BIT_EXACT_MATCHING",
+      "security_status": "UNREVIEWED",
+      "evidence_class": "BIT_EXACT_PHYSICAL_SILICON",
+      "attempts": 1,
+      "blockers": [],
+      "next_action": "Maintain framed silicon validation."
+    },
+    "DR1": {
+      "functional_status": "BIT_EXACT_MATCHING",
+      "security_status": "UNREVIEWED",
+      "evidence_class": "BIT_EXACT_PHYSICAL_SILICON",
+      "attempts": 1,
+      "blockers": [],
+      "next_action": "Maintain framed silicon validation."
+    },
+    "DR2a": {
+      "functional_status": "BIT_EXACT_MATCHING",
+      "security_status": "UNREVIEWED",
+      "evidence_class": "BIT_EXACT_PHYSICAL_SILICON",
+      "attempts": 1,
+      "blockers": [],
+      "next_action": "Maintain framed silicon validation."
+    },
+    "DR2b": {
+      "functional_status": "BIT_EXACT_MATCHING",
+      "security_status": "UNREVIEWED",
+      "evidence_class": "BIT_EXACT_PHYSICAL_SILICON",
+      "attempts": 1,
+      "blockers": [],
+      "next_action": "Maintain framed silicon validation."
+    },
+    "DR2c": {
+      "functional_status": "BIT_EXACT_MATCHING",
+      "security_status": "UNREVIEWED",
+      "evidence_class": "BIT_EXACT_PHYSICAL_SILICON",
+      "attempts": 1,
+      "blockers": [],
+      "next_action": "Maintain framed silicon validation."
+    },
+    "DR2d": {
+      "functional_status": "BIT_EXACT_MATCHING",
+      "security_status": "UNREVIEWED",
+      "evidence_class": "BIT_EXACT_PHYSICAL_SILICON",
+      "attempts": 1,
+      "blockers": [],
+      "next_action": "Maintain protected evidence archive."
+    },
+    "DR3": {
+      "functional_status": "BIT_EXACT_MATCHING",
+      "security_status": "UNREVIEWED",
+      "evidence_class": "BIT_EXACT_PHYSICAL_SILICON",
+      "attempts": 1,
+      "blockers": [],
+      "next_action": "Maintain framed silicon validation."
+    },
+    "DR4": {
+      "functional_status": "BIT_EXACT_MATCHING",
+      "security_status": "UNREVIEWED",
+      "evidence_class": "BIT_EXACT_PHYSICAL_SILICON",
+      "attempts": 1,
+      "blockers": [],
+      "next_action": "Maintain framed silicon validation."
+    },
+    "DR5": {
+      "functional_status": "BIT_EXACT_MATCHING",
+      "security_status": "UNREVIEWED",
+      "evidence_class": "BIT_EXACT_PHYSICAL_SILICON",
+      "attempts": 1,
+      "blockers": [],
+      "next_action": "Maintain framed silicon validation."
+    },
+    "DR6": {
+      "functional_status": "BIT_EXACT_MATCHING",
+      "security_status": "UNREVIEWED",
+      "evidence_class": "BIT_EXACT_PHYSICAL_SILICON",
+      "attempts": 1,
+      "blockers": [],
+      "next_action": "Maintain framed silicon validation."
+    },
+    "DR7": {
+      "functional_status": "BIT_EXACT_MATCHING",
+      "security_status": "UNREVIEWED",
+      "evidence_class": "BIT_EXACT_PHYSICAL_SILICON",
+      "attempts": 1,
+      "blockers": [],
+      "next_action": "Maintain framed silicon validation."
+    },
+    "DR8": {
+      "functional_status": "BIT_EXACT_MATCHING",
+      "security_status": "UNREVIEWED",
+      "evidence_class": "BIT_EXACT_PHYSICAL_SILICON",
+      "attempts": 1,
+      "blockers": [],
+      "next_action": "Maintain framed silicon validation."
+    },
+    "DR9": {
+      "functional_status": "BIT_EXACT_MATCHING",
+      "security_status": "UNREVIEWED",
+      "evidence_class": "BIT_EXACT_PHYSICAL_SILICON",
+      "attempts": 1,
+      "blockers": [],
+      "next_action": "Maintain framed silicon validation."
+    },
+    "DR10": {
+      "functional_status": "BIT_EXACT_MATCHING",
+      "security_status": "UNREVIEWED",
+      "evidence_class": "BIT_EXACT_PHYSICAL_SILICON",
+      "attempts": 1,
+      "blockers": [],
+      "next_action": "Maintain framed silicon validation."
+    },
+    "DR11": {
+      "functional_status": "BIT_EXACT_MATCHING",
+      "security_status": "UNREVIEWED",
+      "evidence_class": "BIT_EXACT_PHYSICAL_SILICON",
+      "attempts": 1,
+      "blockers": [],
+      "next_action": "Maintain framed silicon validation."
+    },
+    "DR12": {
+      "functional_status": "BIT_EXACT_MATCHING",
+      "security_status": "UNREVIEWED",
+      "evidence_class": "BIT_EXACT_PHYSICAL_SILICON",
+      "attempts": 1,
+      "blockers": [],
+      "next_action": "Maintain framed silicon validation."
+    },
+    "DR13": {
+      "functional_status": "BIT_EXACT_MATCHING",
+      "security_status": "UNREVIEWED",
+      "evidence_class": "BIT_EXACT_PHYSICAL_SILICON",
+      "attempts": 1,
+      "blockers": [],
+      "next_action": "Maintain framed silicon validation."
+    },
+    "DR14": {
+      "functional_status": "BIT_EXACT_MATCHING",
+      "security_status": "UNREVIEWED",
+      "evidence_class": "BIT_EXACT_PHYSICAL_SILICON",
+      "attempts": 1,
+      "blockers": [],
+      "next_action": "Maintain framed silicon validation."
+    },
+    "DR15": {
+      "functional_status": "BIT_EXACT_MATCHING",
+      "security_status": "UNREVIEWED",
+      "evidence_class": "BIT_EXACT_PHYSICAL_SILICON",
+      "attempts": 1,
+      "blockers": [],
+      "next_action": "Maintain framed silicon validation."
+    },
+    "DR16": {
+      "functional_status": "BIT_EXACT_MATCHING",
+      "security_status": "UNREVIEWED",
+      "evidence_class": "BIT_EXACT_PHYSICAL_SILICON",
+      "attempts": 1,
+      "blockers": [],
+      "next_action": "Maintain framed silicon validation."
+    },
+    "DR17": {
+      "functional_status": "BIT_EXACT_MATCHING",
+      "security_status": "UNREVIEWED",
+      "evidence_class": "BIT_EXACT_PHYSICAL_SILICON",
+      "attempts": 1,
+      "blockers": [],
+      "next_action": "Maintain framed silicon validation."
+    },
+    "DR18": {
+      "functional_status": "BIT_EXACT_MATCHING",
+      "security_status": "UNREVIEWED",
+      "evidence_class": "BIT_EXACT_PHYSICAL_SILICON",
+      "attempts": 1,
+      "blockers": [],
+      "next_action": "Maintain framed silicon validation."
+    },
+    "DR19": {
+      "functional_status": "BIT_EXACT_MATCHING",
+      "security_status": "UNREVIEWED",
+      "evidence_class": "BIT_EXACT_PHYSICAL_SILICON",
+      "attempts": 1,
+      "blockers": [],
+      "next_action": "Maintain framed silicon validation."
+    },
+    "DR20": {
+      "functional_status": "SPECIFICATION_BLOCKED",
+      "security_status": "UNREVIEWED",
+      "evidence_class": "NONE",
+      "attempts": 0,
+      "blockers": [
+        "No authoritative DR20 scope supplied."
+      ],
+      "next_action": "Obtain an authoritative scope from the repository owner."
+    },
+    "DR21": {
+      "functional_status": "BIT_EXACT_MATCHING",
+      "security_status": "UNREVIEWED",
+      "evidence_class": "BIT_EXACT_PHYSICAL_SILICON",
+      "attempts": 1,
+      "blockers": [],
+      "next_action": "Maintain framed silicon validation."
+    },
+    "DR22": {
+      "functional_status": "BIT_EXACT_MATCHING",
+      "security_status": "UNREVIEWED",
+      "evidence_class": "BIT_EXACT_PHYSICAL_SILICON",
+      "attempts": 1,
+      "blockers": [],
+      "next_action": "Maintain framed silicon validation."
+    },
+    "DR23": {
+      "functional_status": "BIT_EXACT_MATCHING",
+      "security_status": "UNREVIEWED",
+      "evidence_class": "BIT_EXACT_PHYSICAL_SILICON",
+      "attempts": 1,
+      "blockers": [],
+      "next_action": "Maintain framed silicon validation."
+    },
+    "DR24": {
+      "functional_status": "BIT_EXACT_MATCHING",
+      "security_status": "UNREVIEWED",
+      "evidence_class": "BIT_EXACT_PHYSICAL_SILICON",
+      "attempts": 1,
+      "blockers": [],
+      "next_action": "Maintain framed silicon validation."
+    },
+    "DR25": {
+      "functional_status": "BIT_EXACT_MATCHING",
+      "security_status": "UNREVIEWED",
+      "evidence_class": "BIT_EXACT_PHYSICAL_SILICON",
+      "attempts": 1,
+      "blockers": [],
+      "next_action": "Maintain framed silicon validation."
+    },
+    "DR26": {
+      "functional_status": "BIT_EXACT_MATCHING",
+      "security_status": "UNREVIEWED",
+      "evidence_class": "BIT_EXACT_PHYSICAL_SILICON",
+      "attempts": 1,
+      "blockers": [],
+      "next_action": "Maintain framed silicon validation."
+    },
+    "DR27": {
+      "functional_status": "BIT_EXACT_MATCHING",
+      "security_status": "UNREVIEWED",
+      "evidence_class": "BIT_EXACT_PHYSICAL_SILICON",
+      "attempts": 1,
+      "blockers": [],
+      "next_action": "Maintain framed silicon validation."
+    },
+    "DR28": {
+      "functional_status": "BIT_EXACT_MATCHING",
+      "security_status": "UNREVIEWED",
+      "evidence_class": "BIT_EXACT_PHYSICAL_SILICON",
+      "attempts": 1,
+      "blockers": [],
+      "next_action": "Maintain framed silicon validation."
+    },
+    "DR29": {
+      "functional_status": "BIT_EXACT_MATCHING",
+      "security_status": "UNREVIEWED",
+      "evidence_class": "BIT_EXACT_PHYSICAL_SILICON",
+      "attempts": 1,
+      "blockers": [],
+      "next_action": "Maintain framed silicon validation."
+    },
+    "DR30": {
+      "functional_status": "BIT_EXACT_MATCHING",
+      "security_status": "UNREVIEWED",
+      "evidence_class": "BIT_EXACT_PHYSICAL_SILICON",
+      "attempts": 1,
+      "blockers": [],
+      "next_action": "Maintain framed silicon validation."
+    },
+    "DR31": {
+      "functional_status": "BIT_EXACT_MATCHING",
+      "security_status": "UNREVIEWED",
+      "evidence_class": "BIT_EXACT_PHYSICAL_SILICON",
+      "attempts": 1,
+      "blockers": [],
+      "next_action": "Maintain framed silicon validation."
+    },
+    "DR32": {
+      "functional_status": "HOST_UTILITY",
+      "security_status": "UNREVIEWED",
+      "evidence_class": "HOST_FORMATTER",
+      "attempts": 1,
+      "blockers": [],
+      "next_action": "Maintain host formatting utility and contract tests."
+    },
+    "DR33": {
+      "functional_status": "BIT_EXACT_MATCHING",
+      "security_status": "UNREVIEWED",
+      "evidence_class": "BIT_EXACT_PHYSICAL_SILICON",
+      "attempts": 1,
+      "blockers": [],
+      "next_action": "Maintain framed silicon validation."
+    },
+    "DR34": {
+      "functional_status": "BIT_EXACT_MATCHING",
+      "security_status": "UNREVIEWED",
+      "evidence_class": "BIT_EXACT_PHYSICAL_SILICON",
+      "attempts": 1,
+      "blockers": [],
+      "next_action": "Maintain framed silicon validation."
+    },
+    "DR35": {
+      "functional_status": "HOST_TOOLING",
+      "security_status": "NOT_APPLICABLE",
+      "evidence_class": "HOST_RUNTIME",
+      "attempts": 1,
+      "blockers": [],
+      "next_action": "Maintain truthful telemetry harvester and host contract tests."
+    },
+    "DR36": {
+      "functional_status": "FORMALLY_VERIFIED",
+      "security_status": "PROVEN",
+      "evidence_class": "FORMAL",
+      "attempts": 1,
+      "blockers": [],
+      "next_action": "Maintain formal proof models and contract tests."
+    },
+    "DR37": {
+      "functional_status": "BIT_EXACT_MATCHING",
+      "security_status": "UNREVIEWED",
+      "evidence_class": "BIT_EXACT_PHYSICAL_SILICON",
+      "attempts": 1,
+      "blockers": [],
+      "next_action": "Maintain framed silicon validation."
+    },
+    "DR38": {
+      "functional_status": "BIT_EXACT_MATCHING",
+      "security_status": "UNREVIEWED",
+      "evidence_class": "BIT_EXACT_PHYSICAL_SILICON",
+      "attempts": 1,
+      "blockers": [],
+      "next_action": "Maintain framed silicon validation."
+    },
+    "DR39": {
+      "functional_status": "BIT_EXACT_MATCHING",
+      "security_status": "UNREVIEWED",
+      "evidence_class": "BIT_EXACT_PHYSICAL_SILICON",
+      "attempts": 1,
+      "blockers": [],
+      "next_action": "Maintain framed silicon validation."
+    },
+    "DR40": {
+      "functional_status": "PLANNED_BENCHMARK",
+      "security_status": "NOT_APPLICABLE",
+      "evidence_class": "HOST_RUNTIME",
+      "attempts": 0,
+      "blockers": [],
+      "next_action": "Define reproducible benchmark protocol and profiling battery."
+    },
+    "DR41": {
+      "functional_status": "PLANNED_INTEGRATION",
+      "security_status": "UNREVIEWED",
+      "evidence_class": "HOST_RUNTIME",
+      "attempts": 0,
+      "blockers": [],
+      "next_action": "Define Q-KMS host/network/NPU boundaries."
+    },
+    "DR42": {
+      "functional_status": "PLANNED",
+      "security_status": "UNREVIEWED",
+      "evidence_class": "NONE",
+      "attempts": 0,
+      "blockers": [],
+      "next_action": "Verify the current composite-signature profile."
+    },
+    "DR43": {
+      "functional_status": "PLANNED",
+      "security_status": "UNREVIEWED",
+      "evidence_class": "NONE",
+      "attempts": 0,
+      "blockers": [],
+      "next_action": "Verify RCT/APT parameters and input assumptions."
+    }
   }
 }
