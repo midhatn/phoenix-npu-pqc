@@ -92,6 +92,7 @@ $RequiredVectors = @(
     "schemas/evidence.schema.json",
     "customer_demo/CUSTOMER_SCOPE.json",
     "customer_demo/CUSTOMER_ACCEPTANCE_MATRIX.md",
+    "customer_demo/CUSTOMER_QUARANTINED_DELIVERABLES.md",
     "customer_demo/GO_NO_GO.md",
     "customer_demo/OFFLINE_RUNBOOK.md"
 )
