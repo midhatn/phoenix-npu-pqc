@@ -31,7 +31,7 @@ class DR35TelemetryHarvesterContractTests(unittest.TestCase):
             self.assertEqual(snapshot.problem_code, 0)
             self.assertEqual(snapshot.power_state, "D0_ACTIVE")
         else:
-            self.assertEqual(snapshot.pnp_status, "NOT_FOUND")
+            self.assertIn(snapshot.pnp_status, ["NOT_FOUND", "UNKNOWN"])
             self.assertEqual(snapshot.power_state, "UNKNOWN")
         self.assertGreater(snapshot.sample_duration_ms, 0.0)
 

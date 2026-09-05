@@ -128,8 +128,8 @@ def harvest_hardware_telemetry() -> HardwareTelemetrySnapshot:
     device_found = bool(xrt_data.get("xrt_available") or pnp_data.get("found"))
     device_name = xrt_data.get("device_name", "Phoenix AIE2")
     pci_bdf = xrt_data.get("bdf", "0066:00:01.1")
-    pnp_status = pnp_data.get("status", "OK" if device_found else "NOT_FOUND")
-    problem_code = pnp_data.get("problem_code", 0 if device_found else 1)
+    pnp_status = pnp_data.get("status", "OK") if device_found else "NOT_FOUND"
+    problem_code = pnp_data.get("problem_code", 0) if device_found else 1
 
     return HardwareTelemetrySnapshot(
         timestamp_iso=timestamp_iso,
