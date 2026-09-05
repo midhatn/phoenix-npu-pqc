@@ -42,9 +42,9 @@ build/provenance, and a separately recorded physical exact-output gate.
 
 ## Current state
 
-1. All 19 DR gates (DR0, DR1, DR2a, DR2b, DR2c, DR2d, DR3, DR4, DR5, DR6, DR7, DR8, DR9, DR10, DR11, DR12, DR13, DR14, DR15) totaling **736 / 736 test cases** pass on physical AMD Phoenix NPU silicon in **23.82 seconds**.
+1. All 19 DR gates (DR0, DR1, DR2a, DR2b, DR2c, DR2d, DR3, DR4, DR5, DR6, DR7, DR8, DR9, DR10, DR11, DR12, DR13, DR14, DR15) totaling **736 / 736 test cases** match the declared reference oracles bit-exactly (observed in **23.82 seconds** via the configured runtime target, labeled `SELF_REPORTED_UNVERIFIED` pending physical dispatch trace corroboration).
 2. **100% NPU Residency**: Zero host cryptographic fallback across all finalized NIST PQC standards (FIPS 202, FIPS 203, FIPS 204).
-3. The primary post-quantum cryptography research program on AMD Phoenix AIE2 silicon is **FULLY COMPLETED AND CERTIFIED**.
+3. The primary post-quantum cryptography research program on AMD Phoenix AIE2 silicon has completed implementation across DR0 through DR15 with zero host cryptographic fallback, with all 736 test cases matching declared reference oracles bit-exactly.
 
 ## Claim boundaries
 

@@ -8,7 +8,7 @@
 ![Standard: NIST SP 800-56C Rev 2](https://img.shields.io/badge/Key%20Combiner-NIST%20SP%20800--56C%20Rev%202-green)
 ![Entropy: QRNG-OPENAPI v1.0](https://img.shields.io/badge/Entropy-QRNG--OPENAPI%20v1.0-blueviolet)
 ![Target: AMD Phoenix NPU (AIE2 / XDNA1)](https://img.shields.io/badge/Hardware-AMD%20Phoenix%20AIE2-red)
-![Status: 24 Hardware Gates PASS](https://img.shields.io/badge/Status-24%20Hardware%20Gates%20PASS-brightgreen)
+![Status: 24 Gates Bit-Exact](https://img.shields.io/badge/Status-24%20Gates%20Bit--Exact-brightgreen)
 
 </div>
 
@@ -91,7 +91,7 @@ This architecture ensures full physical and mathematical resilience: if the phys
 
 > [!NOTE]
 > [HISTORICAL CLAIM - UNVERIFIED / PENDING PHYSICAL DISPATCH CORROBORATION]
-> Legacy rows marked with physical claims reflect uncorroborated pre-refactor self-reports. All 19 active gates currently remain physically unverified pending driver-level dispatch trace corroboration.
+> Legacy rows marked with physical claims reflect uncorroborated pre-refactor self-reports. All 24 registered gates currently remain physically unverified pending driver-level dispatch trace corroboration.
 
 | Standard / Organization | Specification Reference | Role in Hybrid Pipeline | AIE2 Implementation Milestone | Status |
 |---|---|---|---|:---:|

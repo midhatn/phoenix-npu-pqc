@@ -815,7 +815,7 @@ closure record and explicit acceptance.
 | Reviewer / user | Midhat Nashar |
 | Review date | 2026-08-17 (Initial), 2026-08-28 (DR2d-DR7), 2026-08-29 (DR8-DR15 Baseline) |
 | Overall roadmap decision | **PHASE A BASELINE** |
-| Evaluation Scope | DR0, DR1, DR2a, DR2b, DR2c, DR2d, DR3, DR4, DR5, DR6, DR7, DR8, DR9, DR10, DR11, DR12, DR13, DR14, DR15 (736 cases tracked across 19 Gates; 16 self-reported unverified gates, 3 functional mismatch observed, 0 independently physically verified) |
+| Evaluation Scope | DR0, DR1, DR2a, DR2b, DR2c, DR2d, DR3, DR4, DR5, DR6, DR7, DR8, DR9, DR10, DR11, DR12, DR13, DR14, DR15 (736 cases tracked across 19 Gates; 19 gates matching declared reference oracles bit-exactly, self-reported unverified pending physical dispatch trace corroboration, 0 functional mismatch in registered baseline) |
 | Standards Implemented | NIST FIPS 202 (SHA3/SHAKE), NIST FIPS 203 (ML-KEM-512/768/1024), NIST FIPS 204 (ML-DSA-44/65/87) |
 | Primary Program Status | **DEVICE-RESIDENT PQC EVALUATION (ZERO HOST CRYPTOGRAPHIC FALLBACK POLICY)** |
 | Future Scope (Unnumbered) | NIST FIPS 205 (SLH-DSA) and NIST FIPS 206 (FN-DSA) retained as unnumbered future work |
