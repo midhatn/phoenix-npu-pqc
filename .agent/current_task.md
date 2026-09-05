@@ -2,11 +2,11 @@
 
 ## Task
 
-`DR30-3GPP-5G6G-SUCI-COPROCESSOR`: Implement 3GPP TS 33.501 5G/6G Core Network Subscription Concealed Identifier (SUCI) Co-Processor on AMD Phoenix AIE2 (XDNA1).
+`DR31-X509-PQC-CMS-COPROCESSOR`: Implement NIST SP 800-208 / RFC 5280 / RFC 5652 X.509 Post-Quantum Certificates & Hybrid CMS Parser / Verification Co-Processor on AMD Phoenix AIE2 (XDNA1).
 
 ## Status
 
-`IN_PROGRESS` (Milestone DR30).
+`IN_PROGRESS` (Milestone DR31).
 - Prior Milestones:
   1. `DR2d` (ML-KEM-512 K-PKE KeyGen): `COMPLETED` (25/25 vectors PASS, PR #10).
   2. `DR14` (ML-DSA-65 KeyGen, Sign, Verify): `COMPLETED` (85/85 vectors PASS, PR #13).
@@ -20,8 +20,9 @@
   10. `DR26` (AMD XDNA 2 & Alveo V70 Multi-Architecture Scaling): `COMPLETED` (25/25 cases PASS, PR #22).
   11. `DR28` (NIST SP 800-208 / RFC 8554 LMS Stateless Verification Engine): `COMPLETED` (25/25 cases PASS, PR #23).
   12. `DR29` (NSA CNSA 2.0 Level 5 Multi-Tile Distributed Memory Engine): `COMPLETED` (25/25 cases PASS, PR #24).
-  13. Native Silicon Validation Baseline: 32 native deliverables with structured framed evidence on AMD Phoenix NPU physical silicon (1,067/1,067 test cases bit-exact matching).
+  13. `DR30` (3GPP TS 33.501 5G/6G Core Network SUCI Co-Processor): `COMPLETED` (25/25 cases PASS, PR #25).
+  14. Native Silicon Validation Baseline: 33 native deliverables with structured framed evidence on AMD Phoenix NPU physical silicon (1,092/1,092 test cases bit-exact matching).
 
 ## Next Action
 
-Research 3GPP TS 33.501 (Release 18/19) SUCI profile standards using ML-KEM-768/1024 for 5G/6G Core Network subscriber de-concealment; write research ledger `docs/research/DR30-3GPP-SUCI-sources.md`.
+Research NIST SP 800-208, RFC 5280, RFC 5652, and RFC 9688 post-quantum X.509 certificate formats and hybrid CMS structures; write research ledger `docs/research/DR31-X509-CMS-sources.md`.
