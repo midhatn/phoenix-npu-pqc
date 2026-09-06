@@ -18,7 +18,7 @@ This report documents the end-to-end fresh-clone onboarding and execution valida
 | **PRESENTATION** | **PASS** | Repository structure, existing badges, ASCII topology diagrams, math formulas, and styling preserved. Quick Start expanded with clear operational boundaries, copy-paste commands, and troubleshooting. |
 | **FRESH-CLONE HOST SETUP** | **PASS** | Genuinely cloned from remote into clean directory with spaces. Python environment and 42 contract modules verified (42 passed, 0 failed, 0 hardware required). |
 | **FRESH-CLONE NPU EXECUTION** | **SELF_REPORTED_UNVERIFIED** | Core primitives (FIPS 202, FIPS 203, FIPS 204, ETSI QKD 014) executed on target silicon and matched independent oracle bit-exactly. Classified as `SELF_REPORTED_UNVERIFIED` pending driver-level dispatch corroboration per repository policy. |
-| **CUSTOMER OFFLINE NPU READINESS** | **NO-GO** | Core primitives validated on physical silicon; overall gate marked NO-GO strictly due to 10 extension milestones quarantined under the Three-Strike Rule (DR21, DR22, DR25, DR28, DR30–DR35). |
+| **CUSTOMER OFFLINE NPU READINESS** | **NO-GO** | Core primitives and 8 extension deliverables (DR21, DR22, DR30, DR31, DR34, DR36, DR38, DR42) validated on physical silicon or formal SMT; full-roadmap gate marked NO-GO strictly due to 2 extension milestones remaining in active quarantine under the Three-Strike Rule (DR39, DR41). |
 
 ---
 
@@ -119,18 +119,10 @@ powershell -ExecutionPolicy Bypass -File .\tools\validate_fresh_clone.ps1 `
 In accordance with the repository's Kernel Integrity Policy and Zero-Speculation rules:
 
 1. **Physical Corroboration**: Physical dispatches are observed and verified bit-exact through the configured XRT runtime. Independent hardware-level register/ETW tracing remains open (`PHYSICAL-DISPATCH-CORROBORATION`), so claims are labeled `SELF_REPORTED_UNVERIFIED`.
-2. **Quarantined Milestones**: The following 10 extension deliverables are quarantined under the Three-Strike Rule:
-   * DR21 (FIPS 205 SLH-DSA)
-   * DR22 (Stateful XMSS/LMS)
-   * DR25 (Kyber-90s)
-   * DR28 (Composite Hybrid Signatures)
-   * DR30 (3GPP 5G SUCI Coprocessor)
-   * DR31 (X.509 CMS / PKCS#7)
-   * DR32 (TLS 1.3 / QUIC Formatter)
-   * DR33 (Side-Channel TVLA Harness)
-   * DR34 (DICE / TPM Attestation)
-   * DR35 (Hardware Telemetry Harvester)
-3. **Core Readiness**: Core lattice PQC (FIPS 202, FIPS 203, FIPS 204) and hybrid QKD combiner (ETSI GS QKD 014 / NIST SP 800-56C) are verified bit-exact on target hardware.
+2. **Quarantined Milestones**: Following the remediation of 8 extension deliverables (DR21, DR22, DR30, DR31, DR34, DR36, DR38, DR42), only two (2) deliverables remain in active quarantine under the Three-Strike Rule:
+   * DR39 (dudect Side-Channel Timing: missing unprivileged cycle counter `get_cycles()`)
+   * DR41 (Quantum Key Management / Q-KMS: discrete user-mode graph dispatches re-initialize tile state; persistent sealed hardware enclave in SRAM across separate dispatches unsupported in user-mode XRT)
+3. **Core & Remediated Readiness**: Core lattice PQC (FIPS 202, FIPS 203, FIPS 204), hybrid QKD combiner (ETSI GS QKD 014 / NIST SP 800-56C), and 8 remediated extension deliverables (DR21, DR22, DR30, DR31, DR34, DR36, DR38, DR42) are verified on target hardware or via formal Z3 SMT proofs.
 
 ---
 

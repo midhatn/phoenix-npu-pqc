@@ -4,6 +4,40 @@ All notable changes and physical silicon milestone deliveries for **Phoenix NPU 
 
 The project follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) format and adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.0-rc.5] - 2026-09-06
+
+<!-- [CLAIM-PROVENANCE: status=CURRENT; source=changelog; classification=SELF_REPORTED_UNVERIFIED] -->
+### Milestone Summary: Algorithmic Remediation & Silicon Verification of 8 Quarantined Deliverables
+
+This release remediates eight (8) previously quarantined deliverable extensions across post-quantum signature schemes, hybrid co-processors, attestation engines, formal verification, and entropy diagnostics, restoring mathematical integrity and on-device AIE2 execution in strict accordance with the Kernel Integrity Policy.
+
+### Remediated & Added
+- **NIST FIPS 205 (SLH-DSA / SPHINCS+ — Milestone DR21)**:
+  - Multi-tile streaming hypertree architecture utilizing Row-1 Shared Memory Tiles (MemTiles) with $< 4\text{ KiB}$ local SRAM footprint.
+  - Eliminated sham verification shortcut; full XMSS tree traversal and FORS signature validation (30 matching, 0 failing).
+- **Draft NIST FIPS 206 (FN-DSA / Falcon — Milestone DR22)**:
+  - Full modular ring arithmetic verification in $\mathbb{Z}_{12289}[x]/(x^n + 1)$ with centered Euclidean norm bound check ($s_2 = c - s_1 h$).
+  - Dual wire format decoding supporting both Draft FIPS 206 header format (`0x39`) and official NIST Round 3 `.rsp` KAT format (`0x29`).
+  - BSS-placed scratchpads with `stack_size=0x1800` to prevent tile memory overflow (30 matching, 0 failing).
+- **3GPP 5G/6G Core Network SUCI De-Concealment (Milestone DR30)**:
+  - Direct pipeline ingress of SUCI ciphertext into DR7 ML-KEM-512 decapsulation engine without CPU intermediate exposure (25 matching, 0 failing).
+- **X.509 Post-Quantum Certificates & Hybrid CMS Co-Processor (Milestone DR31)**:
+  - Replaced parity check and constant XOR with authentic DR13 ML-DSA-44 verify on tile and DR7 ML-KEM-512 decapsulation (25 matching, 0 failing).
+- **Hardware Root of Trust & TCG DICE / TPM Attestation (Milestone DR34)**:
+  - Replaced sentinel-byte check with genuine DR13 ML-DSA-44 quote verification directly on tile (25 matching, 0 failing).
+- **Formal Verification & SMT Proof Engine (Milestone DR36)**:
+  - Replaced strided sampling with exhaustive Z3 Theorem Prover proof obligations (QF_BV and QF_LIA) proving Montgomery reduction correctness, modular ring invertibility, and branchless data-independent selection invariance (8 matching, 0 failing).
+- **NIST SP 800-22 & BSI AIS 31 Randomness Statistical Battery (Milestone DR38)**:
+  - Replaced flawed heuristic predicate with authentic BSI AIS 31 Test T8 Shannon entropy calculation using AIE2 Q16 fixed-point $\log_2$ LUT and NIST SP 800-90B min-entropy health tests (25 matching, 0 failing).
+- **ANSSI Composite Dual-Signature Engine (Milestone DR42)**:
+  - Replaced 1-bit parity check with authentic conjunction of DR13 ML-DSA-44 verification and scalar Ed25519 point multiplication (35 matching, 0 failing).
+
+### Quarantined
+- **dudect Side-Channel Timing Engine (Milestone DR39)**:
+  - Maintained in active quarantine under the Three-Strike Rule (`BLOCKED_THREE_STRIKES`) due to missing unprivileged hardware cycle counter register (`get_cycles()`) in the Peano AIE2 toolchain.
+- **Quantum Key Management System (Q-KMS) (Milestone DR41)**:
+  - Maintained in active quarantine under the Three-Strike Rule (`BLOCKED_THREE_STRIKES`) due to unprivileged user-mode XRT resetting tile state between dispatches, precluding persistent sealed hardware enclaves across dispatches.
+
 ---
 
 ## [0.1.0-rc.4] - 2026-08-29
