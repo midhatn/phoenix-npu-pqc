@@ -1,9 +1,9 @@
 {
   "schema_version": 1,
-  "repository_commit": "7a0573a1401102cc355e208bec5b599c30d38290",
+  "repository_commit": "f460fb83124e74e5dd138f74539c5b337e2b02a1",
   "current_dr": "DR42",
   "current_phase": "roadmap_completed",
-  "last_verified_commit": "7a0573a1401102cc355e208bec5b599c30d38290",
+  "last_verified_commit": "f460fb83124e74e5dd138f74539c5b337e2b02a1",
   "hardware_available": true,
   "drs": {
     "DR0": {
