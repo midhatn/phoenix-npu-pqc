@@ -170,10 +170,10 @@ Write-Host "Host Fallback Policy     : STRICT (Zero CPU Cryptographic Fallback R
 Write-Host "Demonstrated Core Gates  : $PassedCoreGates / $($CoreGates.Count) evaluated ($TotalDemonstratedCases Cases matching KAT)" -ForegroundColor Green
 Write-Host "Canonical Registered     : 24 / 24 Canonical Gates Evaluated ($MatchingCount / 857 Cases matching)" -ForegroundColor Green
 Write-Host "Physical Dispatch Status : SELF_REPORTED_UNVERIFIED (Independent trace corroboration OPEN)" -ForegroundColor Yellow
-Write-Host "Quarantined Deliverables : 10 / 10 EXCLUDED FROM DENOMINATOR (Documented NO-GO)" -ForegroundColor Yellow
+Write-Host "Quarantined Deliverables : 2 / 2 EXCLUDED FROM DENOMINATOR (Documented NO-GO)" -ForegroundColor Yellow
 
 Write-Host "`nCUSTOMER NPU PQC ACCEPTANCE: NO-GO" -ForegroundColor Red
-Write-Host "(Reason: Full DR0-DR42 roadmap contains 10 quarantined deliverables; core PQC primitives validated)" -ForegroundColor Yellow
+Write-Host "(Reason: Full DR0-DR42 roadmap contains 2 quarantined deliverables DR39/DR41; core PQC and 8 extension deliverables validated)" -ForegroundColor Yellow
 Write-Host "================================================================================" -ForegroundColor Cyan
 Write-Host "Evidence bundle archived at: $EvidenceDir" -ForegroundColor Cyan
 Write-Host "Review customer_demo/GO_NO_GO.md for full blocker details." -ForegroundColor Cyan
