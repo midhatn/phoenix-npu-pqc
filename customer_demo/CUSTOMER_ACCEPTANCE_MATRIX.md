@@ -64,9 +64,9 @@ A strict forensic audit of the implementation source, ABI definitions, execution
 | **DR33** | Side-Channel TVLA Framework | ISO/IEC 17825 | 25 | `[ON-TILE SILICON]` | On-tile acquisition triggering | `SELF_REPORTED_UNVERIFIED` | `HISTORICAL_UNVERIFIED` |
 | **DR34** | TCG DICE / TPM Attestation | TCG DICE | 25 | `[ON-TILE SILICON]` | REMEDIATED: Genuine ML-DSA Quote Verify on AIE2 | `SELF_REPORTED_UNVERIFIED` | `HISTORICAL_UNVERIFIED` |
 | **DR35** | Hardware Telemetry Harvester | WMI / AMD Driver | 5 | `[HOST RUNTIME]` | 100% Host sensor harvester | `NONE` | `HOST_VERIFIED_ONLY` |
-| **DR36** | Formal Verification & SMT Models | SMT-LIB 2.0 | 8 | `[HOST RUNTIME]` | **DEFECT:** Strided loop mislabeled | `QUARANTINED` | `BLOCKED_THREE_STRIKES` |
+| **DR36** | Formal Verification & SMT Models | SMT-LIB 2.0 | 8 | `[HOST RUNTIME]` | REMEDIATED: Genuine Z3 BitVector & Integer SMT Proofs | `SELF_REPORTED_UNVERIFIED` | `HOST_VERIFIED_ONLY` |
 | **DR37** | Dual-Scheme Hybrid KEM Engine | TLS Hybrid Draft | 25 | `[ON-TILE SILICON]` | X25519 + ML-KEM-768 combiner | `SELF_REPORTED_UNVERIFIED` | `HISTORICAL_UNVERIFIED` |
-| **DR38** | Randomness Statistical Battery | NIST SP 800-22 | 25 | `[ON-TILE SILICON]` | **DEFECT:** Flawed Shannon entropy | `QUARANTINED` | `BLOCKED_THREE_STRIKES` |
+| **DR38** | Randomness Statistical Battery | NIST SP 800-22 | 25 | `[ON-TILE SILICON]` | REMEDIATED: Authentic BSI AIS 31 T8 Q16 Shannon Entropy | `SELF_REPORTED_UNVERIFIED` | `HISTORICAL_UNVERIFIED` |
 | **DR39** | dudect Side-Channel Timing | dudect | 25 | `[ON-TILE SILICON]` | **DEFECT:** Hardcoded constants | `QUARANTINED` | `BLOCKED_THREE_STRIKES` |
 | **DR40** | High-Throughput Hardware Benchmark| Benchmarking Model| 25 | `[ON-TILE SILICON]` | Pipelined execution profiling | `SELF_REPORTED_UNVERIFIED` | `HISTORICAL_UNVERIFIED` |
 | **DR41** | Quantum Key Management (Q-KMS) | ETSI GS QKD 014 | 25 | `[ON-TILE SILICON]` | **DEFECT:** Host ephemeral vault | `QUARANTINED` | `BLOCKED_THREE_STRIKES` |

@@ -23,26 +23,26 @@ This document details the exact technical defect for each quarantined deliverabl
 
 ---
 
-## 2. Master Quarantined Deliverables Summary
+### 2. Master Quarantined Deliverables Summary
 
-### Active Quarantined Deliverables (6 Remaining)
+### Active Quarantined Deliverables (4 Remaining)
 
 | Milestone | Claimed Operation | Primary Standard | Exact File Location | Defect Mechanism | Remediation Category | Current Status |
-| :--- | :--- | :--- | :--- | :--- | :---: | :---: |
+| :--- | :--- | :--- | :--- | :--- | :--- | :---: |
 | **DR21** | NIST FIPS 205 SLH-DSA | FIPS 205 (SPHINCS+) | `phoenix_sdr_dsp/pqc/kernels/dr21_slhdsa_service.cc` | Sham hypertree check over public hash stream | **Category 3** | `BLOCKED_THREE_STRIKES` |
 | **DR22** | NIST Draft FIPS 206 FN-DSA | Draft FIPS 206 (Falcon) | `phoenix_sdr_dsp/pqc/kernels/dr22_fndsa_service.cc` | Secret-free sign; 512-element buffer stack overflow | **Category 3** | `BLOCKED_THREE_STRIKES` |
-| **DR36** | Formal Verification & SMT Models | SMT-LIB 2.0 / Z3 | `phoenix_sdr_dsp/pqc/dr36_formal_verification.py` | Strided sampling mislabeled as universal formal proof | **Category 2** | `BLOCKED_THREE_STRIKES` |
-| **DR38** | Randomness Statistical Battery | NIST SP 800-22 / AIS 31 | `phoenix_sdr_dsp/pqc/dr38_randomness_abi.py` | Invalid frequency check claimed as Shannon entropy | **Category 2** | `BLOCKED_THREE_STRIKES` |
 | **DR39** | dudect Side-Channel Timing | dudect / ISO 17825 | `phoenix_sdr_dsp/pqc/kernels/dr39_dudect_service.cc` | Hardcoded constant cycle counts (`48/48`) in accumulator | **Category 2** | `BLOCKED_THREE_STRIKES` |
 | **DR41** | Quantum Key Management (Q-KMS) | ETSI GS QKD 014 | `phoenix_sdr_dsp/pqc/kernels/dr41_qkms_service.cc` | Ephemeral vault re-ingressed from host on each call | **Category 2** | `BLOCKED_THREE_STRIKES` |
 
-### Remediated Deliverables: Category 1 Native Hardware Composition (4 Remediated)
+### Remediated Deliverables: Native Hardware Composition & Formal Tooling (6 Remediated)
 
-| Milestone | Deliverable | Primary Standard | Connected Hardware Primitives | Test Execution Outcome | Remediated Status |
+| Milestone | Deliverable | Primary Standard | Connected Hardware Primitives / Formal Engine | Test Execution Outcome | Remediated Status |
 | :--- | :--- | :--- | :--- | :---: | :---: |
 | **DR30** | 3GPP 5G/6G Core Network SUCI | 3GPP TS 33.501 | AIE2 ML-KEM-512 Decaps (DR7) | 25 matching, 0 failing (exit 0) | **REMEDIATED** |
 | **DR31** | X.509 PQ Certificates & CMS | RFC 5280 / RFC 5652 | AIE2 ML-DSA-44 Verify (DR13) + ML-KEM-512 Decaps (DR7) | 25 matching, 0 failing (exit 0) | **REMEDIATED** |
 | **DR34** | TCG DICE / TPM Attestation | TCG DICE Architecture | AIE2 ML-DSA-44 Verify (DR13) | 25 matching, 0 failing (exit 0) | **REMEDIATED** |
+| **DR36** | Formal Verification & SMT Models | SMT-LIB 2.0 / Z3 | Z3 BitVector (QF_BV) & Linear Int (QF_LIA) Prover | 8 matching, 0 failing (exit 0) | **REMEDIATED** |
+| **DR38** | Randomness Statistical Battery | NIST SP 800-22 / AIS 31 | AIE2 Q16 Fixed-Point Shannon Entropy (AIS 31 T8) | 25 matching, 0 failing (exit 0) | **REMEDIATED** |
 | **DR42** | ANSSI Composite Dual-Signatures | ANSSI Guide / IETF | AIE2 ML-DSA-44 Verify (DR13) + Ed25519 | 25 matching, 0 failing (exit 0) | **REMEDIATED** |
 
 ---
