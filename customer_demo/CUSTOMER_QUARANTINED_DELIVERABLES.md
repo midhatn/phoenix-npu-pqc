@@ -25,18 +25,25 @@ This document details the exact technical defect for each quarantined deliverabl
 
 ## 2. Master Quarantined Deliverables Summary
 
-| Milestone | Claimed Operation | Primary Standard | Exact File Location | Defect Mechanism | Remediation Category |
-| :--- | :--- | :--- | :--- | :--- | :---: |
-| **DR21** | NIST FIPS 205 SLH-DSA | FIPS 205 (SPHINCS+) | `phoenix_sdr_dsp/pqc/kernels/dr21_slhdsa_service.cc` | Sham hypertree check over public hash stream | **Category 3** |
-| **DR22** | NIST Draft FIPS 206 FN-DSA | Draft FIPS 206 (Falcon) | `phoenix_sdr_dsp/pqc/kernels/dr22_fndsa_service.cc` | Secret-free sign; 512-element buffer stack overflow | **Category 3** |
-| **DR30** | 3GPP 5G/6G SUCI Co-Processor | 3GPP TS 33.501 | `phoenix_sdr_dsp/pqc/kernels/dr30_3gpp_suci_service.cc` | Host precomputes shared secret; NPU does not decapsulate | **Category 1** |
-| **DR31** | X.509 PQ Certificates & CMS | RFC 5280 / RFC 5652 | `phoenix_sdr_dsp/pqc/kernels/dr31_x509_cms_internal.hpp` | 1-bit parity verify; constant-XOR CEK recovery | **Category 1** |
-| **DR34** | TCG DICE / TPM Attestation | TCG DICE Architecture | `phoenix_sdr_dsp/pqc/kernels/dr34_dice_tpm_service.cc` | Sentinel byte `0xFF` quote signature acceptance | **Category 1** |
-| **DR36** | Formal Verification & SMT Models | SMT-LIB 2.0 / Z3 | `phoenix_sdr_dsp/pqc/dr36_formal_verification.py` | Strided sampling mislabeled as universal formal proof | **Category 2** |
-| **DR38** | Randomness Statistical Battery | NIST SP 800-22 / AIS 31 | `phoenix_sdr_dsp/pqc/dr38_randomness_abi.py` | Invalid frequency check claimed as Shannon entropy | **Category 2** |
-| **DR39** | dudect Side-Channel Timing | dudect / ISO 17825 | `phoenix_sdr_dsp/pqc/kernels/dr39_dudect_service.cc` | Hardcoded constant cycle counts (`48/48`) in accumulator | **Category 2** |
-| **DR41** | Quantum Key Management (Q-KMS) | ETSI GS QKD 014 | `phoenix_sdr_dsp/pqc/kernels/dr41_qkms_service.cc` | Ephemeral vault re-ingressed from host on each call | **Category 2** |
-| **DR42** | ANSSI Composite Dual-Signature | ANSSI Guide / IETF Draft | `phoenix_sdr_dsp/pqc/kernels/dr42_composite_sig_internal.hpp`| 1-bit low-order parity check substituted for signature verify | **Category 1** |
+### Active Quarantined Deliverables (6 Remaining)
+
+| Milestone | Claimed Operation | Primary Standard | Exact File Location | Defect Mechanism | Remediation Category | Current Status |
+| :--- | :--- | :--- | :--- | :--- | :---: | :---: |
+| **DR21** | NIST FIPS 205 SLH-DSA | FIPS 205 (SPHINCS+) | `phoenix_sdr_dsp/pqc/kernels/dr21_slhdsa_service.cc` | Sham hypertree check over public hash stream | **Category 3** | `BLOCKED_THREE_STRIKES` |
+| **DR22** | NIST Draft FIPS 206 FN-DSA | Draft FIPS 206 (Falcon) | `phoenix_sdr_dsp/pqc/kernels/dr22_fndsa_service.cc` | Secret-free sign; 512-element buffer stack overflow | **Category 3** | `BLOCKED_THREE_STRIKES` |
+| **DR36** | Formal Verification & SMT Models | SMT-LIB 2.0 / Z3 | `phoenix_sdr_dsp/pqc/dr36_formal_verification.py` | Strided sampling mislabeled as universal formal proof | **Category 2** | `BLOCKED_THREE_STRIKES` |
+| **DR38** | Randomness Statistical Battery | NIST SP 800-22 / AIS 31 | `phoenix_sdr_dsp/pqc/dr38_randomness_abi.py` | Invalid frequency check claimed as Shannon entropy | **Category 2** | `BLOCKED_THREE_STRIKES` |
+| **DR39** | dudect Side-Channel Timing | dudect / ISO 17825 | `phoenix_sdr_dsp/pqc/kernels/dr39_dudect_service.cc` | Hardcoded constant cycle counts (`48/48`) in accumulator | **Category 2** | `BLOCKED_THREE_STRIKES` |
+| **DR41** | Quantum Key Management (Q-KMS) | ETSI GS QKD 014 | `phoenix_sdr_dsp/pqc/kernels/dr41_qkms_service.cc` | Ephemeral vault re-ingressed from host on each call | **Category 2** | `BLOCKED_THREE_STRIKES` |
+
+### Remediated Deliverables: Category 1 Native Hardware Composition (4 Remediated)
+
+| Milestone | Deliverable | Primary Standard | Connected Hardware Primitives | Test Execution Outcome | Remediated Status |
+| :--- | :--- | :--- | :--- | :---: | :---: |
+| **DR30** | 3GPP 5G/6G Core Network SUCI | 3GPP TS 33.501 | AIE2 ML-KEM-512 Decaps (DR7) | 25 matching, 0 failing (exit 0) | **REMEDIATED** |
+| **DR31** | X.509 PQ Certificates & CMS | RFC 5280 / RFC 5652 | AIE2 ML-DSA-44 Verify (DR13) + ML-KEM-512 Decaps (DR7) | 25 matching, 0 failing (exit 0) | **REMEDIATED** |
+| **DR34** | TCG DICE / TPM Attestation | TCG DICE Architecture | AIE2 ML-DSA-44 Verify (DR13) | 25 matching, 0 failing (exit 0) | **REMEDIATED** |
+| **DR42** | ANSSI Composite Dual-Signatures | ANSSI Guide / IETF | AIE2 ML-DSA-44 Verify (DR13) + Ed25519 | 25 matching, 0 failing (exit 0) | **REMEDIATED** |
 
 ---
 

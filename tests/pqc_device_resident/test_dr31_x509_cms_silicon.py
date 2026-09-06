@@ -116,17 +116,30 @@ def main() -> int:
     for algo_id, pk_len, sig_len, name, is_valid_expected in pqc_specs:
         cid = f"dr31-gate1-pqc-{name}"
         tbs = bytes(rng.integers(0, 256, size=32, dtype=np.uint8))
-        pk = bytes(rng.integers(0, 256, size=pk_len, dtype=np.uint8))
-        sig = make_valid_pqc_signature(algo_id, tbs, pk, sig_len)
+        m_or_mu = None
+        external_mu = False
+        if algo_id == ALGO_ML_DSA_44 and name == "mldsa44_valid":
+            from tests.pqc_device_resident.test_dr13_mldsa44_verify import PRE_SILICON_CORPUS
+            c_dsa = PRE_SILICON_CORPUS[0]
+            pk = c_dsa.pk
+            sig = c_dsa.sig
+            m_or_mu = c_dsa.m_or_mu
+            external_mu = c_dsa.external_mu
+            exp_valid = c_dsa.expected_valid
+        else:
+            pk = bytes(rng.integers(0, 256, size=pk_len, dtype=np.uint8))
+            sig = make_valid_pqc_signature(algo_id, tbs, pk, sig_len)
 
-        if not is_valid_expected:
-            bad_sig = bytearray(sig)
-            bad_sig[0] ^= 0x01
-            sig = bytes(bad_sig)
+            if not is_valid_expected:
+                bad_sig = bytearray(sig)
+                bad_sig[0] ^= 0x01
+                sig = bytes(bad_sig)
+            exp_valid = ref_verify_pqc_signature(algo_id, tbs, pk, sig)
 
-        res, dt_ms = x509_pqc_verify_on_aie2(algo_id, tbs, pk, sig)
+        res, dt_ms = x509_pqc_verify_on_aie2(
+            algo_id, tbs, pk, sig, m_or_mu=m_or_mu, external_mu=external_mu
+        )
         act_valid = res["is_valid"]
-        exp_valid = ref_verify_pqc_signature(algo_id, tbs, pk, sig)
         act_fp = res["fingerprint"]
         exp_fp = ref_x509_compute_fingerprint(tbs, pk, sig)
 
@@ -276,9 +289,17 @@ def main() -> int:
 
     for algo_id, ct_len, name, exp_valid in kem_specs:
         cid = f"dr31-gate4-cms-enveloped-{name}"
-        kem_ct = bytes(rng.integers(0, 256, size=ct_len, dtype=np.uint8))
         plain_cek = bytes(rng.integers(0, 256, size=32, dtype=np.uint8))
-        wrapped_cek = make_wrapped_cek(kem_ct, plain_cek)
+        recipient_dk = None
+        if name == "mlkem768_valid_unwrap":
+            from tests.pqc_device_resident.test_dr7_mlkem512_decaps import PRE_SILICON_CORPUS as MLKEM_CORPUS
+            c_kem = MLKEM_CORPUS[0]
+            kem_ct = c_kem.c
+            recipient_dk = c_kem.dk
+            wrapped_cek = make_wrapped_cek(kem_ct, plain_cek, kek=c_kem.expected_k)
+        else:
+            kem_ct = bytes(rng.integers(0, 256, size=ct_len, dtype=np.uint8))
+            wrapped_cek = make_wrapped_cek(kem_ct, plain_cek)
 
         if name == "corrupted_kem_ct":
             bad_ct = bytearray(kem_ct)
@@ -291,7 +312,9 @@ def main() -> int:
         elif name == "truncated_wrapped_cek":
             wrapped_cek = wrapped_cek[:30]
 
-        res, dt_ms = cms_enveloped_unwrap_on_aie2(algo_id, kem_ct, wrapped_cek)
+        res, dt_ms = cms_enveloped_unwrap_on_aie2(
+            algo_id, kem_ct, wrapped_cek, recipient_dk=recipient_dk
+        )
         act_valid = res["is_valid"]
         act_cek = res["cek"]
 

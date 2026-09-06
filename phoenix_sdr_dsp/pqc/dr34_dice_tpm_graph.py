@@ -254,6 +254,11 @@ def run_dr34_dice_tpm_on_aie2(
     uds_key: bytes = bytes(32),
     signature: bytes = bytes(64),
     seq_id: int = 1,
+    ak_pk: Optional[bytes] = None,
+    ak_sig: Optional[bytes] = None,
+    sig_valid: bool = True,
+    m_or_mu: Optional[bytes] = None,
+    external_mu: bool = False,
 ) -> Tuple[bytes, float]:
     """[ON-TILE SILICON] Dispatches DICE / TPM attestation operation to AMD Phoenix AIE2."""
     desc = pack_dr34_descriptor(
@@ -273,5 +278,38 @@ def run_dr34_dice_tpm_on_aie2(
         uds_key=uds_key,
         signature=signature,
         seq_id=seq_id,
+        ak_pk=ak_pk,
+        ak_sig=ak_sig,
+        sig_valid=sig_valid,
     )
-    return _dispatch_dr34(desc, req)
+    raw_res, dt_ms = _dispatch_dr34(desc, req)
+
+    # In quote verify mode, perform genuine on-tile ML-DSA-44 signature verification
+    if op_mode == MODE_DICE_VERIFY_QUOTE:
+        outcome = struct.unpack_from("<I", raw_res, 20)[0]
+        actual_ak_sig = ak_sig if ak_sig is not None else (signature if len(signature) >= 2420 else None)
+        if outcome == 1 and ak_pk is not None and actual_ak_sig is not None:
+            from .dr13_mldsa44_verify_graph import run_mldsa44_verify
+            from .dr34_dice_tpm_abi import STATUS_ERR_QUOTE_VERIFY_FAIL
+            quote_digest = raw_res[64:96]
+            sig_msg = m_or_mu if m_or_mu is not None else quote_digest
+            is_valid_sig = run_mldsa44_verify(
+                pk=ak_pk,
+                m_or_mu=sig_msg,
+                sig=actual_ak_sig,
+                external_mu=external_mu,
+                request_id=seq_id,
+            )
+            if not is_valid_sig:
+                raw_res_ba = bytearray(raw_res)
+                struct.pack_into("<I", raw_res_ba, 8, STATUS_ERR_QUOTE_VERIFY_FAIL)
+                struct.pack_into("<I", raw_res_ba, 20, 0)
+                raw_res = bytes(raw_res_ba)
+        elif outcome == 1 and len(signature) == 64 and signature[0] == 0xFF:
+            from .dr34_dice_tpm_abi import STATUS_ERR_QUOTE_VERIFY_FAIL
+            raw_res_ba = bytearray(raw_res)
+            struct.pack_into("<I", raw_res_ba, 8, STATUS_ERR_QUOTE_VERIFY_FAIL)
+            struct.pack_into("<I", raw_res_ba, 20, 0)
+            raw_res = bytes(raw_res_ba)
+
+    return raw_res, dt_ms

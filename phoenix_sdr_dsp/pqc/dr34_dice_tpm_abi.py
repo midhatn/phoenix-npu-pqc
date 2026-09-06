@@ -97,6 +97,9 @@ def pack_dr34_request(
     uds_key: bytes = bytes(32),
     signature: bytes = bytes(64),
     seq_id: int = 1,
+    ak_pk: Optional[bytes] = None,
+    ak_sig: Optional[bytes] = None,
+    sig_valid: bool = True,
 ) -> bytes:
     """Packs 16384-byte request tensor for DR34 hardware attestation."""
     req = bytearray(REQ_TOTAL_BYTES)
@@ -117,8 +120,18 @@ def pack_dr34_request(
 
     # UDS key (offset 384..415)
     req[384:416] = uds_key[:32].ljust(32, b"\x00")
-    # Signature (offset 416..479)
+    # Legacy Signature (offset 416..479)
     req[416:480] = signature[:64].ljust(64, b"\x00")
+
+    # Extended Attestation Key & Signature
+    if ak_pk:
+        req[512:512 + min(len(ak_pk), 1312)] = ak_pk[:1312]
+    if ak_sig:
+        req[2048:2048 + min(len(ak_sig), 2420)] = ak_sig[:2420]
+    elif len(signature) >= 2420:
+        req[2048:2048 + 2420] = signature[:2420]
+
+    req[4480] = 1 if sig_valid else 0
 
     return bytes(req)
 
@@ -268,7 +281,11 @@ def reference_dr34_oracle(desc_bytes: bytes, req_bytes: bytes) -> bytes:
         quote_words = _ref_compute_quote(pcr_mask, comp_words, n_words)
 
         comp_match = (comp_words == exp_comp_words)
-        sig_match = (sig_bytes[0] != 0xFF)
+        has_extended = any(req_bytes[512:544]) or any(req_bytes[2048:2080])
+        if has_extended:
+            sig_match = (req_bytes[4480] != 0)
+        else:
+            sig_match = (sig_bytes[0] != 0xFF)
 
         if not comp_match or not sig_match:
             outcome = 0

@@ -40,8 +40,14 @@ constexpr uint32_t STATUS_ERR_PCR_OUT_OF_BOUNDS  = 0xDEAD3402;
 constexpr uint32_t STATUS_ERR_QUOTE_VERIFY_FAIL  = 0xDEAD3403;
 constexpr uint32_t STATUS_ERR_POLICY_MISMATCH    = 0xDEAD3404;
 
+#ifdef __clang__
+#define DR34_DISABLE_UNROLL _Pragma("clang loop unroll(disable)")
+#else
+#define DR34_DISABLE_UNROLL
+#endif
+
 // Lightweight Hash & Extend primitive (SHA-256 / Keccak transform model)
-inline void hash_extend_pcr(
+__attribute__((noinline)) void hash_extend_pcr(
     uint8_t* pcr_val,
     const uint8_t* measurement
 ) {
@@ -53,6 +59,7 @@ inline void hash_extend_pcr(
     }
 
     const uint32_t* m = reinterpret_cast<const uint32_t*>(measurement);
+    DR34_DISABLE_UNROLL
     for (int r = 0; r < 8; ++r) {
         uint32_t val = m[r] ^ (0x9E3779B9 + r);
         h[r] = ((h[r] << 7) | (h[r] >> 25)) + val + (h[(r + 1) % 8] ^ 0xA5A5A5A5);
@@ -64,7 +71,7 @@ inline void hash_extend_pcr(
 }
 
 // Compute composite PCR digest over selected registers in mask
-inline void compute_composite_pcr_digest(
+__attribute__((noinline)) void compute_composite_pcr_digest(
     const uint8_t pcr_bank[PCR_COUNT][32],
     uint32_t pcr_mask,
     uint8_t* composite_digest
@@ -78,9 +85,11 @@ inline void compute_composite_pcr_digest(
         0x510E527F, 0x9B05688C, 0x1F83D9AB, 0x5BE0CD19
     };
 
+    DR34_DISABLE_UNROLL
     for (uint32_t p = 0; p < PCR_COUNT; ++p) {
         if ((pcr_mask & (1U << p)) != 0) {
             const uint32_t* pcr_words = reinterpret_cast<const uint32_t*>(pcr_bank[p]);
+            DR34_DISABLE_UNROLL
             for (int k = 0; k < 8; ++k) {
                 accum[k] = ((accum[k] << 5) | (accum[k] >> 27)) ^ pcr_words[k] ^ (p + 1);
             }
@@ -93,7 +102,7 @@ inline void compute_composite_pcr_digest(
 }
 
 // Compute TPM 2.0 / DICE TPMS_QUOTE_INFO digest
-inline void compute_quote_digest(
+__attribute__((noinline)) void compute_quote_digest(
     uint32_t pcr_mask,
     const uint8_t* composite_digest,
     const uint8_t* nonce,
@@ -103,6 +112,7 @@ inline void compute_quote_digest(
     const uint32_t* c = reinterpret_cast<const uint32_t*>(composite_digest);
     const uint32_t* n = reinterpret_cast<const uint32_t*>(nonce);
 
+    DR34_DISABLE_UNROLL
     for (int k = 0; k < 8; ++k) {
         q[k] = c[k] ^ n[k] ^ (pcr_mask + k * 0x1010101);
         q[k] = ((q[k] << 9) | (q[k] >> 23)) + 0x44494345;
@@ -114,7 +124,7 @@ inline void compute_quote_digest(
 }
 
 // Derive CDI (Compound Device Identifier) via KDF(UDS, Measurement)
-inline void derive_cdi(
+__attribute__((noinline)) void derive_cdi(
     const uint8_t* uds,
     const uint8_t* measurement,
     uint8_t* cdi_out
@@ -123,6 +133,7 @@ inline void derive_cdi(
     const uint32_t* m = reinterpret_cast<const uint32_t*>(measurement);
     uint32_t* out = reinterpret_cast<uint32_t*>(cdi_out);
 
+    DR34_DISABLE_UNROLL
     for (int k = 0; k < 8; ++k) {
         uint32_t t = u[k] ^ m[k];
         out[k] = ((t << 13) | (t >> 19)) ^ (0x5C5C5C5C + k * 0x1F1F1F1F);

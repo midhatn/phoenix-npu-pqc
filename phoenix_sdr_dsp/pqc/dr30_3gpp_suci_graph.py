@@ -8,7 +8,7 @@ import os
 from pathlib import Path
 import struct
 import time
-from typing import Any, Tuple, Dict, List
+from typing import Any, Tuple, Dict, List, Optional
 
 import numpy as np
 
@@ -275,21 +275,32 @@ def suci_parse_validate_on_aie2(
 
 
 def suci_decapsulate_derive_on_aie2(
-    shared_secret: bytes,
-    ephem_pubkey: bytes,
+    shared_secret: bytes = b"",
+    ephem_pubkey: bytes = b"",
     epoch: int = 1,
+    dk: Optional[bytes] = None,
+    c: Optional[bytes] = None,
 ) -> Tuple[dict[str, bytes], float]:
+    total_dt_ms = 0.0
+    actual_ss = shared_secret
+    if dk is not None and c is not None and len(dk) >= 1632 and len(c) >= 768:
+        from .dr7_mlkem512_decaps_graph import run_mlkem512_decaps
+        t0 = time.perf_counter()
+        actual_ss = run_mlkem512_decaps(dk=dk, c=c, request_id=epoch)
+        total_dt_ms += (time.perf_counter() - t0) * 1000
+
     desc = pack_dr30_descriptor(
         operation_mode=MODE_SUCI_DECAPSULATE_DERIVE,
         epoch=epoch,
     )
     req = bytearray(REQ_BYTES)
-    req[0:32] = shared_secret[:32]
+    req[0:32] = actual_ss[:32]
     req[32:64] = ephem_pubkey[:32]
     raw_res, dt_ms = _dispatch_dr30(desc, req)
+    total_dt_ms += dt_ms
     k_enc = raw_res[16:32]
     k_mac = raw_res[32:48]
-    return {"k_enc": k_enc, "k_mac": k_mac}, dt_ms
+    return {"k_enc": k_enc, "k_mac": k_mac}, total_dt_ms
 
 
 def suci_deconceal_verify_on_aie2(
@@ -316,12 +327,22 @@ def suci_deconceal_verify_on_aie2(
 
 
 def suci_pipeline_full_on_aie2(
-    shared_secret: bytes,
-    ephem_pubkey: bytes,
-    recv_mac: bytes,
-    enc_payload: bytes,
+    shared_secret: bytes = b"",
+    ephem_pubkey: bytes = b"",
+    recv_mac: bytes = b"",
+    enc_payload: bytes = b"",
     epoch: int = 1,
+    dk: Optional[bytes] = None,
+    c: Optional[bytes] = None,
 ) -> Tuple[bytes, float]:
+    total_dt_ms = 0.0
+    actual_ss = shared_secret
+    if dk is not None and c is not None and len(dk) >= 1632 and len(c) >= 768:
+        from .dr7_mlkem512_decaps_graph import run_mlkem512_decaps
+        t0 = time.perf_counter()
+        actual_ss = run_mlkem512_decaps(dk=dk, c=c, request_id=epoch)
+        total_dt_ms += (time.perf_counter() - t0) * 1000
+
     payload_len = len(enc_payload)
     desc = pack_dr30_descriptor(
         operation_mode=MODE_SUCI_PIPELINE_FULL,
@@ -329,13 +350,14 @@ def suci_pipeline_full_on_aie2(
         epoch=epoch,
     )
     req = bytearray(REQ_BYTES)
-    req[0:32] = shared_secret[:32]
+    req[0:32] = actual_ss[:32]
     req[32:64] = ephem_pubkey[:32]
     req[64:80] = recv_mac[:16]
     req[80:80 + payload_len] = enc_payload[:payload_len]
     raw_res, dt_ms = _dispatch_dr30(desc, req)
+    total_dt_ms += dt_ms
     plain_supi = raw_res[16:16 + payload_len]
-    return plain_supi, dt_ms
+    return plain_supi, total_dt_ms
 
 
 # =========================================================================

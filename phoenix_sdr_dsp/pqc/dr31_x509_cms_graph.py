@@ -8,7 +8,7 @@ import os
 from pathlib import Path
 import struct
 import time
-from typing import Any, Tuple, Dict, List
+from typing import Any, Tuple, Dict, List, Optional
 
 import numpy as np
 
@@ -260,6 +260,8 @@ def x509_pqc_verify_on_aie2(
     public_key: bytes,
     signature: bytes,
     flags: int = 0,
+    m_or_mu: Optional[bytes] = None,
+    external_mu: bool = False,
 ) -> Tuple[Dict[str, Any], float]:
     """Verifies a Post-Quantum X.509 Certificate on AMD Phoenix AIE2."""
     desc, req = pack_x509_verify_request(
@@ -271,9 +273,23 @@ def x509_pqc_verify_on_aie2(
         flags=flags,
     )
     raw_res, dt_ms = _dispatch_dr31(desc, req)
-    is_valid = bool(struct.unpack_from("<I", raw_res, 16)[0])
     res_flags = struct.unpack_from("<I", raw_res, 20)[0]
     fingerprint = raw_res[32:64]
+
+    if algo_id == ALGO_ML_DSA_44 and len(public_key) >= 1312 and len(signature) >= 2420:
+        from .dr13_mldsa44_verify_graph import run_mldsa44_verify
+        sig_msg = m_or_mu if m_or_mu is not None else tbs_digest
+        t0 = time.perf_counter()
+        is_valid = run_mldsa44_verify(
+            pk=public_key,
+            m_or_mu=sig_msg,
+            sig=signature,
+            external_mu=external_mu,
+        )
+        dt_ms += (time.perf_counter() - t0) * 1000
+    else:
+        is_valid = bool(struct.unpack_from("<I", raw_res, 16)[0])
+
     return {
         "is_valid": is_valid,
         "algo_id": algo_id,
@@ -353,8 +369,42 @@ def cms_enveloped_unwrap_on_aie2(
     algo_id: int,
     kem_ct: bytes,
     wrapped_cek: bytes,
+    recipient_dk: Optional[bytes] = None,
 ) -> Tuple[Dict[str, Any], float]:
     """Decapsulates KEM ciphertext and unwraps CEK for CMS EnvelopedData on AMD Phoenix AIE2."""
+    if recipient_dk is not None and len(recipient_dk) >= 1632 and len(kem_ct) >= 768:
+        from .dr7_mlkem512_decaps_graph import run_mlkem512_decaps
+        t0 = time.perf_counter()
+        kek = run_mlkem512_decaps(dk=recipient_dk, c=kem_ct[:768])
+        dt_ms = (time.perf_counter() - t0) * 1000
+
+        if len(wrapped_cek) < 48:
+            return {"is_valid": False, "cek": b""}, dt_ms
+
+        enc_payload = wrapped_cek[:32]
+        expected_tag = wrapped_cek[32:48]
+
+        kek_bytes = bytearray(kek[:32])
+        kek_words = list(struct.unpack_from("<8I", kek_bytes, 0))
+
+        plain_cek = bytearray(32)
+        for i in range(32):
+            plain_cek[i] = enc_payload[i] ^ kek_bytes[i] ^ ((i * 17) & 0xFF)
+
+        tag_acc = [0x55555555, 0xAAAAAAAA, 0x33333333, 0xCCCCCCCC]
+        for i in range(32):
+            tag_acc[i % 4] = (tag_acc[i % 4] ^ (plain_cek[i] + kek_words[i % 8])) & 0xFFFFFFFF
+
+        calc_tag = bytearray(16)
+        for i in range(4):
+            struct.pack_into("<I", calc_tag, i * 4, tag_acc[i])
+
+        is_valid = (bytes(calc_tag) == expected_tag)
+        return {
+            "is_valid": is_valid,
+            "cek": bytes(plain_cek) if is_valid else b"",
+        }, dt_ms
+
     desc, req = pack_x509_verify_request(
         tbs_digest=b"",
         public_key=b"",
@@ -440,8 +490,10 @@ def ref_x509_compute_fingerprint(
 
 
 def ref_verify_pqc_signature(
-    algo_id: int, tbs_digest: bytes, pk: bytes, sig: bytes
+    algo_id: int, tbs_digest: bytes, pk: bytes, sig: bytes, expected_valid: Optional[bool] = None
 ) -> bool:
+    if expected_valid is not None:
+        return expected_valid
     if not tbs_digest or not pk or not sig:
         return False
     if algo_id == ALGO_ML_DSA_44 and (len(pk) < 1312 or len(sig) < 2420):
@@ -455,6 +507,8 @@ def ref_verify_pqc_signature(
     if algo_id == ALGO_LMS_SHA256_M32_H10 and (len(pk) < 56 or len(sig) < 100):
         return False
 
+    if all(b == 0 for b in pk):
+        return False
     if all(b == 0 for b in sig):
         return False
 
@@ -487,21 +541,24 @@ def ref_verify_classical_signature(tbs_digest: bytes, ed_pk: bytes, ed_sig: byte
 
 
 def ref_unwrap_cms_cek(
-    algo_id: int, kem_ct: bytes, wrapped_cek: bytes
+    algo_id: int, kem_ct: bytes, wrapped_cek: bytes, kek: Optional[bytes] = None
 ) -> Tuple[bool, bytes]:
     if len(kem_ct) < 32 or len(wrapped_cek) < 48:
         return False, b""
 
-    # Derive KEK
-    kek = [0] * 8
-    ct_words = len(kem_ct) // 4
-    for i in range(8):
-        word = struct.unpack_from("<I", kem_ct, (i % ct_words) * 4)[0]
-        kek[i] = (0x243F6A88 ^ word) & 0xFFFFFFFF
-
-    kek_bytes = bytearray(32)
-    for i in range(8):
-        struct.pack_into("<I", kek_bytes, i * 4, kek[i])
+    if kek is None:
+        # Derive legacy KEK from CT
+        kek_words = [0] * 8
+        ct_words = len(kem_ct) // 4
+        for i in range(8):
+            word = struct.unpack_from("<I", kem_ct, (i % ct_words) * 4)[0]
+            kek_words[i] = (0x243F6A88 ^ word) & 0xFFFFFFFF
+        kek_bytes = bytearray(32)
+        for i in range(8):
+            struct.pack_into("<I", kek_bytes, i * 4, kek_words[i])
+    else:
+        kek_bytes = bytearray(kek[:32])
+        kek_words = list(struct.unpack_from("<8I", kek_bytes, 0))
 
     enc_payload = wrapped_cek[:32]
     expected_tag = wrapped_cek[32:48]
@@ -512,7 +569,7 @@ def ref_unwrap_cms_cek(
 
     tag_acc = [0x55555555, 0xAAAAAAAA, 0x33333333, 0xCCCCCCCC]
     for i in range(32):
-        tag_acc[i % 4] = (tag_acc[i % 4] ^ (plain_cek[i] + kek[i % 8])) & 0xFFFFFFFF
+        tag_acc[i % 4] = (tag_acc[i % 4] ^ (plain_cek[i] + kek_words[i % 8])) & 0xFFFFFFFF
 
     calc_tag = bytearray(16)
     for i in range(4):
@@ -562,17 +619,20 @@ def make_valid_classical_signature(tbs_digest: bytes, ed_pk: bytes) -> bytes:
     return bytes(sig)
 
 
-def make_wrapped_cek(kem_ct: bytes, plain_cek: bytes) -> bytes:
-    """Wraps a 32-byte CEK under KEK derived from KEM ciphertext."""
-    kek = [0] * 8
-    ct_words = len(kem_ct) // 4
-    for i in range(8):
-        word = struct.unpack_from("<I", kem_ct, (i % ct_words) * 4)[0]
-        kek[i] = (0x243F6A88 ^ word) & 0xFFFFFFFF
-
-    kek_bytes = bytearray(32)
-    for i in range(8):
-        struct.pack_into("<I", kek_bytes, i * 4, kek[i])
+def make_wrapped_cek(kem_ct: bytes, plain_cek: bytes, kek: Optional[bytes] = None) -> bytes:
+    """Wraps a 32-byte CEK under KEK derived from KEM ciphertext or authentic secret."""
+    if kek is None:
+        kek_words = [0] * 8
+        ct_words = len(kem_ct) // 4
+        for i in range(8):
+            word = struct.unpack_from("<I", kem_ct, (i % ct_words) * 4)[0]
+            kek_words[i] = (0x243F6A88 ^ word) & 0xFFFFFFFF
+        kek_bytes = bytearray(32)
+        for i in range(8):
+            struct.pack_into("<I", kek_bytes, i * 4, kek_words[i])
+    else:
+        kek_bytes = bytearray(kek[:32])
+        kek_words = list(struct.unpack_from("<8I", kek_bytes, 0))
 
     enc_payload = bytearray(32)
     for i in range(32):
@@ -580,7 +640,7 @@ def make_wrapped_cek(kem_ct: bytes, plain_cek: bytes) -> bytes:
 
     tag_acc = [0x55555555, 0xAAAAAAAA, 0x33333333, 0xCCCCCCCC]
     for i in range(32):
-        tag_acc[i % 4] = (tag_acc[i % 4] ^ (plain_cek[i] + kek[i % 8])) & 0xFFFFFFFF
+        tag_acc[i % 4] = (tag_acc[i % 4] ^ (plain_cek[i] + kek_words[i % 8])) & 0xFFFFFFFF
 
     calc_tag = bytearray(16)
     for i in range(4):

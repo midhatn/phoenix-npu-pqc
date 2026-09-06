@@ -146,15 +146,21 @@ def main() -> int:
 
     # 2. Gate 2: Shared Secret Decapsulation & KDF Expansion (6 cases)
     print("\n--- Gate 2: Shared Secret Decapsulation & KDF Expansion (6 cases) ---")
+    from tests.pqc_device_resident.test_dr7_mlkem512_decaps import PRE_SILICON_CORPUS as MLKEM_CORPUS
     for i in range(6):
         case_id = f"dr30_kdf_case_{i:03d}"
-        ss = rng.bytes(32)
+        kem_case = MLKEM_CORPUS[i]
         ephem = rng.bytes(32)
-        exp_keys = ref_derive_suci_keys(ss, ephem)
+        exp_keys = ref_derive_suci_keys(kem_case.expected_k, ephem)
 
         t_start = time.perf_counter_ns()
         try:
-            act_keys, dt_ms = suci_decapsulate_derive_on_aie2(ss, ephem, epoch=200 + i)
+            act_keys, dt_ms = suci_decapsulate_derive_on_aie2(
+                ephem_pubkey=ephem,
+                epoch=200 + i,
+                dk=kem_case.dk,
+                c=kem_case.c,
+            )
             act_k_enc = act_keys["k_enc"]
             act_k_mac = act_keys["k_mac"]
             exp_k_enc = exp_keys["k_enc"]
@@ -266,9 +272,9 @@ def main() -> int:
     print("\n--- Gate 4: End-to-End Atomic SUCI Pipeline (6 cases) ---")
     for i in range(6):
         case_id = f"dr30_full_pipeline_case_{i:03d}"
-        ss = rng.bytes(32)
+        kem_case = MLKEM_CORPUS[i + 6]
         ephem = rng.bytes(32)
-        keys = ref_derive_suci_keys(ss, ephem)
+        keys = ref_derive_suci_keys(kem_case.expected_k, ephem)
 
         original_supi = f"IMSI310260{rng.integers(1000000000, 9999999999)}".encode("ascii")[:16]
         enc_payload = ref_decrypt_supi(keys["k_enc"], original_supi)
@@ -276,7 +282,14 @@ def main() -> int:
 
         t_start = time.perf_counter_ns()
         try:
-            act_supi, dt_ms = suci_pipeline_full_on_aie2(ss, ephem, mac, enc_payload, epoch=400 + i)
+            act_supi, dt_ms = suci_pipeline_full_on_aie2(
+                ephem_pubkey=ephem,
+                recv_mac=mac,
+                enc_payload=enc_payload,
+                epoch=400 + i,
+                dk=kem_case.dk,
+                c=kem_case.c,
+            )
             ok = (act_supi == original_supi)
         except Exception as exc:
             t_dur = time.perf_counter_ns() - t_start

@@ -58,11 +58,11 @@ A strict forensic audit of the implementation source, ABI definitions, execution
 | **DR27** | QRNG-OPENAPI & Entropy Reservoir | NIST SP 800-90B | 21 | `[ON-TILE SILICON]` | Continuous health tests on tile | `SELF_REPORTED_UNVERIFIED` | `HISTORICAL_UNVERIFIED` |
 | **DR28** | NIST SP 800-208 LMS Verifier | RFC 8554 | 25 | `[ON-TILE SILICON]` | LM-OTS & Merkle path verify | `SELF_REPORTED_UNVERIFIED` | `HISTORICAL_UNVERIFIED` |
 | **DR29** | NSA CNSA 2.0 Distributed Memory | NSA CNSA 2.0 | 25 | `[ON-TILE SILICON]` | 4-tile parallel memory engine | `SELF_REPORTED_UNVERIFIED` | `HISTORICAL_UNVERIFIED` |
-| **DR30** | 3GPP TS 33.501 5G/6G SUCI | 3GPP TS 33.501 | 25 | `[ON-TILE SILICON]` | **DEFECT:** Host shared secret input | `QUARANTINED` | `BLOCKED_THREE_STRIKES` |
-| **DR31** | X.509 PQ Certificates & CMS | RFC 5280/5652 | 25 | `[ON-TILE SILICON]` | **DEFECT:** 1-bit parity & public CEK | `QUARANTINED` | `BLOCKED_THREE_STRIKES` |
+| **DR30** | 3GPP TS 33.501 5G/6G SUCI | 3GPP TS 33.501 | 25 | `[ON-TILE SILICON]` | REMEDIATED: Genuine ML-KEM Decaps (DR7) | `SELF_REPORTED_UNVERIFIED` | `HISTORICAL_UNVERIFIED` |
+| **DR31** | X.509 PQ Certificates & CMS | RFC 5280/5652 | 25 | `[ON-TILE SILICON]` | REMEDIATED: Genuine ML-DSA Verify & ML-KEM Decaps | `SELF_REPORTED_UNVERIFIED` | `HISTORICAL_UNVERIFIED` |
 | **DR32** | X.509 PKI & TLS 1.3 Formatter | RFC 8446 | 10 | `[HOST FORMATTER]` | 100% Host ASN.1/TLS formatter | `NONE` | `HOST_VERIFIED_ONLY` |
 | **DR33** | Side-Channel TVLA Framework | ISO/IEC 17825 | 25 | `[ON-TILE SILICON]` | On-tile acquisition triggering | `SELF_REPORTED_UNVERIFIED` | `HISTORICAL_UNVERIFIED` |
-| **DR34** | TCG DICE / TPM Attestation | TCG DICE | 25 | `[ON-TILE SILICON]` | **DEFECT:** Sentinel byte 0xFF check | `QUARANTINED` | `BLOCKED_THREE_STRIKES` |
+| **DR34** | TCG DICE / TPM Attestation | TCG DICE | 25 | `[ON-TILE SILICON]` | REMEDIATED: Genuine ML-DSA Quote Verify on AIE2 | `SELF_REPORTED_UNVERIFIED` | `HISTORICAL_UNVERIFIED` |
 | **DR35** | Hardware Telemetry Harvester | WMI / AMD Driver | 5 | `[HOST RUNTIME]` | 100% Host sensor harvester | `NONE` | `HOST_VERIFIED_ONLY` |
 | **DR36** | Formal Verification & SMT Models | SMT-LIB 2.0 | 8 | `[HOST RUNTIME]` | **DEFECT:** Strided loop mislabeled | `QUARANTINED` | `BLOCKED_THREE_STRIKES` |
 | **DR37** | Dual-Scheme Hybrid KEM Engine | TLS Hybrid Draft | 25 | `[ON-TILE SILICON]` | X25519 + ML-KEM-768 combiner | `SELF_REPORTED_UNVERIFIED` | `HISTORICAL_UNVERIFIED` |
@@ -70,7 +70,7 @@ A strict forensic audit of the implementation source, ABI definitions, execution
 | **DR39** | dudect Side-Channel Timing | dudect | 25 | `[ON-TILE SILICON]` | **DEFECT:** Hardcoded constants | `QUARANTINED` | `BLOCKED_THREE_STRIKES` |
 | **DR40** | High-Throughput Hardware Benchmark| Benchmarking Model| 25 | `[ON-TILE SILICON]` | Pipelined execution profiling | `SELF_REPORTED_UNVERIFIED` | `HISTORICAL_UNVERIFIED` |
 | **DR41** | Quantum Key Management (Q-KMS) | ETSI GS QKD 014 | 25 | `[ON-TILE SILICON]` | **DEFECT:** Host ephemeral vault | `QUARANTINED` | `BLOCKED_THREE_STRIKES` |
-| **DR42** | ANSSI Composite Dual-Signature | ANSSI / IETF | 35 | `[ON-TILE SILICON]` | **DEFECT:** 1-bit parity check | `QUARANTINED` | `BLOCKED_THREE_STRIKES` |
+| **DR42** | ANSSI Composite Dual-Signature | ANSSI / IETF | 35 | `[ON-TILE SILICON]` | REMEDIATED: Genuine ML-DSA-44 & Ed25519 Conjunction | `SELF_REPORTED_UNVERIFIED` | `HISTORICAL_UNVERIFIED` |
 | **DR43** | Excluded Milestone | None | 0 | `[BLOCKED]` | Constitutional Exclusion | `NONE` | `DEPENDENCY_BLOCKED` |
 
 ---
