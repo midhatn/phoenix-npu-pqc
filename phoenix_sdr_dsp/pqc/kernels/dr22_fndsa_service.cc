@@ -33,14 +33,14 @@ __attribute__((noinline)) static void do_keygen(
     const uint8_t *request, uint8_t *result, uint32_t n, uint8_t log_n, uint32_t pk_bytes) {
   const uint8_t *seed = request;
 
-  alignas(8) int16_t f[512];
-  alignas(8) int16_t g[512];
-  alignas(8) int16_t h[512];
+  int16_t *f = tile_poly_s2;
+  int16_t *g = tile_poly_c;
+  int16_t *h = tile_poly_h;
 
-  uint8_t rand_bytes[1024];
+  uint8_t rand_bytes[2048];
   const uint8_t *chunks[1] = {seed};
   const uint32_t lens[1] = {32u};
-  shake256_multi(chunks, lens, 1, rand_bytes, 1024);
+  shake256_multi(chunks, lens, 1, rand_bytes, (n > 512) ? 2048 : 1024);
 
   DR22_DISABLE_UNROLL
   for (uint32_t i = 0; i < n; ++i) {
@@ -77,12 +77,12 @@ __attribute__((noinline)) static void do_sign(
   const uint8_t *salt   = request + pk_bytes + (2 * n);
   const uint8_t *msg    = salt + 40;
 
-  uint8_t nonce[1024];
+  uint8_t nonce[2048];
   const uint8_t *chunks[3] = {salt, raw_pk, msg};
   const uint32_t lens[3] = {40u, pk_bytes, msg_len};
-  shake256_multi(chunks, lens, 3, nonce, 1024);
+  shake256_multi(chunks, lens, 3, nonce, (n > 512) ? 2048 : 1024);
 
-  alignas(8) int16_t s2[512];
+  int16_t *s2 = tile_poly_s2;
   DR22_DISABLE_UNROLL
   for (uint32_t i = 0; i < n; ++i) {
     s2[i] = static_cast<int16_t>(static_cast<int8_t>(nonce[2 * i] & 0x1F) - 16);
@@ -111,9 +111,10 @@ __attribute__((noinline)) static void do_verify(
   const uint8_t *msg    = sig + sig_len;
 
   const uint8_t sig_hdr = sig[0];
-  const uint8_t expected_hdr = static_cast<uint8_t>(0x30u + log_n);
+  const uint8_t expected_hdr1 = static_cast<uint8_t>(0x30u + log_n);
+  const uint8_t expected_hdr2 = static_cast<uint8_t>(0x20u + log_n);
 
-  if (sig_hdr != expected_hdr) {
+  if (sig_hdr != expected_hdr1 && sig_hdr != expected_hdr2) {
     result[16] = 0;
     store_le32(result + 8, kVerificationFailed);
     store_le32(result + 12, 1);
@@ -122,29 +123,61 @@ __attribute__((noinline)) static void do_verify(
 
   const uint8_t *salt = sig + 1;
 
-  alignas(8) int16_t h[512];
-  unpack_public_key(raw_pk, h, n);
-
-  alignas(8) int16_t c[512];
-  hash_to_point(salt, raw_pk, pk_bytes, msg, msg_len, c, n);
-
-  alignas(8) int16_t s2[512];
-  DR22_DISABLE_UNROLL
-  for (uint32_t i = 0; i < n; ++i) {
-    const int16_t val = static_cast<int16_t>(
-        static_cast<uint16_t>(sig[41 + (2 * i)]) |
-        (static_cast<uint16_t>(sig[41 + (2 * i) + 1]) << 8));
-    s2[i] = val;
+  // 1. Unpack s2 into tile_poly_s2
+  bool s2_decoded = false;
+  bool is_falcon_r3 = false;
+  if (sig_len == 41u + (2u * n)) {
+    // Uncompressed 16-bit little-endian wire format
+    DR22_DISABLE_UNROLL
+    for (uint32_t i = 0; i < n; ++i) {
+      tile_poly_s2[i] = static_cast<int16_t>(
+          static_cast<uint16_t>(sig[41 + (2 * i)]) |
+          (static_cast<uint16_t>(sig[41 + (2 * i) + 1]) << 8));
+    }
+    s2_decoded = true;
+  } else if (sig_len > 41u) {
+    // Try FIPS 206 draft LSB-first comp_decode
+    if (comp_decode(log_n, sig + 41, sig_len - 41, tile_poly_s2)) {
+      s2_decoded = true;
+    } else if (comp_decode_falcon(sig + 41, sig_len - 41, tile_poly_s2, log_n)) {
+      // Falcon Round 3 MSB-first comp_decode
+      s2_decoded = true;
+      is_falcon_r3 = true;
+    }
   }
 
-  alignas(8) int16_t s2_h[512];
-  poly_mul_negacyclic(s2, h, s2_h, n);
+  if (!s2_decoded) {
+    result[16] = 0;
+    store_le32(result + 8, kVerificationFailed);
+    store_le32(result + 12, 1);
+    return;
+  }
 
+  // 2. Unpack public key h into tile_poly_h
+  if (is_falcon_r3) {
+    if (!modq_decode(raw_pk + 1, pk_bytes - 1, tile_poly_h, log_n)) {
+      unpack_public_key(raw_pk, tile_poly_h, n);
+    }
+  } else {
+    unpack_public_key(raw_pk, tile_poly_h, n);
+  }
+
+  // 3. Hash to point c
+  if (is_falcon_r3) {
+    hash_to_point_be(salt, msg, msg_len, tile_poly_c, n);
+  } else {
+    hash_to_point(salt, msg, msg_len, tile_poly_c, n);
+  }
+
+  // 4. Negacyclic multiplication: tile_poly_s2_h = tile_poly_s2 * tile_poly_h mod (x^n + 1, q)
+  poly_mul_negacyclic(tile_poly_s2, tile_poly_h, tile_poly_s2_h, n);
+
+  // 5. Compute s1 = c - s2*h mod q (centered) and aggregate squared norm ||(s1, s2)||^2
   uint32_t sq_norm = 0;
   DR22_DISABLE_UNROLL
   for (uint32_t i = 0; i < n; ++i) {
-    const int32_t s1_i = center_mod_q(c[i] - s2_h[i]);
-    const int32_t s2_i = static_cast<int32_t>(s2[i]);
+    const int32_t s1_i = center_mod_q(tile_poly_c[i] - tile_poly_s2_h[i]);
+    const int32_t s2_i = static_cast<int32_t>(tile_poly_s2[i]);
     sq_norm += static_cast<uint32_t>(s1_i * s1_i);
     sq_norm += static_cast<uint32_t>(s2_i * s2_i);
   }
@@ -210,7 +243,7 @@ extern "C" void dr22_fndsa_service(
   }
 
   if (op_mode == 2) {
-    const uint32_t sig_len = 41 + (2 * n);
+    const uint32_t sig_len = (sig_max_bytes > 0 && sig_max_bytes <= 1500) ? sig_max_bytes : (41 + (2 * n));
     do_verify(request, result, n, log_n, msg_len, sig_bound, pk_bytes, sig_len);
     return;
   }

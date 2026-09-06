@@ -180,7 +180,7 @@ def _program() -> Any:
         worker = Worker(
             worker_body,
             fn_args=[of_request.cons(), of_descriptor.cons(), of_result.prod(), fndsa_fn],
-            stack_size=0x2000,
+            stack_size=0x1800,
         )
 
         def sequence(req, desc, res, req_prod, desc_prod, res_cons):
@@ -332,10 +332,12 @@ def fndsa_verify_on_aie2(
     *_, XRTTensor = _load_iron()
     params = FNDSA_PARAMS[param_set]
 
-    if len(pk) != params.pk_bytes or len(sig) != (41 + 2 * params.n):
+    if len(pk) != params.pk_bytes or len(sig) < 41 or len(sig) > (41 + 2 * params.n):
         return False, 1, 0.0
 
-    desc_bytes = pack_fndsa_descriptor(param_set, operation_mode=2, msg_len=len(msg), epoch=epoch)
+    desc_bytes = pack_fndsa_descriptor(
+        param_set, operation_mode=2, msg_len=len(msg), epoch=epoch, sig_max_bytes=len(sig)
+    )
     req_buf = bytearray(REQ_BYTES)
     req_buf[0 : params.pk_bytes] = pk
     req_buf[params.pk_bytes : params.pk_bytes + len(sig)] = sig
@@ -380,20 +382,129 @@ def _shake256(data: bytes, outlen: int) -> bytes:
     h.update(data)
     return h.digest(outlen)
 
-def _ref_hash_to_point(salt: bytes, raw_pk: bytes, msg: bytes, n: int) -> np.ndarray:
-    c = np.zeros(n, dtype=np.int16)
-    h = _ref_unpack_pk(raw_pk, n)
-    nonce = _shake256(salt + raw_pk + msg, 1024)
+def _ctz32_nonzero(x: int) -> int:
+    return (x & -x).bit_length() - 1
 
-    s2_t = np.zeros(n, dtype=np.int16)
+def _ref_comp_decode(log_n: int, d: bytes) -> np.ndarray | None:
+    n = 1 << log_n
+    s = np.zeros(n, dtype=np.int16)
+    acc = 0
+    acc_len = 0
+    j = 0
+    dlen = len(d)
     for i in range(n):
-        s2_t[i] = (nonce[2 * i] & 0x1F) - 16
+        if j >= dlen:
+            return None
+        acc |= int(d[j]) << acc_len
+        j += 1
+        t = acc & 1
+        m = (acc >> 1) & 0x7F
+        acc >>= 8
+        if acc == 0:
+            if j >= dlen:
+                return None
+            acc |= int(d[j]) << acc_len
+            acc_len += 8
+            j += 1
+            if acc == 0:
+                return None
+        tz = _ctz32_nonzero(acc)
+        m += tz << 7
+        if m > 840:
+            return None
+        acc >>= tz + 1
+        acc_len -= tz + 1
+        if m == 0 and t != 0:
+            return None
+        s[i] = -m if t else m
+    return s
 
-    s2_h = _ref_poly_mul_negacyclic(s2_t, h, n)
-    for i in range(n):
-        s1_seed = (nonce[2 * i + 1] & 0x1F) - 16
-        c[i] = (s1_seed + s2_h[i]) % Q_FNDSA
-    return c
+def _ref_comp_decode_falcon(d: bytes, log_n: int) -> np.ndarray | None:
+    n = 1 << log_n
+    s = np.zeros(n, dtype=np.int16)
+    acc = 0
+    acc_len = 0
+    v = 0
+    max_in_len = len(d)
+    for u in range(n):
+        if v >= max_in_len:
+            return None
+        acc = (acc << 8) | d[v]
+        v += 1
+        b = (acc >> acc_len) & 0xFF
+        s_sign = b & 128
+        m = b & 127
+        while True:
+            if acc_len == 0:
+                if v >= max_in_len:
+                    return None
+                acc = (acc << 8) | d[v]
+                v += 1
+                acc_len = 8
+            acc_len -= 1
+            if ((acc >> acc_len) & 1) != 0:
+                break
+            m += 128
+            if m > 2047:
+                return None
+        if s_sign != 0 and m == 0:
+            return None
+        s[u] = -m if s_sign != 0 else m
+    return s
+
+def _ref_modq_decode(srcin: bytes, log_n: int) -> np.ndarray | None:
+    n = 1 << log_n
+    h = np.zeros(n, dtype=np.int16)
+    acc = 0
+    acc_len = 0
+    buf = 0
+    u = 0
+    while u < n:
+        if buf >= len(srcin):
+            return None
+        acc = (acc << 8) | srcin[buf]
+        buf += 1
+        acc_len += 8
+        if acc_len >= 14:
+            acc_len -= 14
+            w = (acc >> acc_len) & 0x3FFF
+            if w >= 12289:
+                return None
+            h[u] = w
+            u += 1
+    return h
+
+def _ref_hash_to_point_fips206(salt: bytes, msg: bytes, n: int) -> np.ndarray:
+    ctx = hashlib.shake_256(salt + msg)
+    coeffs = []
+    total = 0
+    while len(coeffs) < n:
+        total += 136
+        stream = ctx.digest(total)
+        data = stream[total - 136:]
+        for j in range(0, 136, 2):
+            w = data[j] | (data[j + 1] << 8)
+            if w < 61445:
+                coeffs.append(w % Q_FNDSA)
+                if len(coeffs) == n:
+                    break
+    return np.array(coeffs, dtype=np.int16)
+
+def _ref_hash_to_point_falcon(salt: bytes, msg: bytes, n: int) -> np.ndarray:
+    ctx = hashlib.shake_256(salt + msg)
+    coeffs = []
+    total = 0
+    while len(coeffs) < n:
+        total += 136
+        stream = ctx.digest(total)
+        data = stream[total - 136:]
+        for j in range(0, 136, 2):
+            w = (data[j] << 8) | data[j + 1]
+            if w < 61445:
+                coeffs.append(w % Q_FNDSA)
+                if len(coeffs) == n:
+                    break
+    return np.array(coeffs, dtype=np.int16)
 
 def _ref_unpack_pk(raw_pk: bytes, n: int) -> np.ndarray:
     h_arr = np.zeros(n, dtype=np.int16)
@@ -443,7 +554,7 @@ def ref_fndsa_keygen(param_set: str = "FN-DSA-512", seed: bytes = None) -> Tuple
     params = FNDSA_PARAMS[param_set]
     if seed is None:
         seed = os.urandom(32)
-    rand_bytes = _shake256(seed, 1024)
+    rand_bytes = _shake256(seed, 2048 if params.n > 512 else 1024)
     f = np.zeros(params.n, dtype=np.int16)
     g = np.zeros(params.n, dtype=np.int16)
     for i in range(params.n):
@@ -451,7 +562,8 @@ def ref_fndsa_keygen(param_set: str = "FN-DSA-512", seed: bytes = None) -> Tuple
         b2 = rand_bytes[2 * i + 1] & 3
         f[i] = -1 if b1 == 0 else (1 if b1 == 1 else 0)
         g[i] = -1 if b2 == 0 else (1 if b2 == 1 else 0)
-    if f[0] == 0: f[0] = 1
+    if f[0] == 0:
+        f[0] = 1
 
     h = np.zeros(params.n, dtype=np.int16)
     for i in range(params.n):
@@ -466,7 +578,7 @@ def ref_fndsa_keygen(param_set: str = "FN-DSA-512", seed: bytes = None) -> Tuple
 
 def ref_fndsa_sign(param_set: str, pk: bytes, sk: bytes, msg: bytes, salt: bytes) -> bytes:
     params = FNDSA_PARAMS[param_set]
-    nonce = _shake256(salt + pk + msg, 1024)
+    nonce = _shake256(salt + pk + msg, 2048 if params.n > 512 else 1024)
     s2 = np.zeros(params.n, dtype=np.int16)
     for i in range(params.n):
         s2[i] = (nonce[2 * i] & 0x1F) - 16
@@ -480,23 +592,45 @@ def ref_fndsa_sign(param_set: str, pk: bytes, sk: bytes, msg: bytes, salt: bytes
 
 def ref_fndsa_verify(param_set: str, pk: bytes, msg: bytes, sig: bytes) -> bool:
     params = FNDSA_PARAMS[param_set]
-    if len(pk) != params.pk_bytes or len(sig) != (41 + 2 * params.n):
+    if len(pk) != params.pk_bytes or len(sig) < 41 or len(sig) > (41 + 2 * params.n):
         return False
-    if sig[0] != (0x30 + params.log_n):
+    sig_hdr = sig[0]
+    expected_hdr1 = 0x30 + params.log_n
+    expected_hdr2 = 0x20 + params.log_n
+    if sig_hdr != expected_hdr1 and sig_hdr != expected_hdr2:
         return False
     salt = sig[1:41]
-    h = _ref_unpack_pk(pk, params.n)
-    c = _ref_hash_to_point(salt, pk, msg, params.n)
 
-    s2 = np.zeros(params.n, dtype=np.int16)
-    for i in range(params.n):
-        s2[i] = struct.unpack_from("<h", sig, 41 + 2 * i)[0]
+    s2 = None
+    is_falcon = False
+    if len(sig) == 41 + 2 * params.n:
+        s2 = np.zeros(params.n, dtype=np.int16)
+        for i in range(params.n):
+            s2[i] = struct.unpack_from("<h", sig, 41 + 2 * i)[0]
+    else:
+        s2 = _ref_comp_decode(params.log_n, sig[41:])
+        if s2 is None:
+            s2 = _ref_comp_decode_falcon(sig[41:], params.log_n)
+            is_falcon = True
+
+    if s2 is None:
+        return False
+
+    if is_falcon:
+        h = _ref_modq_decode(pk[1:], params.log_n)
+        if h is None:
+            h = _ref_unpack_pk(pk, params.n)
+        c = _ref_hash_to_point_falcon(salt, msg, params.n)
+    else:
+        h = _ref_unpack_pk(pk, params.n)
+        c = _ref_hash_to_point_fips206(salt, msg, params.n)
 
     s2_h = _ref_poly_mul_negacyclic(s2, h, params.n)
     sq_norm = 0
     for i in range(params.n):
         s1_i = int(c[i] - s2_h[i]) % Q_FNDSA
-        if s1_i > 6144: s1_i -= Q_FNDSA
+        if s1_i > 6144:
+            s1_i -= Q_FNDSA
         s2_i = int(s2[i])
         sq_norm += s1_i * s1_i + s2_i * s2_i
 

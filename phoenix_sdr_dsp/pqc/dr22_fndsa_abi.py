@@ -55,6 +55,7 @@ def pack_fndsa_descriptor(
     operation_mode: int,  # 0 = KeyGen, 1 = Sign, 2 = Verify
     msg_len: int = 0,
     epoch: int = 1,
+    sig_max_bytes: int = 0,
 ) -> bytes:
     """Pack a 32-byte descriptor for DR22 FN-DSA service."""
     if param_set not in FNDSA_PARAMS:
@@ -71,5 +72,5 @@ def pack_fndsa_descriptor(
     struct.pack_into("<I", desc, 12, epoch)
     struct.pack_into("<I", desc, 16, p.sig_bound)
     struct.pack_into("<H", desc, 20, p.pk_bytes)
-    struct.pack_into("<H", desc, 22, p.sig_max_bytes)
+    struct.pack_into("<H", desc, 22, sig_max_bytes if sig_max_bytes > 0 else p.sig_max_bytes)
     return bytes(desc)

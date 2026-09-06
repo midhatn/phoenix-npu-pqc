@@ -68,6 +68,57 @@ This research ledger establishes the mathematical and microarchitectural solutio
 - **Affected Deliverable**: **DR21 (SLH-DSA / SPHINCS+)**
 - **Confidence Level**: PRIMARY
 
+### Citation 4: Reference C Implementation of Draft FIPS 206 FN-DSA (`pornin/c-fn-dsa`)
+- **Source Title**: C Reference Implementation of Draft FIPS 206 (FN-DSA)
+- **Author / Organization**: Thomas Pornin
+- **Source Type**: Open-source reference implementation
+- **License**: MIT
+- **Full URL**: https://github.com/pornin/c-fn-dsa
+- **Pinned Git Commit SHA**: `69f5ba7570483ea4d66838612140a8523c914bf9`
+- **Access Date**: 2026-09-06T06:58:00+03:00
+- **Relevant Section / Files**: `codec.c`, `vrfy.c`, `test_fndsa.c`
+- **Exact Technical Claim**:
+  - Establishes canonical decoding of compressed Falcon signatures (`comp_decode`) and unpacks raw 16-bit little-endian signatures.
+  - Documents normative verification algorithm: $c = \text{hash\_to\_point}(r, msg)$, $s_1 = c - s_2 h \pmod{12289}$ in centered range $[-6144, 6144]$, and acceptance criterion $\|(s_1, s_2)\|^2 \le \lfloor \beta^2 \rfloor$.
+  - Provides authoritative Known Answer Test (KAT) vectors for FN-DSA-512 and FN-DSA-1024.
+- **Independent Verification**: Bit-exact comparison against Draft FIPS 206 specification.
+- **Affected Deliverable**: **DR22 (FN-DSA / Falcon)**
+- **Confidence Level**: PRIMARY
+
+### Citation 5: Authoritative Falcon-512 KAT Corpus (`mindlapse/falcon-vectors`)
+- **Source Title**: 10,000 Vectors Generated Using the Falcon Submission Package
+- **Author / Organization**: mindlapse
+- **Source Type**: Open-source test vector repository
+- **License**: MIT
+- **Full URL**: https://github.com/mindlapse/falcon-vectors
+- **Pinned Git Commit SHA**: `3528f8705030e46123a105051a66e4a8616194b6`
+- **Access Date**: 2026-09-06T07:15:00+03:00
+- **Relevant Section / Files**: `falcon512-KAT.rsp`, `README.md`
+- **Exact Technical Claim**:
+  - Contains 10,000 independent test vectors generated using the official Falcon NIST Round 3 submission package (https://falcon-sign.info/falcon-round3.zip).
+  - Documents `sm` format: 2-byte signature length header, followed by 40-byte salt, followed by 32-byte message, followed by compressed signature byte string (starts with `0x29` for Falcon-512).
+  - Used for independent oracle verification and continuous fuzzing/KAT validation of Falcon-512 verification on AIE2 hardware.
+- **Independent Verification**: Verified by decoding public key ($0x09$ prefix) and verifying signature norm against NIST Falcon reference code.
+- **Affected Deliverable**: **DR22 (FN-DSA / Falcon)**
+- **Confidence Level**: PRIMARY
+
+### Citation 6: Falcon-512 KAT Header Byte Mismatch and Detached Signature Encoding (`bcgit/bc-java`)
+- **Source Title**: Falcon-512 KAT Header Byte Mismatch: Standalone (0x39) vs NIST .rsp API (0x29)
+- **Author / Organization**: Legion of the Bouncy Castle (`bcgit/bc-java`) / NIST
+- **Source Type**: Issue analysis & technical discussion
+- **License**: Bouncy Castle Licence (MIT-like)
+- **Full URL**: https://github.com/bcgit/bc-java/discussions/1339
+- **Access Date**: 2026-09-06T07:15:53+03:00
+- **Relevant Section / Files**: GitHub Discussion #1339, `FalconTest.java`, `FalconCodec.java`
+- **Exact Technical Claim**:
+  - Standalone reference API on `falcon-sign.info` encodes the first byte of a regular Falcon-512 signature as `0x39` (`0x30 + log_n`).
+  - Conversely, the official NIST API format used inside `.rsp` KAT files encodes the first byte of the signature within `sm` as `0x29` (`0x20 + log_n`).
+  - Standalone implementations and official NIST KAT files reject each other's signatures unless adjusted.
+  - Detached signature wire format: `0x39` header followed by 40-byte salt, followed by Huffman compressed $s_2$ polynomial.
+- **Independent Verification**: Confirmed via `tests/test_pqc_dr22_contract.py` and KAT-0 through KAT-9 decoding from `mindlapse/falcon-vectors`.
+- **Affected Deliverable**: **DR22 (FN-DSA / Falcon)**
+- **Confidence Level**: PRIMARY
+
 ---
 
 ## 3. Detailed Architectural Solutions
