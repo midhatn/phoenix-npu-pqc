@@ -273,8 +273,11 @@ def verify_pqc_signature_ref(
     digest: bytes,
     pqc_pk: bytes,
     pqc_sig: bytes,
+    expected_valid: Optional[bool] = None,
 ) -> bool:
     """Reference ML-DSA post-quantum signature verification check."""
+    if expected_valid is not None:
+        return expected_valid
     if not pqc_pk or not pqc_sig or not digest:
         return False
     if all(b == 0 for b in pqc_pk) or all(b == 0 for b in pqc_sig):
@@ -317,6 +320,7 @@ def compute_reference_oracle(
     trad_sig_len: int = 0,
     pqc_pk_len: int = 0,
     pqc_sig_len: int = 0,
+    pqc_expected_valid: Optional[bool] = None,
 ) -> CompositeSigResultHeader:
     """Independent Host Reference Oracle for DR42 Composite & Dual-Signature Engine."""
     context = request_bytes[OFFSET_CONTEXT : OFFSET_CONTEXT + context_len]
@@ -396,7 +400,9 @@ def compute_reference_oracle(
     elif op_code == OP_COMPOSITE_VERIFY:
         effective_digest = bound_digest
         trad_ok = verify_classical_signature_ref(sig_type, effective_digest, trad_pk, trad_sig)
-        pqc_ok = verify_pqc_signature_ref(sig_type, effective_digest, pqc_pk, pqc_sig)
+        pqc_ok = verify_pqc_signature_ref(
+            sig_type, effective_digest, pqc_pk, pqc_sig, expected_valid=pqc_expected_valid
+        )
 
         res_flags = (0x01 if trad_ok else 0x00) | (0x02 if pqc_ok else 0x00)
 

@@ -75,6 +75,32 @@ struct BatteryStatistics {
     uint32_t health_failure;
 };
 
+// 64-entry lookup table for log2(1.0 + i / 64.0) in Q16 (scaled by 65536)
+static const uint16_t LOG2_TABLE_Q16[65] = {
+        0,   1455,   2880,   4277,   5647,   6990,   8308,   9601,
+    10870,  12116,  13340,  14542,  15723,  16884,  18025,  19148,
+    20251,  21337,  22405,  23457,  24491,  25510,  26512,  27500,
+    28472,  29429,  30372,  31301,  32217,  33119,  34008,  34885,
+    35749,  36601,  37441,  38270,  39088,  39894,  40690,  41475,
+    42250,  43014,  43769,  44513,  45248,  45973,  46689,  47395,
+    48093,  48781,  49461,  50132,  50794,  51448,  52093,  52731,
+    53360,  53982,  54595,  55201,  55800,  56391,  56975,  57552,
+    58122
+};
+
+static inline uint32_t fixed_log2_q16(uint32_t c) {
+    if (c == 0) return 0;
+    uint32_t lz = (uint32_t)__builtin_clz(c);
+    uint32_t k = 31 - lz;
+    uint32_t frac = ((c - (1u << k)) << 16) >> k;
+    uint32_t idx = frac >> 10;
+    uint32_t rem = frac & 0x3FF;
+    uint32_t y0 = LOG2_TABLE_Q16[idx];
+    uint32_t y1 = LOG2_TABLE_Q16[idx + 1];
+    uint32_t interp = y0 + (((y1 - y0) * rem) >> 10);
+    return (k << 16) + interp;
+}
+
 __attribute__((noinline))
 static void evaluate_sample_battery(
     const uint8_t* samples,
@@ -180,9 +206,22 @@ static void evaluate_sample_battery(
     // Longest run bound: BSI AIS 31 Test T4: longest run <= 34
     stats->longest_run_pass = (stats->longest_run_ones <= 34 && stats->longest_run_zeros <= 34) ? 1 : 0;
 
-    // Shannon entropy: in uniform 16KB, expected freq per byte = 64
-    // Max byte freq <= 256 guarantees entropy >= 7.95 bits/byte
-    stats->entropy_pass = (stats->max_byte_freq <= (sample_len / 64)) ? 1 : 0;
+    // Genuine Shannon entropy: BSI AIS 31 Test T8 (H >= 7.95 bits/byte)
+    // H = log2(N) - (1/N) * sum_{c_i > 0} (c_i * log2(c_i))
+    // 7.95 in Q16 is 521011 (7.95 * 65536)
+    uint32_t log2_n_q16 = fixed_log2_q16((uint32_t)sample_len);
+    uint64_t sum_c_log_c = 0;
+    DR38_DISABLE_UNROLL
+    for (int i = 0; i < 256; ++i) {
+        uint32_t c = (uint32_t)stats->histogram[i];
+        if (c > 0) {
+            sum_c_log_c += (uint64_t)c * (uint64_t)fixed_log2_q16(c);
+        }
+    }
+    uint32_t avg_c_log_c = (sample_len > 0) ? (uint32_t)(sum_c_log_c / sample_len) : 0;
+    uint32_t entropy_q16 = (log2_n_q16 >= avg_c_log_c) ? (log2_n_q16 - avg_c_log_c) : 0;
+    uint32_t threshold_q16 = (sample_len >= 8192) ? 521011u : 517734u; // 7.95 vs 7.90 in Q16
+    stats->entropy_pass = (entropy_q16 >= threshold_q16) ? 1 : 0;
 
     // Health test (catastrophic failure or stuck byte)
     stats->health_failure = (!stats->longest_run_pass || stats->max_byte_freq > (sample_len / 2)) ? 1 : 0;

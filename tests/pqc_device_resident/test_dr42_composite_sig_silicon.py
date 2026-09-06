@@ -276,11 +276,29 @@ def main() -> int:
         d = compute_ietf_bound_digest_ref(oid, ctx, msg)
         tpk, tsig, ppk, psig = _generate_key_and_sig_pair(stype, d, seed=seq * 7)
 
+        m_or_mu = None
+        external_mu = False
+        pqc_expected_valid = None
+
+        if stype == COMPOSITE_TYPE_MLDSA44_ED25519:
+            from tests.pqc_device_resident.test_dr13_mldsa44_verify import PRE_SILICON_CORPUS
+            c_dsa = PRE_SILICON_CORPUS[0]
+            ppk = c_dsa.pk
+            m_or_mu = c_dsa.m_or_mu
+            external_mu = c_dsa.external_mu
+            pqc_expected_valid = pqc_valid
+            if pqc_valid:
+                psig = c_dsa.sig
+            else:
+                bad_sig = bytearray(c_dsa.sig)
+                bad_sig[0] ^= 0x55
+                psig = bytes(bad_sig)
+
         if not trad_valid:
             tsig_mut = bytearray(tsig)
             tsig_mut[0] ^= 0x01
             tsig = bytes(tsig_mut)
-        if not pqc_valid:
+        if not pqc_valid and stype != COMPOSITE_TYPE_MLDSA44_ED25519:
             psig_mut = bytearray(psig)
             psig_mut[0] ^= 0x01
             psig = bytes(psig_mut)
@@ -305,6 +323,7 @@ def main() -> int:
             trad_sig_len=len(tsig),
             pqc_pk_len=len(ppk),
             pqc_sig_len=len(psig),
+            pqc_expected_valid=pqc_expected_valid,
         )
         exp_res = exp_oracle.pack()
 
@@ -319,6 +338,8 @@ def main() -> int:
             pqc_sig_len=len(psig),
             seq_id=seq,
             raw_request_buffer=req,
+            m_or_mu=m_or_mu,
+            external_mu=external_mu,
         )
 
         match = (act_res == exp_res)

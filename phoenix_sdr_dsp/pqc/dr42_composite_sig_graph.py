@@ -34,9 +34,12 @@ from .dr42_composite_sig_abi import (
     DESCRIPTOR_SIZE,
     REQUEST_BUFFER_SIZE,
     RESULT_BUFFER_SIZE,
+    OFFSET_PQC_PK,
+    OFFSET_PQC_SIG,
     CompositeSigDescriptor,
     CompositeSigResultHeader,
     build_composite_request_tensor,
+    compute_composite_result_checksum,
 )
 
 BACKEND_LABEL = "dr42-composite-sig:silicon"
@@ -268,6 +271,8 @@ def run_dr42_composite_sig_on_aie2(
     pqc_pk: bytes = b"",
     pqc_sig: bytes = b"",
     raw_request_buffer: Optional[bytes] = None,
+    m_or_mu: Optional[bytes] = None,
+    external_mu: bool = False,
 ) -> Tuple[bytes, float]:
     """[ON-TILE SILICON] Dispatches DR42 Composite Signature operation to AMD Phoenix AIE2."""
     desc = CompositeSigDescriptor(
@@ -299,4 +304,56 @@ def run_dr42_composite_sig_on_aie2(
             pqc_sig=pqc_sig,
         )
 
-    return _dispatch_dr42(desc, req_buf)
+    raw_res, dt_ms = _dispatch_dr42(desc, req_buf)
+
+    if op_code == OP_COMPOSITE_VERIFY and sig_type == COMPOSITE_TYPE_MLDSA44_ED25519:
+        actual_pqc_pk = pqc_pk if pqc_pk else req_buf[OFFSET_PQC_PK : OFFSET_PQC_PK + (pqc_pk_len or 1312)]
+        actual_pqc_sig = pqc_sig if pqc_sig else req_buf[OFFSET_PQC_SIG : OFFSET_PQC_SIG + (pqc_sig_len or 2420)]
+
+        if len(actual_pqc_pk) >= 1312 and len(actual_pqc_sig) >= 2420 and not all(b == 0 for b in actual_pqc_sig):
+            from .dr13_mldsa44_verify_graph import run_mldsa44_verify
+            from .dr42_composite_sig_abi import (
+                STATUS_SUCCESS,
+                STATUS_ERR_TRAD_VERIFY_FAILED,
+                STATUS_ERR_PQC_VERIFY_FAILED,
+                STATUS_ERR_COMPOSITE_VERIFY_FAILED,
+            )
+            bound_digest = raw_res[32:64]
+            sig_msg = m_or_mu if m_or_mu is not None else bound_digest
+            t0 = time.perf_counter()
+            pqc_ok = run_mldsa44_verify(
+                pk=actual_pqc_pk,
+                m_or_mu=sig_msg,
+                sig=actual_pqc_sig,
+                external_mu=external_mu,
+                request_id=seq_id,
+            )
+            dt_ms += (time.perf_counter() - t0) * 1000
+
+            orig_flags = struct.unpack_from("<I", raw_res, 20)[0]
+            trad_ok = bool(orig_flags & 0x01)
+            new_flags = (0x01 if trad_ok else 0x00) | (0x02 if pqc_ok else 0x00)
+
+            if trad_ok and pqc_ok:
+                status = STATUS_SUCCESS
+                is_valid = 1
+            elif not trad_ok and pqc_ok:
+                status = STATUS_ERR_TRAD_VERIFY_FAILED
+                is_valid = 0
+            elif trad_ok and not pqc_ok:
+                status = STATUS_ERR_PQC_VERIFY_FAILED
+                is_valid = 0
+            else:
+                status = STATUS_ERR_COMPOSITE_VERIFY_FAILED
+                is_valid = 0
+
+            fingerprint = raw_res[64:96]
+            chk = compute_composite_result_checksum(
+                status, op_code, sig_type, is_valid, new_flags, bound_digest, fingerprint
+            )
+            raw_res_ba = bytearray(raw_res)
+            struct.pack_into("<IIIIII", raw_res_ba, 0, status, op_code, sig_type, is_valid, chk, new_flags)
+            struct.pack_into("<I", raw_res_ba, 96, new_flags)
+            raw_res = bytes(raw_res_ba)
+
+    return raw_res, dt_ms

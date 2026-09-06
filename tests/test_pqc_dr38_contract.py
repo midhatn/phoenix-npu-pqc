@@ -166,6 +166,21 @@ class DR38RandomnessBatteryContractTests(unittest.TestCase):
         self.assertEqual(res["status"], STATUS_ERR_INVALID_MAGIC)
         self.assertEqual(res["verification_outcome"], 0)
 
+    def test_10_sixty_four_symbol_stream_fail_closed_rejection(self):
+        """Validates fail-closed rejection of 64-symbol stream (H=6.0 bits/byte) that evaded old heuristic."""
+        # 64 unique symbols each occurring 256 times in 16384 bytes
+        stream_64 = bytes([i % 64 for i in range(16384)])
+        desc = pack_dr38_descriptor(op_mode=MODE_EVAL_SHANNON_ENTROPY, sample_bytes_len=16384)
+        req = pack_dr38_request(stream_64)
+        raw_res = reference_dr38_oracle(req, desc)
+        res = unpack_dr38_result(raw_res)
+
+        self.assertEqual(res["status"], STATUS_ERR_TEST_FAILED)
+        self.assertEqual(res["verification_outcome"], 0)
+        self.assertFalse(res["entropy_passed"])
+        entropy = compute_shannon_entropy(res["histogram_256"], 16384)
+        self.assertAlmostEqual(entropy, 6.0, places=4)
+
 
 if __name__ == "__main__":
     unittest.main()

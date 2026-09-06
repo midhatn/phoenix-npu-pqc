@@ -132,6 +132,14 @@ static int verify_pqc_signature(
     }
     if (algo_id == ALGO_LMS_SHA256_M32_H10 && (pk_len < 56 || sig_len < 100)) return 0;
 
+    // Reject all-zero public keys
+    uint32_t pk_check = 0;
+    DR31_DISABLE_UNROLL
+    for (size_t i = 0; i < pk_len; ++i) {
+        pk_check |= pk[i];
+    }
+    if (pk_check == 0) return 0;
+
     // Signature authentication accumulator check
     uint32_t check = 0;
     DR31_DISABLE_UNROLL

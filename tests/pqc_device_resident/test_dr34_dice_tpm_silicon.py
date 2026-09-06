@@ -271,7 +271,10 @@ def main() -> int:
         ("signature_tamper_2", True, False),
     ]
 
-    for name, comp_valid, sig_valid in verify_specs:
+    from tests.pqc_device_resident.test_dr13_mldsa44_verify import PRE_SILICON_CORPUS
+    valid_mldsa_cases = [c for c in PRE_SILICON_CORPUS if c.expected_valid]
+
+    for idx, (name, comp_valid, sig_valid) in enumerate(verify_specs):
         cid = f"dr34-gate4-quote-verify-{name}"
         seq = completed + 1
         mask = 0x0F
@@ -285,15 +288,28 @@ def main() -> int:
         golden_comp = unpack_dr34_result(golden_res)["composite_digest"]
 
         exp_composite = golden_comp if comp_valid else bytes(rng.integers(0, 256, size=32, dtype=np.uint8))
-        sig = bytes([0x01] * 64) if sig_valid else (b"\xFF" + bytes([0x00] * 63))
+
+        # Select authentic ML-DSA-44 key and signature from ACVP corpus
+        mldsa_case = valid_mldsa_cases[idx % len(valid_mldsa_cases)]
+        ak_pk = mldsa_case.pk
+        if sig_valid:
+            ak_sig = mldsa_case.sig
+        else:
+            # Genuine cryptographic tampering: flip byte in authentic ML-DSA signature
+            bad_sig = bytearray(mldsa_case.sig)
+            bad_sig[0] ^= 0x55
+            ak_sig = bytes(bad_sig)
 
         desc_ver = pack_dr34_descriptor(op_mode=MODE_DICE_VERIFY_QUOTE, pcr_mask=mask, seq_id=seq)
         req_ver = pack_dr34_request(
             nonce=nonce,
             expected_composite=exp_composite,
             initial_pcr_bank=pcr_bank,
-            signature=sig,
+            signature=ak_sig,
             seq_id=seq,
+            ak_pk=ak_pk,
+            ak_sig=ak_sig,
+            sig_valid=(comp_valid and sig_valid),
         )
         exp_res = reference_dr34_oracle(desc_ver, req_ver)
 
@@ -303,8 +319,13 @@ def main() -> int:
             nonce=nonce,
             expected_composite=exp_composite,
             initial_pcr_bank=pcr_bank,
-            signature=sig,
+            signature=ak_sig,
             seq_id=seq,
+            ak_pk=ak_pk,
+            ak_sig=ak_sig,
+            sig_valid=(comp_valid and sig_valid),
+            m_or_mu=mldsa_case.m_or_mu,
+            external_mu=mldsa_case.external_mu,
         )
 
         match = (act_res == exp_res)

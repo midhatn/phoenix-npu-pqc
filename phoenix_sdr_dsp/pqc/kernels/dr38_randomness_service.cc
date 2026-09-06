@@ -3,6 +3,7 @@
  * Milestone DR38: Randomness Statistical Battery & NIST SP 800-22 Diagnostic
  * AMD Phoenix NPU (AIE2 / XDNA1 Architecture) Service Kernel.
  * Dispatched on AIE2 vector compute tiles.
+ * Evaluates BSI AIS 31 Test T8 Shannon entropy and NIST SP 800-90B health tests.
  */
 
 #include <stdint.h>

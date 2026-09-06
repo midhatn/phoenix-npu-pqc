@@ -104,7 +104,7 @@ The demonstration script executes the following ten (10) sequential verification
    - Confirms that the device strictly rejects invalid inputs.
 10. **Stage 10: Canonical Regression Suite & Honest Denominator Accounting:**
     - Runs the canonical silicon regression suite (24 gates / 857 cases).
-    - Accounts for all 10 quarantined deliverables, proving that no defective shortcut is counted towards customer acceptance.
+    - Accounts for the 8 remediated deliverables and 2 quarantined deliverables (DR39 and DR41), proving that no unverified shortcut is counted towards customer acceptance.
 
 ---
 

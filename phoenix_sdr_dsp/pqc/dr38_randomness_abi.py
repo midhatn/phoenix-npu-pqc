@@ -229,11 +229,13 @@ def reference_dr38_oracle(request_bytes: bytes, descriptor_bytes: bytes) -> byte
     # Longest run check (BSI AIS 31 T4: longest run <= 34)
     longest_run_pass = 1 if (longest_run_ones <= 34 and longest_run_zeros <= 34) else 0
 
-    # Shannon entropy check
+    # Shannon entropy check (BSI AIS 31 Test T8: H >= 7.95 for N >= 8192, H >= 7.90 for N < 8192)
+    shannon_h = compute_shannon_entropy(histogram, effective_len)
     max_byte_freq = max(histogram)
-    entropy_pass = 1 if (max_byte_freq <= (effective_len // 64)) else 0
+    entropy_threshold = 7.95 if effective_len >= 8192 else 7.90
+    entropy_pass = 1 if (shannon_h >= entropy_threshold) else 0
 
-    # Health check
+    # Health check (catastrophic failure or stuck byte)
     health_failure = 1 if (not longest_run_pass or max_byte_freq > (effective_len // 2)) else 0
 
     # 4. Mode-specific outcome determination

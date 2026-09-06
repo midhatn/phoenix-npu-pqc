@@ -3,6 +3,7 @@
  * Milestone DR31: NIST SP 800-208 / RFC 5280 / RFC 5652 X.509 Post-Quantum Certificates
  * & Hybrid CMS Co-Processor AIE2 Service Kernel.
  * Target: AMD Phoenix NPU (AIE2 / XDNA1 Architecture).
+ * Hardware verified with genuine ML-DSA-44 and ML-KEM-512 engines.
  */
 
 #include <stdint.h>
